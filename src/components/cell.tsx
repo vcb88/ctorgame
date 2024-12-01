@@ -13,8 +13,7 @@ type CellProps = {
 export const Cell = ({ x, y, v, s, sel, map, onClick }: CellProps) => (
 <div
   className={`
-    aspect-square
-    flex items-center justify-center 
+    w-12 h-12 flex items-center justify-center
     cursor-pointer
     font-medium
     ${v === P.N ? 'bg-white' : v === P.A ? 'bg-blue-500 text-white' : 'bg-red-500 text-white'}
@@ -35,3 +34,6 @@ export const Cell = ({ x, y, v, s, sel, map, onClick }: CellProps) => (
     (map ? s.toFixed(2) : '')}
 </div>
 );
+
+
+
