@@ -4,6 +4,8 @@ import path from 'path';
 
 
 export default defineConfig({
+  base: '/ctorgame/',
+
   plugins: [react()],
   root: '.', // 
   build: {

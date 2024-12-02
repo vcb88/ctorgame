@@ -56,7 +56,6 @@ body {
   .game-grid {
     padding: 3px;
     display: grid;
-    grid-template-columns: repeat(10, 1fr);
     /*/ gap: 3px;*/
     background: #999;
     aspect-ratio: 1;
@@ -103,6 +102,8 @@ body {
   
   .grid {
     display: grid !important;
+    width: 100%;  /* добавим явную ширину */
+    height: 100%;  /* добавим явную высоту */     
   }
 
 
