@@ -302,7 +302,6 @@ const CTORGame = () => {
         </div>
       </div>           
 
-      <div className="game-grid">
         <div className="grid grid-cols-10">
           {st.board.map((r: number[], x: number) => 
             r.map((c: number, y: number) => (
@@ -310,7 +309,6 @@ const CTORGame = () => {
             ))
           )}
         </div>
-      </div>
 
       <GameOverDialog 
         isOpen={showGameOver}
