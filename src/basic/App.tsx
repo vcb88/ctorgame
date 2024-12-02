@@ -114,20 +114,30 @@ const AI = {
   }
 };
 
+
+interface CellProps {
+    x: number;
+    y: number;
+    v: number;
+    s: number;
+  }
+  
+type BoardType = number[][];
+
 const CTORGame = () => {
   const init = { board: Array(S).fill().map(() => Array(S).fill(P.N)), p: P.A, ops: 2 };
   const [st, dispatch] = useReducer(reducer, init);
   const [op, setOp] = useState(O.PL);
-  const [sel, setSel] = useState(null);
+  const [sel, setSel] = useState<{x: number; y: number} | null>(null);
   const [alt, setAlt] = useState(false);
-  const [msg, setMsg] = useState('');
+  // const [msg, setMsg] = useState('');
   const [map, setMap] = useState(true);
   const [ai, setAi] = useState(true);
 
   const [showGameOver, setShowGameOver] = useState(false);
   const [gameOverMessage, setGameOverMessage] = useState('');
 
-  const handleGameEnd = (message: any) => {
+  const handleGameEnd = (message: string) => {
     setGameOverMessage(message);
     setShowGameOver(true);
   };
@@ -176,7 +186,7 @@ const CTORGame = () => {
     }
   }, [ai, st.p, st.ops]);
 
-  const click = (x, y) => {
+  const click = (x: number, y: number) => {
     const gameEnd = checkGameEnd(st.board);
 
 
@@ -209,7 +219,7 @@ const CTORGame = () => {
     return max > 0 ? ss.map(r => r.map(v => v / max)) : ss;
   }, [st.board, st.p]);
 
-  const Cell = ({x, y, v, s}) => {
+  const Cell = ({x, y, v, s}: CellProps) => {
 
     const playerClass = v === P.N 
     ? '' 
@@ -217,12 +227,7 @@ const CTORGame = () => {
       ? 'player1'  // Класс для первого игрока
       : 'player2'; // Класс для второго игрока
 
-    const baseColor = v === P.N 
-      ? 'bg-white' 
-      : v === P.A 
-        ? 'bg-blue-500 text-white'  // Игрок 1 - синий
-        : 'bg-red-500 text-white';  // Игрок 2 - красный
-  
+
     const content = v !== P.N 
       ? (v === P.A ? '1' : '2')  // Номер игрока для занятых клеток
       : (map ? s.toFixed(2) : '');  // Значение тепловой карты или пусто

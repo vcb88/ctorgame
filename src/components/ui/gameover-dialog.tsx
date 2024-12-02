@@ -1,5 +1,13 @@
-const GameOverDialog = ({ isOpen, message, onClose }) => {
+interface GameOverDialogProps {
+    isOpen: boolean;
+    message: string;
+    onClose: () => void;
+}
+  
+export const GameOverDialog = ({ isOpen, message, onClose }: GameOverDialogProps) => {
     if (!isOpen) return null;
+
+
   
     return (
       <div className="fixed inset-0 bg-black/50 flex items-center justify-center">
@@ -17,4 +25,3 @@ const GameOverDialog = ({ isOpen, message, onClose }) => {
     );
   };
   
-  export default GameOverDialog;
