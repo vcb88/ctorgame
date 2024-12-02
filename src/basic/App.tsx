@@ -210,31 +210,44 @@ const CTORGame = () => {
   }, [st.board, st.p]);
 
   const Cell = ({x, y, v, s}) => {
-    // Определяем базовый цвет для занятых клеток
+
+    const playerClass = v === P.N 
+    ? '' 
+    : v === P.A 
+      ? 'player1'  // Класс для первого игрока
+      : 'player2'; // Класс для второго игрока
+
     const baseColor = v === P.N 
       ? 'bg-white' 
       : v === P.A 
         ? 'bg-blue-500 text-white'  // Игрок 1 - синий
         : 'bg-red-500 text-white';  // Игрок 2 - красный
   
-    // Определяем содержимое клетки
     const content = v !== P.N 
       ? (v === P.A ? '1' : '2')  // Номер игрока для занятых клеток
       : (map ? s.toFixed(2) : '');  // Значение тепловой карты или пусто
   
-    // Определяем стиль фона для тепловой карты
-    const heatmapStyle = (v === P.N && map) 
-      ? { backgroundColor: `hsla(${(1-s)*240},100%,50%,${0.1+s*0.3})` } 
-      : undefined;
+    // const heatmapStyle = (v === P.N && map) 
+    //   ? { backgroundColor: `hsla(${(1-s)*240},100%,50%,${0.1+s*0.3})` } 
+    //   : undefined;
+
+      const styles = {
+        width: '100%',
+        height: '100%',
+        ...(v === P.N && map ? {
+          backgroundColor: `hsla(${(1-s)*240},100%,50%,${0.1+s*0.3})`
+        } : {})
+      };      
   
     return (
       <div
-        className={`cell ${baseColor} 
+        className={`cell ${playerClass} 
           ${sel?.x === x && sel?.y === y ? 'ring-2 ring-yellow-400' : ''}
           hover:opacity-90`
         }
         onClick={() => click(x, y)}
-        style={heatmapStyle}
+        style= {styles}
+          
       >
         {content}
       </div>

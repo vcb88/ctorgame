@@ -1,3 +1,7 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
 body {
     display: flex;
     justify-content: center;
@@ -50,11 +54,11 @@ body {
   }
   
   .game-grid {
-    padding: 20px;
+    padding: 3px;
     display: grid;
     grid-template-columns: repeat(10, 1fr);
-    gap: 1px;
-    background: #ddd;
+    /*/ gap: 3px;*/
+    background: #999;
     aspect-ratio: 1;
   }
   
@@ -67,10 +71,16 @@ body {
     background: white;
     cursor: pointer;
     transition: opacity 0.2s;
+    border: 1px solid #acacac;  /* добавляем border */
+    box-sizing: border-box; /* Важно! Гарантирует, что border не увеличит размер */
+
+
   }
   
   .cell:hover {
-    opacity: 0.9;
+    opacity: 0.8;
+    transform: scale(1.05);
+
   }
   
   .cell.player1 {
@@ -95,24 +105,9 @@ body {
     display: grid !important;
   }
 
-  /* Стили для игрового поля */
-.cell {
-    aspect-ratio: 1;
-    transition: all 0.2s ease-in-out;
-  }
-  
-  .cell:hover {
-    transform: scale(1.05);
-  }
-  
-  /* Стили для игроков */
-  .player-1 {
-    background-color: var(--primary);
-  }
-  
-  .player-2 {
-    background-color: var(--secondary);
-  }
+
+
+
 
 
 
