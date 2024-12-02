@@ -1,7 +1,8 @@
 import { useReducer, useState, useMemo, useEffect } from 'react';
-import { AlertDialog, AlertDialogAction, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
-import { Switch } from "@/components/ui/switch";
-import { Label } from "@/components/ui/label";
+import { Toggle } from '@/components/ui/toggle';
+import GameOverDialog from '@/components/ui/gameover-dialog';
+
+
 import '@/index-basic.css'
 
 
@@ -123,6 +124,19 @@ const CTORGame = () => {
   const [map, setMap] = useState(true);
   const [ai, setAi] = useState(true);
 
+  const [showGameOver, setShowGameOver] = useState(false);
+  const [gameOverMessage, setGameOverMessage] = useState('');
+
+  const handleGameEnd = (message: any) => {
+    setGameOverMessage(message);
+    setShowGameOver(true);
+  };
+
+  const resetGame = () => {
+    window.location.reload();
+    setShowGameOver(false);
+  };  
+
   useEffect(() => {
     const aiTurn = async () => {
       if (!ai || st.p !== P.B || st.ops !== 2) return;
@@ -164,11 +178,12 @@ const CTORGame = () => {
 
   const click = (x, y) => {
     const gameEnd = checkGameEnd(st.board);
+
+
     if (gameEnd.over) {
-      setMsg(`Game Over! Winner: ${gameEnd.winner}`);
-      setAlt(true);
-      return;
-    }
+        handleGameEnd(`Winner: ${gameEnd.winner}`);  
+        return;
+      }    
 
     if (ai && st.p === P.B) return;
     if (st.ops <= 0) { 
@@ -194,20 +209,37 @@ const CTORGame = () => {
     return max > 0 ? ss.map(r => r.map(v => v / max)) : ss;
   }, [st.board, st.p]);
 
-  const Cell = ({x, y, v, s}) => (
-    <div
-      className={`cell 
-        ${v === P.N ? 'bg-white' : v === P.A ? 'bg-blue-500' : 'bg-red-500'}
-        ${sel?.x === x && sel?.y === y ? 'ring-2 ring-yellow-400' : ''}
-        hover:opacity-90`}
-      onClick={() => click(x, y)}
-      style={{
-        backgroundColor: v === P.N && map ? `hsla(${(1-s)*240},100%,50%,${0.1+s*0.3})` : undefined
-      }}
-    >
-      {v !== P.N ? (v === P.A ? '1' : '2') : (map ? s.toFixed(2) : '')}
-    </div>
-  );
+  const Cell = ({x, y, v, s}) => {
+    // Определяем базовый цвет для занятых клеток
+    const baseColor = v === P.N 
+      ? 'bg-white' 
+      : v === P.A 
+        ? 'bg-blue-500 text-white'  // Игрок 1 - синий
+        : 'bg-red-500 text-white';  // Игрок 2 - красный
+  
+    // Определяем содержимое клетки
+    const content = v !== P.N 
+      ? (v === P.A ? '1' : '2')  // Номер игрока для занятых клеток
+      : (map ? s.toFixed(2) : '');  // Значение тепловой карты или пусто
+  
+    // Определяем стиль фона для тепловой карты
+    const heatmapStyle = (v === P.N && map) 
+      ? { backgroundColor: `hsla(${(1-s)*240},100%,50%,${0.1+s*0.3})` } 
+      : undefined;
+  
+    return (
+      <div
+        className={`cell ${baseColor} 
+          ${sel?.x === x && sel?.y === y ? 'ring-2 ring-yellow-400' : ''}
+          hover:opacity-90`
+        }
+        onClick={() => click(x, y)}
+        style={heatmapStyle}
+      >
+        {content}
+      </div>
+    );
+  };
 
   return (
 
@@ -216,15 +248,18 @@ const CTORGame = () => {
             <div className="game-header">
                 <h1 className="game-title">CTOR Game</h1>
                 <div className="controls">
-                        <div className="flex items-center gap-2">
-                            <Switch id="ai" checked={ai} onCheckedChange={setAi}  />
-                            <Label htmlFor="ai" className="text-sm">AI Player 2</Label>
-                        </div>
-                   
-                        <div className="flex items-center gap-2">
-                            <Switch id="map" checked={map} onCheckedChange={setMap}  />
-                            <Label htmlFor="map" className="text-sm">Heatmap</Label>
-                        </div>
+                    <Toggle
+                        id="ai"
+                        label="AI Player 2"
+                        checked={ai}
+                        onChange={setAi}
+                    />
+                    <Toggle
+                        id="map"
+                        label="Heatmap"
+                        checked={map}
+                        onChange={setMap}
+                    />
                 </div>
             </div>            
 
@@ -251,25 +286,16 @@ const CTORGame = () => {
                 </div>
             </div>
 
-          <AlertDialog open={alt} onOpenChange={setAlt}>
-            <AlertDialogContent>
-              <AlertDialogHeader>
-                <AlertDialogTitle>Game Over</AlertDialogTitle>
-                <AlertDialogDescription>{msg}</AlertDialogDescription>
-              </AlertDialogHeader>
-              <AlertDialogFooter>
-                <AlertDialogAction onClick={() => window.location.reload()}>
-                  New Game
-                </AlertDialogAction>
-              </AlertDialogFooter>
-            </AlertDialogContent>
-          </AlertDialog>
+            <GameOverDialog 
+                    isOpen={showGameOver}
+                    message={gameOverMessage}
+                    onClose={resetGame}
+                />
 
     </div>
   );
 };
 
 export default CTORGame;
-
 
 

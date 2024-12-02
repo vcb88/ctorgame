@@ -113,3 +113,69 @@ body {
   .player-2 {
     background-color: var(--secondary);
   }
+
+
+
+
+.switch {
+  position: relative;
+  display: inline-block;
+  width: 36px;
+  height: 20px;
+}
+
+.switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.switch-slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #e4e4e7;
+  transition: 0.3s;
+  border-radius: 20px;
+}
+
+.switch-slider:before {
+  position: absolute;
+  content: "";
+  height: 16px;
+  width: 16px;
+  left: 2px;
+  bottom: 2px;
+  background-color: white;
+  border-radius: 50%;
+  transition: 0.3s;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+}
+
+.switch input:checked + .switch-slider {
+  background-color: #3b82f6;
+}
+
+.switch input:checked + .switch-slider:before {
+  transform: translateX(16px);
+}
+
+.controls {
+  display: flex;
+  gap: 20px;
+}
+
+.toggle-container {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.toggle-label {
+  font-size: 14px;
+  color: #4b5563;
+  user-select: none;
+}

@@ -50,6 +50,11 @@ module.exports = {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
+        switch: {
+          bg: 'hsl(var(--switch-bg))',
+          checked: 'hsl(var(--switch-checked-bg))',
+          thumb: 'hsl(var(--switch-thumb))',
+        }        
       },
       borderRadius: {
         lg: "var(--radius)",
