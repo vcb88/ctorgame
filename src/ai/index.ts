@@ -12,12 +12,12 @@ export const AI = {
           if (b[x][y] === P.N) {
             const t = b.map(r => [...r]);
             t[x][y] = p;
-            const s = AI.eval(b, t, x, y, p);
-            ms.push({ x, y, s });
+            const evalScore = AI.eval(b, t, x, y, p);
+            ms.push({ x, y, s: evalScore  });
           }
         }
       }
-      ms.sort((a, b) => b.s - a.s);
+      ms.sort((a, b) => (b.s||0) - (a.s||0) );
       console.log('Top moves:', ms.slice(0, 3));
     }
     return ms.length ? ms[0] : null;
