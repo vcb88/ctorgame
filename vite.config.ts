@@ -11,7 +11,7 @@ export default defineConfig({
   build: {
     outDir: 'dist',
     rollupOptions: {
-      input: 'index.html' // 
+      input: 'index.html'  
     }
   },  
   resolve: {
@@ -20,13 +20,9 @@ export default defineConfig({
     },
   },
   server: {
-    host: true, //
+    host: '0.0.0.0',  // Явно указываем слушать все интерфейсы
+
+    strictPort: true, // Не пытаться использовать другой порт если 3000 занят
     port: 3000,
-  },
-  test: {
-    globals: true,
-    environment: 'jsdom',
-    setupFiles: ['./src/test/setup.ts'],
-    include: ['src/**/*.{test,spec}.{js,ts,jsx,tsx}'],
   },
 });
