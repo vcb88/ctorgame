@@ -175,3 +175,20 @@ body {
   color: #4b5563;
   user-select: none;
 }
+
+
+/* Добавить в index-basic.css */
+
+.grid-cols-12 {
+  grid-template-columns: repeat(12, 1fr) !important;
+}
+
+.cell.virtual {
+  cursor: default;
+  background-color: #f5f5f5;
+}
+
+.cell.virtual:hover {
+  transform: none;
+  opacity: 0.6 !important;
+}

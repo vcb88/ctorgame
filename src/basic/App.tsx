@@ -1,6 +1,8 @@
 import { useReducer, useState, useMemo, useEffect } from 'react';
 import { Toggle } from '@/components/ui/toggle';
 import { GameOverDialog } from '@/components/ui/gameover-dialog';
+import ExtendedGrid from '@/components/ExtendedGrid';
+
 import '@/index-basic.css';
 import {
   S, P, O, A,
@@ -302,13 +304,13 @@ const CTORGame = () => {
         </div>
       </div>           
 
-        <div className="grid grid-cols-10">
-          {st.board.map((r: number[], x: number) => 
-            r.map((c: number, y: number) => (
-              <Cell key={`${x}-${y}`} x={x} y={y} v={c} s={scores[x][y]}/>
-            ))
-          )}
-        </div>
+      <ExtendedGrid
+        board={st.board}
+        onCellClick={click}
+        scores={scores}
+        showMap={map}
+        selectedCell={sel}
+      />
 
       <GameOverDialog 
         isOpen={showGameOver}
