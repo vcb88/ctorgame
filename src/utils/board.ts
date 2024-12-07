@@ -1,8 +1,14 @@
-import { Board, P, S } from '@/types';
+import { Board, P } from '@/types';
+import { GRID_WIDTH, GRID_HEIGHT } from '@/constants';
 
-export const n = (c: number): number => {
-  while (c < 0) c += S;
-  return c % S;
+export const nX = (x: number): number => {
+  while (x < 0) x += GRID_WIDTH;
+  return x % GRID_WIDTH;
+};
+
+export const nY = (y: number): number => {
+  while (y < 0) y += GRID_HEIGHT;
+  return y % GRID_HEIGHT;
 };
 
 export const checkEnd = (b: Board) => {
@@ -23,14 +29,14 @@ export const replace = (b: Board, max = 10): Board => {
   while (chg && i < max) {
     chg = false;
     for (let p of [P.A, P.B])
-      for (let x = 0; x < S; x++)
-        for (let y = 0; y < S; y++)
+      for (let x = 0; x < GRID_WIDTH; x++)
+        for (let y = 0; y < GRID_HEIGHT; y++)
           if (r[x][y] === (p === P.A ? P.B : P.A)) {
             let c = 0;
             for (let dx = -1; dx <= 1; dx++)
               for (let dy = -1; dy <= 1; dy++)
                 if (dx || dy)
-                  if (r[n(x + dx)][n(y + dy)] === p)
+                  if (r[nX(x + dx)][nY(y + dy)] === p)
                     c++;
             if (c >= 5) {
               r[x][y] = p;
@@ -43,4 +49,4 @@ export const replace = (b: Board, max = 10): Board => {
 };
 
 export const createEmptyBoard = (): Board => 
-  Array(S).fill(null).map(() => Array(S).fill(P.N));
+  Array(GRID_WIDTH).fill(null).map(() => Array(GRID_HEIGHT).fill(P.N));

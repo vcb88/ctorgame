@@ -1,7 +1,7 @@
-import { S } from '@/constants';
-export { S };
+import { GRID_WIDTH, GRID_HEIGHT } from '@/constants';
 
-// Константы и их типы
+export { GRID_WIDTH, GRID_HEIGHT };
+
 export const P = { N: 0, A: 1, B: 2 } as const;
 export type PlayerType = typeof P[keyof typeof P];
 
@@ -16,15 +16,13 @@ export const A = {
 } as const;
 export type ActionType = typeof A[keyof typeof A];
 
-// Базовые типы
 export type Board = number[][];
 export type Position = { x: number; y: number };
 export type Move = Position & { 
-  score?: number;  // Для AI.findMove
-  s?: number;      // Для тестов
-};  // Обновили для соответствия AI.findMove
+  score?: number;
+  s?: number;
+};
 
-// Типы состояний игры
 export type GameState = {
   board: Board;
   p: PlayerType;
@@ -42,7 +40,6 @@ export type GameAction = {
   ty?: number;
 };
 
-// Типы для компонентов
 export interface CellProps {
   x: number;
   y: number;
@@ -50,7 +47,6 @@ export interface CellProps {
   s: number;
 }
 
-// Типы для функций
 export interface GameEndResult {
   over: boolean;
   winner?: string;

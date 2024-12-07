@@ -1,6 +1,7 @@
 import React from 'react';
 import { Board, P } from '@/types';
-import { n } from '@/utils/board';
+import { nX, nY } from '@/utils/board';
+import { GRID_WIDTH, GRID_HEIGHT } from '@/constants';
 
 interface ExtendedGridProps {
   board: Board;
@@ -17,13 +18,15 @@ const ExtendedGrid: React.FC<ExtendedGridProps> = ({
   showMap,
   selectedCell
 }) => {
-  // Создаем расширенные индексы с учетом дополнительных рядов
-  const extendedIndices = [-1, ...Array.from({length: 10}, (_, i) => i), 10];
+  // Создаем индексы для строк и столбцов
+  const rowIndices = [-1, ...Array.from({length: GRID_HEIGHT}, (_, i) => i), GRID_HEIGHT];
+  const colIndices = [-1, ...Array.from({length: GRID_WIDTH}, (_, i) => i), GRID_WIDTH];
   
-  const Cell = ({x, y, isVirtual = false}: {x: number, y: number, isVirtual?: boolean}) => {
-    // Получаем реальные координаты с учетом заворачивания поля
-    const realX = n(x);
-    const realY = n(y);
+  const Cell = ({row, col, isVirtual = false}: {row: number, col: number, isVirtual?: boolean}) => {
+    // row - это Y координата (вертикаль)
+    // col - это X координата (горизонталь)
+    const realX = nX(col);
+    const realY = nY(row);
     
     const v = board[realX][realY];
     const s = scores[realX][realY];
@@ -72,17 +75,24 @@ const ExtendedGrid: React.FC<ExtendedGridProps> = ({
   };
 
   return (
-    <div className="grid grid-cols-12 gap-0">
-      {extendedIndices.map(i => (
-        extendedIndices.map(j => (
+    <div 
+      style={{
+        display: 'grid',
+        gridTemplateColumns: `repeat(${GRID_WIDTH + 2}, 1fr)`,
+        gap: 0
+      }}
+    >
+      {/* Перебираем строки (Y), потом столбцы (X) */}
+      {rowIndices.map(row => 
+        colIndices.map(col => (
           <Cell 
-            key={`${i}-${j}`}
-            x={i} 
-            y={j}
-            isVirtual={i === -1 || i === 10 || j === -1 || j === 10}
+            key={`${row}-${col}`}
+            row={row}
+            col={col}
+            isVirtual={row === -1 || row === GRID_HEIGHT || col === -1 || col === GRID_WIDTH}
           />
         ))
-      ))}
+      )}
     </div>
   );
 };
