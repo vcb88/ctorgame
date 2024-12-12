@@ -1,21 +1,21 @@
 import { useReducer, useState, useMemo, useEffect } from 'react';
 import { Toggle } from '@/components/ui/toggle';
 import { GameOverDialog } from '@/components/ui/gameover-dialog';
+import ExtendedGrid from '@/components/ExtendedGrid';
 import '@/index-basic.css';
 import {
-  S, P, O, A,
+  P, O, A,
   PlayerType,
   GameState,
   GameAction,
-  CellProps,
   Move,
   Board,
   GameEndResult
 } from '@/types';
+import { GRID_WIDTH, GRID_HEIGHT } from '@/constants';
+import { nX, nY } from '@/utils/board';
 
 // Вспомогательные функции
-const norm = (c: number): number => (c + S) % S;
-
 const checkGameEnd = (board: Board): GameEndResult => {
   const empty = board.flat().filter(c => c === P.N).length;
   
@@ -29,8 +29,8 @@ const checkGameEnd = (board: Board): GameEndResult => {
 };
 
 const replaceWithLimit = (board: Board, max: number = 10): Board => {
-    let b: Board = Array.from({ length: S }, (_, i) => 
-        Array.from({ length: S }, (_, j) => board[i][j])
+    let b: Board = Array.from({ length: GRID_WIDTH }, (_, i) => 
+        Array.from({ length: GRID_HEIGHT }, (_, j) => board[i][j])
       );
   let changed = true;
   let iter = 0;
@@ -38,14 +38,14 @@ const replaceWithLimit = (board: Board, max: number = 10): Board => {
   while (changed && iter < max) {
     changed = false;
     for (let p of [P.A, P.B]) {
-      for (let x = 0; x < S; x++) {
-        for (let y = 0; y < S; y++) {
+      for (let x = 0; x < GRID_WIDTH; x++) {
+        for (let y = 0; y < GRID_HEIGHT; y++) {
           if (b[x][y] === (p === P.A ? P.B : P.A)) {
             let c = 0;
             for (let dx = -1; dx <= 1; dx++) {
               for (let dy = -1; dy <= 1; dy++) {
                 if (dx || dy) {
-                  if (b[norm(x + dx)][norm(y + dy)] === p) c++;
+                  if (b[nX(x + dx)][nY(y + dy)] === p) c++;
                 }
               }
             }
@@ -95,8 +95,8 @@ const AI = {
     const moves: Move[] = [];
     
     if (op === O.PL) {
-      for (let x = 0; x < S; x++) {
-        for (let y = 0; y < S; y++) {
+      for (let x = 0; x < GRID_WIDTH; x++) {
+        for (let y = 0; y < GRID_HEIGHT; y++) {
           if (b[x][y] === P.N) {
             let t = b.map(r => [...r]);
             t[x][y] = p;
@@ -108,12 +108,13 @@ const AI = {
     
     return moves.length ? moves.reduce((max, m) => (m.score||0) > (max.score||0) ? m : max) : null;
   },
+
   eval: (b: Board, x: number, y: number, p: PlayerType): number => {
     let terr = 0, repl = 0, mob = 0, pat = 0;
     
     for (let dx = -2; dx <= 2; dx++) {
       for (let dy = -2; dy <= 2; dy++) {
-        if (Math.abs(dx) + Math.abs(dy) <= 2 && b[norm(x+dx)][norm(y+dy)] === P.N) 
+        if (Math.abs(dx) + Math.abs(dy) <= 2 && b[nX(x+dx)][nY(y+dy)] === P.N) 
           terr++;
       }
     }
@@ -122,7 +123,7 @@ const AI = {
     for (let dx = -1; dx <= 1; dx++) {
       for (let dy = -1; dy <= 1; dy++) {
         if (dx || dy) {
-          const nx = norm(x+dx), ny = norm(y+dy);
+          const nx = nX(x+dx), ny = nY(y+dy);
           if (b[nx][ny] === p) own++;
           if (b[nx][ny] === P.N) mob++;
         }
@@ -138,10 +139,10 @@ const AI = {
 
 const CTORGame = () => {
     const init: GameState = { 
-        board: [...Array(S)].map(() => [...Array(S)].map(() => P.N)), 
+        board: Array(GRID_WIDTH).fill(null).map(() => Array(GRID_HEIGHT).fill(P.N)), 
         p: P.A, 
         ops: 2 
-        };
+    };
 
   const [st, dispatch] = useReducer(reducer, init);
   const [op, _setOp] = useState<string>(O.PL);
@@ -151,15 +152,20 @@ const CTORGame = () => {
   const [showGameOver, setShowGameOver] = useState<boolean>(false);
   const [gameOverMessage, setGameOverMessage] = useState<string>('');
 
-  const handleGameEnd = (message: string): void => {
-    setGameOverMessage(message);
-    setShowGameOver(true);
-  };
-
-  const resetGame = (): void => {
-    window.location.reload();
-    setShowGameOver(false);
-  };  
+  const scores = useMemo(() => {
+    const ss: number[][] = Array.from({ length: GRID_WIDTH }, () => 
+      Array.from({ length: GRID_HEIGHT }, () => 0)
+    );
+    for (let x = 0; x < GRID_WIDTH; x++) {
+      for (let y = 0; y < GRID_HEIGHT; y++) {
+        if (st.board[x][y] === P.N) {
+          ss[x][y] = AI.eval(st.board, x, y, st.p);
+        }
+      }
+    }
+    const max = Math.max(...ss.flat());
+    return max > 0 ? ss.map(r => r.map(v => v / max)) : ss;
+  }, [st.board, st.p]);
 
   useEffect(() => {
     const aiTurn = async (): Promise<void> => {
@@ -177,8 +183,6 @@ const CTORGame = () => {
       dispatch({type: A.PL, x: m1.x, y: m1.y, p: P.B});
       dispatch({type: A.RP});
       
-      updatedBoard = replaceWithLimit(updatedBoard);
-      
       await new Promise<void>(resolve => {
         setTimeout(resolve, 500);
       });
@@ -192,9 +196,9 @@ const CTORGame = () => {
       dispatch({type: A.PL, x: m2.x, y: m2.y, p: P.B});
       dispatch({type: A.RP});
       
-        await new Promise<void>(resolve => {
+      await new Promise<void>(resolve => {
         setTimeout(resolve, 300);
-        });
+      });
       dispatch({type: A.ET});
     };
 
@@ -203,6 +207,16 @@ const CTORGame = () => {
       return () => clearTimeout(timer);
     }
   }, [ai, st.p, st.ops]);
+
+  const handleGameEnd = (message: string): void => {
+    setGameOverMessage(message);
+    setShowGameOver(true);
+  };
+
+  const resetGame = (): void => {
+    window.location.reload();
+    setShowGameOver(false);
+  };  
 
   const click = (x: number, y: number): void => {
     const gameEnd = checkGameEnd(st.board);
@@ -223,52 +237,6 @@ const CTORGame = () => {
       dispatch({type: A.RP});
       if (st.ops <= 1) dispatch({type: A.ET});
     }
-  };
-
-  const scores = useMemo(() => {
-    const ss: number[][] = Array.from({ length: S }, () => 
-      Array.from({ length: S }, () => 0)
-    );
-    for (let x = 0; x < S; x++) {
-      for (let y = 0; y < S; y++) {
-        if (st.board[x][y] === P.N) ss[x][y] = AI.eval(st.board, x, y, st.p);
-      }
-    }
-    const max = Math.max(...ss.flat());
-    return max > 0 ? ss.map(r => r.map(v => v / max)) : ss;
-  }, [st.board, st.p]);
-
-  const Cell: React.FC<CellProps> = ({x, y, v, s}) => {
-    const playerClass = v === P.N 
-      ? '' 
-      : v === P.A 
-        ? 'player1'
-        : 'player2';
-
-    const content = v !== P.N 
-      ? (v === P.A ? '1' : '2')
-      : (map ? s.toFixed(2) : '');
-
-    const styles = {
-      width: '100%',
-      height: '100%',
-      ...(v === P.N && map ? {
-        backgroundColor: `hsla(${(1-s)*240},100%,50%,${0.1+s*0.3})`
-      } : {})
-    };      
-
-    return (
-      <div
-        className={`cell ${playerClass} 
-          ${sel?.x === x && sel?.y === y ? 'ring-2 ring-yellow-400' : ''}
-          hover:opacity-90`
-        }
-        onClick={() => click(x, y)}
-        style={styles}
-      >
-        {content}
-      </div>
-    );
   };
 
   return (
@@ -302,13 +270,13 @@ const CTORGame = () => {
         </div>
       </div>           
 
-        <div className="grid grid-cols-10">
-          {st.board.map((r: number[], x: number) => 
-            r.map((c: number, y: number) => (
-              <Cell key={`${x}-${y}`} x={x} y={y} v={c} s={scores[x][y]}/>
-            ))
-          )}
-        </div>
+      <ExtendedGrid
+        board={st.board}
+        onCellClick={click}
+        scores={scores}
+        showMap={map}
+        selectedCell={sel}
+      />
 
       <GameOverDialog 
         isOpen={showGameOver}

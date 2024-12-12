@@ -1,85 +1,102 @@
-import { n } from '../utils/board';
-
-import { S, P, O, Board, Move } from '@/types';
-
+import { Board, P, Move } from '@/types';
+import { GRID_WIDTH, GRID_HEIGHT } from '@/constants';
+import { nX, nY } from '@/utils/board';
 
 export const AI = {
   findMove: (b: Board, p: number, op: string): Move | null => {
-    const ms: Move[] = [];
-    if (op === O.PL) {
-      for (let x = 0; x < S; x++) {
-        for (let y = 0; y < S; y++) {
-          if (b[x][y] === P.N) {
-            const t = b.map(r => [...r]);
-            t[x][y] = p;
-            const evalScore = AI.eval(b, t, x, y, p);
-            ms.push({ x, y, s: evalScore  });
-          }
+    const moves: Move[] = [];
+    
+    // Проверяем все возможные ходы
+    for (let x = 0; x < GRID_WIDTH; x++) {
+      for (let y = 0; y < GRID_HEIGHT; y++) {
+        if (b[x][y] === P.N) {
+          let t = b.map(r => [...r]);
+          t[x][y] = p;
+          moves.push({ x, y, score: AI.eval(b, t, x, y, p) });
         }
       }
-      ms.sort((a, b) => (b.s||0) - (a.s||0) );
-      console.log('Top moves:', ms.slice(0, 3));
     }
-    return ms.length ? ms[0] : null;
+    
+    return moves.length ? moves.reduce((max, m) => (m.score||0) > (max.score||0) ? m : max) : null;
   },
 
   evalDanger: (b: Board, x: number, y: number, p: number): number => {
     const op = p === P.A ? P.B : P.A;
     let cnt = 0;
-    for (let dx = -1; dx <= 1; dx++)
-      for (let dy = -1; dy <= 1; dy++)
-        if (dx || dy)
-          if (b[n(x + dx)][n(y + dy)] === op)
+    for (let dx = -1; dx <= 1; dx++) {
+      for (let dy = -1; dy <= 1; dy++) {
+        if (dx || dy) {
+          if (b[nX(x + dx)][nY(y + dy)] === op) {
             cnt++;
+          }
+        }
+      }
+    }
     return cnt >= 3 ? 20 + cnt * 5 : 0;
   },
 
   evalGroup: (b: Board, x: number, y: number, p: number): number => {
     let own = 0, emp = 0;
-    for (let dx = -1; dx <= 1; dx++)
-      for (let dy = -1; dy <= 1; dy++)
+    for (let dx = -1; dx <= 1; dx++) {
+      for (let dy = -1; dy <= 1; dy++) {
         if (dx || dy) {
-          const v = b[n(x + dx)][n(y + dy)];
+          const v = b[nX(x + dx)][nY(y + dy)];
           if (v === p) own++;
           else if (v === P.N) emp++;
         }
+      }
+    }
     return own >= 2 ? own * 10 + emp * 2 : 0;
   },
 
   evalBlock: (b: Board, x: number, y: number, p: number): number => {
     const op = p === P.A ? P.B : P.A;
     let s = 0;
-    for (let dx = -1; dx <= 1; dx++)
-      for (let dy = -1; dy <= 1; dy++)
-        if (dx || dy && b[n(x + dx)][n(y + dy)] === op) {
+    for (let dx = -1; dx <= 1; dx++) {
+      for (let dy = -1; dy <= 1; dy++) {
+        if ((dx || dy) && b[nX(x + dx)][nY(y + dy)] === op) {
           let c = 0;
-          for (let dx2 = -1; dx2 <= 1; dx2++)
-            for (let dy2 = -1; dy2 <= 1; dy2++)
-              if (dx2 || dy2)
-                if (b[n(x + dx + dx2)][n(y + dy + dy2)] === op)
+          for (let dx2 = -1; dx2 <= 1; dx2++) {
+            for (let dy2 = -1; dy2 <= 1; dy2++) {
+              if (dx2 || dy2) {
+                if (b[nX(x + dx + dx2)][nY(y + dy + dy2)] === op) {
                   c++;
+                }
+              }
+            }
+          }
           if (c >= 3) s += 15 + c * 3;
         }
+      }
+    }
     return s;
   },
 
   eval: (ob: Board, nb: Board, x: number, y: number, p: number): number => {
     let tr = 0, rp = 0, mb = 0;
     
-    for (let dx = -2; dx <= 2; dx++)
-      for (let dy = -2; dy <= 2; dy++)
-        if (Math.abs(dx) + Math.abs(dy) <= 2)
-          if (nb[n(x + dx)][n(y + dy)] === P.N)
+    // Оцениваем территорию
+    for (let dx = -2; dx <= 2; dx++) {
+      for (let dy = -2; dy <= 2; dy++) {
+        if (Math.abs(dx) + Math.abs(dy) <= 2) {
+          if (nb[nX(x + dx)][nY(y + dy)] === P.N) {
             tr++;
+          }
+        }
+      }
+    }
     
+    // Оцениваем окружение
     let own = 0;
-    for (let dx = -1; dx <= 1; dx++)
-      for (let dy = -1; dy <= 1; dy++)
+    for (let dx = -1; dx <= 1; dx++) {
+      for (let dy = -1; dy <= 1; dy++) {
         if (dx || dy) {
-          const v = nb[n(x + dx)][n(y + dy)];
+          const v = nb[nX(x + dx)][nY(y + dy)];
           if (v === p) own++;
           if (v === P.N) mb++;
         }
+      }
+    }
     
     if (own >= 3) rp += 5;
     if (own >= 4) rp += 10;
