@@ -1,5 +1,5 @@
 import { Board, P, GRID_WIDTH, GRID_HEIGHT } from '@/types';
-// import { n } from '@/utils/board';
+import { nX, nY } from '@/utils/board';
 
 export type PositionStrength = {
   pieces: number;
@@ -24,8 +24,8 @@ export const analyzePosition = (board: Board, player: number): PositionStrength 
         if (dx === 0 && dy === 0) continue;
         const dist = Math.abs(dx) + Math.abs(dy);
         if (dist <= radius) {
-          const nx = n(x + dx);
-          const ny = n(y + dy);
+          const nx = nX(x + dx);
+          const ny = nY(y + dy);
           callback(nx, ny, dist);
         }
       }
@@ -33,8 +33,8 @@ export const analyzePosition = (board: Board, player: number): PositionStrength 
   };
 
   // Для каждой фишки на доске
-  for (let x = 0; x < S; x++) {
-    for (let y = 0; y < S; y++) {
+  for (let x = 0; x < GRID_WIDTH; x++) {
+    for (let y = 0; y < GRID_HEIGHT; y++) {
       if (board[x][y] === player) {
         // Считаем прямой контроль (соседние клетки)
         forEachNeighbor(x, y, 1, (nx, ny) => {

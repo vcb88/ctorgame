@@ -1,8 +1,8 @@
-import { Board, P, A, GameState, GameAction } from '@/types';
+import { Board, P, A, GameState, GameAction,  GRID_WIDTH, GRID_HEIGHT  } from '@/types';
 import { replace } from '@/utils/board';
 
 export const initialState: GameState = {
-  board: Array(S).fill(null).map(() => Array(S).fill(P.N)) as Board,
+  board: Array(GRID_HEIGHT).fill(null).map(() => Array(GRID_WIDTH).fill(P.N)) as Board,
   p: P.A,
   ops: 2
 };

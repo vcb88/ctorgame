@@ -3,7 +3,7 @@ import { GRID_WIDTH, GRID_HEIGHT } from '@/constants';
 import { nX, nY } from '@/utils/board';
 
 export const AI = {
-  findMove: (b: Board, p: number, op: string): Move | null => {
+  findMove: (b: Board, p: number): Move | null => {
     const moves: Move[] = [];
     
     // Проверяем все возможные ходы
