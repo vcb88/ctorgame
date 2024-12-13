@@ -1,5 +1,5 @@
-import { Board, P, S } from '@/types';
-import { n } from '@/utils/board';
+import { Board, P, GRID_WIDTH, GRID_HEIGHT } from '@/types';
+// import { n } from '@/utils/board';
 
 export type PositionStrength = {
   pieces: number;
@@ -69,8 +69,8 @@ export const analyzePosition = (board: Board, player: number): PositionStrength 
 
   // Считаем влияние оппонента и вычитаем из нашего
   const opponent = player === P.A ? P.B : P.A;
-  for (let x = 0; x < S; x++) {
-    for (let y = 0; y < S; y++) {
+  for (let x = 0; x < GRID_WIDTH; x++) {
+    for (let y = 0; y < GRID_HEIGHT; y++) {
       if (board[x][y] === opponent) {
         forEachNeighbor(x, y, 2, (nx, ny, dist) => {
           const power = dist === 1 ? 2 : 1;
@@ -84,8 +84,8 @@ export const analyzePosition = (board: Board, player: number): PositionStrength 
   influence = influenceMap.flat().reduce((sum, val) => sum + (val > 0 ? val : 0), 0);
 
   // Нормализация значений с учетом размера доски
-  const maxTerritory = S * S;
-  const maxInfluence = S * S * 4; // максимальное возможное влияние (4 - максимальный вес влияния)
+  const maxTerritory = GRID_HEIGHT * GRID_WIDTH;
+  const maxInfluence = GRID_HEIGHT * GRID_WIDTH * 4; // максимальное возможное влияние (4 - максимальный вес влияния)
   const normalizedTerritory = (territory / maxTerritory) * 100;
   const normalizedInfluence = (influence / maxInfluence) * 100;
   const normalizedGroupsStrength = groupsStrength / (pieces > 0 ? pieces : 1);

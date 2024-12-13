@@ -1,4 +1,4 @@
-import { Board, P, S, A, GameState, GameAction } from '@/types';
+import { Board, P, A, GameState, GameAction } from '@/types';
 import { replace } from '@/utils/board';
 
 export const initialState: GameState = {
