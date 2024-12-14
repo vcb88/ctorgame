@@ -55,7 +55,7 @@ describe('AI', () => {
       board[1][1] = P.A;
       board[1][2] = P.A;
       
-      const move = AI.findMove(board, P.B, O.PL);
+      const move = AI.findMove(board, P.B);
       expect(move).toBeDefined();
       if (move) {
         expect(typeof move.x).toBe('number');
@@ -77,7 +77,7 @@ describe('AI', () => {
       board[1][0] = P.A;
       board[1][1] = P.N; // критическая позиция для защиты
       
-      const move = AI.findMove(board, P.B, O.PL);
+      const move = AI.findMove(board, P.B);
       expect(move).toBeDefined();
       if (move) {
         // Ожидаем, что AI выберет защитную позицию
