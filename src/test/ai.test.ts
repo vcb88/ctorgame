@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { AI } from '@/ai';
-import { P, O, Board } from '@/types';
+import { P, Board } from '@/types';
 import { GRID_WIDTH, GRID_HEIGHT } from '@/constants';
 
 describe('AI', () => {
