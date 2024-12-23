@@ -53,10 +53,27 @@ Thank you for your interest in contributing to CTORGame! This document provides 
    - Update README.md if needed
    - Document all new features/APIs
 
-4. Run tests (when implemented)
+4. Run tests and ensure all pass:
    ```bash
-   pnpm test
+   # Run all tests
+   pnpm test              # Unit tests
+   pnpm test:integration  # Integration tests
+   pnpm test:e2e         # End-to-end tests
+   pnpm test:perf        # Performance tests
+
+   # Development testing
+   pnpm test:watch       # Watch mode for unit tests
+   pnpm test:e2e:open   # Interactive E2E testing
+
+   # Coverage report
+   pnpm test:coverage
    ```
+
+   Ensure your changes:
+   - Maintain or improve test coverage (minimum 80%)
+   - Include tests for new features
+   - Don't break existing tests
+   - Follow test naming conventions
 
 5. Create a Pull Request:
    - Describe your changes

@@ -355,10 +355,39 @@ docker-compose up -d --scale server=3
 
 ## Testing
 
-Run tests:
+The project includes comprehensive testing infrastructure:
+
+### Running Tests
 ```bash
-npm run test
+# Unit Tests
+pnpm test           # Run all unit tests
+pnpm test:watch    # Run in watch mode
+pnpm test:coverage # Run with coverage
+
+# Integration Tests
+pnpm test:integration
+
+# E2E Tests
+pnpm test:e2e      # Run in headless mode
+pnpm test:e2e:open # Open Cypress UI
+
+# Performance Tests
+pnpm test:perf     # Run k6 load tests
 ```
+
+### Test Structure
+- Unit Tests: `src/**/__tests__/*.test.tsx`
+- Integration Tests: `tests/integration/`
+- E2E Tests: `tests/e2e/`
+- Performance Tests: `tests/perf/`
+
+### Coverage Requirements
+- Unit Tests: 80% coverage
+- Integration Tests: Critical paths
+- E2E Tests: Main user flows
+- Performance: Response < 200ms
+
+For detailed information about testing, see [Testing Guide](docs/testing.md)
 
 ## Contributing
 
