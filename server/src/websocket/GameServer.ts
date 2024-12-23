@@ -1,10 +1,13 @@
 const { Server } = require('socket.io');
 const { Server: HttpServer } = require('http');
 import { IGameState, IPlayer, IMove, IGameRoom } from '../../../shared/types';
+import { GameService } from '../services/GameService';
+import { AppDataSource } from '../config/database';
 
 export class GameServer {
   private io: Server;
-  private games: Map<string, IGameRoom> = new Map();
+  private gameService: GameService;
+  private activeGames: Map<string, IGameRoom> = new Map(); // Временное хранение активных игр
 
   constructor(httpServer: HttpServer) {
     this.io = new Server(httpServer, {
@@ -14,28 +17,46 @@ export class GameServer {
       }
     });
 
-    this.setupEventHandlers();
+    // Инициализируем базу данных и сервис
+    AppDataSource.initialize()
+      .then(() => {
+        console.log("Database initialized");
+        this.gameService = new GameService();
+        this.setupEventHandlers();
+      })
+      .catch(error => console.error("Database initialization error:", error));
   }
 
   private setupEventHandlers(): void {
     this.io.on('connection', (socket: Socket) => {
       console.log(`Client connected: ${socket.id}`);
 
-      socket.on('createGame', () => {
-        const gameId = Math.random().toString(36).substring(7);
-        const game: IGameRoom = {
-          gameId,
-          players: [{
+      socket.on('createGame', async () => {
+        try {
+          const gameCode = Math.random().toString(36).substring(7);
+          const player: IPlayer = {
             id: socket.id,
             number: 0
-          }],
-          currentState: this.createInitialGameState(),
-          currentPlayer: 0
-        };
-        
-        this.games.set(gameId, game);
-        socket.join(gameId);
-        socket.emit('gameCreated', { gameId });
+          };
+
+          // Сохраняем игру в БД
+          const game = await this.gameService.createGame(gameCode, player);
+
+          // Создаем активную игру в памяти
+          const activeGame: IGameRoom = {
+            gameId: gameCode,
+            players: [player],
+            currentState: game.currentState,
+            currentPlayer: 0
+          };
+          
+          this.activeGames.set(gameCode, activeGame);
+          socket.join(gameCode);
+          socket.emit('gameCreated', { gameId: gameCode });
+        } catch (error) {
+          console.error('Error creating game:', error);
+          socket.emit('error', { message: 'Failed to create game' });
+        }
       });
 
       socket.on('joinGame', ({ gameId }) => {

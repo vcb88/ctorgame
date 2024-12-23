@@ -1,9 +1,12 @@
-docs: add project planning and tracking documentation
+feat: add database entities and game service
 
-- Add DOCUMENTATION_CHECKLIST.md for tracking documentation completeness
-- Create ROADMAP.md with development plans
-- Add CHANGELOG.md for version tracking
-- Document missing features and future improvements
-- Add comprehensive project planning documentation
+- Add Game and Move entities for TypeORM
+- Create database configuration
+- Implement GameService for game state management
+- Add database documentation
 
-This documentation will help track project progress and plan future development.
+Technical changes:
+- Add TypeORM and PostgreSQL dependencies
+- Create entities for game state persistence
+- Implement game state and move tracking
+- Add database schema documentation

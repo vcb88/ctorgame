@@ -8,6 +8,15 @@
 - [x] Win/draw detection
 - [x] Basic error handling
 
+## In Progress (v0.2.0)
+- Database Integration:
+  - [x] Database schema design
+  - [x] Entity creation
+  - [x] Basic service layer
+  - [ ] WebSocket integration
+  - [ ] Game state persistence
+  - [ ] Move history tracking
+
 ## Short-term Goals (v0.2.0)
 1. Infrastructure
    - [ ] PostgreSQL integration

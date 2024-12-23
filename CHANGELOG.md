@@ -8,6 +8,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- Database integration started:
+  - TypeORM and PostgreSQL setup
+  - Game and Move entities defined
+  - Basic GameService implementation
+  - Integration with WebSocket server (in progress)
 - Real-time multiplayer functionality
 - Game room creation and joining
 - Move validation and game state management
