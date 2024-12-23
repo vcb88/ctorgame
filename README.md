@@ -15,7 +15,17 @@ CTORGame transforms the original hotseat tic-tac-toe implementation into a full-
 - Know when it's my turn to play
 - See the game status (win/lose/draw)
 - Be notified if my opponent disconnects
+- Resume any interrupted game at any time using the game code
+- Share game results via unique link without registration
+- Access game history and replays anonymously using game codes
 - Start a new game after completion
+
+### Game Persistence Requirements:
+- Games should be automatically saved after each move
+- Interrupted games must be resumable using the original game code
+- No authentication required, all games are anonymous
+- Game state and history must be preserved across server restarts
+- Each game should have a shareable results page with final board state
 
 ### As a Developer, I want to:
 - Have clear separation between client and server code
@@ -26,10 +36,82 @@ CTORGame transforms the original hotseat tic-tac-toe implementation into a full-
 ## Architecture
 
 ### Technology Stack
-- **Frontend**: React + TypeScript + Vite
-- **Backend**: Node.js + Express + TypeScript
-- **Real-time Communication**: Socket.IO
-- **Styling**: Tailwind CSS
+- **Frontend**: 
+  - React + TypeScript + Vite
+  - Tailwind CSS for styling
+  - Socket.IO client for real-time communication
+  - React Query for state management
+
+- **Backend**: 
+  - Node.js + Express + TypeScript
+  - Socket.IO for real-time game events
+  - PostgreSQL for persistent game storage
+  - Redis for session management and caching
+  - TypeORM for database operations
+
+- **DevOps**:
+  - Docker + Docker Compose for containerization
+  - Nginx for reverse proxy and static file serving
+  - GitHub Actions for CI/CD
+
+### Infrastructure
+
+```mermaid
+graph TD
+    Client[Web Client] -->|WebSocket| LoadBalancer[Nginx Load Balancer]
+    LoadBalancer -->|HTTP/WS| Server1[Game Server 1]
+    LoadBalancer -->|HTTP/WS| Server2[Game Server 2]
+    Server1 -->|Pub/Sub| Redis[Redis Cluster]
+    Server2 -->|Pub/Sub| Redis
+    Server1 -->|SQL| DB[PostgreSQL]
+    Server2 -->|SQL| DB
+    Redis -->|State Sync| Server1
+    Redis -->|State Sync| Server2
+```
+
+### Database Schema
+
+#### PostgreSQL Tables
+
+```sql
+-- Games table for persistent storage
+CREATE TABLE games (
+    id UUID PRIMARY KEY,
+    game_code VARCHAR(10) UNIQUE NOT NULL,
+    current_state JSONB NOT NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
+    completed_at TIMESTAMP,
+    winner INTEGER
+);
+
+-- Moves history for replay functionality
+CREATE TABLE moves (
+    id SERIAL PRIMARY KEY,
+    game_id UUID REFERENCES games(id),
+    player_number INTEGER NOT NULL,
+    move_data JSONB NOT NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT NOW()
+);
+```
+
+#### Redis Data Structures
+
+```
+# Active game sessions
+game:<game_code> -> Hash
+    state -> JSON string (current game state)
+    lastMove -> timestamp
+    players -> JSON array of player IDs
+
+# Player sessions
+player:<socket_id> -> Hash
+    gameCode -> string
+    playerNumber -> integer
+
+# Game move pub/sub channels
+game:<game_code>:moves -> PubSub Channel
+```
 
 ### Project Structure
 ```
@@ -129,15 +211,110 @@ interface Player {
 
 ## Production Deployment
 
-The application can be deployed using Docker:
+### Docker Compose Setup
+
+The application uses Docker Compose for easy deployment with separate services:
+
+```yaml
+# docker-compose.yml
+version: '3.8'
+
+services:
+  nginx:
+    image: nginx:alpine
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      - client
+      - server
+
+  client:
+    build:
+      context: .
+      dockerfile: ./client/Dockerfile
+    environment:
+      - VITE_API_URL=http://server:3000
+    volumes:
+      - ./client:/app
+      - /app/node_modules
+    depends_on:
+      - server
+
+  server:
+    build:
+      context: .
+      dockerfile: ./server/Dockerfile
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+      - POSTGRES_URL=postgres://user:password@postgres:5432/ctorgame
+      - REDIS_URL=redis://redis:6379
+    volumes:
+      - ./server:/app
+      - /app/node_modules
+    depends_on:
+      - postgres
+      - redis
+
+  postgres:
+    image: postgres:14-alpine
+    environment:
+      - POSTGRES_USER=user
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_DB=ctorgame
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+
+volumes:
+  postgres_data:
+  redis_data:
+```
+
+### Development Setup
+
+For local development with hot reload:
 
 ```bash
-# Build Docker image
-docker build -t ctorgame .
+# Start all services in development mode
+docker-compose -f docker-compose.dev.yml up
 
-# Run container
-docker run -p 3000:3000 ctorgame
+# Start specific service
+docker-compose -f docker-compose.dev.yml up client
+docker-compose -f docker-compose.dev.yml up server
 ```
+
+### Production Deployment
+
+For production deployment:
+
+```bash
+# Build and start all services
+docker-compose up --build -d
+
+# View logs
+docker-compose logs -f
+
+# Scale game servers
+docker-compose up -d --scale server=3
+```
+
+### Service URLs
+
+- Client: http://localhost
+- API/WebSocket: ws://localhost/socket.io
+- PostgreSQL: postgres://localhost:5432
+- Redis: redis://localhost:6379
 
 ## Testing
 
