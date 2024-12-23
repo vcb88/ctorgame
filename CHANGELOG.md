@@ -8,6 +8,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased] - Work in Progress
 
 ### Added
+- Enhanced CI/CD automation:
+  - Automatic tests on every commit
+  - Docker image builds after successful merge
+  - Dual image publishing to GHCR (client and server)
+  - Improved test coverage reporting
+  - Slack notifications for builds
+- Development tooling:
+  - Husky pre-commit hooks
+  - Commitlint for conventional commits
+  - Lint-staged for pre-commit checks
+  - Enhanced TypeScript type checking
+- Documentation improvements:
+  - Detailed CI/CD process documentation
+  - Updated development workflow
+  - Container registry usage guide
+  - Testing and deployment guides
+
+### Added
 - Comprehensive testing infrastructure:
   - Integration tests for game flow and WebSocket communication
   - E2E tests with Cypress for full user scenarios

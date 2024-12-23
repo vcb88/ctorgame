@@ -60,7 +60,12 @@ Detailed documentation can be found in the [docs](./docs) directory:
 - **DevOps**:
   - Docker + Docker Compose for containerization
   - Nginx for reverse proxy and static file serving
-  - GitHub Actions for CI/CD
+  - GitHub Actions for CI/CD:
+    - Automated testing on every commit
+    - Docker image builds after merge
+    - GHCR container registry integration
+    - Slack notifications
+    - Security scanning with Snyk
 
 ### Infrastructure
 

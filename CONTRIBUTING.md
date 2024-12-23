@@ -87,9 +87,16 @@ Thank you for your interest in contributing to CTORGame! This document provides 
 - Add debugging tips for common issues
 - Update API documentation for new features
 
-## Git Workflow
+## Development Workflow
 
-1. Commit messages should follow conventional commits:
+1. Create a feature branch from develop:
+   ```bash
+   git checkout develop
+   git pull origin develop
+   git checkout -b feature/your-feature-name
+   ```
+
+2. Make changes and commit following conventional commits:
    ```
    feat: add new game feature
    fix: resolve connection issue
@@ -97,9 +104,56 @@ Thank you for your interest in contributing to CTORGame! This document provides 
    refactor: improve code structure
    ```
 
-2. Keep commits focused and atomic
+3. Automatic checks on commit:
+   - Pre-commit hooks will run:
+     - Linting
+     - Type checking
+     - Unit tests for changed files
+     - Code formatting
+   - Commit message validation
 
-3. Rebase feature branches on main before PR
+4. Push and create PR:
+   ```bash
+   git push origin feature/your-feature-name
+   ```
+
+5. CI/CD Process:
+   - All tests run automatically
+   - Code coverage is reported to Codecov
+   - Security scanning with Snyk
+   - Build verification
+
+6. After PR approval and merge:
+   - Docker images are automatically built
+   - Images are pushed to GitHub Container Registry:
+     - ghcr.io/[org]/ctorgame/client:latest
+     - ghcr.io/[org]/ctorgame/server:latest
+   - Slack notification is sent
+
+7. Deployment:
+   - Images are automatically deployed to staging
+   - After testing, manual promotion to production
+
+## Version Control Guidelines
+
+1. Branch Strategy:
+   - main: production-ready code
+   - develop: integration branch
+   - feature/*: new features
+   - fix/*: bug fixes
+   - release/*: release preparation
+
+2. Commit Messages:
+   - Follow Conventional Commits specification
+   - Include scope when relevant
+   - Reference issues where appropriate
+   - Keep commits focused and atomic
+
+3. Pull Requests:
+   - Create PR to develop branch
+   - Wait for all checks to pass
+   - Get required reviews
+   - Keep PR size manageable
 
 ## Need Help?
 

@@ -1,0 +1,89 @@
+name: Pull Request Check
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+    branches: [ main, develop ]
+
+jobs:
+  validate:
+    name: Validate PR
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '20'
+          cache: 'pnpm'
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 8
+
+      - name: Install dependencies
+        run: |
+          pnpm install
+          cd client && pnpm install
+          cd ../server && pnpm install
+
+      - name: Check code style
+        run: |
+          pnpm format:check
+          cd client && pnpm format:check
+          cd ../server && pnpm format:check
+
+      - name: Lint
+        run: |
+          pnpm lint
+          cd client && pnpm lint
+          cd ../server && pnpm lint
+
+      - name: Type check
+        run: |
+          cd client && pnpm type-check
+          cd ../server && pnpm type-check
+
+      - name: Run tests
+        run: |
+          pnpm test
+          cd client && pnpm test
+          cd ../server && pnpm test
+
+      - name: Check build
+        run: |
+          cd client && pnpm build
+          cd ../server && pnpm build
+
+  security:
+    name: Security Check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Run Snyk to check for vulnerabilities
+        uses: snyk/actions/node@master
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+        with:
+          args: --severity-threshold=high
+
+      - name: Run OSSAR scan
+        uses: github/ossar-action@v1
+        with:
+          language: typescript
+
+  conventional-commits:
+    name: Conventional Commits Check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Check commit messages
+        uses: wagoid/commitlint-github-action@v5
