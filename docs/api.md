@@ -118,13 +118,65 @@ The server emits 'error' events with the following message types:
 1. Socket Disconnection:
    - Server detects disconnection
    - Notifies other player
-   - Cleans up game state
-   - Allows reconnection with same game code
+   - Preserves game state for 5 minutes
+   - Allows reconnection with same game code within timeout
+   - Cleans up game room after timeout
 
 2. Network Issues:
    - Socket.IO handles automatic reconnection
-   - Game state preserved during reconnection
+   - Game state preserved in database and memory
    - Move validation prevents duplicate moves
+   - Transaction support for critical operations
+
+3. State Persistence:
+   - All game states saved in PostgreSQL
+   - Move history tracked for replay
+   - Real-time state sync between servers
+   - Automatic cleanup of expired games
+
+## Database Schema
+
+### Games Table
+```sql
+CREATE TABLE games (
+    id UUID PRIMARY KEY,
+    game_code VARCHAR(10) UNIQUE NOT NULL,
+    current_state JSONB NOT NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
+    completed_at TIMESTAMP,
+    winner INTEGER
+);
+```
+
+### Moves Table
+```sql
+CREATE TABLE moves (
+    id SERIAL PRIMARY KEY,
+    game_id UUID REFERENCES games(id),
+    player_number INTEGER NOT NULL,
+    move_data JSONB NOT NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT NOW()
+);
+```
+
+### State Management
+1. Game Creation:
+   - Generate unique game code
+   - Create initial game state
+   - Store in both database and memory
+
+2. Moves:
+   - Validate move
+   - Update game state atomically
+   - Store move history
+   - Broadcast updates
+
+3. Game Completion:
+   - Mark game as completed
+   - Record winner
+   - Preserve final state
+   - Start cleanup timer
 
 ## Future Improvements
 

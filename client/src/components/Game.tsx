@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useMultiplayerGame } from '../hooks/useMultiplayerGame';
-import { Move } from '../../../shared/types';
+import { IMove } from '../../../shared/types';
 
 export const Game: React.FC = () => {
   const {
@@ -21,7 +21,7 @@ export const Game: React.FC = () => {
       return;
     }
 
-    const move: Move = { row, col };
+    const move: IMove = { row, col };
     makeMove(move);
   };
 

@@ -5,7 +5,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [Unreleased] - Work in Progress
+
+### Added
+- WebSocket events enum for type-safe event handling
+- Strong typing for client-server communication
+- Generic types for Socket.IO events
+- Improved error handling in GameService
+- Game state persistence in database
+- Support for game reconnection
+- Type-safe event handling in client
 
 ### Added
 - Database integration started:

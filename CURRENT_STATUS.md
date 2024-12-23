@@ -27,14 +27,24 @@ The project is currently transitioning from v0.1.0 to v0.2.0, with a focus on im
    - ✅ Entity definitions
    - ✅ Database schema
    - ✅ Service layer
-   - 🔄 WebSocket integration
-   - ⏳ State persistence
-   - ⏳ Move history
+   - ✅ WebSocket integration
+   - ✅ Type definitions
+   - 🔄 State persistence
+   - 🔄 Move history
 
 2. Code Organization
-   - 🔄 Refactoring game logic
-   - 🔄 Service layer integration
-   - ⏳ Error handling improvements
+   - ✅ Refactoring game logic
+   - ✅ Service layer integration
+   - ✅ WebSocket types integration
+   - 🔄 Error handling improvements
+   - 🔄 Testing infrastructure
+
+3. Client Updates
+   - ✅ WebSocket events enum integration
+   - ✅ Type safety improvements
+   - 🔄 Reconnection handling
+   - 🔄 Game state management
+   - ⏳ Unit tests
 
 ## Known Issues
 1. Technical Debt

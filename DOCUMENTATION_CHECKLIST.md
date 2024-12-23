@@ -15,6 +15,7 @@
 - [x] Development debugging guide
 - [x] Database schema and entities
 - [x] Database service layer
+- [x] WebSocket-Database integration
 - [ ] Testing strategy
 - [ ] CI/CD pipeline
 - [ ] Redis cache structure (planned)
@@ -24,6 +25,7 @@
 - [x] Schema definition
 - [x] TypeORM configuration
 - [x] Service layer architecture
+- [x] State persistence strategy
 - [ ] Migration strategy
 - [ ] Backup procedures
 

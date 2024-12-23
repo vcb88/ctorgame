@@ -1,11 +1,21 @@
-const { Server } = require('socket.io');
-const { Server: HttpServer } = require('http');
-import { IGameState, IPlayer, IMove, IGameRoom } from '../../../shared/types';
+import { Server } from 'socket.io';
+import { Server as HttpServer } from 'http';
+import { Socket } from 'socket.io';
+import { 
+  IGameState, 
+  IPlayer, 
+  IMove, 
+  IGameRoom, 
+  WebSocketEvents,
+  WebSocketPayloads,
+  ServerToClientEvents,
+  ClientToServerEvents
+} from '../../../shared/types';
 import { GameService } from '../services/GameService';
 import { AppDataSource } from '../config/database';
 
 export class GameServer {
-  private io: Server;
+  private io: Server<ClientToServerEvents, ServerToClientEvents>;
   private gameService: GameService;
   private activeGames: Map<string, IGameRoom> = new Map(); // Временное хранение активных игр
 
@@ -28,10 +38,10 @@ export class GameServer {
   }
 
   private setupEventHandlers(): void {
-    this.io.on('connection', (socket: Socket) => {
+    this.io.on('connection', (socket: Socket<ClientToServerEvents, ServerToClientEvents>) => {
       console.log(`Client connected: ${socket.id}`);
 
-      socket.on('createGame', async () => {
+      socket.on(WebSocketEvents.CreateGame, async () => {
         try {
           const gameCode = Math.random().toString(36).substring(7);
           const player: IPlayer = {
@@ -52,84 +62,120 @@ export class GameServer {
           
           this.activeGames.set(gameCode, activeGame);
           socket.join(gameCode);
-          socket.emit('gameCreated', { gameId: gameCode });
+          socket.emit(WebSocketEvents.GameCreated, { gameId: gameCode });
         } catch (error) {
           console.error('Error creating game:', error);
-          socket.emit('error', { message: 'Failed to create game' });
+          socket.emit(WebSocketEvents.Error, { message: 'Failed to create game' });
         }
       });
 
-      socket.on('joinGame', ({ gameId }) => {
-        const game = this.games.get(gameId);
-        
-        if (!game) {
-          socket.emit('error', { message: 'Game not found' });
-          return;
+      socket.on(WebSocketEvents.JoinGame, async ({ gameId }) => {
+        try {
+          const activeGame = this.activeGames.get(gameId);
+          if (!activeGame) {
+            socket.emit(WebSocketEvents.Error, { message: 'Game not found' });
+            return;
+          }
+
+          if (activeGame.players.length >= 2) {
+            socket.emit(WebSocketEvents.Error, { message: 'Game is full' });
+            return;
+          }
+
+          const player: IPlayer = {
+            id: socket.id,
+            number: 1
+          };
+
+          // Сохраняем игрока в БД
+          await this.gameService.joinGame(gameId, player);
+
+          // Обновляем активную игру в памяти
+          activeGame.players.push(player);
+          socket.join(gameId);
+
+          this.io.to(gameId).emit(WebSocketEvents.GameStarted, {
+            gameState: activeGame.currentState,
+            currentPlayer: activeGame.currentPlayer
+          });
+        } catch (error) {
+          console.error('Error joining game:', error);
+          socket.emit(WebSocketEvents.Error, { message: 'Failed to join game' });
         }
-
-        if (game.players.length >= 2) {
-          socket.emit('error', { message: 'Game is full' });
-          return;
-        }
-
-        socket.join(gameId);
-        game.players.push({
-          id: socket.id,
-          number: 1
-        });
-
-        this.io.to(gameId).emit('gameStarted', {
-          gameState: game.currentState,
-          currentPlayer: game.currentPlayer
-        });
       });
 
-      socket.on('makeMove', ({ gameId, move }: { gameId: string, move: IMove }) => {
-        const game = this.games.get(gameId);
-        
-        if (!game) {
-          socket.emit('error', { message: 'Game not found' });
-          return;
+      socket.on(WebSocketEvents.MakeMove, async ({ gameId, move }) => {
+        try {
+          const activeGame = this.activeGames.get(gameId);
+          
+          if (!activeGame) {
+            socket.emit(WebSocketEvents.Error, { message: 'Game not found' });
+            return;
+          }
+
+          const player = activeGame.players.find(p => p.id === socket.id);
+          if (!player) {
+            socket.emit(WebSocketEvents.Error, { message: 'Player not found in game' });
+            return;
+          }
+
+          if (player.number !== activeGame.currentPlayer) {
+            socket.emit(WebSocketEvents.Error, { message: 'Not your turn' });
+            return;
+          }
+
+          if (activeGame.currentState.gameOver) {
+            socket.emit(WebSocketEvents.Error, { message: 'Game is over' });
+            return;
+          }
+
+          if (!this.isValidMove(activeGame.currentState.board, move)) {
+            socket.emit(WebSocketEvents.Error, { message: 'Invalid move' });
+            return;
+          }
+
+          // Сохраняем ход в БД
+          const updatedGame = await this.gameService.makeMove(gameId, player.number, move);
+          
+          // Обновляем состояние в памяти
+          activeGame.currentState = updatedGame.currentState;
+          activeGame.currentPlayer = (activeGame.currentPlayer + 1) % 2;
+
+          this.io.to(gameId).emit(WebSocketEvents.GameStateUpdated, {
+            gameState: activeGame.currentState,
+            currentPlayer: activeGame.currentPlayer
+          });
+
+          // Если игра завершена, отправляем дополнительное событие
+          if (activeGame.currentState.gameOver) {
+            this.io.to(gameId).emit(WebSocketEvents.GameOver, {
+              gameState: activeGame.currentState,
+              winner: activeGame.currentState.winner
+            });
+          }
+        } catch (error) {
+          console.error('Error making move:', error);
+          socket.emit(WebSocketEvents.Error, { message: 'Failed to make move' });
         }
-
-        const player = game.players.find(p => p.id === socket.id);
-        if (!player) {
-          socket.emit('error', { message: 'Player not found in game' });
-          return;
-        }
-
-        if (player.number !== game.currentPlayer) {
-          socket.emit('error', { message: 'Not your turn' });
-          return;
-        }
-
-        if (game.currentState.gameOver) {
-          socket.emit('error', { message: 'Game is over' });
-          return;
-        }
-
-        if (!this.isValidMove(game.currentState.board, move)) {
-          socket.emit('error', { message: 'Invalid move' });
-          return;
-        }
-
-        this.applyMove(game, move);
-        game.currentPlayer = (game.currentPlayer + 1) % 2;
-
-        this.io.to(gameId).emit('gameStateUpdated', {
-          gameState: game.currentState,
-          currentPlayer: game.currentPlayer
-        });
       });
 
-      socket.on('disconnect', () => {
-        for (const [gameId, game] of this.games.entries()) {
+      socket.on(WebSocketEvents.Disconnect, () => {
+        for (const [gameId, game] of this.activeGames.entries()) {
           const playerIndex = game.players.findIndex(p => p.id === socket.id);
           if (playerIndex !== -1) {
-            this.io.to(gameId).emit('playerDisconnected', {
+            this.io.to(gameId).emit(WebSocketEvents.PlayerDisconnected, {
               player: playerIndex
             });
-            this.games.delete(gameId);
+            
+            // Оставляем игру в памяти на случай переподключения игрока
+            // Можно добавить таймер для удаления игры через определенное время
+            setTimeout(() => {
+              const game = this.activeGames.get(gameId);
+              if (game && game.players.find(p => p.id === socket.id)) {
+                this.activeGames.delete(gameId);
+              }
+            }, 5 * 60 * 1000); // 5 минут на переподключение
+            
             break;
           }
         }
@@ -137,57 +183,7 @@ export class GameServer {
     });
   }
 
-  private createInitialGameState(): GameState {
-    return {
-      board: Array(3).fill(null).map(() => Array(3).fill(null)),
-      gameOver: false,
-      winner: null
-    };
-  }
-
   private isValidMove(board: (number | null)[][], move: IMove): boolean {
     return board[move.row][move.col] === null;
-  }
-
-  private applyMove(game: IGameRoom, move: IMove): void {
-    const { row, col } = move;
-    game.currentState.board[row][col] = game.currentPlayer;
-
-    if (this.checkWin(game.currentState.board, game.currentPlayer)) {
-      game.currentState.gameOver = true;
-      game.currentState.winner = game.currentPlayer;
-    } else if (this.isBoardFull(game.currentState.board)) {
-      game.currentState.gameOver = true;
-    }
-  }
-
-  private checkWin(board: (number | null)[][], player: number): boolean {
-    // Check rows
-    for (let i = 0; i < 3; i++) {
-      if (board[i].every(cell => cell === player)) {
-        return true;
-      }
-    }
-
-    // Check columns
-    for (let j = 0; j < 3; j++) {
-      if (board.every(row => row[j] === player)) {
-        return true;
-      }
-    }
-
-    // Check diagonals
-    if (board[0][0] === player && board[1][1] === player && board[2][2] === player) {
-      return true;
-    }
-    if (board[0][2] === player && board[1][1] === player && board[2][0] === player) {
-      return true;
-    }
-
-    return false;
-  }
-
-  private isBoardFull(board: (number | null)[][]): boolean {
-    return board.every(row => row.every(cell => cell !== null));
   }
 }
