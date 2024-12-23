@@ -1,5 +1,23 @@
 # Development Guide
 
+## Environment Setup
+
+1. **Node.js Requirements**
+   - Node.js version: 18.x or higher
+   - Package manager: pnpm 8.6.0 or higher
+
+2. **IDE Setup**
+   - TypeScript support required
+   - Recommended extensions:
+     - ESLint
+     - Prettier
+     - TypeScript and JavaScript Language Features
+
+3. **Development Tools**
+   - Terminal with bash support
+   - Git for version control
+   - Web browser with developer tools (Firefox/Chrome)
+
 ## Project Structure Details
 
 ### Server Configuration
@@ -61,6 +79,59 @@ Server requires the following core dependencies:
    - Server and client should be started in separate terminals
    - Server uses ts-node-dev for automatic reloading
    - Client uses Vite's development server
+
+## Debugging Guide
+
+### Common Issues and Solutions
+
+1. **Module System Conflicts**
+   - Problem: ESM vs CommonJS conflicts in TypeScript
+   - Solution: 
+     - Use `"type": "commonjs"` in server's package.json
+     - Configure tsconfig.json with `"module": "CommonJS"`
+     - Use require() instead of import in server code
+
+2. **Development Server Issues**
+   - Problem: Port already in use (EADDRINUSE)
+   - Solution: 
+     ```bash
+     # Kill existing Node processes
+     pkill -f "node"
+     # Or find and kill specific process
+     lsof -i :3000
+     kill -9 <PID>
+     ```
+
+3. **WebSocket Connection Issues**
+   - Problem: CORS errors in development
+   - Solution: Server configured with:
+     ```typescript
+     cors: {
+       origin: "*",
+       methods: ["GET", "POST"]
+     }
+     ```
+
+### Debugging Steps
+
+1. **Server Startup**
+   ```bash
+   cd server
+   pnpm dev > /tmp/server.log 2>&1
+   tail -f /tmp/server.log  # Monitor output
+   ```
+
+2. **Client Development**
+   ```bash
+   cd client
+   pnpm dev
+   # Access at http://localhost:5173
+   ```
+
+3. **WebSocket Testing**
+   - Use browser DevTools (Network tab)
+   - Monitor socket.io connections
+   - Check server logs for connection events
 
 ## Found Undocumented Features
 
