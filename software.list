@@ -1,0 +1,41 @@
+sudo apt-get update && sudo apt-get install -y \
+    git \
+    curl \
+    vim \
+    nodejs \
+    npm \
+    postgresql \
+    redis-server \
+    docker.io \
+    docker-compose
+
+npm install -g \
+    pnpm \
+    typescript \
+    ts-node \
+    nodemon \
+    @types/node \
+    eslint \
+    prettier
+
+npm install -g \
+    jest \
+    cypress \
+    k6 \
+    artillery
+
+sudo apt-get install -y \
+    postgresql-client \
+    pgadmin4
+
+sudo apt-get install -y \
+    visual-studio-code \
+    postman
+
+sudo apt-get install -y \
+    htop \
+    nmon \
+    tcpdump \
+    wireshark    
+    
+    
