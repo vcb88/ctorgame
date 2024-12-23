@@ -1,0 +1,14 @@
+refactor: fix module system and add documentation
+
+- Change server-side code from ESM to CommonJS
+- Add proper TypeScript configuration for server
+- Create shared types package configuration
+- Add comprehensive development documentation
+- Update README with better development instructions
+
+Changes include:
+- Server configuration for CommonJS modules
+- TypeScript interface improvements
+- New docs directory with detailed guides
+- Fixed module imports in server code
+- Improved project structure documentation

@@ -1,10 +1,10 @@
-import { Server, Socket } from 'socket.io';
-import { Server as HttpServer } from 'http';
-import { GameState, Player, Move, GameRoom } from '../../../shared/types';
+const { Server } = require('socket.io');
+const { Server: HttpServer } = require('http');
+import { IGameState, IPlayer, IMove, IGameRoom } from '../../../shared/types';
 
 export class GameServer {
   private io: Server;
-  private games: Map<string, GameRoom> = new Map();
+  private games: Map<string, IGameRoom> = new Map();
 
   constructor(httpServer: HttpServer) {
     this.io = new Server(httpServer, {
@@ -23,7 +23,7 @@ export class GameServer {
 
       socket.on('createGame', () => {
         const gameId = Math.random().toString(36).substring(7);
-        const game: GameRoom = {
+        const game: IGameRoom = {
           gameId,
           players: [{
             id: socket.id,
@@ -63,7 +63,7 @@ export class GameServer {
         });
       });
 
-      socket.on('makeMove', ({ gameId, move }: { gameId: string, move: Move }) => {
+      socket.on('makeMove', ({ gameId, move }: { gameId: string, move: IMove }) => {
         const game = this.games.get(gameId);
         
         if (!game) {
@@ -124,11 +124,11 @@ export class GameServer {
     };
   }
 
-  private isValidMove(board: (number | null)[][], move: Move): boolean {
+  private isValidMove(board: (number | null)[][], move: IMove): boolean {
     return board[move.row][move.col] === null;
   }
 
-  private applyMove(game: GameRoom, move: Move): void {
+  private applyMove(game: IGameRoom, move: IMove): void {
     const { row, col } = move;
     game.currentState.board[row][col] = game.currentPlayer;
 

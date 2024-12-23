@@ -6,6 +6,14 @@ A multiplayer online version of the classic tic-tac-toe game, supporting real-ti
 
 CTORGame transforms the original hotseat tic-tac-toe implementation into a full-fledged online multiplayer game using client-server architecture. Players can create game rooms, share room codes with opponents, and play in real-time over the internet.
 
+## Documentation
+
+Detailed documentation can be found in the [docs](./docs) directory:
+- [Development Guide](./docs/development.md) - Setup, configuration and development tips
+- [API Documentation](./docs/api.md) - API endpoints and WebSocket events (TODO)
+- [Deployment Guide](./docs/deployment.md) - Production deployment instructions (TODO)
+- [Testing Guide](./docs/testing.md) - Testing strategy and examples (TODO)
+
 ## User Stories
 
 ### As a Player, I want to:
@@ -189,25 +197,54 @@ interface Player {
 
 ## Development Setup
 
-1. Install dependencies:
+### Using Docker (recommended for production-like environment)
+
+1. Install Docker and Docker Compose
+2. Start all services:
    ```bash
-   npm install
+   docker-compose -f docker-compose.dev.yml up
    ```
 
-2. Start development servers:
-   ```bash
-   # Start both client and server
-   npm run dev
+### Local Development (without Docker)
 
-   # Start individually
-   npm run dev:client
-   npm run dev:server
+1. Install pnpm (if not installed):
+   ```bash
+   npm install -g pnpm
    ```
 
-3. Build for production:
+2. Install dependencies in root, client and server directories:
    ```bash
-   npm run build
+   # Root dependencies
+   pnpm install
+
+   # Server dependencies
+   cd server && pnpm install
+   cd ..
+
+   # Client dependencies
+   cd client && pnpm install
+   cd ..
    ```
+
+3. Start development servers:
+   ```bash
+   # In one terminal - start the client
+   cd client && pnpm dev
+
+   # In another terminal - start the server
+   cd server && pnpm dev
+   ```
+
+4. Build for production:
+   ```bash
+   # Build client
+   cd client && pnpm build
+
+   # Build server
+   cd server && pnpm build
+   ```
+
+The client will be available at http://localhost:5173 and the server at http://localhost:3000.
 
 ## Production Deployment
 

@@ -1,22 +1,22 @@
-export interface GameState {
+export interface IGameState {
   board: (number | null)[][];
   gameOver: boolean;
   winner: number | null;
 }
 
-export interface Player {
+export interface IPlayer {
   id: string;
   number: number;
 }
 
-export interface Move {
+export interface IMove {
   row: number;
   col: number;
 }
 
-export interface GameRoom {
+export interface IGameRoom {
   gameId: string;
-  players: Player[];
-  currentState: GameState;
+  players: IPlayer[];
+  currentState: IGameState;
   currentPlayer: number;
 }
