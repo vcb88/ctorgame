@@ -163,7 +163,33 @@ describe('Feature', () => {
 });
 ```
 
-### 3. Mock Guidelines
+### 3. Socket Testing Guidelines
+```typescript
+// Используйте createMockSocket для создания мока сокета
+import { createMockSocket } from '@/test/socket-test-utils';
+
+describe('Your Socket Test', () => {
+  let mockSocket: MockSocket;
+
+  beforeEach(() => {
+    mockSocket = createMockSocket();
+  });
+
+  it('should handle socket events', async () => {
+    // Симуляция получения события
+    await mockSocket.simulateEvent('EVENT_NAME', eventData);
+
+    // Проверка отправки события
+    expect(mockSocket.emit).toHaveBeenCalledWith('EVENT_NAME', expectedData);
+
+    // Проверка подписки/отписки
+    expect(mockSocket.on).toHaveBeenCalledWith('EVENT_NAME', expect.any(Function));
+    expect(mockSocket.off).toHaveBeenCalledWith('EVENT_NAME', expect.any(Function));
+  });
+});
+```
+
+### 4. Mock Guidelines
 ```typescript
 // Prefer mock functions
 const mockCallback = vi.fn();

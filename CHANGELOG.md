@@ -78,6 +78,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - TypeScript configuration
 - Development setup issues
 - Replaced deprecated `vi.any()` with `expect.any()` in hook tests for better compatibility with Vitest
+- Improved socket testing utilities with better event handling and typing
+- Fixed React 18 compatibility issues in tests
+- Enhanced test infrastructure:
+  * Added proper socket mocking utilities
+  * Improved async test handling
+  * Better type safety in test files
 
 ## [0.1.0] - 2024-12-23
 
