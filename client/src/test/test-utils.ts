@@ -14,7 +14,7 @@ export const createMockSocket = () => {
     }),
     mockOff: vi.fn(),
     mockClose: vi.fn(),
-    emit: function(event: string, ...args: any[]) {
+    emit: function(event: string, ...args: unknown[]) {
       this.mockEmit(event, ...args);
       return Promise.resolve();
     },
@@ -40,7 +40,7 @@ export const createMockSocket = () => {
       });
     },
     // Метод для эмуляции получения события от сервера
-    simulateEvent: async function(event: string, data: any) {
+    simulateEvent: async function(event: string, data: unknown) {
       if (listeners[event]) {
         await Promise.all(listeners[event].map(callback => Promise.resolve().then(() => callback(data))));
       }

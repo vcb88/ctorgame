@@ -6,7 +6,10 @@ export default defineConfig({
     test: {
         globals: true,
         environment: 'jsdom',
-        setupFiles: ['./src/test/setup.ts'],
+        setupFiles: [
+            './src/test/setup.ts',
+            './src/test/react-18-setup.ts'
+        ],
         types: ['vitest/globals', './src/test/types.d.ts'],
         include: ['src/components/**/__tests__/*.test.tsx'],
         coverage: {

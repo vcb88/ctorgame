@@ -10,9 +10,9 @@ declare global {
     }
 
     namespace Vi {
-        interface Assertion<T = any> extends jest.Matchers<void, T> {}
-        interface AsymmetricMatchersContaining extends jest.Matchers<void, any> {}
+        interface Assertion<T = unknown> extends jest.Matchers<void, T> {}
+        interface AsymmetricMatchersContaining extends jest.Matchers<void, unknown> {}
     }
 
-    interface Matchers<R = void, T = {}> extends TestingLibraryMatchers<typeof expect.stringContaining, R> {}
+    interface Matchers<R = void> extends TestingLibraryMatchers<typeof expect.stringContaining, R> {}
 }

@@ -1,7 +1,7 @@
 import { renderHook, act } from '@testing-library/react-hooks';
 import { useGameHistory, HistoryEntry } from '../useGameHistory';
 import { Socket } from 'socket.io-client';
-import { IGameMove, OperationType } from '@ctor-game/shared/types';
+import { OperationType } from '@ctor-game/shared/types';
 
 import { vi } from 'vitest';
 

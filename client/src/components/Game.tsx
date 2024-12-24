@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useMultiplayerGame } from '../hooks/useMultiplayerGame';
-import { BOARD_SIZE, OperationType } from '../../../shared/types';
+import { OperationType } from '../../../shared/types';
 import { cn } from '@/lib/utils';
 import { GameCell } from './GameCell';
 

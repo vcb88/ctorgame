@@ -29,5 +29,6 @@ export const createMockSocket = () => {
 };
 
 // Экспортируем все методы из testing-library
+// @ts-expect-error -- we need to export all testing utilities
 export * from '@testing-library/react';
 export { customRender as render };

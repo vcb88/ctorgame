@@ -2,7 +2,6 @@ import { useState, useEffect, useCallback } from 'react';
 import { Socket } from 'socket.io-client';
 import { 
     IGameState, 
-    IReplayState, 
     ReplayEvent,
     IReplayStateUpdate,
     IReplayError 
