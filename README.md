@@ -402,14 +402,34 @@ For detailed information about testing, see [Testing Guide](docs/testing.md)
 4. Push to branch
 5. Create Pull Request
 
+## Game History and Replay Feature
+
+The game includes a comprehensive replay system that allows players to:
+- View a list of completed games
+- Watch full game replays with VCR-like controls
+- Navigate through individual moves
+- Analyze game progression and strategies
+
+### Replay Controls
+- Play/Pause: Control replay playback
+- Next/Previous: Navigate between moves
+- Speed Control: Adjust replay speed (0.5x, 1x, 2x)
+- Jump to Move: Select specific moves from the timeline
+
+### Game History Features
+- View game details (date, players, result)
+- Access replay for any completed game
+- See move-by-move progression
+- Analyze board states at any point
+
 ## Future Improvements
 
 - Add user authentication
-- Implement game history
-- Add spectator mode
+- Add spectator mode for live games
 - Support custom board sizes
 - Add chat functionality
 - Add player rankings
+- Implement tournament mode
 
 ## License
 
