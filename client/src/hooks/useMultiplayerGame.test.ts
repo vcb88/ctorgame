@@ -1,41 +1,20 @@
-import { renderHook, act } from '@testing-library/react';
+import { renderHook } from '@testing-library/react';
 import { io } from 'socket.io-client';
 import { useMultiplayerGame } from './useMultiplayerGame';
-import { WebSocketEvents, IGameState } from '../../../shared/types';
+import { WebSocketEvents, IGameState } from '@ctor-game/shared/types';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
+import { createMockSocket } from '../test/test-utils';
 
-// Мокаем socket.io-client
-jest.mock('socket.io-client');
-
-interface MockSocket {
-  emit: jest.Mock;
-  on: jest.Mock;
-  off: jest.Mock;
-  close: jest.Mock;
-}
+vi.mock('socket.io-client', () => ({
+  io: vi.fn()
+}));
 
 describe('useMultiplayerGame', () => {
-  let mockSocket: MockSocket;
-  let mockEmit: jest.Mock;
-  let mockOn: jest.Mock;
-  let mockOff: jest.Mock;
+  const mockSocket = createMockSocket();
 
   beforeEach(() => {
-    // Создаем моки для socket методов
-    mockEmit = jest.fn();
-    mockOn = jest.fn();
-    mockOff = jest.fn();
-    mockSocket = {
-      emit: mockEmit,
-      on: mockOn,
-      off: mockOff,
-      close: jest.fn(),
-    };
-
-    (io as jest.Mock).mockReturnValue(mockSocket);
-  });
-
-  afterEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
+    (io as ReturnType<typeof vi.fn>).mockReturnValue(mockSocket);
   });
 
   it('should initialize with default values', () => {
@@ -52,22 +31,18 @@ describe('useMultiplayerGame', () => {
   it('should create a game', () => {
     const { result } = renderHook(() => useMultiplayerGame());
 
-    act(() => {
-      result.current.createGame();
-    });
+    result.current.createGame();
 
-    expect(mockEmit).toHaveBeenCalledWith(WebSocketEvents.CreateGame);
+    expect(mockSocket.mockEmit).toHaveBeenCalledWith(WebSocketEvents.CreateGame);
   });
 
   it('should join a game', () => {
     const { result } = renderHook(() => useMultiplayerGame());
     const testGameId = 'test-game-id';
 
-    act(() => {
-      result.current.joinGame(testGameId);
-    });
+    result.current.joinGame(testGameId);
 
-    expect(mockEmit).toHaveBeenCalledWith(WebSocketEvents.JoinGame, { gameId: testGameId });
+    expect(mockSocket.mockEmit).toHaveBeenCalledWith(WebSocketEvents.JoinGame, { gameId: testGameId });
   });
 
   it('should make a move', () => {
@@ -75,18 +50,17 @@ describe('useMultiplayerGame', () => {
     const testMove = { row: 0, col: 0 };
 
     // Симулируем создание игры
-    act(() => {
-      const gameCreatedCallback = mockOn.mock.calls.find(
-        call => call[0] === WebSocketEvents.GameCreated
-      )[1];
+    const gameCreatedCallback = mockSocket.mockOn.mock.calls.find(
+      call => call[0] === WebSocketEvents.GameCreated
+    )?.[1];
+    
+    if (gameCreatedCallback) {
       gameCreatedCallback({ gameId: 'test-game-id' });
-    });
+    }
 
-    act(() => {
-      result.current.makeMove(testMove);
-    });
+    result.current.makeMove(testMove);
 
-    expect(mockEmit).toHaveBeenCalledWith(WebSocketEvents.MakeMove, {
+    expect(mockSocket.mockEmit).toHaveBeenCalledWith(WebSocketEvents.MakeMove, {
       gameId: 'test-game-id',
       move: testMove,
     });
@@ -101,12 +75,13 @@ describe('useMultiplayerGame', () => {
       winner: null,
     };
 
-    act(() => {
-      const updateCallback = mockOn.mock.calls.find(
-        call => call[0] === WebSocketEvents.GameStateUpdated
-      )[1];
+    const updateCallback = mockSocket.mockOn.mock.calls.find(
+      call => call[0] === WebSocketEvents.GameStateUpdated
+    )?.[1];
+    
+    if (updateCallback) {
       updateCallback({ gameState: testGameState, currentPlayer: 1 });
-    });
+    }
 
     expect(result.current.gameState).toEqual(testGameState);
     expect(result.current.currentPlayer).toBe(1);
@@ -116,12 +91,13 @@ describe('useMultiplayerGame', () => {
     const { result } = renderHook(() => useMultiplayerGame());
     const errorMessage = 'Test error message';
 
-    act(() => {
-      const errorCallback = mockOn.mock.calls.find(
-        call => call[0] === WebSocketEvents.Error
-      )[1];
+    const errorCallback = mockSocket.mockOn.mock.calls.find(
+      call => call[0] === WebSocketEvents.Error
+    )?.[1];
+    
+    if (errorCallback) {
       errorCallback({ message: errorMessage });
-    });
+    }
 
     expect(result.current.error).toBe(errorMessage);
   });
@@ -129,12 +105,13 @@ describe('useMultiplayerGame', () => {
   it('should handle player disconnection', () => {
     const { result } = renderHook(() => useMultiplayerGame());
 
-    act(() => {
-      const disconnectCallback = mockOn.mock.calls.find(
-        call => call[0] === WebSocketEvents.PlayerDisconnected
-      )[1];
+    const disconnectCallback = mockSocket.mockOn.mock.calls.find(
+      call => call[0] === WebSocketEvents.PlayerDisconnected
+    )?.[1];
+    
+    if (disconnectCallback) {
       disconnectCallback({ player: 1 });
-    });
+    }
 
     expect(result.current.error).toBe('Player 1 disconnected');
   });
@@ -147,12 +124,13 @@ describe('useMultiplayerGame', () => {
       winner: 0,
     };
 
-    act(() => {
-      const gameOverCallback = mockOn.mock.calls.find(
-        call => call[0] === WebSocketEvents.GameOver
-      )[1];
+    const gameOverCallback = mockSocket.mockOn.mock.calls.find(
+      call => call[0] === WebSocketEvents.GameOver
+    )?.[1];
+    
+    if (gameOverCallback) {
       gameOverCallback({ gameState: testGameState, winner: 0 });
-    });
+    }
 
     expect(result.current.gameState).toEqual(testGameState);
     expect(result.current.error).toBe('Player 0 won!');
@@ -163,7 +141,7 @@ describe('useMultiplayerGame', () => {
 
     unmount();
 
-    expect(mockSocket.close).toHaveBeenCalled();
+    expect(mockSocket.mockClose).toHaveBeenCalled();
     const expectedEvents = [
       WebSocketEvents.GameCreated,
       WebSocketEvents.GameStarted,
@@ -174,7 +152,7 @@ describe('useMultiplayerGame', () => {
     ];
 
     expectedEvents.forEach(event => {
-      expect(mockOff).toHaveBeenCalledWith(event);
+      expect(mockSocket.mockOff).toHaveBeenCalledWith(event);
     });
   });
 });
