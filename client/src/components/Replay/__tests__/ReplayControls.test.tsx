@@ -1,6 +1,7 @@
 import React from 'react';
 import { render, fireEvent, screen } from '@testing-library/react';
 import { ReplayControls } from '../ReplayControls';
+import { vi, describe, it, expect, beforeEach } from 'vitest';
 
 describe('ReplayControls', () => {
     const mockProps = {
@@ -8,17 +9,17 @@ describe('ReplayControls', () => {
         currentMove: 0,
         totalMoves: 10,
         playbackSpeed: 1,
-        onStart: jest.fn(),
-        onPause: jest.fn(),
-        onResume: jest.fn(),
-        onNext: jest.fn(),
-        onPrevious: jest.fn(),
-        onStop: jest.fn(),
-        onSpeedChange: jest.fn(),
+        onStart: vi.fn(),
+        onPause: vi.fn(),
+        onResume: vi.fn(),
+        onNext: vi.fn(),
+        onPrevious: vi.fn(),
+        onStop: vi.fn(),
+        onSpeedChange: vi.fn(),
     };
 
     beforeEach(() => {
-        jest.clearAllMocks();
+        vi.clearAllMocks();
     });
 
     it('should render initial state correctly', () => {

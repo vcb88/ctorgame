@@ -71,9 +71,9 @@ export function ReplayControls({
                         variant="outline"
                     >
                         {isPlaying ? (
-                            <Pause className="w-4 h-4" />
+                            <Pause className="w-4 h-4" aria-label="Pause" />
                         ) : (
-                            <Play className="w-4 h-4" />
+                            <Play className="w-4 h-4" aria-label="Play" />
                         )}
                     </Button>
                 )}
@@ -84,7 +84,7 @@ export function ReplayControls({
                     disabled={isFirstMove}
                     variant="outline"
                 >
-                    <SkipBack className="w-4 h-4" />
+                    <SkipBack className="w-4 h-4" aria-label="Previous move" />
                 </Button>
 
                 <Button
@@ -92,7 +92,7 @@ export function ReplayControls({
                     disabled={isLastMove}
                     variant="outline"
                 >
-                    <SkipForward className="w-4 h-4" />
+                    <SkipForward className="w-4 h-4" aria-label="Next move" />
                 </Button>
             </div>
 
@@ -103,7 +103,7 @@ export function ReplayControls({
                     variant={playbackSpeed === 0.5 ? "default" : "outline"}
                     size="sm"
                 >
-                    <Rewind className="w-4 h-4" />
+                    <Rewind className="w-4 h-4" aria-label="Slow down" />
                 </Button>
 
                 <Button
@@ -119,7 +119,7 @@ export function ReplayControls({
                     variant={playbackSpeed === 2 ? "default" : "outline"}
                     size="sm"
                 >
-                    <FastForward className="w-4 h-4" />
+                    <FastForward className="w-4 h-4" aria-label="Speed up" />
                 </Button>
             </div>
         </div>
