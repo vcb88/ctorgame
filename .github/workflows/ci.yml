@@ -51,14 +51,11 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: '20'
-          cache: 'pnpm'
-
-      - name: Clean pnpm store
-        run: pnpm store prune
 
       - name: Install dependencies and build shared
         run: |
-          pnpm install -r --no-frozen-lockfile
+          pnpm config set auto-install-peers true
+          pnpm install -r --ignore-scripts
           pnpm --filter @ctor-game/shared build
 
       - name: Run linter and type check
