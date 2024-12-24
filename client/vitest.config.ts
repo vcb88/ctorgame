@@ -10,15 +10,18 @@ export default defineConfig({
     setupFiles: ['./src/test/setup.ts'],
     include: ['src/**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}'],
     coverage: {
+      enabled: true,
       provider: 'v8',
-      reporter: ['text', 'json', 'html'],
+      reporter: ['text', 'lcov', 'clover'],
+      reportsDirectory: './coverage',
       exclude: [
         'coverage/**',
         'dist/**',
         '**/*.d.ts',
-        'test/**',
-        'tests/**',
+        'test{,s}/**',
         '**/*.config.{js,ts}',
+        '**/*.test.{ts,tsx}',
+        '**/test-utils.ts',
       ],
     },
     deps: {
