@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite --host 0.0.0.0",
-    "dev:ci": "vite --host 0.0.0.0 --mode ci",
+    "dev:ci": "mkdir -p logs && vite --host 0.0.0.0 --mode ci --debug 2>&1 | tee logs/vite.log",
     "build": "tsc && vite build",
     "lint": "eslint . --max-warnings 0",
     "lint:fix": "eslint . --fix",

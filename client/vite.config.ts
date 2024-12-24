@@ -16,7 +16,15 @@ export default defineConfig({
     hmr: {
       host: '127.0.0.1',
       port: 5173
-    }
+    },
+    watch: {
+      usePolling: true,
+    },
+    fs: {
+      strict: false,
+      allow: ['.']
+    },
+    middlewareMode: false
   },
   preview: {
     port: 5173,

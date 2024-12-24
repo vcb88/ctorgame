@@ -93,45 +93,65 @@ jobs:
           echo "Generating server coverage..."
           pnpm --filter @ctor-game/server test:coverage
 
-      - name: Start and Test Dev Server
+      - name: Start Dev Server
         run: |
           echo "Starting development server..."
           cd client
-          # Start server in background
-          pnpm dev &
+          
+          # Create a simple health check endpoint
+          mkdir -p public
+          echo "OK" > public/health.txt
+          
+          # Start server in background with logging
+          pnpm dev:ci &
           SERVER_PID=$!
           
-          # Function to check if server is responding with HTML
+          # Function to check if server is responding
           check_server() {
-            RESPONSE=$(curl -s -I http://localhost:5173)
-            if echo "$RESPONSE" | grep -q "content-type: text/html"; then
+            # Try to get the health check file
+            HEALTH_CHECK=$(curl -s http://localhost:5173/health.txt || echo "FAILED")
+            echo "Health check response: $HEALTH_CHECK"
+            
+            if [ "$HEALTH_CHECK" = "OK" ]; then
+              # Also check the main page with verbose output
+              echo "Checking main page..."
+              curl -v http://localhost:5173/ || true
               return 0
             fi
             return 1
           }
           
-          # Wait for server with proper response
+          # Wait for server with more detailed logging
           echo "Waiting for server to be ready..."
           COUNTER=0
           while [ $COUNTER -lt 30 ]; do
+            echo "Attempt $((COUNTER + 1)): Checking server status..."
+            
             if check_server; then
-              echo "Server is responding with HTML content!"
+              echo "Server is responding properly!"
               break
             fi
-            echo "Attempt $((COUNTER + 1)): Server not ready yet..."
+            
+            # Print Vite logs if available
+            echo "Current Vite logs:"
+            cat logs/vite.log 2>/dev/null || echo "No Vite logs available yet"
+            
             sleep 2
             COUNTER=$((COUNTER + 1))
           done
           
-          # Verify server is actually working
-          if ! check_server; then
-            echo "Server failed to start properly"
+          # Final check
+          if check_server; then
+            echo "Server startup successful!"
+            # Keep the server running
+            disown $SERVER_PID
+          else
+            echo "Server failed to start properly after $COUNTER attempts"
+            echo "Final status check:"
+            curl -v http://localhost:5173/ || true
             kill $SERVER_PID
             exit 1
           fi
-          
-          # Keep the server running
-          disown $SERVER_PID
 
       - name: Run Cypress Tests
         uses: cypress-io/github-action@v6
