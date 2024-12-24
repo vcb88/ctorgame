@@ -61,23 +61,19 @@ jobs:
 
       - name: Run linter and type check
         run: |
-          pnpm lint
           cd client && pnpm lint && pnpm type-check
           cd ../server && pnpm lint && pnpm type-check
 
       - name: Run unit and integration tests
         run: |
-          pnpm test
           cd client && pnpm test
-          cd ../server && pnpm test
-          pnpm test:integration
+          cd ../server && pnpm test && pnpm test:integration
         env:
           DATABASE_URL: postgresql://test:test@localhost:5432/ctorgame_test
           REDIS_URL: redis://localhost:6379
 
       - name: Generate coverage report
         run: |
-          pnpm test:coverage
           cd client && pnpm test:coverage
           cd ../server && pnpm test:coverage
 
