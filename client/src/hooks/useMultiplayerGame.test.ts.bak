@@ -9,7 +9,7 @@ import {
 } from '@ctor-game/shared/types';
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { createMockSocket } from '../test/socket-test-utils';
-import type { MockSocket } from '../types/game';
+import type { MockedSocket } from '../types/game';
 
 vi.mock('socket.io-client', () => ({
   io: vi.fn()
@@ -57,10 +57,12 @@ describe('useMultiplayerGame', () => {
     const row = 0;
     const col = 0;
 
+    // Симулируем создание игры
     await act(async () => {
       mockSocket.simulateEvent(WebSocketEvents.GameCreated, { gameId: 'test-game-id' });
     });
 
+    // Ждем обновления состояния
     await waitFor(() => {
       expect(result.current.gameId).toBe('test-game-id');
     });
@@ -69,7 +71,7 @@ describe('useMultiplayerGame', () => {
       result.current.makeMove(row, col, OperationType.PLACE);
     });
 
-    expect(mockSocket.emit).toHaveBeenCalledWith(WebSocketEvents.MakeMove, {
+    expect(mockSocket.mockEmit).toHaveBeenCalledWith(WebSocketEvents.MakeMove, {
       gameId: 'test-game-id',
       move: {
         type: OperationType.PLACE,
@@ -83,6 +85,7 @@ describe('useMultiplayerGame', () => {
     const row = 0;
     const col = 0;
 
+    // Симулируем создание игры и ходы
     await act(async () => {
       mockSocket.simulateEvent(WebSocketEvents.GameCreated, { gameId: 'test-game-id' });
     });
@@ -95,7 +98,7 @@ describe('useMultiplayerGame', () => {
       result.current.makeMove(row, col, OperationType.REPLACE);
     });
 
-    expect(mockSocket.emit).toHaveBeenCalledWith(WebSocketEvents.MakeMove, {
+    expect(mockSocket.mockEmit).toHaveBeenCalledWith(WebSocketEvents.MakeMove, {
       gameId: 'test-game-id',
       move: {
         type: OperationType.REPLACE,
@@ -137,7 +140,7 @@ describe('useMultiplayerGame', () => {
       result.current.endTurn();
     });
 
-    expect(mockSocket.emit).toHaveBeenCalledWith(WebSocketEvents.EndTurn, {
+    expect(mockSocket.mockEmit).toHaveBeenCalledWith(WebSocketEvents.EndTurn, {
       gameId: 'test-game-id'
     });
   });
@@ -149,16 +152,6 @@ describe('useMultiplayerGame', () => {
       board: [[null, null, null], [null, null, null], [null, null, null]],
       gameOver: false,
       winner: null,
-      currentTurn: {
-        placeOperationsLeft: 1,
-        replaceOperationsLeft: 1,
-        playerNumber: 0,
-      },
-      scores: {
-        player1: 0,
-        player2: 0,
-      },
-      isFirstTurn: true,
     };
 
     await act(async () => {
@@ -205,16 +198,6 @@ describe('useMultiplayerGame', () => {
       board: [[0, 0, 0], [null, null, null], [null, null, null]],
       gameOver: true,
       winner: 0,
-      currentTurn: {
-        placeOperationsLeft: 0,
-        replaceOperationsLeft: 0,
-        playerNumber: 0,
-      },
-      scores: {
-        player1: 3,
-        player2: 0,
-      },
-      isFirstTurn: false,
     };
 
     await act(async () => {
@@ -235,7 +218,7 @@ describe('useMultiplayerGame', () => {
 
     unmount();
 
-    expect(mockSocket.close).toHaveBeenCalled();
+    expect(mockSocket.mockClose).toHaveBeenCalled();
     const expectedEvents = [
       WebSocketEvents.GameCreated,
       WebSocketEvents.GameStarted,
@@ -246,7 +229,7 @@ describe('useMultiplayerGame', () => {
     ];
 
     expectedEvents.forEach(event => {
-      expect(mockSocket.off).toHaveBeenCalledWith(event);
+      expect(mockSocket.mockOff).toHaveBeenCalledWith(event);
     });
   });
 });

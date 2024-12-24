@@ -9,25 +9,29 @@ interface Listener {
 
 // Создаем новый интерфейс без наследования от Socket
 export interface MockSocket {
-  emit: Socket['emit'];
-  on: Socket['on'];
-  off: Socket['off'];
-  close: Socket['close'];
+  emit: Socket['emit'] & { mock: { calls: any[][] }};
+  on: Socket['on'] & { mock: { calls: any[][] }};
+  off: Socket['off'] & { mock: { calls: any[][] }};
+  close: Socket['close'] & { mock: { calls: any[][] }};
   simulateEvent: (event: string, data: unknown) => Promise<void>;
   listeners: Listener[];
   connected: boolean;
+  mockEmit: Socket['emit'] & { mock: { calls: any[][] }};
+  mockOn: Socket['on'] & { mock: { calls: any[][] }};
+  mockOff: Socket['off'] & { mock: { calls: any[][] }};
+  mockClose: Socket['close'] & { mock: { calls: any[][] }};
 }
 
 export function createMockSocket(): MockSocket {
   const listeners: Listener[] = [];
 
-  // Создаем моки функций с помощью vi.fn()
-  const emitMock = vi.fn();
-  const onMock = vi.fn((event: string, callback: Function) => {
+  // Создаем базовые моки функций
+  const emit = vi.fn();
+  const on = vi.fn((event: string, callback: Function) => {
     listeners.push({ event, callback });
     return socket;
   });
-  const offMock = vi.fn((event: string, callback?: Function) => {
+  const off = vi.fn((event: string, callback?: Function) => {
     const index = callback 
       ? listeners.findIndex(l => l.event === event && l.callback === callback)
       : listeners.findIndex(l => l.event === event);
@@ -36,20 +40,31 @@ export function createMockSocket(): MockSocket {
     }
     return socket;
   });
-  const closeMock = vi.fn();
+  const close = vi.fn();
+
+  // Создаем mock версии
+  const mockEmit = vi.fn();
+  const mockOn = vi.fn();
+  const mockOff = vi.fn();
+  const mockClose = vi.fn();
 
   const socket = {
-    emit: emitMock,
-    on: onMock,
-    off: offMock,
-    close: closeMock,
+    emit,
+    on,
+    off,
+    close,
+    mockEmit,
+    mockOn,
+    mockOff,
+    mockClose,
     simulateEvent: async (event: string, data: unknown) => {
       const matchingListeners = listeners.filter(l => l.event === event);
       for (const listener of matchingListeners) {
         await Promise.resolve().then(() => listener.callback(data));
       }
     },
-    listeners
+    listeners,
+    connected: true
   } as unknown as MockSocket;
 
   return socket;
