@@ -2,12 +2,10 @@ import { Server } from 'socket.io';
 import { Server as HttpServer } from 'http';
 import { Socket } from 'socket.io';
 import { 
-  IGameState, 
   IPlayer, 
   IMove, 
   IGameRoom, 
   WebSocketEvents,
-  WebSocketPayloads,
   ServerToClientEvents,
   ClientToServerEvents
 } from '../../../shared/types';

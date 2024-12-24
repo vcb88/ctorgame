@@ -4,7 +4,6 @@ import {
   IGameState, 
   IMove, 
   WebSocketEvents,
-  WebSocketPayloads,
   ClientToServerEvents,
   ServerToClientEvents
 } from '../../../shared/types';

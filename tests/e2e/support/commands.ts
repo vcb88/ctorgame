@@ -1,26 +1,11 @@
 import '@testing-library/cypress/add-commands'
+import { GameState, CustomCommands } from './types'
 
-// Типы для команд
 declare global {
+  // eslint-disable-next-line @typescript-eslint/no-namespace
   namespace Cypress {
-    interface Chainable {
-      createGame(): Chainable<string>
-      joinGame(code: string): Chainable<void>
-      playWinningMoves(): Chainable<void>
-      makeMove(row: number, col: number): Chainable<void>
-      checkGameState(state: GameState): Chainable<void>
-      waitForTurn(): Chainable<void>
-      reconnectToGame(code: string): Chainable<void>
-      simulateDisconnect(): Chainable<void>
-    }
+    interface Chainable extends CustomCommands {}
   }
-}
-
-interface GameState {
-  currentPlayer?: number
-  gameOver?: boolean
-  winner?: number | null
-  board?: Array<Array<number | null>>
 }
 
 // Создание новой игры

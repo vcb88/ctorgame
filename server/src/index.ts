@@ -1,7 +1,7 @@
-const express = require('express');
-const { createServer } = require('http');
-const { GameServer } = require('./websocket/GameServer');
-const path = require('path');
+import express from 'express';
+import { createServer } from 'http';
+import { GameServer } from './websocket/GameServer';
+import path from 'path';
 
 const app = express();
 const httpServer = createServer(app);
