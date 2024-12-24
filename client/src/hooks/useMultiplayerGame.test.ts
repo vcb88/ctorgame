@@ -50,13 +50,7 @@ describe('useMultiplayerGame', () => {
     const testMove = { row: 0, col: 0 };
 
     // Симулируем создание игры
-    const gameCreatedCallback = mockSocket.mockOn.mock.calls.find(
-      call => call[0] === WebSocketEvents.GameCreated
-    )?.[1];
-    
-    if (gameCreatedCallback) {
-      gameCreatedCallback({ gameId: 'test-game-id' });
-    }
+    mockSocket.simulateEvent(WebSocketEvents.GameCreated, { gameId: 'test-game-id' });
 
     result.current.makeMove(testMove);
 
@@ -75,13 +69,10 @@ describe('useMultiplayerGame', () => {
       winner: null,
     };
 
-    const updateCallback = mockSocket.mockOn.mock.calls.find(
-      call => call[0] === WebSocketEvents.GameStateUpdated
-    )?.[1];
-    
-    if (updateCallback) {
-      updateCallback({ gameState: testGameState, currentPlayer: 1 });
-    }
+    mockSocket.simulateEvent(WebSocketEvents.GameStateUpdated, { 
+      gameState: testGameState, 
+      currentPlayer: 1 
+    });
 
     expect(result.current.gameState).toEqual(testGameState);
     expect(result.current.currentPlayer).toBe(1);
@@ -91,13 +82,7 @@ describe('useMultiplayerGame', () => {
     const { result } = renderHook(() => useMultiplayerGame());
     const errorMessage = 'Test error message';
 
-    const errorCallback = mockSocket.mockOn.mock.calls.find(
-      call => call[0] === WebSocketEvents.Error
-    )?.[1];
-    
-    if (errorCallback) {
-      errorCallback({ message: errorMessage });
-    }
+    mockSocket.simulateEvent(WebSocketEvents.Error, { message: errorMessage });
 
     expect(result.current.error).toBe(errorMessage);
   });
@@ -105,13 +90,7 @@ describe('useMultiplayerGame', () => {
   it('should handle player disconnection', () => {
     const { result } = renderHook(() => useMultiplayerGame());
 
-    const disconnectCallback = mockSocket.mockOn.mock.calls.find(
-      call => call[0] === WebSocketEvents.PlayerDisconnected
-    )?.[1];
-    
-    if (disconnectCallback) {
-      disconnectCallback({ player: 1 });
-    }
+    mockSocket.simulateEvent(WebSocketEvents.PlayerDisconnected, { player: 1 });
 
     expect(result.current.error).toBe('Player 1 disconnected');
   });
@@ -124,13 +103,10 @@ describe('useMultiplayerGame', () => {
       winner: 0,
     };
 
-    const gameOverCallback = mockSocket.mockOn.mock.calls.find(
-      call => call[0] === WebSocketEvents.GameOver
-    )?.[1];
-    
-    if (gameOverCallback) {
-      gameOverCallback({ gameState: testGameState, winner: 0 });
-    }
+    mockSocket.simulateEvent(WebSocketEvents.GameOver, { 
+      gameState: testGameState, 
+      winner: 0 
+    });
 
     expect(result.current.gameState).toEqual(testGameState);
     expect(result.current.error).toBe('Player 0 won!');
