@@ -16,9 +16,7 @@ const mockSocket = {
 const mockGameState: IGameState = {
     board: Array(10).fill(null).map(() => Array(10).fill(null)),
     currentTurn: {
-        playerNumber: 0,
-        placeOperationsLeft: 2,
-        replaceOperationsLeft: 0
+        placeOperationsLeft: 2
     },
     scores: {
         player1: 0,
@@ -57,11 +55,13 @@ describe('useReplay', () => {
 
         act(() => {
             result.current.startReplay();
-            mockHandler({ 
-                state: mockGameState, 
-                moveIndex: 0, 
-                totalMoves: 10 
-            });
+            if (mockHandler) {
+                mockHandler({ 
+                    state: mockGameState, 
+                    moveIndex: 0, 
+                    totalMoves: 10 
+                });
+            }
         });
 
         expect(mockSocket.emit).toHaveBeenCalledWith(
@@ -159,7 +159,9 @@ describe('useReplay', () => {
             .find(([event]) => event === ReplayEvent.REPLAY_ERROR)?.[1];
 
         act(() => {
-            mockErrorHandler({ message: 'Test error' });
+            if (mockErrorHandler) {
+                mockErrorHandler({ message: 'Test error' });
+            }
         });
 
         expect(result.current.error).toBe('Test error');

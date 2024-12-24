@@ -1,5 +1,4 @@
 import { Socket } from 'socket.io-client';
-import type { DefaultEventsMap } from 'socket.io-client';
 import { vi } from 'vitest';
 
 interface Listener {
