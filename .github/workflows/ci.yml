@@ -53,11 +53,10 @@ jobs:
           node-version: '20'
           cache: 'pnpm'
 
-      - name: Install dependencies
-        run: pnpm install
-
-      - name: Build shared package
-        run: cd shared && pnpm build
+      - name: Install dependencies and build shared
+        run: |
+          pnpm install -r
+          cd shared && pnpm build
 
       - name: Run linter and type check
         run: |
