@@ -7,7 +7,10 @@
     "strict": true,
     "outDir": "./dist",
     "rootDir": "./src",
-    "skipLibCheck": true
+    "skipLibCheck": true,
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
+    "strictPropertyInitialization": false
   },
   "include": ["src/**/*"],
   "exclude": ["node_modules"]
