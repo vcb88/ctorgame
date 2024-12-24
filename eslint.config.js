@@ -11,10 +11,15 @@ export default [
       'node_modules/**',
       'coverage/**',
       '.github/**',
-      '*.config.js',
-      '*.config.ts',
       'build/**',
-      'public/**'
+      'public/**',
+      '*.config.{js,ts}',
+      'vite.config.{js,ts}',
+      'vitest.config.{js,ts}',
+      'cypress.config.{js,ts}',
+      'tailwind.config.{js,ts}',
+      'postcss.config.{js,ts}',
+      'commitlint.config.{js,ts}',
     ],
     languageOptions: {
       parser: tsParser,
@@ -32,16 +37,18 @@ export default [
       'react-hooks': reactHooksPlugin,
     },
     rules: {
-      ...tsPlugin.configs.recommended.rules,
-      ...reactRefreshPlugin.configs.recommended.rules,
-      ...reactHooksPlugin.configs.recommended.rules,
-      'react-refresh/only-export-components': [
-        'warn',
-        { allowConstantExport: true },
-      ],
       'no-unused-vars': 'off',
       '@typescript-eslint/no-unused-vars': ['error'],
       '@typescript-eslint/no-explicit-any': 'warn',
+      '@typescript-eslint/no-empty-interface': [
+        'error',
+        {
+          allowSingleExtends: true,
+        },
+      ],
+      'react-refresh/only-export-components': ['warn', { allowConstantExport: true }],
+      'react-hooks/rules-of-hooks': 'error',
+      'react-hooks/exhaustive-deps': 'warn',
     },
     settings: {
       react: {

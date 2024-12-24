@@ -4,13 +4,12 @@
   "version": "0.1.0",
   "packageManager": "pnpm@8.6.0",
   "type": "module",
-
   "homepage": "https://vcb88.github.io/ctorgame",
-
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
-    "lint": "eslint . --max-warnings 0",
+    "lint": "eslint . --ext .js,.jsx,.ts,.tsx --max-warnings 0",
+    "lint:fix": "eslint . --ext .js,.jsx,.ts,.tsx --fix",
     "preview": "vite preview",
     "format": "prettier --write \"src/**/*.{ts,tsx,css}\"",
     "format:check": "prettier --check \"src/**/*.{ts,tsx,css}\"",
@@ -21,8 +20,7 @@
     "test:e2e:open": "cypress open",
     "type-check": "tsc --noEmit",
     "predeploy": "npm run build",
-    "deploy": "gh-pages -d dist",
-    "prepare": "husky"
+    "deploy": "gh-pages -d dist"
   },
   "dependencies": {
     "@radix-ui/react-alert-dialog": "^1.1.2",
@@ -55,7 +53,6 @@
     "eslint-plugin-react-hooks": "^5.0.0",
     "eslint-plugin-react-refresh": "^0.4.14",
     "gh-pages": "^6.2.0",
-    "husky": "^9.1.7",
     "jsdom": "^25.0.1",
     "lint-staged": "^15.2.0",
     "postcss": "^8.4.49",
