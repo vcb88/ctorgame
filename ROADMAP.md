@@ -1,92 +1,104 @@
 # Project Roadmap
 
-## Current Version (v0.1.0)
-- [x] Basic game functionality
+## Current Version (v0.2.0)
+- [x] Advanced game functionality
+  - [x] 10x10 toroidal board implementation
+  - [x] Two operations per turn (first turn exception)
+  - [x] Automatic piece replacement
+  - [x] Score tracking
 - [x] Real-time multiplayer
-- [x] Game room creation
-- [x] Move validation
-- [x] Win/draw detection
-- [x] Basic error handling
+  - [x] Game room creation
+  - [x] Player management
+  - [x] Turn handling
+- [x] Technical Foundation
+  - [x] WebSocket integration
+  - [x] Game state persistence
+  - [x] Move validation
+  - [x] Error handling
+  - [x] Unit tests
+  - [x] CI/CD pipeline
 
-## In Progress (v0.2.0)
-- Database Integration:
-  - [x] Database schema design
-  - [x] Entity creation
-  - [x] Basic service layer
-  - [ ] WebSocket integration
-  - [ ] Game state persistence
-  - [ ] Move history tracking
+## In Progress (v0.3.0)
+- Game Experience:
+  - [ ] Move history tracking and replay
+  - [ ] Game state recovery after disconnect
+  - [ ] Player statistics
+  - [ ] Visual move hints
+  - [ ] Sound effects
 
-## Short-term Goals (v0.2.0)
+## Short-term Goals (v0.3.0)
 1. Infrastructure
-   - [ ] PostgreSQL integration
-   - [ ] Redis session management
-   - [ ] Basic monitoring
+   - [ ] Redis integration for session management
+   - [ ] Game state caching
+   - [ ] Performance monitoring
+   - [ ] Error tracking
 
 2. Game Features
-   - [ ] Game history
    - [ ] Spectator mode
-   - [ ] Basic chat
+   - [ ] Basic chat system
+   - [ ] Player profiles
+   - [ ] Game history browser
 
-3. Technical Improvements
-   - [ ] Unit tests
-   - [ ] CI/CD pipeline
-   - [ ] Code coverage
-   - [ ] Performance optimization
+3. User Experience
+   - [ ] Responsive design for mobile
+   - [ ] Game tutorials
+   - [ ] Visual animations
+   - [ ] Keyboard controls
 
-## Mid-term Goals (v0.3.0)
-1. User Experience
-   - [ ] User accounts
-   - [ ] Player rankings
-   - [ ] Custom game settings
-   - [ ] Improved UI/UX
+## Mid-term Goals (v0.4.0)
+1. Community Features
+   - [ ] User accounts with OAuth
+   - [ ] Player rankings and ELO
+   - [ ] Friends system
+   - [ ] Custom game rooms
+   - [ ] Achievements
 
-2. Game Features
+2. Advanced Game Features
    - [ ] Tournament mode
-   - [ ] Custom board sizes
-   - [ ] Game replays
-   - [ ] Achievement system
+   - [ ] Training mode with AI
+   - [ ] Game analysis tools
+   - [ ] Custom game settings
 
 3. Infrastructure
    - [ ] Load balancing
    - [ ] Auto-scaling
    - [ ] Backup system
-   - [ ] Monitoring dashboard
+   - [ ] Analytics dashboard
 
 ## Long-term Goals (v1.0.0)
 1. Platform Features
    - [ ] Mobile app
-   - [ ] OAuth integration
-   - [ ] Social features
-   - [ ] API for third-party integration
+   - [ ] Cross-platform support
+   - [ ] PWA implementation
+   - [ ] Offline mode
 
-2. Game Modes
-   - [ ] AI opponents
-   - [ ] Training mode
-   - [ ] Custom game rules
-   - [ ] Multiple game variants
+2. Game Modes and AI
+   - [ ] AI opponents with difficulty levels
+   - [ ] Machine learning for AI improvement
+   - [ ] Custom board sizes
+   - [ ] Game variants
 
-3. Infrastructure
+3. Infrastructure and Security
    - [ ] Geographic distribution
-   - [ ] Analytics system
-   - [ ] Advanced security
+   - [ ] Advanced security measures
    - [ ] Performance optimization
+   - [ ] Scale testing
 
 ## Future Considerations
-1. Community Features
-   - Player profiles
-   - Friends system
-   - Teams/clans
-   - Tournaments
+1. Social Features
+   - Teams/clans system
+   - Tournament organization
+   - Social network integration
+   - Community events
 
 2. Technical Enhancements
-   - WebRTC support
-   - PWA support
-   - Offline mode
-   - Cross-platform clients
+   - WebRTC for P2P gameplay
+   - Browser extensions
+   - Desktop applications
+   - Mobile-first experience
 
-3. Monetization
+3. Monetization (Optional)
+   - Custom themes and animations
+   - Tournament organization tools
    - Premium features
-   - Custom themes
-   - Tournament entry fees
-   - API access plans
+   - API access for tournaments
