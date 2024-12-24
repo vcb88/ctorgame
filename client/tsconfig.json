@@ -1,6 +1,6 @@
 {
   "compilerOptions": {
-    "types": ["node"],
+    "types": ["node", "vite/client"],
     "typeRoots": ["./node_modules/@types", "./src/types"],
     "target": "ESNext",
     "useDefineForClassFields": true,

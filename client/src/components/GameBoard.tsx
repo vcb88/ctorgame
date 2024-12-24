@@ -18,7 +18,7 @@ export function GameBoard({ board, onCellClick, disabled = false }: GameBoardPro
             col={colIndex}
             value={cell}
             disabled={disabled}
-            onClick={onCellClick ? () => onCellClick(rowIndex, colIndex) : undefined}
+            onClick={() => onCellClick?.(rowIndex, colIndex)}
           />
         ))
       )}

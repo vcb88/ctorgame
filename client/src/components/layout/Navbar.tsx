@@ -20,14 +20,14 @@ export function Navbar() {
                     <div className="flex items-center space-x-4">
                         <Button
                             variant={location.pathname === '/' ? 'default' : 'ghost'}
-                            asChild
+                            asChild={true}
                         >
                             <Link to="/">Play Game</Link>
                         </Button>
                         
                         <Button
                             variant={location.pathname === '/history' ? 'default' : 'ghost'}
-                            asChild
+                            asChild={true}
                         >
                             <Link to="/history">Game History</Link>
                         </Button>

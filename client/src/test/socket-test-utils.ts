@@ -1,4 +1,5 @@
 import { Socket } from 'socket.io-client';
+import { DefaultEventsMap } from 'socket.io/dist/typed-events';
 import { vi } from 'vitest';
 
 interface Listener {
@@ -6,9 +7,15 @@ interface Listener {
   callback: Function;
 }
 
-export interface MockSocket extends Socket {
+// Создаем новый интерфейс без наследования от Socket
+export interface MockSocket {
+  emit: Socket['emit'];
+  on: Socket['on'];
+  off: Socket['off'];
+  close: Socket['close'];
   simulateEvent: (event: string, data: unknown) => Promise<void>;
   listeners: Listener[];
+  connected: boolean;
 }
 
 export function createMockSocket(): MockSocket {

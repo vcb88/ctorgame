@@ -1,9 +1,10 @@
 import { useState, useEffect } from 'react';
 import { Socket } from 'socket.io-client';
+import { MockSocket } from '@/test/socket-test-utils';
 import { IGameMove, OperationType } from '@ctor-game/shared/types';
 
 interface UseGameHistoryProps {
-    socket: Socket;
+    socket: Socket | MockSocket;
     gameCode: string;
 }
 

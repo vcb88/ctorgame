@@ -1,4 +1,5 @@
 import { io, Socket } from 'socket.io-client';
+import { defineConfig } from 'vite';
 
 let socket: Socket | null = null;
 
