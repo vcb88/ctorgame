@@ -145,8 +145,8 @@ const CTORGame = () => {
     };
 
   const [st, dispatch] = useReducer(reducer, init);
-  const [op, _setOp] = useState<string>(O.PL);
-  const [sel, _setSel] = useState<{x: number; y: number} | null>(null);
+  const op = O.PL;
+  const sel = null;
   const [map, setMap] = useState<boolean>(true);
   const [ai, setAi] = useState<boolean>(true);
   const [showGameOver, setShowGameOver] = useState<boolean>(false);
@@ -206,7 +206,7 @@ const CTORGame = () => {
       const timer = setTimeout(aiTurn, 500);
       return () => clearTimeout(timer);
     }
-  }, [ai, st.p, st.ops]);
+  }, [ai, st.p, st.ops, st.board]);
 
   const handleGameEnd = (message: string): void => {
     setGameOverMessage(message);
