@@ -139,8 +139,11 @@ describe('ReplayControls', () => {
         );
 
         // На первом ходу кнопка "назад" должна быть неактивна
-        expect(screen.getByLabelText('Previous move')).toBeDisabled();
-        expect(screen.getByLabelText('Next move')).not.toBeDisabled();
+        const prevButton = screen.getByRole('button', { name: 'Previous move' });
+        const nextButton = screen.getByRole('button', { name: 'Next move' });
+        
+        expect(prevButton).toBeDisabled();
+        expect(nextButton).not.toBeDisabled();
 
         // На последнем ходу кнопка "вперед" должна быть неактивна
         rerender(
@@ -150,7 +153,10 @@ describe('ReplayControls', () => {
             />
         );
 
-        expect(screen.getByLabelText('Previous move')).not.toBeDisabled();
-        expect(screen.getByLabelText('Next move')).toBeDisabled();
+        const prevButtonAfter = screen.getByRole('button', { name: 'Previous move' });
+        const nextButtonAfter = screen.getByRole('button', { name: 'Next move' });
+        
+        expect(prevButtonAfter).not.toBeDisabled();
+        expect(nextButtonAfter).toBeDisabled();
     });
 });

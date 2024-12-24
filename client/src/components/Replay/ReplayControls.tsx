@@ -69,11 +69,12 @@ export function ReplayControls({
                     <Button
                         onClick={isPlaying ? onPause : onResume}
                         variant="outline"
+                        aria-label={isPlaying ? "Pause" : "Play"}
                     >
                         {isPlaying ? (
-                            <Pause className="w-4 h-4" aria-label="Pause" />
+                            <Pause className="w-4 h-4" />
                         ) : (
-                            <Play className="w-4 h-4" aria-label="Play" />
+                            <Play className="w-4 h-4" />
                         )}
                     </Button>
                 )}
@@ -83,16 +84,18 @@ export function ReplayControls({
                     onClick={onPrevious}
                     disabled={isFirstMove}
                     variant="outline"
+                    aria-label="Previous move"
                 >
-                    <SkipBack className="w-4 h-4" aria-label="Previous move" />
+                    <SkipBack className="w-4 h-4" />
                 </Button>
 
                 <Button
                     onClick={onNext}
                     disabled={isLastMove}
                     variant="outline"
+                    aria-label="Next move"
                 >
-                    <SkipForward className="w-4 h-4" aria-label="Next move" />
+                    <SkipForward className="w-4 h-4" />
                 </Button>
             </div>
 
@@ -102,14 +105,16 @@ export function ReplayControls({
                     onClick={() => onSpeedChange(0.5)}
                     variant={playbackSpeed === 0.5 ? "default" : "outline"}
                     size="sm"
+                    aria-label="Slow down"
                 >
-                    <Rewind className="w-4 h-4" aria-label="Slow down" />
+                    <Rewind className="w-4 h-4" />
                 </Button>
 
                 <Button
                     onClick={() => onSpeedChange(1)}
                     variant={playbackSpeed === 1 ? "default" : "outline"}
                     size="sm"
+                    aria-label="Normal speed"
                 >
                     1x
                 </Button>
@@ -118,8 +123,9 @@ export function ReplayControls({
                     onClick={() => onSpeedChange(2)}
                     variant={playbackSpeed === 2 ? "default" : "outline"}
                     size="sm"
+                    aria-label="Speed up"
                 >
-                    <FastForward className="w-4 h-4" aria-label="Speed up" />
+                    <FastForward className="w-4 h-4" />
                 </Button>
             </div>
         </div>
