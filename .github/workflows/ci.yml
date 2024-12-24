@@ -63,18 +63,32 @@ jobs:
           pnpm --filter @ctor-game/client lint && pnpm --filter @ctor-game/client type-check
           pnpm --filter @ctor-game/server lint && pnpm --filter @ctor-game/server type-check
 
-      - name: Run unit and integration tests
+      - name: Run client tests
         run: |
-          pnpm --filter @ctor-game/client test
-          pnpm --filter @ctor-game/server test && pnpm --filter @ctor-game/server test:integration
+          pnpm --filter @ctor-game/client test:unit
+          pnpm --filter @ctor-game/client test:hooks
+          pnpm --filter @ctor-game/client test:components
+
+      - name: Run server tests
+        run: |
+          pnpm --filter @ctor-game/server test:unit
+          pnpm --filter @ctor-game/server test:integration
         env:
           DATABASE_URL: postgresql://test:test@localhost:5432/ctorgame_test
           REDIS_URL: redis://localhost:6379
 
-      - name: Generate coverage report
+      - name: Run E2E tests
+        run: |
+          pnpm --filter @ctor-game/client test:e2e:ci
+        env:
+          DATABASE_URL: postgresql://test:test@localhost:5432/ctorgame_test
+          REDIS_URL: redis://localhost:6379
+
+      - name: Generate coverage reports
         run: |
           pnpm --filter @ctor-game/client test:coverage
           pnpm --filter @ctor-game/server test:coverage
+          pnpm --filter @ctor-game/client test:e2e:coverage
 
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v3

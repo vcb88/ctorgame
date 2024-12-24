@@ -12,7 +12,13 @@
     "format": "prettier --write \"src/**/*.{ts,tsx,css}\"",
     "format:check": "prettier --check \"src/**/*.{ts,tsx,css}\"",
     "test": "vitest",
+    "test:unit": "vitest run src/**/*.test.{ts,tsx} --config vitest.unit.config.ts",
+    "test:hooks": "vitest run src/hooks/__tests__/*.test.ts --config vitest.hooks.config.ts",
+    "test:components": "vitest run src/components/**/__tests__/*.test.tsx --config vitest.components.config.ts",
+    "test:e2e": "cypress open",
+    "test:e2e:ci": "cypress run --headless",
     "test:coverage": "vitest run --coverage",
+    "test:e2e:coverage": "cypress run --headless --reporter mochawesome",
     "type-check": "tsc --noEmit"
   },
   "dependencies": {

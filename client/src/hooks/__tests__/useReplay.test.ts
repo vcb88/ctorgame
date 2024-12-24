@@ -1,0 +1,183 @@
+import { renderHook, act } from '@testing-library/react-hooks';
+import { useReplay } from '../useReplay';
+import { Socket } from 'socket.io-client';
+import { ReplayEvent, IGameState } from '@ctor-game/shared/types';
+
+// Мок для Socket.io
+const mockSocket = {
+    emit: jest.fn(),
+    on: jest.fn(),
+    off: jest.fn(),
+} as unknown as Socket;
+
+// Мок для начального состояния игры
+const mockGameState: IGameState = {
+    board: Array(10).fill(null).map(() => Array(10).fill(null)),
+    currentTurn: {
+        playerNumber: 0,
+        placeOperationsLeft: 2,
+        replaceOperationsLeft: 0
+    },
+    scores: {
+        player1: 0,
+        player2: 0
+    },
+    gameOver: false,
+    winner: null
+};
+
+describe('useReplay', () => {
+    beforeEach(() => {
+        jest.clearAllMocks();
+    });
+
+    it('should initialize with default values', () => {
+        const { result } = renderHook(() => 
+            useReplay({ socket: mockSocket, gameCode: 'TEST123' })
+        );
+
+        expect(result.current.isPlaying).toBe(false);
+        expect(result.current.currentMove).toBe(0);
+        expect(result.current.totalMoves).toBe(0);
+        expect(result.current.playbackSpeed).toBe(1);
+        expect(result.current.gameState).toBeNull();
+        expect(result.current.error).toBeNull();
+    });
+
+    it('should handle start replay', async () => {
+        const { result } = renderHook(() => 
+            useReplay({ socket: mockSocket, gameCode: 'TEST123' })
+        );
+
+        // Имитируем событие обновления состояния
+        const mockHandler = mockSocket.on.mock.calls.find(
+            call => call[0] === ReplayEvent.REPLAY_STATE_UPDATED
+        )[1];
+
+        act(() => {
+            result.current.startReplay();
+            mockHandler({ 
+                state: mockGameState, 
+                moveIndex: 0, 
+                totalMoves: 10 
+            });
+        });
+
+        expect(mockSocket.emit).toHaveBeenCalledWith(
+            ReplayEvent.START_REPLAY,
+            { gameCode: 'TEST123' }
+        );
+        expect(result.current.gameState).toEqual(mockGameState);
+        expect(result.current.totalMoves).toBe(10);
+    });
+
+    it('should handle pause and resume', () => {
+        const { result } = renderHook(() => 
+            useReplay({ socket: mockSocket, gameCode: 'TEST123' })
+        );
+
+        // Имитируем паузу
+        act(() => {
+            result.current.pauseReplay();
+        });
+
+        expect(mockSocket.emit).toHaveBeenCalledWith(
+            ReplayEvent.PAUSE_REPLAY,
+            { gameCode: 'TEST123' }
+        );
+
+        // Имитируем возобновление
+        act(() => {
+            result.current.resumeReplay();
+        });
+
+        expect(mockSocket.emit).toHaveBeenCalledWith(
+            ReplayEvent.RESUME_REPLAY,
+            { gameCode: 'TEST123' }
+        );
+    });
+
+    it('should handle navigation between moves', () => {
+        const { result } = renderHook(() => 
+            useReplay({ socket: mockSocket, gameCode: 'TEST123' })
+        );
+
+        // Следующий ход
+        act(() => {
+            result.current.nextMove();
+        });
+
+        expect(mockSocket.emit).toHaveBeenCalledWith(
+            ReplayEvent.NEXT_MOVE,
+            { gameCode: 'TEST123' }
+        );
+
+        // Предыдущий ход
+        act(() => {
+            result.current.previousMove();
+        });
+
+        expect(mockSocket.emit).toHaveBeenCalledWith(
+            ReplayEvent.PREV_MOVE,
+            { gameCode: 'TEST123' }
+        );
+
+        // Переход к конкретному ходу
+        act(() => {
+            result.current.goToMove(5);
+        });
+
+        expect(mockSocket.emit).toHaveBeenCalledWith(
+            ReplayEvent.GOTO_MOVE,
+            { gameCode: 'TEST123', moveIndex: 5 }
+        );
+    });
+
+    it('should handle playback speed changes', () => {
+        const { result } = renderHook(() => 
+            useReplay({ socket: mockSocket, gameCode: 'TEST123' })
+        );
+
+        act(() => {
+            result.current.setSpeed(2);
+        });
+
+        expect(mockSocket.emit).toHaveBeenCalledWith(
+            ReplayEvent.SET_PLAYBACK_SPEED,
+            { gameCode: 'TEST123', speed: 2 }
+        );
+    });
+
+    it('should handle errors', () => {
+        const { result } = renderHook(() => 
+            useReplay({ socket: mockSocket, gameCode: 'TEST123' })
+        );
+
+        // Имитируем ошибку
+        const mockErrorHandler = mockSocket.on.mock.calls.find(
+            call => call[0] === ReplayEvent.REPLAY_ERROR
+        )[1];
+
+        act(() => {
+            mockErrorHandler({ message: 'Test error' });
+        });
+
+        expect(result.current.error).toBe('Test error');
+        expect(result.current.isPlaying).toBe(false);
+    });
+
+    it('should cleanup on unmount', () => {
+        const { unmount } = renderHook(() => 
+            useReplay({ socket: mockSocket, gameCode: 'TEST123' })
+        );
+
+        unmount();
+
+        // Проверяем отписку от всех событий
+        expect(mockSocket.off).toHaveBeenCalledWith(ReplayEvent.REPLAY_STATE_UPDATED, expect.any(Function));
+        expect(mockSocket.off).toHaveBeenCalledWith(ReplayEvent.REPLAY_PAUSED, expect.any(Function));
+        expect(mockSocket.off).toHaveBeenCalledWith(ReplayEvent.REPLAY_RESUMED, expect.any(Function));
+        expect(mockSocket.off).toHaveBeenCalledWith(ReplayEvent.REPLAY_COMPLETED, expect.any(Function));
+        expect(mockSocket.off).toHaveBeenCalledWith(ReplayEvent.REPLAY_ERROR, expect.any(Function));
+    });
+});
