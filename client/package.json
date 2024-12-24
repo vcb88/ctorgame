@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "vite --host 0.0.0.0",
     "dev:ci": "mkdir -p logs && vite --host 0.0.0.0 --mode ci --debug 2>&1 | tee logs/vite.log",
-    "build": "tsc -p tsconfig.test.json && vite build",
+    "build": "tsc && vite build",
     "lint": "eslint . --max-warnings 0",
     "lint:fix": "eslint . --fix",
     "preview": "vite preview",

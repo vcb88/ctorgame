@@ -2,6 +2,7 @@ import { defineConfig } from 'vitest/config';
 import react from '@vitejs/plugin-react';
 import path from 'path';
 
+/// <reference types="vitest" />
 export default defineConfig({
     resolve: {
         alias: {

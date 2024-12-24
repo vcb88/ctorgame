@@ -1,3 +1,4 @@
+/// <reference types="vitest" />
 import { renderHook } from '@testing-library/react';
 import { useGameHistory, HistoryEntry } from '../useGameHistory';
 import { OperationType } from '@ctor-game/shared/types';
