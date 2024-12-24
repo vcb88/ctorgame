@@ -1,59 +1,53 @@
 import { Socket } from 'socket.io-client';
-import { DefaultEventsMap } from 'socket.io/dist/typed-events';
+import { vi } from 'vitest';
+
+interface Listener {
+  event: string;
+  callback: Function;
+}
 
 export interface MockSocket extends Socket {
-  mockEmit: jest.Mock;
-  mockOn: jest.Mock;
-  mockOff: jest.Mock;
-  mockClose: jest.Mock;
-  simulateEvent: (event: string, data: any) => Promise<void>;
+  simulateEvent: (event: string, data: unknown) => Promise<void>;
+  listeners: Listener[];
 }
 
 export function createMockSocket(): MockSocket {
-  const mockEmit = vi.fn();
-  const mockOn = vi.fn();
-  const mockOff = vi.fn();
-  const mockClose = vi.fn();
-  const listeners: Record<string, Function[]> = {};
+  const listeners: Listener[] = [];
 
   const socket = {
-    emit: mockEmit,
-    on: (event: string, callback: Function) => {
-      if (!listeners[event]) {
-        listeners[event] = [];
-      }
-      listeners[event].push(callback);
-      mockOn(event, callback);
+    emit: vi.fn(),
+    on: vi.fn((event: string, callback: Function) => {
+      listeners.push({ event, callback });
       return socket;
-    },
-    off: (event: string, callback?: Function) => {
-      if (callback && listeners[event]) {
-        const index = listeners[event].indexOf(callback);
-        if (index > -1) {
-          listeners[event].splice(index, 1);
-        }
-      } else {
-        delete listeners[event];
+    }),
+    off: vi.fn((event: string, callback?: Function) => {
+      const index = callback 
+        ? listeners.findIndex(l => l.event === event && l.callback === callback)
+        : listeners.findIndex(l => l.event === event);
+      if (index > -1) {
+        listeners.splice(index, 1);
       }
-      mockOff(event, callback);
       return socket;
-    },
-    close: () => {
-      mockClose();
-      Object.keys(listeners).forEach(event => {
-        delete listeners[event];
-      });
-    },
-    simulateEvent: async (event: string, data: any) => {
-      if (listeners[event]) {
-        await Promise.all(listeners[event].map(callback => Promise.resolve().then(() => callback(data))));
+    }),
+    close: vi.fn(),
+    simulateEvent: async (event: string, data: unknown) => {
+      const matchingListeners = listeners.filter(l => l.event === event);
+      for (const listener of matchingListeners) {
+        await Promise.resolve().then(() => listener.callback(data));
       }
     },
-    mockEmit,
-    mockOn,
-    mockOff,
-    mockClose,
+    listeners,
+    // Добавляем свойство mock для совместимости с vi.fn()
+    mock: {
+      calls: [] as any[][]
+    }
   } as unknown as MockSocket;
+
+  // Добавляем свойства mock к методам
+  (socket.emit as any).mock = { calls: [] };
+  (socket.on as any).mock = { calls: [] };
+  (socket.off as any).mock = { calls: [] };
+  (socket.close as any).mock = { calls: [] };
 
   return socket;
 }
