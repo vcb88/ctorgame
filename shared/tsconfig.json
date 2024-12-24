@@ -8,7 +8,9 @@
     "rootDir": "./types",
     "strict": true,
     "esModuleInterop": true,
-    "skipLibCheck": true
+    "skipLibCheck": true,
+    "composite": true,
+    "declarationMap": true
   },
   "include": ["types/**/*"],
   "exclude": ["node_modules", "dist"]
