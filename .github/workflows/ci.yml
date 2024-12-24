@@ -63,32 +63,45 @@ jobs:
           pnpm --filter @ctor-game/client lint && pnpm --filter @ctor-game/client type-check
           pnpm --filter @ctor-game/server lint && pnpm --filter @ctor-game/server type-check
 
-      - name: Run client tests
+      - name: Run shared package tests
+        run: pnpm --filter @ctor-game/shared test --reporter verbose
+
+      - name: Run client unit tests
         run: |
-          pnpm --filter @ctor-game/client test:unit
-          pnpm --filter @ctor-game/client test:hooks
-          pnpm --filter @ctor-game/client test:components
+          echo "Running unit tests..."
+          pnpm --filter @ctor-game/client test:unit --reporter verbose
+          echo "Running hook tests..."
+          pnpm --filter @ctor-game/client test:hooks --reporter verbose
+          echo "Running component tests..."
+          pnpm --filter @ctor-game/client test:components --reporter verbose
 
       - name: Run server tests
         run: |
-          pnpm --filter @ctor-game/server test:unit
-          pnpm --filter @ctor-game/server test:integration
+          echo "Running server unit tests..."
+          pnpm --filter @ctor-game/server test:unit --reporter verbose
+          echo "Running server integration tests..."
+          pnpm --filter @ctor-game/server test:integration --reporter verbose
         env:
           DATABASE_URL: postgresql://test:test@localhost:5432/ctorgame_test
           REDIS_URL: redis://localhost:6379
+          NODE_ENV: test
+
+      - name: Generate coverage reports
+        run: |
+          echo "Generating client coverage..."
+          pnpm --filter @ctor-game/client test:coverage
+          echo "Generating server coverage..."
+          pnpm --filter @ctor-game/server test:coverage
 
       - name: Run E2E tests
+        if: success()
         run: |
+          echo "Running E2E tests..."
           pnpm --filter @ctor-game/client test:e2e:ci
         env:
           DATABASE_URL: postgresql://test:test@localhost:5432/ctorgame_test
           REDIS_URL: redis://localhost:6379
-
-      - name: Generate coverage reports
-        run: |
-          pnpm --filter @ctor-game/client test:coverage
-          pnpm --filter @ctor-game/server test:coverage
-          pnpm --filter @ctor-game/client test:e2e:coverage
+          NODE_ENV: test
 
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v3
