@@ -1,16 +1,11 @@
 import { renderHook, act } from '@testing-library/react-hooks';
 import { useGameHistory, HistoryEntry } from '../useGameHistory';
-import { Socket } from 'socket.io-client';
 import { OperationType } from '@ctor-game/shared/types';
-
 import { vi } from 'vitest';
+import { createMockSocket, type MockSocket } from '@/test/socket-test-utils';
 
 // Мок для Socket.io
-const mockSocket = {
-    emit: vi.fn(),
-    on: vi.fn(),
-    off: vi.fn(),
-} as unknown as Socket;
+const mockSocket = createMockSocket();
 
 // Мок для истории ходов
 const mockMoves: HistoryEntry[] = [

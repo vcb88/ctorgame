@@ -1,9 +1,11 @@
 import { createRoot } from 'react-dom/client';
 import { act } from 'react-dom/test-utils';
 
+import { Root } from 'react-dom/client';
+
 const originalRender = document.createElement;
-let container = null;
-let root = null;
+let container: HTMLElement | null = null;
+let root: Root | null = null;
 
 // Переопределяем createElement для создания нового контейнера при каждом рендере
 document.createElement = function (tagName: string) {
