@@ -4,7 +4,8 @@
   "version": "0.1.0",
   "type": "module",
   "scripts": {
-    "dev": "vite --host",
+    "dev": "vite --host 0.0.0.0",
+    "dev:ci": "vite --host 0.0.0.0 --mode ci",
     "build": "tsc && vite build",
     "lint": "eslint . --max-warnings 0",
     "lint:fix": "eslint . --fix",
@@ -16,7 +17,7 @@
     "test:hooks": "vitest run --config vitest.hooks.config.ts",
     "test:components": "vitest run --config vitest.components.config.ts",
     "test:e2e": "start-server-and-test dev http://localhost:5173 'cypress open'",
-    "test:e2e:ci": "start-server-and-test dev http://localhost:5173 'cypress run --headless'",
+    "test:e2e:ci": "start-server-and-test 'pnpm dev:ci' http://localhost:5173 'cypress run --headless'",
     "test:coverage": "vitest run --coverage",
     "test:e2e:coverage": "cypress run --headless --reporter mochawesome",
     "type-check": "tsc --noEmit"

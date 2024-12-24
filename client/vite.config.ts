@@ -10,11 +10,17 @@ export default defineConfig({
     }
   },
   server: {
-    host: true,
+    host: '0.0.0.0',
     port: 5173,
     strictPort: true,
     hmr: {
-      clientPort: 5173
+      host: '127.0.0.1',
+      port: 5173
     }
+  },
+  preview: {
+    port: 5173,
+    strictPort: true,
+    host: '0.0.0.0',
   }
 });

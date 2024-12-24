@@ -93,30 +93,58 @@ jobs:
           echo "Generating server coverage..."
           pnpm --filter @ctor-game/server test:coverage
 
-      - name: Start Dev Server
+      - name: Start and Test Dev Server
         run: |
           echo "Starting development server..."
-          cd client && pnpm dev & # Start in background and change to client directory
-          # Wait for the server to be ready
-          for i in {1..30}; do
-            if curl -s http://localhost:5173 >/dev/null; then
-              echo "Server is up!"
+          cd client
+          # Start server in background
+          pnpm dev &
+          SERVER_PID=$!
+          
+          # Function to check if server is responding with HTML
+          check_server() {
+            RESPONSE=$(curl -s -I http://localhost:5173)
+            if echo "$RESPONSE" | grep -q "content-type: text/html"; then
+              return 0
+            fi
+            return 1
+          }
+          
+          # Wait for server with proper response
+          echo "Waiting for server to be ready..."
+          COUNTER=0
+          while [ $COUNTER -lt 30 ]; do
+            if check_server; then
+              echo "Server is responding with HTML content!"
               break
             fi
-            echo "Waiting for server... attempt $i"
+            echo "Attempt $((COUNTER + 1)): Server not ready yet..."
             sleep 2
+            COUNTER=$((COUNTER + 1))
           done
+          
+          # Verify server is actually working
+          if ! check_server; then
+            echo "Server failed to start properly"
+            kill $SERVER_PID
+            exit 1
+          fi
+          
+          # Keep the server running
+          disown $SERVER_PID
 
-      - name: Cypress E2E Tests
+      - name: Run Cypress Tests
         uses: cypress-io/github-action@v6
         with:
           working-directory: client
-          install: false  # We already installed dependencies
-          command: pnpm test:e2e:ci
-          wait-on: 'http://localhost:5173'  # Wait for dev server
-          wait-on-timeout: 180
+          install: false
+          start: |
+            echo "Server should be running..."
+            curl -v http://localhost:5173
+          wait-on: 'http://localhost:5173'
+          wait-on-timeout: 30
           browser: chrome
-          record: false  # Set to true if you have Cypress Dashboard
+          record: false
         env:
           DATABASE_URL: postgresql://test:test@localhost:5432/ctorgame_test
           REDIS_URL: redis://localhost:6379
