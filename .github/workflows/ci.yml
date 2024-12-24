@@ -93,6 +93,19 @@ jobs:
           echo "Generating server coverage..."
           pnpm --filter @ctor-game/server test:coverage
 
+      - name: Cache Cypress binary
+        uses: actions/cache@v3
+        with:
+          path: ~/.cache/Cypress
+          key: cypress-binary-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            cypress-binary-
+
+      - name: Install Cypress
+        run: |
+          echo "Installing Cypress..."
+          pnpm --filter @ctor-game/client cypress install
+
       - name: Run E2E tests
         if: success()
         run: |
@@ -102,6 +115,8 @@ jobs:
           DATABASE_URL: postgresql://test:test@localhost:5432/ctorgame_test
           REDIS_URL: redis://localhost:6379
           NODE_ENV: test
+          # Add Cypress specific env vars
+          CYPRESS_CACHE_FOLDER: ~/.cache/Cypress
 
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v3
