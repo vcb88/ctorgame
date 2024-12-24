@@ -1,6 +1,6 @@
 import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, ManyToOne, JoinColumn } from 'typeorm';
 import { Game } from './Game';
-import { IMove } from '@ctor-game/shared/types';
+import { IGameMove } from '@ctor-game/shared/types';
 
 @Entity('moves')
 export class Move {
@@ -18,7 +18,7 @@ export class Move {
     playerNumber: number;
 
     @Column({ type: 'jsonb' })
-    moveData: IMove;
+    moveData: IGameMove;
 
     @CreateDateColumn()
     createdAt: Date;

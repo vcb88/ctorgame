@@ -2,14 +2,16 @@ import { Server } from 'socket.io';
 import { Server as HttpServer } from 'http';
 import { Socket } from 'socket.io';
 import { 
-  IPlayer, 
-  IMove, 
-  IGameRoom, 
+  IPlayer,
+  IGameRoom,
+  IGameMove,
+  OperationType,
   WebSocketEvents,
   ServerToClientEvents,
   ClientToServerEvents
 } from '@ctor-game/shared/types';
 import { GameService } from '../services/GameService';
+import { GameLogicService } from '../services/GameLogicService';
 import { AppDataSource } from '../config/database';
 
 export class GameServer {
@@ -47,14 +49,17 @@ export class GameServer {
             number: 0
           };
 
+          // Создаем начальное состояние игры
+          const initialState = GameLogicService.createInitialState();
+
           // Сохраняем игру в БД
-          const game = await this.gameService.createGame(gameCode, player);
+          const game = await this.gameService.createGame(gameCode, player, initialState);
 
           // Создаем активную игру в памяти
           const activeGame: IGameRoom = {
             gameId: gameCode,
             players: [player],
-            currentState: game.currentState,
+            currentState: initialState,
             currentPlayer: 0
           };
           
@@ -127,24 +132,46 @@ export class GameServer {
             return;
           }
 
-          if (!this.isValidMove(activeGame.currentState.board, move)) {
+          // Проверяем валидность хода с помощью GameLogicService
+          if (!GameLogicService.isValidMove(activeGame.currentState, move, player.number)) {
             socket.emit(WebSocketEvents.Error, { message: 'Invalid move' });
             return;
           }
+
+          // Применяем ход
+          const updatedState = GameLogicService.applyMove(
+            activeGame.currentState,
+            move,
+            player.number
+          );
 
           // Сохраняем ход в БД
           const updatedGame = await this.gameService.makeMove(gameId, player.number, move);
           
           // Обновляем состояние в памяти
-          activeGame.currentState = updatedGame.currentState;
-          activeGame.currentPlayer = (activeGame.currentPlayer + 1) % 2;
+          activeGame.currentState = updatedState;
 
+          // Отправляем обновленное состояние всем игрокам
           this.io.to(gameId).emit(WebSocketEvents.GameStateUpdated, {
             gameState: activeGame.currentState,
             currentPlayer: activeGame.currentPlayer
           });
 
-          // Если игра завершена, отправляем дополнительное событие
+          // Если это была операция размещения, проверяем доступные замены
+          if (move.type === OperationType.PLACE) {
+            const availableReplaces = GameLogicService.getAvailableReplaces(
+              activeGame.currentState,
+              player.number
+            );
+
+            if (availableReplaces.length > 0) {
+              socket.emit(WebSocketEvents.AvailableReplaces, {
+                moves: availableReplaces
+              });
+            }
+          }
+
+          // Если игра завершена, отправляем событие окончания
           if (activeGame.currentState.gameOver) {
             this.io.to(gameId).emit(WebSocketEvents.GameOver, {
               gameState: activeGame.currentState,
@@ -154,6 +181,49 @@ export class GameServer {
         } catch (error) {
           console.error('Error making move:', error);
           socket.emit(WebSocketEvents.Error, { message: 'Failed to make move' });
+        }
+      });
+
+      // Добавляем обработчик завершения хода
+      socket.on(WebSocketEvents.EndTurn, async ({ gameId }) => {
+        try {
+          const activeGame = this.activeGames.get(gameId);
+          
+          if (!activeGame) {
+            socket.emit(WebSocketEvents.Error, { message: 'Game not found' });
+            return;
+          }
+
+          const player = activeGame.players.find(p => p.id === socket.id);
+          if (!player) {
+            socket.emit(WebSocketEvents.Error, { message: 'Player not found in game' });
+            return;
+          }
+
+          if (player.number !== activeGame.currentPlayer) {
+            socket.emit(WebSocketEvents.Error, { message: 'Not your turn' });
+            return;
+          }
+
+          // Сбрасываем состояние хода и передаем ход следующему игроку
+          activeGame.currentState.currentTurn = {
+            placeOperationsLeft: 2,
+            moves: []
+          };
+          activeGame.currentPlayer = (activeGame.currentPlayer + 1) % 2;
+
+          // Сохраняем состояние в БД
+          await this.gameService.updateGameState(gameId, activeGame.currentState);
+
+          // Отправляем обновленное состояние всем игрокам
+          this.io.to(gameId).emit(WebSocketEvents.GameStateUpdated, {
+            gameState: activeGame.currentState,
+            currentPlayer: activeGame.currentPlayer
+          });
+
+        } catch (error) {
+          console.error('Error ending turn:', error);
+          socket.emit(WebSocketEvents.Error, { message: 'Failed to end turn' });
         }
       });
 

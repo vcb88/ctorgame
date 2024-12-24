@@ -2,7 +2,8 @@ import { useEffect, useState, useCallback } from 'react';
 import { io, Socket } from 'socket.io-client';
 import { 
   IGameState, 
-  IMove, 
+  IGameMove,
+  OperationType,
   WebSocketEvents,
   ClientToServerEvents,
   ServerToClientEvents
@@ -19,6 +20,7 @@ export const useMultiplayerGame = () => {
   const [gameState, setGameState] = useState<IGameState | null>(null);
   const [currentPlayer, setCurrentPlayer] = useState<number>(0);
   const [error, setError] = useState<string | null>(null);
+  const [availableReplaces, setAvailableReplaces] = useState<IGameMove[]>([]);
 
   // Initialize socket connection
   useEffect(() => {
@@ -50,6 +52,11 @@ export const useMultiplayerGame = () => {
       setGameState(gameState);
       setCurrentPlayer(currentPlayer);
       setError(null);
+      setAvailableReplaces([]); // Сбрасываем доступные замены при обновлении состояния
+    });
+
+    socket.on(WebSocketEvents.AvailableReplaces, ({ moves }) => {
+      setAvailableReplaces(moves);
     });
 
     socket.on(WebSocketEvents.GameOver, ({ gameState, winner }) => {
@@ -86,9 +93,18 @@ export const useMultiplayerGame = () => {
     socket.emit(WebSocketEvents.JoinGame, { gameId });
   }, [socket]);
 
-  const makeMove = useCallback((move: IMove) => {
+  const makeMove = useCallback((row: number, col: number, type: OperationType = OperationType.PLACE) => {
     if (!socket || !gameId) return;
+    const move: IGameMove = {
+      type,
+      position: { row, col }
+    };
     socket.emit(WebSocketEvents.MakeMove, { gameId, move });
+  }, [socket, gameId]);
+
+  const endTurn = useCallback(() => {
+    if (!socket || !gameId) return;
+    socket.emit(WebSocketEvents.EndTurn, { gameId });
   }, [socket, gameId]);
 
   const isMyTurn = playerNumber === currentPlayer;
@@ -100,8 +116,10 @@ export const useMultiplayerGame = () => {
     currentPlayer,
     error,
     isMyTurn,
+    availableReplaces,
     createGame,
     joinGame,
     makeMove,
+    endTurn,
   };
 };

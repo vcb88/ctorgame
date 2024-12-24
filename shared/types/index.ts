@@ -1,18 +1,8 @@
-// Базовые типы игры
-export interface IGameState {
-  board: (number | null)[][];
-  gameOver: boolean;
-  winner: number | null;
-}
+export * from './game';
 
 export interface IPlayer {
   id: string;
   number: number;
-}
-
-export interface IMove {
-  row: number;
-  col: number;
 }
 
 export interface IGameRoom {
@@ -28,12 +18,14 @@ export enum WebSocketEvents {
   CreateGame = 'createGame',
   JoinGame = 'joinGame',
   MakeMove = 'makeMove',
+  EndTurn = 'endTurn',
   Disconnect = 'disconnect',
 
   // События от сервера к клиенту
   GameCreated = 'gameCreated',
   GameStarted = 'gameStarted',
   GameStateUpdated = 'gameStateUpdated',
+  AvailableReplaces = 'availableReplaces',
   GameOver = 'gameOver',
   PlayerDisconnected = 'playerDisconnected',
   Error = 'error'
@@ -48,7 +40,10 @@ export interface WebSocketPayloads {
   };
   [WebSocketEvents.MakeMove]: {
     gameId: string;
-    move: IMove;
+    move: IGameMove;
+  };
+  [WebSocketEvents.EndTurn]: {
+    gameId: string;
   };
   [WebSocketEvents.Disconnect]: void;
 
@@ -63,6 +58,9 @@ export interface WebSocketPayloads {
   [WebSocketEvents.GameStateUpdated]: {
     gameState: IGameState;
     currentPlayer: number;
+  };
+  [WebSocketEvents.AvailableReplaces]: {
+    moves: IGameMove[];
   };
   [WebSocketEvents.GameOver]: {
     gameState: IGameState;

@@ -2,7 +2,13 @@ import { Repository } from 'typeorm';
 import { AppDataSource } from '../config/database';
 import { Game } from '../entities/Game';
 import { Move } from '../entities/Move';
-import { IGameState, IMove, IPlayer } from '@ctor-game/shared/types';
+import { 
+    IGameState, 
+    IGameMove, 
+    IPlayer, 
+    OperationType,
+    BOARD_SIZE 
+} from '@ctor-game/shared/types';
 
 export class GameService {
     private gameRepository: Repository<Game>;
@@ -13,12 +19,7 @@ export class GameService {
         this.moveRepository = AppDataSource.getRepository(Move);
     }
 
-    async createGame(gameCode: string, player: IPlayer): Promise<Game> {
-        const initialState: IGameState = {
-            board: Array(3).fill(null).map(() => Array(3).fill(null)),
-            gameOver: false,
-            winner: null
-        };
+    async createGame(gameCode: string, player: IPlayer, initialState: IGameState): Promise<Game> {
 
         const game = this.gameRepository.create({
             gameCode,
@@ -44,7 +45,7 @@ export class GameService {
         return await this.gameRepository.save(game);
     }
 
-    async makeMove(gameCode: string, playerNumber: number, move: IMove): Promise<Game> {
+    async makeMove(gameCode: string, playerNumber: number, move: IGameMove): Promise<Game> {
         const game = await this.gameRepository.findOne({ 
             where: { gameCode },
             relations: ['moves'] 
@@ -58,32 +59,84 @@ export class GameService {
             throw new Error('Game is already completed');
         }
 
-        // Сохраняем ход
-        const newMove = this.moveRepository.create({
-            gameId: game.id,
-            playerNumber,
-            moveData: move
-        });
-        await this.moveRepository.save(newMove);
+        // Начинаем транзакцию для атомарного обновления
+        const queryRunner = AppDataSource.createQueryRunner();
+        await queryRunner.connect();
+        await queryRunner.startTransaction();
 
-        // Обновляем состояние игры
-        const { row, col } = move;
-        game.currentState.board[row][col] = playerNumber;
+        try {
+            // Сохраняем ход в истории
+            const newMove = this.moveRepository.create({
+                gameId: game.id,
+                playerNumber,
+                moveData: {
+                    type: move.type,
+                    position: move.position,
+                    timestamp: new Date()
+                }
+            });
+            await queryRunner.manager.save(newMove);
 
-        // Проверяем на победу
-        if (this.checkWin(game.currentState.board, playerNumber)) {
-            game.currentState.gameOver = true;
-            game.currentState.winner = playerNumber;
-            game.isCompleted = true;
-            game.completedAt = new Date();
-            game.winner = playerNumber;
-        } else if (this.isBoardFull(game.currentState.board)) {
-            game.currentState.gameOver = true;
-            game.isCompleted = true;
-            game.completedAt = new Date();
+            // Обновляем состояние игры в зависимости от типа хода
+            const { row, col } = move.position;
+            
+            if (move.type === OperationType.PLACE) {
+                // Для операции размещения уменьшаем количество доступных ходов
+                game.currentState.currentTurn.placeOperationsLeft--;
+                game.currentState.board[row][col] = playerNumber;
+            } else if (move.type === OperationType.REPLACE) {
+                // Для операции замены просто меняем владельца клетки
+                game.currentState.board[row][col] = playerNumber;
+            }
+
+            // Обновляем счет
+            let player1Count = 0;
+            let player2Count = 0;
+            for (let i = 0; i < BOARD_SIZE; i++) {
+                for (let j = 0; j < BOARD_SIZE; j++) {
+                    if (game.currentState.board[i][j] === 0) player1Count++;
+                    else if (game.currentState.board[i][j] === 1) player2Count++;
+                }
+            }
+            game.currentState.scores = {
+                player1: player1Count,
+                player2: player2Count
+            };
+
+            // Проверяем окончание игры
+            const isBoardFull = game.currentState.board.every(row => 
+                row.every(cell => cell !== null)
+            );
+
+            if (isBoardFull) {
+                game.currentState.gameOver = true;
+                game.isCompleted = true;
+                game.completedAt = new Date();
+                
+                // Определяем победителя по количеству фишек
+                if (player1Count > player2Count) {
+                    game.currentState.winner = 0;
+                    game.winner = 0;
+                } else if (player2Count > player1Count) {
+                    game.currentState.winner = 1;
+                    game.winner = 1;
+                } else {
+                    game.currentState.winner = null; // Ничья
+                }
+            }
+
+            // Сохраняем обновленное состояние игры
+            await queryRunner.manager.save(game);
+            await queryRunner.commitTransaction();
+            
+            return game;
+        } catch (error) {
+            await queryRunner.rollbackTransaction();
+            throw error;
+        } finally {
+            await queryRunner.release();
         }
-
-        return await this.gameRepository.save(game);
+    }
     }
 
     async getGame(gameCode: string): Promise<Game | null> {
@@ -91,6 +144,25 @@ export class GameService {
             where: { gameCode },
             relations: ['moves']
         });
+    }
+
+    async updateGameState(gameCode: string, newState: IGameState): Promise<Game> {
+        const game = await this.gameRepository.findOne({ 
+            where: { gameCode }
+        });
+
+        if (!game) {
+            throw new Error('Game not found');
+        }
+
+        game.currentState = newState;
+        if (newState.gameOver) {
+            game.isCompleted = true;
+            game.completedAt = new Date();
+            game.winner = newState.winner;
+        }
+
+        return await this.gameRepository.save(game);
     }
 
     async getGameHistory(gameCode: string): Promise<Move[]> {
@@ -104,35 +176,5 @@ export class GameService {
         }
 
         return game.moves;
-    }
-
-    private checkWin(board: (number | null)[][], player: number): boolean {
-        // Проверка строк
-        for (let i = 0; i < 3; i++) {
-            if (board[i].every(cell => cell === player)) {
-                return true;
-            }
-        }
-
-        // Проверка столбцов
-        for (let j = 0; j < 3; j++) {
-            if (board.every(row => row[j] === player)) {
-                return true;
-            }
-        }
-
-        // Проверка диагоналей
-        if (board[0][0] === player && board[1][1] === player && board[2][2] === player) {
-            return true;
-        }
-        if (board[0][2] === player && board[1][1] === player && board[2][0] === player) {
-            return true;
-        }
-
-        return false;
-    }
-
-    private isBoardFull(board: (number | null)[][]): boolean {
-        return board.every(row => row.every(cell => cell !== null));
     }
 }
