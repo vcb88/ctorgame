@@ -2,7 +2,6 @@ import '@testing-library/cypress/add-commands'
 import { GameState } from './types'
 
 declare global {
-  // eslint-disable-next-line @typescript-eslint/no-namespace
   namespace Cypress {
     interface Chainable {
       createGame(): Chainable<string>
