@@ -20,7 +20,7 @@ document.createElement = function (tagName: string) {
 // Обновляем render для использования createRoot
 const render = async (element: React.ReactElement) => {
     await act(async () => {
-        root.render(element);
+        root?.render(element);
     });
     return container;
 };

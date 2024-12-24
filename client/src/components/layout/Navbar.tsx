@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Button } from '../ui/button';
+import { cn } from '@/lib/utils';
 
 export function Navbar() {
     const location = useLocation();
@@ -18,19 +18,29 @@ export function Navbar() {
 
                     {/* Навигационные ссылки */}
                     <div className="flex items-center space-x-4">
-                        <Button
-                            variant={location.pathname === '/' ? 'default' : 'ghost'}
-                            asChild={true}
+                        <Link 
+                            to="/"
+                            className={cn(
+                                "inline-flex items-center justify-center rounded-md font-medium transition-colors",
+                                location.pathname === '/' 
+                                    ? "bg-primary text-primary-foreground hover:bg-primary/90"
+                                    : "hover:bg-accent hover:text-accent-foreground"
+                            )}
                         >
-                            <Link to="/">Play Game</Link>
-                        </Button>
+                            Play Game
+                        </Link>
                         
-                        <Button
-                            variant={location.pathname === '/history' ? 'default' : 'ghost'}
-                            asChild={true}
+                        <Link 
+                            to="/history"
+                            className={cn(
+                                "inline-flex items-center justify-center rounded-md font-medium transition-colors",
+                                location.pathname === '/history'
+                                    ? "bg-primary text-primary-foreground hover:bg-primary/90"
+                                    : "hover:bg-accent hover:text-accent-foreground"
+                            )}
                         >
-                            <Link to="/history">Game History</Link>
-                        </Button>
+                            Game History
+                        </Link>
                     </div>
                 </div>
             </div>

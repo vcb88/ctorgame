@@ -8,7 +8,8 @@ import {
   OperationType 
 } from '@ctor-game/shared/types';
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { createMockSocket } from '../test/test-utils';
+import { createMockSocket } from '../test/socket-test-utils';
+import type { MockedSocket } from '../types/game';
 
 vi.mock('socket.io-client', () => ({
   io: vi.fn()

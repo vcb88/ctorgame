@@ -6,7 +6,7 @@ import { ReplayControls } from './ReplayControls';
 import { MoveTimeline } from './MoveTimeline';
 import { GameBoard } from '../GameBoard';
 import { Alert } from '../ui/alert';
-import { AlertDescription } from '../ui/alert-dialog';
+import { AlertDescription } from '../ui/alert';
 
 interface ReplayViewProps {
     gameCode: string;
