@@ -14,40 +14,36 @@ export interface MockSocket extends Socket {
 export function createMockSocket(): MockSocket {
   const listeners: Listener[] = [];
 
+  // Создаем моки функций с помощью vi.fn()
+  const emitMock = vi.fn();
+  const onMock = vi.fn((event: string, callback: Function) => {
+    listeners.push({ event, callback });
+    return socket;
+  });
+  const offMock = vi.fn((event: string, callback?: Function) => {
+    const index = callback 
+      ? listeners.findIndex(l => l.event === event && l.callback === callback)
+      : listeners.findIndex(l => l.event === event);
+    if (index > -1) {
+      listeners.splice(index, 1);
+    }
+    return socket;
+  });
+  const closeMock = vi.fn();
+
   const socket = {
-    emit: vi.fn(),
-    on: vi.fn((event: string, callback: Function) => {
-      listeners.push({ event, callback });
-      return socket;
-    }),
-    off: vi.fn((event: string, callback?: Function) => {
-      const index = callback 
-        ? listeners.findIndex(l => l.event === event && l.callback === callback)
-        : listeners.findIndex(l => l.event === event);
-      if (index > -1) {
-        listeners.splice(index, 1);
-      }
-      return socket;
-    }),
-    close: vi.fn(),
+    emit: emitMock,
+    on: onMock,
+    off: offMock,
+    close: closeMock,
     simulateEvent: async (event: string, data: unknown) => {
       const matchingListeners = listeners.filter(l => l.event === event);
       for (const listener of matchingListeners) {
         await Promise.resolve().then(() => listener.callback(data));
       }
     },
-    listeners,
-    // Добавляем свойство mock для совместимости с vi.fn()
-    mock: {
-      calls: [] as any[][]
-    }
+    listeners
   } as unknown as MockSocket;
-
-  // Добавляем свойства mock к методам
-  (socket.emit as any).mock = { calls: [] };
-  (socket.on as any).mock = { calls: [] };
-  (socket.off as any).mock = { calls: [] };
-  (socket.close as any).mock = { calls: [] };
 
   return socket;
 }
