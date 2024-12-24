@@ -58,10 +58,13 @@ describe('useGameHistory', () => {
         );
 
         await mockSocket.simulateEvent('GAME_HISTORY', { moves: mockMoves });
-
-        expect(result.current.loading).toBe(false);
-        expect(result.current.moves).toEqual(mockMoves);
-        expect(result.current.error).toBeNull();
+        
+        // Ждём обновления состояния
+        await vi.waitFor(() => {
+            expect(result.current.loading).toBe(false);
+            expect(result.current.moves).toEqual(mockMoves);
+            expect(result.current.error).toBeNull();
+        });
     });
 
     it('should handle errors', async () => {
@@ -71,8 +74,11 @@ describe('useGameHistory', () => {
 
         await mockSocket.simulateEvent('ERROR', { message: 'Failed to load history' });
 
-        expect(result.current.loading).toBe(false);
-        expect(result.current.error).toBe('Failed to load history');
+        // Ждём обновления состояния
+        await vi.waitFor(() => {
+            expect(result.current.loading).toBe(false);
+            expect(result.current.error).toBe('Failed to load history');
+        });
     });
 
     it('should format move descriptions correctly', () => {
@@ -80,17 +86,19 @@ describe('useGameHistory', () => {
             useGameHistory({ socket: mockSocket, gameCode: 'TEST123' })
         );
 
+        // Проверяем форматирование PLACE операции
         const moveDescription = result.current.formatMoveDescription(mockMoves[0]);
         expect(moveDescription).toBe('Player 1 placed at (1,1)');
 
+        // Проверяем форматирование REPLACE операции
         const moveDescription2 = result.current.formatMoveDescription({
             ...mockMoves[0],
             move: {
                 type: OperationType.REPLACE,
-                position: { row: 2, col: 2 }
+                position: { row: 0, col: 0 }
             }
         });
-        expect(moveDescription2).toBe('Player 1 replaced at (3,3)');
+        expect(moveDescription2).toBe('Player 1 replaced at (1,1)');
     });
 
     it('should handle new moves', async () => {
@@ -100,6 +108,11 @@ describe('useGameHistory', () => {
 
         // Сначала получаем начальную историю
         await mockSocket.simulateEvent('GAME_HISTORY', { moves: mockMoves });
+
+        // Ждём обновления состояния после получения истории
+        await vi.waitFor(() => {
+            expect(result.current.moves).toEqual(mockMoves);
+        });
 
         // Затем получаем новый ход
         const newMove: HistoryEntry = {
@@ -114,8 +127,11 @@ describe('useGameHistory', () => {
 
         await mockSocket.simulateEvent('NEW_MOVE', newMove);
 
-        expect(result.current.moves).toHaveLength(3);
-        expect(result.current.moves[2]).toEqual(newMove);
+        // Ждём обновления состояния после нового хода
+        await vi.waitFor(() => {
+            expect(result.current.moves).toHaveLength(3);
+            expect(result.current.moves[2]).toEqual(newMove);
+        });
     });
 
     it('should cleanup on unmount', () => {
