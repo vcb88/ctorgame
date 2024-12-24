@@ -174,10 +174,10 @@ describe('useReplay', () => {
         unmount();
 
         // Проверяем отписку от всех событий
-        expect(mockSocket.off).toHaveBeenCalledWith(ReplayEvent.REPLAY_STATE_UPDATED, vi.any(Function));
-        expect(mockSocket.off).toHaveBeenCalledWith(ReplayEvent.REPLAY_PAUSED, vi.any(Function));
-        expect(mockSocket.off).toHaveBeenCalledWith(ReplayEvent.REPLAY_RESUMED, vi.any(Function));
-        expect(mockSocket.off).toHaveBeenCalledWith(ReplayEvent.REPLAY_COMPLETED, vi.any(Function));
-        expect(mockSocket.off).toHaveBeenCalledWith(ReplayEvent.REPLAY_ERROR, vi.any(Function));
+        expect(mockSocket.off).toHaveBeenCalledWith(ReplayEvent.REPLAY_STATE_UPDATED, expect.any(Function));
+        expect(mockSocket.off).toHaveBeenCalledWith(ReplayEvent.REPLAY_PAUSED, expect.any(Function));
+        expect(mockSocket.off).toHaveBeenCalledWith(ReplayEvent.REPLAY_RESUMED, expect.any(Function));
+        expect(mockSocket.off).toHaveBeenCalledWith(ReplayEvent.REPLAY_COMPLETED, expect.any(Function));
+        expect(mockSocket.off).toHaveBeenCalledWith(ReplayEvent.REPLAY_ERROR, expect.any(Function));
     });
 });
