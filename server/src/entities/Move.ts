@@ -1,6 +1,6 @@
 import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, ManyToOne, JoinColumn } from 'typeorm';
 import { Game } from './Game';
-import { IMove } from '../../../shared/types';
+import { IMove } from '@ctor-game/shared/types';
 
 @Entity('moves')
 export class Move {

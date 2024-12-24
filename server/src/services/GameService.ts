@@ -2,7 +2,7 @@ import { Repository } from 'typeorm';
 import { AppDataSource } from '../config/database';
 import { Game } from '../entities/Game';
 import { Move } from '../entities/Move';
-import { IGameState, IMove, IPlayer } from '../../../shared/types';
+import { IGameState, IMove, IPlayer } from '@ctor-game/shared/types';
 
 export class GameService {
     private gameRepository: Repository<Game>;

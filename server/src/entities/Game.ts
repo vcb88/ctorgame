@@ -1,6 +1,6 @@
 import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, OneToMany } from 'typeorm';
 import { Move } from './Move';
-import { IGameState } from '../../../shared/types';
+import { IGameState } from '@ctor-game/shared/types';
 
 @Entity('games')
 export class Game {

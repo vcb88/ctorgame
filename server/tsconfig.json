@@ -10,8 +10,15 @@
     "skipLibCheck": true,
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true,
-    "strictPropertyInitialization": false
+    "strictPropertyInitialization": false,
+    "baseUrl": ".",
+    "paths": {
+      "@ctor-game/shared/*": ["../shared/*"]
+    }
   },
+  "references": [
+    { "path": "../shared" }
+  ],
   "include": ["src/**/*"],
   "exclude": ["node_modules"]
 }

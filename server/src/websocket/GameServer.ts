@@ -8,7 +8,7 @@ import {
   WebSocketEvents,
   ServerToClientEvents,
   ClientToServerEvents
-} from '../../../shared/types';
+} from '@ctor-game/shared/types';
 import { GameService } from '../services/GameService';
 import { AppDataSource } from '../config/database';
 
