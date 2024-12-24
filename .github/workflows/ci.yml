@@ -93,29 +93,26 @@ jobs:
           echo "Generating server coverage..."
           pnpm --filter @ctor-game/server test:coverage
 
-      - name: Cache Cypress binary
-        uses: actions/cache@v3
+      - name: Start Dev Server
+        run: |
+          echo "Starting development server..."
+          pnpm --filter @ctor-game/client dev & # Start in background
+          sleep 10 # Wait for server to be ready
+
+      - name: Cypress E2E Tests
+        uses: cypress-io/github-action@v6
         with:
-          path: ~/.cache/Cypress
-          key: cypress-binary-${{ hashFiles('**/pnpm-lock.yaml') }}
-          restore-keys: |
-            cypress-binary-
-
-      - name: Install Cypress
-        run: |
-          echo "Installing Cypress..."
-          pnpm --filter @ctor-game/client cypress install
-
-      - name: Run E2E tests
-        if: success()
-        run: |
-          echo "Running E2E tests..."
-          pnpm --filter @ctor-game/client test:e2e:ci
+          working-directory: client
+          install: false  # We already installed dependencies
+          command: pnpm test:e2e:ci
+          wait-on: 'http://localhost:5173'  # Wait for dev server
+          wait-on-timeout: 120
+          browser: chrome
+          record: false  # Set to true if you have Cypress Dashboard
         env:
           DATABASE_URL: postgresql://test:test@localhost:5432/ctorgame_test
           REDIS_URL: redis://localhost:6379
           NODE_ENV: test
-          # Add Cypress specific env vars
           CYPRESS_CACHE_FOLDER: ~/.cache/Cypress
 
       - name: Upload coverage to Codecov
