@@ -157,6 +157,30 @@ export class GameServer {
             currentPlayer: activeGame.currentPlayer
           });
 
+          // Если все операции размещения использованы, автоматически завершаем ход
+          if (activeGame.currentState.currentTurn.placeOperationsLeft <= 0) {
+            // Подготавливаем состояние для следующего хода
+            activeGame.currentState.currentTurn = {
+              placeOperationsLeft: 2, // Для всех ходов кроме первого даём 2 операции
+              moves: []
+            };
+            activeGame.currentPlayer = (activeGame.currentPlayer + 1) % 2;
+            
+            // Если это был первый ход игры, снимаем флаг
+            if (activeGame.currentState.isFirstTurn) {
+              activeGame.currentState.isFirstTurn = false;
+            }
+
+            // Сохраняем обновленное состояние
+            await this.gameService.updateGameState(gameId, activeGame.currentState);
+
+            // Отправляем обновление состояния
+            this.io.to(gameId).emit(WebSocketEvents.GameStateUpdated, {
+              gameState: activeGame.currentState,
+              currentPlayer: activeGame.currentPlayer
+            });
+          }
+
           // Если это была операция размещения, проверяем доступные замены
           if (move.type === OperationType.PLACE) {
             const availableReplaces = GameLogicService.getAvailableReplaces(

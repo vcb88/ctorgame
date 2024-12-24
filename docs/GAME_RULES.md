@@ -17,24 +17,26 @@ CTOR (Circular TORus) is a two-player strategic board game played on a toroidal 
   - Player 2 (Red)
 
 ## Turn Structure
-Each turn consists of operations that a player can perform:
+Each turn consists of placement operations and automatic replacements:
 
 ### Operations Types
 1. **Place Operation**
    - Player can place a piece on any empty cell
    - Maximum of two place operations per turn
+   - First player's first turn is limited to one place operation only
 
-2. **Replace Operation**
-   - Can be performed when a player's pieces surround an opponent's piece
+2. **Replace Operation** (Automatic)
+   - Occurs automatically when a player's pieces surround an opponent's piece
    - Requirement: 5 or more adjacent cells (out of 8 neighboring cells) must contain the player's pieces
-   - Can perform multiple replace operations in one turn
-   - Replace operations don't count against the two-operation limit
+   - All possible replacements are performed automatically after each placement
+   - Multiple replacements can occur from a single placement
 
 ### Turn Flow
-1. Player can perform up to two place operations
-2. After each place operation, player can perform any number of valid replace operations
-3. Turn ends when:
-   - Player has used both place operations
+1. Player performs placement operations:
+   - Two place operations per turn (except first player's first turn - only one operation)
+   - After each placement, all possible replacements occur automatically
+2. Turn ends when:
+   - Player has used all available place operations
    - Player manually ends their turn
 
 ## Game End

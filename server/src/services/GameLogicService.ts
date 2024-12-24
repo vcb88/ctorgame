@@ -19,13 +19,14 @@ export class GameLogicService {
       gameOver: false,
       winner: null,
       currentTurn: {
-        placeOperationsLeft: 2,
+        placeOperationsLeft: 1, // Первый игрок начинает с одной операции
         moves: []
       },
       scores: {
         player1: 0,
         player2: 0
-      }
+      },
+      isFirstTurn: true // Добавляем флаг первого хода
     };
   }
 
@@ -95,9 +96,21 @@ export class GameLogicService {
       // Размещаем фишку
       newState.board[row][col] = playerNumber;
       newState.currentTurn.placeOperationsLeft--;
-    } else if (type === OperationType.REPLACE) {
-      // Заменяем фишку противника
-      newState.board[row][col] = playerNumber;
+      
+      // Автоматически выполняем все возможные замены
+      let replacementsFound;
+      do {
+        replacementsFound = false;
+        const availableReplaces = this.getAvailableReplaces(newState, playerNumber);
+        
+        if (availableReplaces.length > 0) {
+          replacementsFound = true;
+          for (const replaceMove of availableReplaces) {
+            const { row: replaceRow, col: replaceCol } = replaceMove.position;
+            newState.board[replaceRow][replaceCol] = playerNumber;
+          }
+        }
+      } while (replacementsFound);
     }
 
     // Добавляем ход в историю

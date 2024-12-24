@@ -34,6 +34,7 @@ export interface IGameState {
     player1: number;
     player2: number;
   };
+  isFirstTurn: boolean; // Флаг для отслеживания первого хода в игре
 }
 
 // Расширенный тип для валидации замены
