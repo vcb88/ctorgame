@@ -2,7 +2,6 @@ import '@testing-library/jest-dom';
 import { expect, afterEach, beforeEach, vi } from 'vitest';
 import { cleanup } from '@testing-library/react';
 import * as matchers from '@testing-library/jest-dom/matchers';
-import { act } from 'react-dom/test-utils';
 
 // Make vitest APIs available globally
 declare global {
@@ -26,12 +25,4 @@ beforeEach(() => {
 afterEach(() => {
   cleanup();
   vi.clearAllTimers();
-});
-
-// extends Vitest's expect method with methods from react-testing-library
-expect.extend(matchers);
-
-// runs a cleanup after each test case (e.g. clearing jsdom)
-afterEach(() => {
-  cleanup();
 });

@@ -2,7 +2,7 @@ import { renderHook, act, waitFor } from '@testing-library/react';
 import { io } from 'socket.io-client';
 import { useMultiplayerGame } from './useMultiplayerGame';
 import { WebSocketEvents, IGameState } from '@ctor-game/shared/types';
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { createMockSocket } from '../test/test-utils';
 
 vi.mock('socket.io-client', () => ({
