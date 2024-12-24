@@ -24,7 +24,8 @@ const mockGameState: IGameState = {
         player2: 0
     },
     gameOver: false,
-    winner: null
+    winner: null,
+    isFirstTurn: true
 };
 
 describe('useReplay', () => {
