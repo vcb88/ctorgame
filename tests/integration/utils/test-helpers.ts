@@ -1,8 +1,9 @@
 import { Socket } from 'socket.io-client'
+import { CreateGameResponse, JoinGameResponse, GameMoveResponse } from '../../../src/types/socket'
 
 export function createGame(socket: Socket): Promise<string> {
   return new Promise((resolve) => {
-    socket.emit('createGame', {}, (response: any) => {
+    socket.emit('createGame', {}, (response: CreateGameResponse) => {
       resolve(response.roomCode)
     })
   })
@@ -10,21 +11,26 @@ export function createGame(socket: Socket): Promise<string> {
 
 export function joinGame(socket: Socket, roomCode: string): Promise<boolean> {
   return new Promise((resolve) => {
-    socket.emit('joinGame', { roomCode }, (response: any) => {
+    socket.emit('joinGame', { roomCode }, (response: JoinGameResponse) => {
       resolve(response.success)
     })
   })
 }
 
-export function makeMove(socket: Socket, row: number, col: number): Promise<any> {
+export function makeMove(socket: Socket, row: number, col: number): Promise<GameMoveResponse> {
   return new Promise((resolve) => {
-    socket.emit('makeMove', { row, col }, (response: any) => {
+    socket.emit('makeMove', { row, col }, (response: GameMoveResponse) => {
       resolve(response)
     })
   })
 }
 
-export function waitForEvent(socket: Socket, event: string): Promise<any> {
+export interface SocketEvent<T = unknown> {
+  type: string;
+  data: T;
+}
+
+export function waitForEvent<T>(socket: Socket, event: string): Promise<T> {
   return new Promise((resolve) => {
     socket.once(event, resolve)
   })

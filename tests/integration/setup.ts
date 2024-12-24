@@ -1,9 +1,10 @@
 import { beforeAll, afterAll } from 'vitest'
+import { Server } from 'http'
 import { createServer } from '../../server/src/server'
 import { startDB, stopDB } from './utils/db'
 import { startRedis, stopRedis } from './utils/redis'
 
-let server: any
+let server: Server
 
 beforeAll(async () => {
   // Start dependencies
