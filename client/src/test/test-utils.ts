@@ -16,23 +16,38 @@ export const createMockSocket = () => {
     mockClose: vi.fn(),
     emit: function(event: string, ...args: any[]) {
       this.mockEmit(event, ...args);
+      return Promise.resolve();
     },
     on: function(event: string, callback: Function) {
       this.mockOn(event, callback);
+      if (!listeners[event]) {
+        listeners[event] = [];
+      }
+      listeners[event].push(callback);
       return this;
     },
     off: function(event: string) {
       this.mockOff(event);
+      if (listeners[event]) {
+        delete listeners[event];
+      }
       return this;
     },
     close: function() {
       this.mockClose();
+      Object.keys(listeners).forEach(event => {
+        delete listeners[event];
+      });
     },
     // Метод для эмуляции получения события от сервера
-    simulateEvent: function(event: string, data: any) {
+    simulateEvent: async function(event: string, data: any) {
       if (listeners[event]) {
-        listeners[event].forEach(callback => callback(data));
+        await Promise.all(listeners[event].map(callback => Promise.resolve().then(() => callback(data))));
       }
+    },
+    // Получить все зарегистрированные обработчики для события
+    getListeners: function(event: string) {
+      return listeners[event] || [];
     }
   };
 

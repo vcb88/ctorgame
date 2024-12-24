@@ -1,4 +1,4 @@
-import { renderHook } from '@testing-library/react';
+import { renderHook, act, waitFor } from '@testing-library/react';
 import { io } from 'socket.io-client';
 import { useMultiplayerGame } from './useMultiplayerGame';
 import { WebSocketEvents, IGameState } from '@ctor-game/shared/types';
@@ -45,14 +45,23 @@ describe('useMultiplayerGame', () => {
     expect(mockSocket.mockEmit).toHaveBeenCalledWith(WebSocketEvents.JoinGame, { gameId: testGameId });
   });
 
-  it('should make a move', () => {
+  it('should make a move', async () => {
     const { result } = renderHook(() => useMultiplayerGame());
     const testMove = { row: 0, col: 0 };
 
     // Симулируем создание игры
-    mockSocket.simulateEvent(WebSocketEvents.GameCreated, { gameId: 'test-game-id' });
+    await act(async () => {
+      mockSocket.simulateEvent(WebSocketEvents.GameCreated, { gameId: 'test-game-id' });
+    });
 
-    result.current.makeMove(testMove);
+    // Ждем обновления состояния
+    await waitFor(() => {
+      expect(result.current.gameId).toBe('test-game-id');
+    });
+
+    await act(async () => {
+      result.current.makeMove(testMove);
+    });
 
     expect(mockSocket.mockEmit).toHaveBeenCalledWith(WebSocketEvents.MakeMove, {
       gameId: 'test-game-id',
@@ -60,7 +69,7 @@ describe('useMultiplayerGame', () => {
     });
   });
 
-  it('should handle game state updates', () => {
+  it('should handle game state updates', async () => {
     const { result } = renderHook(() => useMultiplayerGame());
 
     const testGameState: IGameState = {
@@ -69,33 +78,45 @@ describe('useMultiplayerGame', () => {
       winner: null,
     };
 
-    mockSocket.simulateEvent(WebSocketEvents.GameStateUpdated, { 
-      gameState: testGameState, 
-      currentPlayer: 1 
+    await act(async () => {
+      mockSocket.simulateEvent(WebSocketEvents.GameStateUpdated, { 
+        gameState: testGameState, 
+        currentPlayer: 1 
+      });
     });
 
-    expect(result.current.gameState).toEqual(testGameState);
-    expect(result.current.currentPlayer).toBe(1);
+    await waitFor(() => {
+      expect(result.current.gameState).toEqual(testGameState);
+      expect(result.current.currentPlayer).toBe(1);
+    });
   });
 
-  it('should handle errors', () => {
+  it('should handle errors', async () => {
     const { result } = renderHook(() => useMultiplayerGame());
     const errorMessage = 'Test error message';
 
-    mockSocket.simulateEvent(WebSocketEvents.Error, { message: errorMessage });
+    await act(async () => {
+      mockSocket.simulateEvent(WebSocketEvents.Error, { message: errorMessage });
+    });
 
-    expect(result.current.error).toBe(errorMessage);
+    await waitFor(() => {
+      expect(result.current.error).toBe(errorMessage);
+    });
   });
 
-  it('should handle player disconnection', () => {
+  it('should handle player disconnection', async () => {
     const { result } = renderHook(() => useMultiplayerGame());
 
-    mockSocket.simulateEvent(WebSocketEvents.PlayerDisconnected, { player: 1 });
+    await act(async () => {
+      mockSocket.simulateEvent(WebSocketEvents.PlayerDisconnected, { player: 1 });
+    });
 
-    expect(result.current.error).toBe('Player 1 disconnected');
+    await waitFor(() => {
+      expect(result.current.error).toBe('Player 1 disconnected');
+    });
   });
 
-  it('should handle game over', () => {
+  it('should handle game over', async () => {
     const { result } = renderHook(() => useMultiplayerGame());
     const testGameState: IGameState = {
       board: [[0, 0, 0], [null, null, null], [null, null, null]],
@@ -103,13 +124,17 @@ describe('useMultiplayerGame', () => {
       winner: 0,
     };
 
-    mockSocket.simulateEvent(WebSocketEvents.GameOver, { 
-      gameState: testGameState, 
-      winner: 0 
+    await act(async () => {
+      mockSocket.simulateEvent(WebSocketEvents.GameOver, { 
+        gameState: testGameState, 
+        winner: 0 
+      });
     });
 
-    expect(result.current.gameState).toEqual(testGameState);
-    expect(result.current.error).toBe('Player 0 won!');
+    await waitFor(() => {
+      expect(result.current.gameState).toEqual(testGameState);
+      expect(result.current.error).toBe('Player 0 won!');
+    });
   });
 
   it('should clean up socket listeners on unmount', () => {
