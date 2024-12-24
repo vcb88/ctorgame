@@ -150,7 +150,8 @@ describe('useMultiplayerGame', () => {
       gameOver: false,
       winner: null,
       currentTurn: {
-        placeOperationsLeft: 1
+        placeOperationsLeft: 1,
+        moves: []
       },
       scores: {
         player1: 0,
@@ -204,7 +205,12 @@ describe('useMultiplayerGame', () => {
       gameOver: true,
       winner: 0,
       currentTurn: {
-        placeOperationsLeft: 0
+        placeOperationsLeft: 0,
+        moves: [
+          { type: OperationType.PLACE, position: { row: 0, col: 0 } },
+          { type: OperationType.PLACE, position: { row: 0, col: 1 } },
+          { type: OperationType.PLACE, position: { row: 0, col: 2 } }
+        ]
       },
       scores: {
         player1: 3,

@@ -16,7 +16,8 @@ const mockSocket = {
 const mockGameState: IGameState = {
     board: Array(10).fill(null).map(() => Array(10).fill(null)),
     currentTurn: {
-        placeOperationsLeft: 2
+        placeOperationsLeft: 2,
+        moves: []
     },
     scores: {
         player1: 0,
