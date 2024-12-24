@@ -45,7 +45,7 @@ jobs:
       - name: Install pnpm
         uses: pnpm/action-setup@v2
         with:
-          version: 8
+          version: 8.15.1
           
       - name: Setup Node.js
         uses: actions/setup-node@v3
@@ -53,9 +53,12 @@ jobs:
           node-version: '20'
           cache: 'pnpm'
 
+      - name: Clean pnpm store
+        run: pnpm store prune
+
       - name: Install dependencies and build shared
         run: |
-          pnpm install -r
+          pnpm install -r --no-frozen-lockfile
           pnpm --filter @ctor-game/shared build
 
       - name: Run linter and type check
