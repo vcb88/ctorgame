@@ -177,6 +177,10 @@ vi.mock('socket.io-client', () => ({
 vi.mock('../api', () => ({
   fetchData: vi.fn(() => Promise.resolve({ data: 'test' }))
 }));
+
+// For function matchers in assertions, use expect.any() instead of vi.any()
+expect(mockFunction).toHaveBeenCalledWith(expect.any(Function));
+// NOT: expect(mockFunction).toHaveBeenCalledWith(vi.any(Function));
 ```
 
 ## CI/CD Integration

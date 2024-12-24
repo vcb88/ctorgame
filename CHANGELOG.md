@@ -77,6 +77,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Module system conflicts
 - TypeScript configuration
 - Development setup issues
+- Replaced deprecated `vi.any()` with `expect.any()` in hook tests for better compatibility with Vitest
 
 ## [0.1.0] - 2024-12-23
 
