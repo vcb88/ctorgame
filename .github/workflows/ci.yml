@@ -56,25 +56,25 @@ jobs:
       - name: Install dependencies and build shared
         run: |
           pnpm install -r
-          cd shared && pnpm build
+          pnpm --filter @ctor-game/shared build
 
       - name: Run linter and type check
         run: |
-          cd client && pnpm lint && pnpm type-check
-          cd ../server && pnpm lint && pnpm type-check
+          pnpm --filter @ctor-game/client lint && pnpm --filter @ctor-game/client type-check
+          pnpm --filter @ctor-game/server lint && pnpm --filter @ctor-game/server type-check
 
       - name: Run unit and integration tests
         run: |
-          cd client && pnpm test
-          cd ../server && pnpm test && pnpm test:integration
+          pnpm --filter @ctor-game/client test
+          pnpm --filter @ctor-game/server test && pnpm --filter @ctor-game/server test:integration
         env:
           DATABASE_URL: postgresql://test:test@localhost:5432/ctorgame_test
           REDIS_URL: redis://localhost:6379
 
       - name: Generate coverage report
         run: |
-          cd client && pnpm test:coverage
-          cd ../server && pnpm test:coverage
+          pnpm --filter @ctor-game/client test:coverage
+          pnpm --filter @ctor-game/server test:coverage
 
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v3
