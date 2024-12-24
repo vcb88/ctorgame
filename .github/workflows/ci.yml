@@ -93,65 +93,45 @@ jobs:
           echo "Generating server coverage..."
           pnpm --filter @ctor-game/server test:coverage
 
-      - name: Start Dev Server
+      - name: Prepare and Start Dev Server
         run: |
-          echo "Starting development server..."
+          echo "Preparing dev environment..."
           cd client
           
-          # Create a simple health check endpoint
-          mkdir -p public
-          echo "OK" > public/health.txt
+          # First try to build the project
+          echo "Building project..."
+          pnpm build
+          
+          echo "Starting development server..."
+          # Create logs directory
+          mkdir -p logs
           
           # Start server in background with logging
-          pnpm dev:ci &
+          pnpm dev:ci > logs/vite.log 2>&1 &
           SERVER_PID=$!
           
-          # Function to check if server is responding
-          check_server() {
-            # Try to get the health check file
-            HEALTH_CHECK=$(curl -s http://localhost:5173/health.txt || echo "FAILED")
-            echo "Health check response: $HEALTH_CHECK"
-            
-            if [ "$HEALTH_CHECK" = "OK" ]; then
-              # Also check the main page with verbose output
-              echo "Checking main page..."
-              curl -v http://localhost:5173/ || true
-              return 0
-            fi
-            return 1
-          }
-          
-          # Wait for server with more detailed logging
+          # Wait for server to start and be accessible
           echo "Waiting for server to be ready..."
           COUNTER=0
-          while [ $COUNTER -lt 30 ]; do
-            echo "Attempt $((COUNTER + 1)): Checking server status..."
-            
-            if check_server; then
-              echo "Server is responding properly!"
-              break
+          MAX_ATTEMPTS=30
+          
+          until $(curl --output /dev/null --silent --head --fail http://localhost:5173/); do
+            if [ $COUNTER -eq $MAX_ATTEMPTS ]; then
+              echo "Server failed to start after $MAX_ATTEMPTS attempts"
+              echo "Last few lines of server log:"
+              tail -n 50 logs/vite.log
+              kill $SERVER_PID
+              exit 1
             fi
             
-            # Print Vite logs if available
-            echo "Current Vite logs:"
-            cat logs/vite.log 2>/dev/null || echo "No Vite logs available yet"
-            
+            echo "Attempt $((COUNTER + 1)) of $MAX_ATTEMPTS - waiting for server..."
             sleep 2
             COUNTER=$((COUNTER + 1))
           done
           
-          # Final check
-          if check_server; then
-            echo "Server startup successful!"
-            # Keep the server running
-            disown $SERVER_PID
-          else
-            echo "Server failed to start properly after $COUNTER attempts"
-            echo "Final status check:"
-            curl -v http://localhost:5173/ || true
-            kill $SERVER_PID
-            exit 1
-          fi
+          echo "Server is up and responding!"
+          # Keep the server running
+          disown $SERVER_PID
 
       - name: Run Cypress Tests
         uses: cypress-io/github-action@v6

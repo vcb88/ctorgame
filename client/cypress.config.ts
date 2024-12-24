@@ -12,6 +12,14 @@ export default defineConfig({
   env: {
     apiUrl: 'http://localhost:3000',
   },
+  viewportWidth: 1280,
+  viewportHeight: 720,
+  defaultCommandTimeout: 10000,
+  watchForFileChanges: false,
+  retries: {
+    runMode: 2,
+    openMode: 0
+  },
   retries: {
     runMode: 2,
     openMode: 0,
