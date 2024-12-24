@@ -3,11 +3,13 @@ import { useGameHistory, HistoryEntry } from '../useGameHistory';
 import { Socket } from 'socket.io-client';
 import { IGameMove, OperationType } from '@ctor-game/shared/types';
 
+import { vi } from 'vitest';
+
 // Мок для Socket.io
 const mockSocket = {
-    emit: jest.fn(),
-    on: jest.fn(),
-    off: jest.fn(),
+    emit: vi.fn(),
+    on: vi.fn(),
+    off: vi.fn(),
 } as unknown as Socket;
 
 // Мок для истории ходов
@@ -34,7 +36,7 @@ const mockMoves: HistoryEntry[] = [
 
 describe('useGameHistory', () => {
     beforeEach(() => {
-        jest.clearAllMocks();
+        vi.clearAllMocks();
     });
 
     it('should initialize with loading state', () => {
@@ -63,10 +65,9 @@ describe('useGameHistory', () => {
             useGameHistory({ socket: mockSocket, gameCode: 'TEST123' })
         );
 
-        // Имитируем получение истории
-        const mockHandler = mockSocket.on.mock.calls.find(
-            call => call[0] === 'GAME_HISTORY'
-        )[1];
+        // Получаем обработчик события истории
+        const mockHandler = vi.mocked(mockSocket.on).mock.calls
+            .find(([event]) => event === 'GAME_HISTORY')?.[1];
 
         act(() => {
             mockHandler({ moves: mockMoves });

@@ -7,6 +7,7 @@ export default defineConfig({
         globals: true,
         environment: 'jsdom',
         setupFiles: ['./src/test/setup.ts'],
+        types: ['vitest/globals', './src/test/types.d.ts'],
         include: ['src/hooks/__tests__/*.test.ts'],
         coverage: {
             reporter: ['text', 'lcov'],

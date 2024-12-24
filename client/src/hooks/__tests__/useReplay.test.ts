@@ -3,11 +3,13 @@ import { useReplay } from '../useReplay';
 import { Socket } from 'socket.io-client';
 import { ReplayEvent, IGameState } from '@ctor-game/shared/types';
 
+import { vi } from 'vitest';
+
 // Мок для Socket.io
 const mockSocket = {
-    emit: jest.fn(),
-    on: jest.fn(),
-    off: jest.fn(),
+    emit: vi.fn(),
+    on: vi.fn(),
+    off: vi.fn(),
 } as unknown as Socket;
 
 // Мок для начального состояния игры
@@ -28,7 +30,7 @@ const mockGameState: IGameState = {
 
 describe('useReplay', () => {
     beforeEach(() => {
-        jest.clearAllMocks();
+        vi.clearAllMocks();
     });
 
     it('should initialize with default values', () => {
@@ -49,10 +51,9 @@ describe('useReplay', () => {
             useReplay({ socket: mockSocket, gameCode: 'TEST123' })
         );
 
-        // Имитируем событие обновления состояния
-        const mockHandler = mockSocket.on.mock.calls.find(
-            call => call[0] === ReplayEvent.REPLAY_STATE_UPDATED
-        )[1];
+        // Получаем обработчик события обновления состояния
+        const mockHandler = vi.mocked(mockSocket.on).mock.calls
+            .find(([event]) => event === ReplayEvent.REPLAY_STATE_UPDATED)?.[1];
 
         act(() => {
             result.current.startReplay();
@@ -153,10 +154,9 @@ describe('useReplay', () => {
             useReplay({ socket: mockSocket, gameCode: 'TEST123' })
         );
 
-        // Имитируем ошибку
-        const mockErrorHandler = mockSocket.on.mock.calls.find(
-            call => call[0] === ReplayEvent.REPLAY_ERROR
-        )[1];
+        // Получаем обработчик события ошибки
+        const mockErrorHandler = vi.mocked(mockSocket.on).mock.calls
+            .find(([event]) => event === ReplayEvent.REPLAY_ERROR)?.[1];
 
         act(() => {
             mockErrorHandler({ message: 'Test error' });
@@ -174,10 +174,10 @@ describe('useReplay', () => {
         unmount();
 
         // Проверяем отписку от всех событий
-        expect(mockSocket.off).toHaveBeenCalledWith(ReplayEvent.REPLAY_STATE_UPDATED, expect.any(Function));
-        expect(mockSocket.off).toHaveBeenCalledWith(ReplayEvent.REPLAY_PAUSED, expect.any(Function));
-        expect(mockSocket.off).toHaveBeenCalledWith(ReplayEvent.REPLAY_RESUMED, expect.any(Function));
-        expect(mockSocket.off).toHaveBeenCalledWith(ReplayEvent.REPLAY_COMPLETED, expect.any(Function));
-        expect(mockSocket.off).toHaveBeenCalledWith(ReplayEvent.REPLAY_ERROR, expect.any(Function));
+        expect(mockSocket.off).toHaveBeenCalledWith(ReplayEvent.REPLAY_STATE_UPDATED, vi.any(Function));
+        expect(mockSocket.off).toHaveBeenCalledWith(ReplayEvent.REPLAY_PAUSED, vi.any(Function));
+        expect(mockSocket.off).toHaveBeenCalledWith(ReplayEvent.REPLAY_RESUMED, vi.any(Function));
+        expect(mockSocket.off).toHaveBeenCalledWith(ReplayEvent.REPLAY_COMPLETED, vi.any(Function));
+        expect(mockSocket.off).toHaveBeenCalledWith(ReplayEvent.REPLAY_ERROR, vi.any(Function));
     });
 });
