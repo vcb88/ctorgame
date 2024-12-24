@@ -96,8 +96,16 @@ jobs:
       - name: Start Dev Server
         run: |
           echo "Starting development server..."
-          pnpm --filter @ctor-game/client dev & # Start in background
-          sleep 10 # Wait for server to be ready
+          cd client && pnpm dev & # Start in background and change to client directory
+          # Wait for the server to be ready
+          for i in {1..30}; do
+            if curl -s http://localhost:5173 >/dev/null; then
+              echo "Server is up!"
+              break
+            fi
+            echo "Waiting for server... attempt $i"
+            sleep 2
+          done
 
       - name: Cypress E2E Tests
         uses: cypress-io/github-action@v6
@@ -106,7 +114,7 @@ jobs:
           install: false  # We already installed dependencies
           command: pnpm test:e2e:ci
           wait-on: 'http://localhost:5173'  # Wait for dev server
-          wait-on-timeout: 120
+          wait-on-timeout: 180
           browser: chrome
           record: false  # Set to true if you have Cypress Dashboard
         env:
