@@ -29,7 +29,7 @@ const render = async (element: React.ReactElement) => {
 afterEach(() => {
     if (root) {
         act(() => {
-            root.unmount();
+            root?.unmount();
         });
     }
     container = null;

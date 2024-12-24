@@ -5,8 +5,7 @@ import { useGameHistory } from '../../hooks/useGameHistory';
 import { ReplayControls } from './ReplayControls';
 import { MoveTimeline } from './MoveTimeline';
 import { GameBoard } from '../GameBoard';
-import { Alert } from '../ui/alert';
-import { AlertDescription } from '../ui/alert';
+import { Alert, AlertDescription } from '../ui/alert-dialog';
 
 interface ReplayViewProps {
     gameCode: string;

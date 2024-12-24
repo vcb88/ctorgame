@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { socket } from '../services/socket';
+import { getSocket } from '../services/socket';
 import { ReplayView } from '../components/Replay/ReplayView';
 import { Button } from '../components/ui/button';
 
@@ -21,6 +21,7 @@ export function GameHistory() {
 
     useEffect(() => {
         // Запрашиваем список сохраненных игр
+        const socket = getSocket();
         socket.emit('GET_SAVED_GAMES');
 
         const handleGames = (data: { games: GameSummary[] }) => {
@@ -62,7 +63,7 @@ export function GameHistory() {
         return (
             <ReplayView
                 gameCode={selectedGame}
-                socket={socket}
+                socket={getSocket()}
                 onClose={() => setSelectedGame(null)}
             />
         );

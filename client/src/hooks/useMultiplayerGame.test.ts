@@ -9,7 +9,7 @@ import {
 } from '@ctor-game/shared/types';
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { createMockSocket } from '../test/socket-test-utils';
-import type { MockSocket } from '../types/game';
+import type { MockSocket } from '../test/socket-test-utils';
 
 vi.mock('socket.io-client', () => ({
   io: vi.fn()
@@ -151,7 +151,6 @@ describe('useMultiplayerGame', () => {
       winner: null,
       currentTurn: {
         placeOperationsLeft: 1,
-        replaceOperationsLeft: 1,
         playerNumber: 0,
       },
       scores: {
@@ -207,7 +206,6 @@ describe('useMultiplayerGame', () => {
       winner: 0,
       currentTurn: {
         placeOperationsLeft: 0,
-        replaceOperationsLeft: 0,
         playerNumber: 0,
       },
       scores: {
