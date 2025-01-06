@@ -13,7 +13,14 @@
    - Scoring system
    - State management
 
-3. [Testing Documentation](./testing.md)
+3. [Caching and State Management](./CACHING_AND_STATE.md)
+   - Redis architecture
+   - State management patterns
+   - Data structures
+   - Error handling
+   - Performance considerations
+
+4. [Testing Documentation](./testing.md)
    - Test overview
    - Test running guide
    - Coverage requirements
@@ -100,6 +107,7 @@
 | Game Mechanics | Complete | 2025-01-06 |
 | API REST | TODO | - |
 | Troubleshooting | TODO | - |
+| Caching and State | Complete | 2025-01-06 |
 | Performance | TODO | - |
 
 ## Contributing to Documentation
