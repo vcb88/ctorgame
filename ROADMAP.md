@@ -1,6 +1,6 @@
 # Project Roadmap
 
-## Current Version (v0.2.0)
+## Current Version (v0.3.0)
 - [x] Advanced game functionality
   - [x] 10x10 toroidal board implementation
   - [x] Two operations per turn (first turn exception)
@@ -10,6 +10,8 @@
   - [x] Game room creation
   - [x] Player management
   - [x] Turn handling
+  - [x] Game state recovery after disconnect
+  - [x] Reconnection system with timeouts
 - [x] Technical Foundation
   - [x] WebSocket integration
   - [x] Game state persistence
@@ -18,34 +20,60 @@
   - [x] Unit tests
   - [x] CI/CD pipeline
 
-## In Progress (v0.3.0)
-- Game Experience:
-  - [ ] Move history tracking and replay
-  - [ ] Game state recovery after disconnect
-  - [ ] Player statistics
+## In Progress (v0.3.1)
+Priority Tasks:
+- [ ] Game History
+  - [ ] Move history storage in Redis/MongoDB
+  - [ ] Full game replay functionality
+  - [ ] Game state snapshots
+  - [ ] History browsing interface
+
+- [ ] State Management and Recovery
+  - [ ] Redis integration for distributed state
+  - [ ] Game state persistence improvements
+  - [ ] State synchronization between servers
+  - [ ] Automatic state recovery
+
+- [ ] Monitoring and Metrics
+  - [ ] Game metrics collection
+  - [ ] Performance monitoring
+  - [ ] Connection quality tracking
+  - [ ] Server health monitoring
+  - [ ] Analytics dashboard
+
+Secondary Tasks:
+- [ ] Game Experience
   - [ ] Visual move hints
   - [ ] Sound effects
+  - [ ] Player statistics
+  - [ ] Chat system
 
-## Short-term Goals (v0.3.0)
-1. Infrastructure
-   - [ ] Redis integration for session management
-   - [ ] Game state caching
-   - [ ] Performance monitoring
-   - [ ] Error tracking
-
-2. Game Features
+## Short-term Goals (v0.4.0)
+1. Game Features
    - [ ] Spectator mode
-   - [ ] Basic chat system
    - [ ] Player profiles
-   - [ ] Game history browser
-
-3. User Experience
-   - [ ] Responsive design for mobile
+   - [ ] Custom rooms
+   - [ ] Quick play mode
    - [ ] Game tutorials
+   - [ ] Practice mode
+
+2. User Experience
+   - [ ] Responsive design for mobile
    - [ ] Visual animations
    - [ ] Keyboard controls
+   - [ ] Custom themes
+   - [ ] Sound settings
+   - [ ] Accessibility features
 
-## Mid-term Goals (v0.4.0)
+3. Infrastructure
+   - [ ] Horizontal scaling
+   - [ ] Load balancing
+   - [ ] CDN integration
+   - [ ] Backup system
+   - [ ] Rate limiting
+   - [ ] DDoS protection
+
+## Mid-term Goals (v0.5.0)
 1. Community Features
    - [ ] User accounts with OAuth
    - [ ] Player rankings and ELO
