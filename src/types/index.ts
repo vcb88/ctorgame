@@ -1,6 +1,7 @@
 import { GRID_WIDTH, GRID_HEIGHT } from '@/constants';
 
 export { GRID_WIDTH, GRID_HEIGHT };
+export * from './multiplayer';
 
 export const P = { N: 0, A: 1, B: 2 } as const;
 export type PlayerType = typeof P[keyof typeof P];
