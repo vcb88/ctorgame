@@ -52,6 +52,11 @@ Thumbs.db
 # Cache
 .eslintcache
 .stylelintcache
+__pycache__/
+*.py[cod]
+*$py.class
+.coverage
+.pytest_cache/
 
 # Docker volumes
 docker/volumes/
