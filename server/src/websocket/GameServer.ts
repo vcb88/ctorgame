@@ -3,7 +3,6 @@ import { Server as HttpServer } from 'http';
 import { Socket } from 'socket.io';
 import { 
   IPlayer,
-  IGameRoom,
   IGameMove,
   OperationType,
   WebSocketEvents,
@@ -13,15 +12,14 @@ import {
 import { GameService } from '../services/GameService';
 import { GameLogicService } from '../services/GameLogicService';
 import { AppDataSource } from '../config/database';
+import { redisService } from '../services/RedisService';
+import { connectRedis } from '../config/redis';
 
-const GAME_EXPIRY_TIMEOUT = 30 * 60 * 1000; // 30 минут
 const PLAYER_RECONNECT_TIMEOUT = 5 * 60 * 1000; // 5 минут
 
 export class GameServer {
   private io: Server<ClientToServerEvents, ServerToClientEvents>;
   private gameService: GameService;
-  private activeGames: Map<string, IGameRoom> = new Map(); // Временное хранение активных игр
-  private disconnectedPlayers: Map<string, { gameId: string, playerNumber: number, disconnectTime: number }> = new Map();
 
   constructor(httpServer: HttpServer) {
     this.io = new Server(httpServer, {
@@ -31,14 +29,15 @@ export class GameServer {
       }
     });
 
-    // Инициализируем базу данных и сервис
-    AppDataSource.initialize()
-      .then(() => {
-        console.log("Database initialized");
-        this.gameService = new GameService();
-        this.setupEventHandlers();
-      })
-      .catch(error => console.error("Database initialization error:", error));
+    // Инициализируем базу данных и сервисы
+    Promise.all([
+      AppDataSource.initialize(),
+      connectRedis()
+    ]).then(() => {
+      console.log("Database and Redis initialized");
+      this.gameService = new GameService();
+      this.setupEventHandlers();
+    }).catch(error => console.error("Initialization error:", error));
   }
 
   private setupEventHandlers(): void {
@@ -56,18 +55,12 @@ export class GameServer {
           // Создаем начальное состояние игры
           const initialState = GameLogicService.createInitialState();
 
-          // Сохраняем игру в БД
-          const game = await this.gameService.createGame(gameCode, player, initialState);
+          // Сохраняем игру в БД и Redis
+          await Promise.all([
+            this.gameService.createGame(gameCode, player, initialState),
+            redisService.createGame(gameCode, player, initialState)
+          ]);
 
-          // Создаем активную игру в памяти
-          const activeGame: IGameRoom = {
-            gameId: gameCode,
-            players: [player],
-            currentState: initialState,
-            currentPlayer: 0
-          };
-          
-          this.activeGames.set(gameCode, activeGame);
           socket.join(gameCode);
           socket.emit(WebSocketEvents.GameCreated, { gameId: gameCode });
         } catch (error) {
@@ -78,13 +71,13 @@ export class GameServer {
 
       socket.on(WebSocketEvents.JoinGame, async ({ gameId }) => {
         try {
-          const activeGame = this.activeGames.get(gameId);
-          if (!activeGame) {
+          const room = await redisService.getGameRoom(gameId);
+          if (!room) {
             socket.emit(WebSocketEvents.Error, { message: 'Game not found' });
             return;
           }
 
-          if (activeGame.players.length >= 2) {
+          if (room.players.length >= 2) {
             socket.emit(WebSocketEvents.Error, { message: 'Game is full' });
             return;
           }
@@ -94,16 +87,20 @@ export class GameServer {
             number: 1
           };
 
-          // Сохраняем игрока в БД
-          await this.gameService.joinGame(gameId, player);
+          // Сохраняем игрока в БД и Redis
+          await Promise.all([
+            this.gameService.joinGame(gameId, player),
+            redisService.joinGame(gameId, player)
+          ]);
 
-          // Обновляем активную игру в памяти
-          activeGame.players.push(player);
           socket.join(gameId);
 
+          // Получаем актуальное состояние игры
+          const gameState = await redisService.getGameState(gameId);
+
           this.io.to(gameId).emit(WebSocketEvents.GameStarted, {
-            gameState: activeGame.currentState,
-            currentPlayer: activeGame.currentPlayer
+            gameState: gameState,
+            currentPlayer: 0 // Первый ход всегда за первым игроком
           });
         } catch (error) {
           console.error('Error joining game:', error);
@@ -113,82 +110,58 @@ export class GameServer {
 
       socket.on(WebSocketEvents.MakeMove, async ({ gameId, move }) => {
         try {
-          const activeGame = this.activeGames.get(gameId);
-          
-          if (!activeGame) {
+          const [room, state] = await Promise.all([
+            redisService.getGameRoom(gameId),
+            redisService.getGameState(gameId)
+          ]);
+
+          if (!room || !state) {
             socket.emit(WebSocketEvents.Error, { message: 'Game not found' });
             return;
           }
 
-          const player = activeGame.players.find(p => p.id === socket.id);
+          const player = room.players.find(p => p.id === socket.id);
           if (!player) {
             socket.emit(WebSocketEvents.Error, { message: 'Player not found in game' });
             return;
           }
 
-          if (player.number !== activeGame.currentPlayer) {
+          const session = await redisService.getPlayerSession(socket.id);
+          if (!session || session.gameId !== gameId) {
+            socket.emit(WebSocketEvents.Error, { message: 'Invalid player session' });
+            return;
+          }
+
+          if (player.number !== state.currentPlayer) {
             socket.emit(WebSocketEvents.Error, { message: 'Not your turn' });
             return;
           }
 
-          if (activeGame.currentState.gameOver) {
+          if (state.gameOver) {
             socket.emit(WebSocketEvents.Error, { message: 'Game is over' });
             return;
           }
 
-          // Проверяем валидность хода с помощью GameLogicService
-          if (!GameLogicService.isValidMove(activeGame.currentState, move, player.number)) {
-            socket.emit(WebSocketEvents.Error, { message: 'Invalid move' });
-            return;
-          }
-
-          // Применяем ход
-          const updatedState = GameLogicService.applyMove(
-            activeGame.currentState,
-            move,
-            player.number
+          // Проверяем и применяем ход
+          const updatedState = await redisService.updateGameState(
+            gameId,
+            player.number,
+            move
           );
 
           // Сохраняем ход в БД
-          const updatedGame = await this.gameService.makeMove(gameId, player.number, move);
-          
-          // Обновляем состояние в памяти
-          activeGame.currentState = updatedState;
+          await this.gameService.makeMove(gameId, player.number, move);
 
           // Отправляем обновленное состояние всем игрокам
           this.io.to(gameId).emit(WebSocketEvents.GameStateUpdated, {
-            gameState: activeGame.currentState,
-            currentPlayer: activeGame.currentPlayer
+            gameState: updatedState,
+            currentPlayer: updatedState.currentPlayer
           });
 
-          // Если все операции размещения использованы, автоматически завершаем ход
-          if (activeGame.currentState.currentTurn.placeOperationsLeft <= 0) {
-            // Подготавливаем состояние для следующего хода
-            activeGame.currentState.currentTurn = {
-              placeOperationsLeft: 2, // Для всех ходов кроме первого даём 2 операции
-              moves: []
-            };
-            activeGame.currentPlayer = (activeGame.currentPlayer + 1) % 2;
-            
-            // Если это был первый ход игры, снимаем флаг
-            if (activeGame.currentState.isFirstTurn) {
-              activeGame.currentState.isFirstTurn = false;
-            }
-
-            // Сохраняем обновленное состояние
-            await this.gameService.updateGameState(gameId, activeGame.currentState);
-
-            // Отправляем обновление состояния
-            this.io.to(gameId).emit(WebSocketEvents.GameStateUpdated, {
-              gameState: activeGame.currentState,
-              currentPlayer: activeGame.currentPlayer
-            });
-          }
-
-          // Если это была операция размещения, проверяем доступные замены
+          // Проверяем доступные замены для операции размещения
           if (move.type === OperationType.PLACE) {
             const availableReplaces = GameLogicService.getAvailableReplaces(
-              activeGame.currentState,
+              updatedState,
               player.number
             );
 
@@ -199,11 +172,19 @@ export class GameServer {
             }
           }
 
-          // Если игра завершена, отправляем событие окончания
-          if (activeGame.currentState.gameOver) {
+          // Обрабатываем завершение игры
+          if (updatedState.gameOver) {
+            await Promise.all([
+              redisService.cleanupGame(gameId),
+              this.gameService.finishGame(gameId, {
+                winner: updatedState.winner,
+                reason: 'Game completed'
+              })
+            ]);
+
             this.io.to(gameId).emit(WebSocketEvents.GameOver, {
-              gameState: activeGame.currentState,
-              winner: activeGame.currentState.winner
+              gameState: updatedState,
+              winner: updatedState.winner
             });
           }
         } catch (error) {
@@ -212,157 +193,135 @@ export class GameServer {
         }
       });
 
-      // Добавляем обработчик завершения хода
       socket.on(WebSocketEvents.EndTurn, async ({ gameId }) => {
         try {
-          const activeGame = this.activeGames.get(gameId);
-          
-          if (!activeGame) {
+          const [room, state] = await Promise.all([
+            redisService.getGameRoom(gameId),
+            redisService.getGameState(gameId)
+          ]);
+
+          if (!room || !state) {
             socket.emit(WebSocketEvents.Error, { message: 'Game not found' });
             return;
           }
 
-          const player = activeGame.players.find(p => p.id === socket.id);
+          const player = room.players.find(p => p.id === socket.id);
           if (!player) {
             socket.emit(WebSocketEvents.Error, { message: 'Player not found in game' });
             return;
           }
 
-          if (player.number !== activeGame.currentPlayer) {
+          if (player.number !== state.currentPlayer) {
             socket.emit(WebSocketEvents.Error, { message: 'Not your turn' });
             return;
           }
 
-          // Сбрасываем состояние хода и передаем ход следующему игроку
-          activeGame.currentState.currentTurn = {
-            placeOperationsLeft: 2,
-            moves: []
-          };
-          activeGame.currentPlayer = (activeGame.currentPlayer + 1) % 2;
+          // Обновляем состояние для следующего хода
+          const updatedState = await redisService.updateGameState(gameId, (state) => ({
+            ...state,
+            currentTurn: {
+              placeOperationsLeft: 2,
+              moves: []
+            },
+            currentPlayer: (state.currentPlayer + 1) % 2
+          }));
 
           // Сохраняем состояние в БД
-          await this.gameService.updateGameState(gameId, activeGame.currentState);
+          await this.gameService.updateGameState(gameId, updatedState);
 
           // Отправляем обновленное состояние всем игрокам
           this.io.to(gameId).emit(WebSocketEvents.GameStateUpdated, {
-            gameState: activeGame.currentState,
-            currentPlayer: activeGame.currentPlayer
+            gameState: updatedState,
+            currentPlayer: updatedState.currentPlayer
           });
-
         } catch (error) {
           console.error('Error ending turn:', error);
           socket.emit(WebSocketEvents.Error, { message: 'Failed to end turn' });
         }
       });
 
-      // Обработка переподключения игрока
-      socket.on(WebSocketEvents.Reconnect, async ({ gameId }) => {
+      socket.on(WebSocketEvents.Disconnect, async () => {
         try {
-          const activeGame = this.activeGames.get(gameId);
-          const disconnectedPlayer = this.disconnectedPlayers.get(socket.id);
-
-          if (!activeGame) {
-            socket.emit(WebSocketEvents.Error, { message: 'Game not found or expired' });
-            return;
-          }
-
-          if (!disconnectedPlayer || disconnectedPlayer.gameId !== gameId) {
-            socket.emit(WebSocketEvents.Error, { message: 'No active session found for this game' });
-            return;
-          }
-
-          // Проверяем не истек ли таймаут переподключения
-          if (Date.now() - disconnectedPlayer.disconnectTime > PLAYER_RECONNECT_TIMEOUT) {
-            socket.emit(WebSocketEvents.GameExpired, { 
-              gameId, 
-              reason: 'Reconnection timeout expired' 
-            });
-            this.activeGames.delete(gameId);
-            this.disconnectedPlayers.delete(socket.id);
-            return;
-          }
-
-          // Обновляем ID сокета в списке игроков
-          const player = activeGame.players[disconnectedPlayer.playerNumber];
-          if (player) {
-            player.id = socket.id;
-          }
-
-          // Присоединяем к комнате игры
-          socket.join(gameId);
-
-          // Удаляем из списка отключенных
-          this.disconnectedPlayers.delete(socket.id);
-
-          // Отправляем текущее состояние игры переподключившемуся игроку
-          socket.emit(WebSocketEvents.PlayerReconnected, {
-            gameState: activeGame.currentState,
-            currentPlayer: activeGame.currentPlayer,
-            playerNumber: disconnectedPlayer.playerNumber
-          });
-
-          // Уведомляем других игроков о переподключении
-          socket.to(gameId).emit(WebSocketEvents.PlayerReconnected, {
-            gameState: activeGame.currentState,
-            currentPlayer: activeGame.currentPlayer,
-            playerNumber: disconnectedPlayer.playerNumber
-          });
-
-        } catch (error) {
-          console.error('Error reconnecting:', error);
-          socket.emit(WebSocketEvents.Error, { message: 'Failed to reconnect' });
-        }
-      });
-
-      // Обработка отключения игрока
-      socket.on(WebSocketEvents.Disconnect, () => {
-        for (const [gameId, game] of this.activeGames.entries()) {
-          const playerIndex = game.players.findIndex(p => p.id === socket.id);
-          if (playerIndex !== -1) {
-            // Сохраняем информацию об отключившемся игроке
-            this.disconnectedPlayers.set(socket.id, {
-              gameId,
-              playerNumber: playerIndex,
-              disconnectTime: Date.now()
-            });
-
+          const session = await redisService.getPlayerSession(socket.id);
+          if (session) {
             // Уведомляем других игроков об отключении
-            this.io.to(gameId).emit(WebSocketEvents.PlayerDisconnected, {
-              player: playerIndex
+            this.io.to(session.gameId).emit(WebSocketEvents.PlayerDisconnected, {
+              player: session.playerNumber
             });
-            
+
             // Запускаем таймер на удаление игры
             setTimeout(async () => {
               try {
-                const game = this.activeGames.get(gameId);
-                if (game && this.disconnectedPlayers.has(socket.id)) {
+                // Проверяем, не переподключился ли игрок
+                const currentSession = await redisService.getPlayerSession(socket.id);
+                if (currentSession && currentSession.gameId === session.gameId) {
                   // Если игрок не переподключился - завершаем игру
-                  await this.gameService.finishGame(gameId, {
-                    winner: 1 - playerIndex, // Победителем становится оставшийся игрок
-                    reason: 'Player disconnected'
-                  });
+                  await Promise.all([
+                    this.gameService.finishGame(session.gameId, {
+                      winner: 1 - session.playerNumber,
+                      reason: 'Player disconnected'
+                    }),
+                    redisService.cleanupGame(session.gameId)
+                  ]);
 
                   // Уведомляем оставшихся игроков
-                  this.io.to(gameId).emit(WebSocketEvents.GameExpired, {
-                    gameId,
+                  this.io.to(session.gameId).emit(WebSocketEvents.GameExpired, {
+                    gameId: session.gameId,
                     reason: 'Player disconnection timeout'
                   });
-
-                  // Удаляем игру и информацию об отключении
-                  this.activeGames.delete(gameId);
-                  this.disconnectedPlayers.delete(socket.id);
                 }
               } catch (error) {
                 console.error('Error handling disconnection timeout:', error);
               }
             }, PLAYER_RECONNECT_TIMEOUT);
-            
-            break;
           }
+        } catch (error) {
+          console.error('Error handling disconnect:', error);
+        }
+      });
+
+      socket.on(WebSocketEvents.Reconnect, async ({ gameId }) => {
+        try {
+          const [room, state] = await Promise.all([
+            redisService.getGameRoom(gameId),
+            redisService.getGameState(gameId)
+          ]);
+
+          if (!room || !state) {
+            socket.emit(WebSocketEvents.Error, { message: 'Game not found or expired' });
+            return;
+          }
+
+          const player = room.players.find(p => p.id === socket.id);
+          if (!player) {
+            socket.emit(WebSocketEvents.Error, { message: 'Player not found in this game' });
+            return;
+          }
+
+          // Обновляем сессию игрока
+          await redisService.setPlayerSession(socket.id, gameId, player.number);
+
+          // Присоединяем к комнате игры
+          socket.join(gameId);
+
+          // Отправляем текущее состояние игры
+          socket.emit(WebSocketEvents.PlayerReconnected, {
+            gameState: state,
+            currentPlayer: state.currentPlayer,
+            playerNumber: player.number
+          });
+
+          // Уведомляем других игроков
+          socket.to(gameId).emit(WebSocketEvents.PlayerReconnected, {
+            gameState: state,
+            currentPlayer: state.currentPlayer,
+            playerNumber: player.number
+          });
+        } catch (error) {
+          console.error('Error reconnecting:', error);
+          socket.emit(WebSocketEvents.Error, { message: 'Failed to reconnect' });
         }
       });
     });
   }
-
-
 }
