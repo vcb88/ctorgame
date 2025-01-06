@@ -5,7 +5,6 @@
 ### Required Software
 - Docker and Docker Compose
 - Node.js 18+ (for local development)
-- Python 3.9+ (for local development)
 - Git
 
 ### System Requirements
@@ -63,16 +62,12 @@ pnpm dev
 
 ### 2. Backend Setup
 ```bash
-# Create Python virtual environment
-cd server
-python -m venv venv
-source venv/bin/activate  # or `venv\Scripts\activate` on Windows
-
 # Install dependencies
-pip install -r requirements.txt
+cd server
+pnpm install
 
 # Start development server
-python socketio_server.py
+pnpm dev
 ```
 
 ### 3. Database Setup
@@ -82,7 +77,7 @@ docker-compose up -d mongodb redis
 
 # Initialize database
 cd server
-python -m scripts.init_db
+pnpm run db:init
 ```
 
 ## Configuration
@@ -121,8 +116,8 @@ pnpm format
 
 # Backend linting
 cd server
-flake8
-black .
+pnpm lint
+pnpm format
 ```
 
 ### Testing
@@ -134,7 +129,7 @@ pnpm test:e2e
 
 # Backend tests
 cd server
-pytest
+pnpm test
 ```
 
 ### Build
@@ -296,7 +291,7 @@ operationProfiling:
 ### Code Style
 - Follow ESLint configuration
 - Use Prettier for formatting
-- Follow Python PEP 8
+- Follow TypeScript coding guidelines
 - Write documentation
 - Include tests
 

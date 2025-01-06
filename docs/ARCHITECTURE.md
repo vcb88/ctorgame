@@ -26,12 +26,14 @@ ctorgame/
 │   │   ├── styles/      # CSS styles
 │   │   └── types/       # TypeScript definitions
 │   └── tests/           # Integration & E2E tests
-├── server/               # Backend Python application
+├── server/               # Backend TypeScript application
 │   ├── src/
-│   │   ├── storage.py   # Game state storage
-│   │   ├── socketio_server.py  # Socket.IO server
-│   │   └── game/        # Game logic
-│   └── tests/           # Server tests
+│   │   ├── config/     # Configuration
+│   │   ├── services/   # Game and business logic
+│   │   ├── entities/   # Database entities
+│   │   ├── websocket/  # Socket.IO server
+│   │   └── migrations/ # Database migrations
+│   └── tests/          # Server tests
 ├── shared/               # Shared types and utilities
 ├── docs/                 # Documentation
 └── tests/               # End-to-end tests
@@ -139,37 +141,93 @@ stateDiagram-v2
 - game_states: Serialized game states
 - metrics: Performance and analytics data
 
-### Storage Classes
-```python
-class GameStorage:
-    """Main storage interface"""
-    def __init__(self):
-        self.mongodb = AsyncIOMotorClient()
-        self.file_storage = FileStorage()
+### Storage Service
+```typescript
+export class GameStorageService {
+    constructor(
+        private readonly mongoConnection: Connection,
+        private readonly redisClient: Redis,
+        private readonly fileStorage: FileStorage
+    ) {}
 
-    async def create_game(self) -> Dict:
-        """Create new game"""
-        
-    async def record_move(self, game_id: str, move: Dict) -> None:
-        """Record game move"""
-        
-    async def get_game_state(self, game_id: str) -> Dict:
-        """Get current game state"""
+    /**
+     * Create a new game instance
+     * @returns Created game data
+     */
+    async createGame(): Promise<GameData> {
+        // Implementation
+    }
+
+    /**
+     * Record a move in the game
+     * @param gameId Game identifier
+     * @param move Move data
+     */
+    async recordMove(gameId: string, move: GameMove): Promise<void> {
+        // Implementation
+    }
+
+    /**
+     * Retrieve current game state
+     * @param gameId Game identifier
+     * @returns Current game state
+     */
+    async getGameState(gameId: string): Promise<GameState> {
+        // Implementation
+    }
+}
 ```
 
 ## Socket.IO Architecture
 
-### Namespace Structure
-```python
-class GameNamespace(socketio.AsyncNamespace):
-    async def on_connect(self, sid, environ):
-        """Handle client connection"""
-        
-    async def on_createGame(self, sid, data):
-        """Handle game creation"""
-        
-    async def on_makeMove(self, sid, data):
-        """Handle game moves"""
+### Socket.IO Server
+```typescript
+export class GameServer {
+    constructor(
+        private io: Server,
+        private gameService: GameService,
+        private storageService: GameStorageService
+    ) {
+        this.setupEventHandlers();
+    }
+
+    private setupEventHandlers(): void {
+        this.io.on('connection', (socket: Socket) => {
+            // Handle connection
+            this.handleConnection(socket);
+
+            // Game events
+            socket.on('createGame', (data, callback) => 
+                this.handleCreateGame(socket, data, callback));
+            
+            socket.on('makeMove', (data, callback) => 
+                this.handleMove(socket, data, callback));
+            
+            socket.on('disconnect', () => 
+                this.handleDisconnect(socket));
+        });
+    }
+
+    private async handleConnection(socket: Socket): Promise<void> {
+        // Handle new connection
+    }
+
+    private async handleCreateGame(
+        socket: Socket, 
+        data: CreateGameDto, 
+        callback: (response: GameResponse) => void
+    ): Promise<void> {
+        // Handle game creation
+    }
+
+    private async handleMove(
+        socket: Socket,
+        move: GameMoveDto,
+        callback: (response: MoveResponse) => void
+    ): Promise<void> {
+        // Handle game move
+    }
+}
 ```
 
 ### Event Flow

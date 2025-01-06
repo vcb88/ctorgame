@@ -6,7 +6,7 @@ This document describes the migration from WebSocket to Socket.IO in the CTORGam
 ## Changes
 
 ### Server-side Changes
-1. Replaced aiohttp WebSocket with python-socketio
+1. Integrated Socket.IO server with Express
 2. Added room-based game management
 3. Improved error handling and reconnection support
 4. Added automatic room cleanup on disconnection
