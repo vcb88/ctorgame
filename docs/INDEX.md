@@ -38,12 +38,19 @@
    - Common issues
 
 ## Development Guides
-1. [Contributing Guide](../CONTRIBUTING.md)
+1. [Setup Guide](./SETUP_GUIDE.md)
+   - Installation requirements
+   - Development setup
+   - Production deployment
+   - Monitoring and security
+   - Performance tuning
+   
+2. [Contributing Guide](../CONTRIBUTING.md)
    - Development workflow
    - Code standards
    - Pull request process
 
-2. [Development Setup](../README.md#development-setup)
+3. [Development Setup](../README.md#development-setup)
    - Local setup
    - Docker setup
    - Environment configuration
