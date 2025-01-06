@@ -1,9 +1,11 @@
-import React, { useEffect, useReducer, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useSocket } from '../hooks/useSocket';
 import ExtendedGrid from './ExtendedGrid';
+import { ScoreBoard } from './ScoreBoard';
 import { GameOverDialog } from './ui/gameover-dialog';
-import { P, A, GameState, GameAction, Board } from '@/types';
-import { GRID_WIDTH, GRID_HEIGHT } from '@/constants';
+import { Player, GameState as NewGameState, Position } from '../types/game';
+import { createInitialState, applyMove } from '../game/rules';
+import '../styles/ScoreBoard.css';
 
 interface MultiplayerGameProps {
     gameId: string;
@@ -11,30 +13,49 @@ interface MultiplayerGameProps {
     onGameEnd?: () => void;
 }
 
-const initialState: GameState = {
-    board: Array(GRID_WIDTH).fill(null).map(() => Array(GRID_HEIGHT).fill(P.N)),
-    p: P.A,
-    ops: 2
-};
-
 export const MultiplayerGame: React.FC<MultiplayerGameProps> = ({
     gameId,
     playerNumber,
     onGameEnd
 }) => {
+    const [gameState, setGameState] = useState<NewGameState>(createInitialState());
+    const [showGameOver, setShowGameOver] = useState(false);
+    const [gameOverMessage, setGameOverMessage] = useState('');
+    const isMyTurn = gameState.currentPlayer === playerNumber;
+
     const { socket } = useSocket({
         onGameUpdated: (gameId, update) => {
-            if (update.currentPlayer) {
-                setIsMyTurn(update.currentPlayer === playerNumber);
-            }
             if (update.lastMove) {
-                dispatch({
-                    type: A.PL,
+                const result = applyMove(gameState, {
                     x: update.lastMove.col,
-                    y: update.lastMove.row,
-                    p: playerNumber === 1 ? P.B : P.A
+                    y: update.lastMove.row
                 });
-                dispatch({ type: A.RP });
+                
+                if (result.isValid) {
+                    setGameState(prevState => ({
+                        ...prevState,
+                        board: result.captures.reduce((board, capture) => {
+                            capture.positions.forEach(pos => {
+                                board[pos.x][pos.y] = capture.player;
+                            });
+                            return board;
+                        }, prevState.board.map(row => [...row])),
+                        currentPlayer: result.nextPlayer,
+                        opsRemaining: result.opsRemaining,
+                        score: {
+                            [Player.First]: prevState.board.flat().filter(cell => cell === Player.First).length,
+                            [Player.Second]: prevState.board.flat().filter(cell => cell === Player.Second).length
+                        }
+                    }));
+
+                    if (result.isGameOver) {
+                        const winnerMessage = result.winner
+                            ? `Player ${result.winner} wins!`
+                            : 'Game ended in a draw!';
+                        setGameOverMessage(winnerMessage);
+                        setShowGameOver(true);
+                    }
+                }
             }
         },
         onPlayerLeft: () => {
@@ -46,38 +67,49 @@ export const MultiplayerGame: React.FC<MultiplayerGameProps> = ({
             setShowGameOver(true);
         }
     });
-    const [state, dispatch] = useReducer(reducer, initialState);
-    const [showGameOver, setShowGameOver] = useState(false);
-    const [gameOverMessage, setGameOverMessage] = useState('');
-    const [isMyTurn, setIsMyTurn] = useState(playerNumber === 1);
-
-
 
     const handleCellClick = (x: number, y: number) => {
-        if (!isMyTurn || state.board[x][y] !== P.N || state.ops <= 0) {
+        if (!isMyTurn || gameState.board[x][y] !== Player.None || gameState.opsRemaining <= 0) {
+            return;
+        }
+
+        const result = applyMove(gameState, { x, y });
+        if (!result.isValid) {
             return;
         }
 
         // Emit move to server
         socket.emit('makeMove', {
-            type: 'makeMove',
             gameId,
             playerNumber,
             x,
-            y
-        });
-
-        // Local state update
-        dispatch({
-            type: A.PL,
-            x,
             y,
-            p: playerNumber === 1 ? P.A : P.B
+            captures: result.captures
         });
-        dispatch({ type: A.RP });
 
-        if (state.ops <= 1) {
-            dispatch({ type: A.ET });
+        // Update local state
+        setGameState(prevState => ({
+            ...prevState,
+            board: result.captures.reduce((board, capture) => {
+                capture.positions.forEach(pos => {
+                    board[pos.x][pos.y] = capture.player;
+                });
+                return board;
+            }, prevState.board.map(row => [...row])),
+            currentPlayer: result.nextPlayer,
+            opsRemaining: result.opsRemaining,
+            score: {
+                [Player.First]: prevState.board.flat().filter(cell => cell === Player.First).length,
+                [Player.Second]: prevState.board.flat().filter(cell => cell === Player.Second).length
+            }
+        }));
+
+        if (result.isGameOver) {
+            const winnerMessage = result.winner
+                ? `Player ${result.winner} wins!`
+                : 'Game ended in a draw!';
+            setGameOverMessage(winnerMessage);
+            setShowGameOver(true);
         }
     };
 
@@ -88,22 +120,27 @@ export const MultiplayerGame: React.FC<MultiplayerGameProps> = ({
         }
     };
 
+    const convertedBoard = gameState.board.map(row =>
+        row.map(cell => {
+            switch (cell) {
+                case Player.None: return 0;
+                case Player.First: return 1;
+                case Player.Second: return 2;
+                default: return 0;
+            }
+        })
+    );
+
     return (
         <div className="multiplayer-game">
-            <div className="game-status">
-                <div className="player-info">
-                    You are Player {playerNumber}
-                    {isMyTurn && <span className="your-turn">Your turn!</span>}
-                </div>
-                <div className="game-stats">
-                    <span>Operations left: {state.ops}</span>
-                    <span>P1 Score: {state.board.flat().filter(c => c === P.A).length}</span>
-                    <span>P2 Score: {state.board.flat().filter(c => c === P.B).length}</span>
-                </div>
-            </div>
+            <ScoreBoard
+                scores={gameState.score}
+                currentPlayer={gameState.currentPlayer}
+                opsRemaining={gameState.opsRemaining}
+            />
 
             <ExtendedGrid
-                board={state.board}
+                board={convertedBoard}
                 onCellClick={handleCellClick}
                 showMap={false}
                 scores={[]}

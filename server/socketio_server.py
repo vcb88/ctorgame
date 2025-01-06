@@ -119,14 +119,60 @@ class GameNamespace(socketio.AsyncNamespace):
             if game_id not in self.rooms(sid):
                 raise GameStorageError("Player not in this game")
             
-            # Record move in storage
-            await self.storage.record_move(game_id, move)
+            # Record move with captures in storage
+            updated_game = await self.storage.record_move(game_id, {
+                **move,
+                'captures': data.get('captures', []),
+                'nextPlayer': 1 if player_number == 2 else 2,
+                'timestamp': datetime.now().timestamp()
+            })
             
-            # Broadcast move to all players in the game
+            # Check if game is over
+            total_cells = 100  # 10x10 board
+            total_pieces = updated_game['score']['first'] + updated_game['score']['second']
+            is_game_over = total_pieces >= total_cells
+            
+            if is_game_over:
+                # Determine winner
+                score_first = updated_game['score']['first']
+                score_second = updated_game['score']['second']
+                
+                winner = None
+                is_draw = False
+                if score_first > score_second:
+                    winner = 1
+                elif score_second > score_first:
+                    winner = 2
+                else:
+                    is_draw = True
+                    
+                # Record game completion
+                await self.storage.finish_game(
+                    game_id,
+                    winner,
+                    {'first': score_first, 'second': score_second},
+                    is_draw
+                )
+                
+                # Notify players of game end
+                await self.emit('gameOver', {
+                    'gameId': game_id,
+                    'winner': winner,
+                    'isDraw': is_draw,
+                    'finalScore': {
+                        'first': score_first,
+                        'second': score_second
+                    }
+                }, room=game_id)
+            
+            # Broadcast move and state update to all players
             await self.emit('gameUpdated', {
                 'gameId': game_id,
                 'move': move,
-                'nextPlayer': 1 if player_number == 2 else 2
+                'nextPlayer': updated_game['currentPlayer'],
+                'opsRemaining': updated_game['opsRemaining'],
+                'score': updated_game['score'],
+                'captures': data.get('captures', [])
             }, room=game_id)
             
         except GameStorageError as e:
