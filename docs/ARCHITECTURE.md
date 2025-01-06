@@ -101,9 +101,12 @@ sequenceDiagram
 
 ## State Management
 
-### Game State Structure
+### Game State Management
+
+#### Redis Data Structure
 ```typescript
-interface GameState {
+// Game State (Key: game:{gameId}:state)
+interface RedisGameState {
     board: Player[][];       // Current board state
     currentPlayer: Player;   // Active player
     status: GameStatus;      // Game status
@@ -111,23 +114,75 @@ interface GameState {
     score: GameScore;        // Current scores
     winner: Player | null;   // Winner if game over
     opsRemaining: number;    // Operations left in turn
+    lastUpdate: number;      // Last update timestamp
+}
+
+// Player Session (Key: player:{socketId}:session)
+interface RedisPlayerSession {
+    gameId: string;         // Current game ID
+    playerNumber: number;   // Player's number in game
+    lastActivity: number;   // Last activity timestamp
+}
+
+// Game Room (Key: game:{gameId}:room)
+interface RedisGameRoom {
+    players: IPlayer[];     // Connected players
+    status: GameStatus;     // Room status
+    lastUpdate: number;     // Last update timestamp
+}
+
+// Game Events (Key: game:{gameId}:events)
+interface RedisGameEvent {
+    type: string;          // Event type
+    data: any;            // Event data
+    timestamp: number;    // Event timestamp
 }
 ```
 
-### State Flow
+#### State Flow with Redis
 ```mermaid
 stateDiagram-v2
-    [*] --> Initializing
-    Initializing --> WaitingForPlayers: Game Created
-    WaitingForPlayers --> Playing: Second Player Joins
-    Playing --> PlayerTurn: Start Turn
-    PlayerTurn --> ProcessingMove: Make Move
-    ProcessingMove --> ProcessingCaptures: Valid Move
-    ProcessingCaptures --> PlayerTurn: Next Operation
-    ProcessingCaptures --> NextPlayer: Turn End
-    NextPlayer --> PlayerTurn: Start Turn
-    PlayerTurn --> GameOver: Board Full
-    GameOver --> [*]
+    [*] --> Initializing: Create Game
+    Initializing --> StoringState: Initialize Redis
+    StoringState --> WaitingForPlayers: Game Created
+    WaitingForPlayers --> ValidatingJoin: Player Joins
+    ValidatingJoin --> Playing: Second Player Valid
+    Playing --> ProcessingMove: Make Move
+    ProcessingMove --> ValidatingState: Lock State
+    ValidatingState --> UpdatingState: Valid Move
+    UpdatingState --> NotifyingClients: State Updated
+    NotifyingClients --> Playing: Continue Game
+    NotifyingClients --> GameOver: End Condition
+    GameOver --> CleaningUp: Cleanup Redis
+    CleaningUp --> [*]
+    
+    Playing --> PlayerDisconnected: Connection Lost
+    PlayerDisconnected --> WaitingReconnect: Start Timer
+    WaitingReconnect --> Playing: Player Reconnects
+    WaitingReconnect --> GameOver: Timeout
+```
+
+#### Distributed State Synchronization
+```mermaid
+sequenceDiagram
+    participant Client
+    participant GameServer
+    participant Redis
+    participant Database
+    
+    Client->>GameServer: Make Move
+    GameServer->>Redis: Lock Game State
+    activate Redis
+    GameServer->>Redis: Get Current State
+    Redis-->>GameServer: Return State
+    GameServer->>GameServer: Validate Move
+    GameServer->>Redis: Update State
+    Redis-->>GameServer: Confirm Update
+    deactivate Redis
+    GameServer->>Database: Persist Move
+    GameServer->>Client: Send Update
+    
+    Note over GameServer,Redis: All state operations use<br/>Redis for synchronization
 ```
 
 ## Storage Architecture

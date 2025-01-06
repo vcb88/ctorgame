@@ -4,10 +4,25 @@
 
 This document describes the WebSocket events and protocols used in the CTORGame application.
 
-## System Limitations
+## System Architecture
+
+### Components
+- WebSocket Server: Handles real-time communication
+- Redis: Manages distributed state and session data
+- Database: Stores persistent game data and history
+
+### System Limitations
 - Maximum concurrent games: 50
 - Room lifetime: 30 minutes of inactivity
-- Connection code format: 4 digits (0000-9999)
+- Connection code format: random string (7 characters)
+- Reconnection window: 5 minutes
+- Operation lock timeout: 5 seconds
+
+### State Management
+- Game state is stored in Redis with TTL
+- Player sessions are tracked with activity timestamps
+- State operations are synchronized using Redis locks
+- Automatic cleanup of expired games and sessions
 
 ## Connection Setup
 

@@ -13,12 +13,15 @@
    - Scoring system
    - State management
 
-3. [Caching and State Management](./CACHING_AND_STATE.md)
+3. [Distributed State Management](./DISTRIBUTED_STATE.md)
    - Redis architecture
    - State management patterns
    - Data structures
    - Error handling
    - Performance considerations
+   - Distributed locks
+   - State recovery
+   - Monitoring
 
 4. [Testing Documentation](./testing.md)
    - Test overview
@@ -99,15 +102,15 @@
 
 | Document | Status | Last Updated |
 |----------|---------|--------------|
-| Architecture | Complete | 2024-12-23 |
+| Architecture | Updated | 2025-01-06 |
 | Testing Strategy | Complete | 2024-12-23 |
 | Component Testing | Complete | 2024-12-23 |
 | Testing Setup | Complete | 2024-12-23 |
-| API WebSocket | Complete | 2025-01-06 |
+| API WebSocket | Updated | 2025-01-06 |
 | Game Mechanics | Complete | 2025-01-06 |
 | API REST | TODO | - |
 | Troubleshooting | TODO | - |
-| Caching and State | Complete | 2025-01-06 |
+| Distributed State | Complete | 2025-01-06 |
 | Performance | TODO | - |
 
 ## Contributing to Documentation
