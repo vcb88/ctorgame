@@ -3,3 +3,4 @@ export * from './game';
 export * from './websocket';
 export * from './player';
 export * from './replay';
+export * from './redis';
