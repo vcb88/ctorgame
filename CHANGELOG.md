@@ -2,6 +2,26 @@
 
 All notable changes to this project will be documented in this file.
 
+## [Unreleased]
+
+### Added
+- Game mechanics implementation with capture detection
+- Score tracking system
+- Enhanced game state management
+- Comprehensive game rules documentation
+- Updated WebSocket API documentation
+- Score visualization component
+
+### Changed
+- Migrated to Socket.IO for improved reliability
+- Enhanced state management in multiplayer games
+- Updated game state interface with proper types
+
+### Fixed
+- Proper handling of game end conditions
+- Score calculation during captures
+- Turn management and operation counting
+
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 

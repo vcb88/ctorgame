@@ -7,7 +7,13 @@
    - Data flow
    - Testing architecture
 
-2. [Testing Documentation](./testing.md)
+2. [Game Mechanics](./GAME_MECHANICS.md)
+   - Board and rules
+   - Capture mechanics
+   - Scoring system
+   - State management
+
+3. [Testing Documentation](./testing.md)
    - Test overview
    - Test running guide
    - Coverage requirements
@@ -83,7 +89,8 @@
 | Testing Strategy | Complete | 2024-12-23 |
 | Component Testing | Complete | 2024-12-23 |
 | Testing Setup | Complete | 2024-12-23 |
-| API WebSocket | TODO | - |
+| API WebSocket | Complete | 2025-01-06 |
+| Game Mechanics | Complete | 2025-01-06 |
 | API REST | TODO | - |
 | Troubleshooting | TODO | - |
 | Performance | TODO | - |
