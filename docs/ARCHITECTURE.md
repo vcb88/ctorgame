@@ -2,330 +2,312 @@
 
 ## Project Architecture Overview
 
+### System Architecture
+```mermaid
+graph TB
+    Client[Client Application] --> SocketIO[Socket.IO]
+    Client --> HTTP[HTTP API]
+    SocketIO --> Server[Game Server]
+    HTTP --> Server
+    Server --> Redis[Redis Cache]
+    Server --> MongoDB[MongoDB Storage]
+    Server --> FileSystem[File Storage]
+```
+
 ### Monorepo Structure
 ```
 ctorgame/
-├── client/               # Frontend React application
+├── client/                # Frontend React application
 │   ├── src/
-│   │   ├── components/  # React components
-│   │   ├── hooks/      # Custom React hooks
-│   │   ├── services/   # API and socket services
-│   │   └── test/       # Test utilities
-│   └── tests/          # Integration & E2E tests
-├── server/              # Backend Node.js application
+│   │   ├── components/   # React components
+│   │   ├── game/        # Game logic and rules
+│   │   ├── hooks/       # Custom React hooks
+│   │   ├── services/    # API and socket services
+│   │   ├── styles/      # CSS styles
+│   │   └── types/       # TypeScript definitions
+│   └── tests/           # Integration & E2E tests
+├── server/               # Backend Python application
 │   ├── src/
-│   │   ├── controllers/
-│   │   ├── services/
-│   │   └── websocket/
-│   └── tests/
-└── shared/              # Shared types and utilities
-    └── types/          # Common TypeScript interfaces
+│   │   ├── storage.py   # Game state storage
+│   │   ├── socketio_server.py  # Socket.IO server
+│   │   └── game/        # Game logic
+│   └── tests/           # Server tests
+├── shared/               # Shared types and utilities
+├── docs/                 # Documentation
+└── tests/               # End-to-end tests
 ```
 
 ## Component Architecture
 
 ### Frontend Architecture
-
 ```mermaid
 graph TD
     A[App] --> B[GameProvider]
-    B --> C[Game Board]
-    B --> D[Game Controls]
-    B --> E[Player Info]
-    C --> F[Socket Service]
-    D --> F
-    F --> G[WebSocket Events]
-    G --> H[Server]
+    B --> C[MultiplayerGame]
+    B --> D[GameLobby]
+    C --> E[ScoreBoard]
+    C --> F[GameBoard]
+    C --> G[GameControls]
+    F --> H[ExtendedGrid]
+    
+    subgraph Socket Layer
+        I[useSocket Hook]
+    end
+    
+    C --> I
+    D --> I
+    I --> J[Socket.IO Events]
+```
+
+### Game Logic Architecture
+```mermaid
+graph TD
+    A[Game Rules] --> B[Move Validation]
+    A --> C[Capture Detection]
+    A --> D[Score Calculation]
+    B --> E[Boundary Check]
+    B --> F[Turn Validation]
+    C --> G[Adjacent Cells]
+    C --> H[Capture Rules]
+    D --> I[Game State]
 ```
 
 ### Data Flow
-
 ```mermaid
 sequenceDiagram
     participant Client
-    participant Socket
+    participant Socket.IO
     participant Server
-    participant Database
+    participant Storage
     
-    Client->>Socket: Connect
-    Socket->>Server: Authentication
-    Server->>Database: Validate Session
-    Database-->>Server: Session Valid
-    Server-->>Socket: Connected
-    Socket-->>Client: Ready
+    Client->>Socket.IO: Connect
+    Socket.IO->>Server: Establish Connection
+    Server->>Storage: Initialize Game
+    Storage-->>Server: Game Created
+    Server-->>Socket.IO: Game Ready
+    Socket.IO-->>Client: Connected
+    
+    Note over Client,Storage: Game Flow
+    Client->>Socket.IO: Make Move
+    Socket.IO->>Server: Move Event
+    Server->>Server: Validate Move
+    Server->>Server: Process Captures
+    Server->>Storage: Update State
+    Server-->>Socket.IO: Game Updated
+    Socket.IO-->>Client: State Update
 ```
 
-## Testing Architecture
+## State Management
 
-### Test Types and Tools
+### Game State Structure
+```typescript
+interface GameState {
+    board: Player[][];       // Current board state
+    currentPlayer: Player;   // Active player
+    status: GameStatus;      // Game status
+    moves: GameMove[];       // Move history
+    score: GameScore;        // Current scores
+    winner: Player | null;   // Winner if game over
+    opsRemaining: number;    // Operations left in turn
+}
+```
 
+### State Flow
 ```mermaid
-graph LR
-    A[Test Types] --> B[Unit Tests]
-    A --> C[Integration Tests]
-    A --> D[E2E Tests]
-    B --> E[Vitest]
-    B --> F[React Testing Library]
-    C --> G[Integration Utils]
-    D --> H[Cypress]
+stateDiagram-v2
+    [*] --> Initializing
+    Initializing --> WaitingForPlayers: Game Created
+    WaitingForPlayers --> Playing: Second Player Joins
+    Playing --> PlayerTurn: Start Turn
+    PlayerTurn --> ProcessingMove: Make Move
+    ProcessingMove --> ProcessingCaptures: Valid Move
+    ProcessingCaptures --> PlayerTurn: Next Operation
+    ProcessingCaptures --> NextPlayer: Turn End
+    NextPlayer --> PlayerTurn: Start Turn
+    PlayerTurn --> GameOver: Board Full
+    GameOver --> [*]
 ```
 
-### Test Directory Structure
-```
-src/
-├── components/
-│   ├── ComponentName/
-│   │   ├── index.tsx
-│   │   ├── ComponentName.tsx
-│   │   ├── ComponentName.test.tsx
-│   │   └── ComponentName.styles.ts
-│   └── ...
-├── hooks/
-│   ├── useHookName/
-│   │   ├── index.ts
-│   │   ├── useHookName.ts
-│   │   └── useHookName.test.ts
-│   └── ...
-└── test/
-    ├── setup.ts
-    ├── test-utils.tsx
-    └── mocks/
-        ├── socket.ts
-        └── server.ts
-```
+## Storage Architecture
 
-## Component Testing Strategy
+### MongoDB Collections
+- games: Game metadata and state
+- metrics: Game statistics and analytics
 
-### Unit Test Structure
-```typescript
-// Example component test structure
-describe('ComponentName', () => {
-  // Rendering tests
-  describe('rendering', () => {
-    it('renders default state');
-    it('renders with props');
-    it('renders loading state');
-    it('renders error state');
-  });
+### File Storage
+- moves: Move history in compressed format
+- game_states: Serialized game states
+- metrics: Performance and analytics data
 
-  // Interaction tests
-  describe('interactions', () => {
-    it('handles click events');
-    it('handles form submission');
-    it('handles keyboard events');
-  });
+### Storage Classes
+```python
+class GameStorage:
+    """Main storage interface"""
+    def __init__(self):
+        self.mongodb = AsyncIOMotorClient()
+        self.file_storage = FileStorage()
 
-  // State management tests
-  describe('state management', () => {
-    it('updates internal state');
-    it('propagates state changes');
-    it('handles side effects');
-  });
-});
-```
-
-### Integration Test Structure
-```typescript
-// Example integration test structure
-describe('GameFlow', () => {
-  describe('game creation', () => {
-    it('creates new game');
-    it('connects players');
-    it('synchronizes game state');
-  });
-
-  describe('gameplay', () => {
-    it('handles player moves');
-    it('updates game state');
-    it('determines winner');
-  });
-});
+    async def create_game(self) -> Dict:
+        """Create new game"""
+        
+    async def record_move(self, game_id: str, move: Dict) -> None:
+        """Record game move"""
+        
+    async def get_game_state(self, game_id: str) -> Dict:
+        """Get current game state"""
 ```
 
 ## Socket.IO Architecture
+
+### Namespace Structure
+```python
+class GameNamespace(socketio.AsyncNamespace):
+    async def on_connect(self, sid, environ):
+        """Handle client connection"""
+        
+    async def on_createGame(self, sid, data):
+        """Handle game creation"""
+        
+    async def on_makeMove(self, sid, data):
+        """Handle game moves"""
+```
 
 ### Event Flow
 ```mermaid
 sequenceDiagram
     participant Client
-    participant Socket Service
-    participant Server
-    participant Game Service
+    participant Socket.IO
+    participant GameNamespace
+    participant GameStorage
     
-    Client->>Socket Service: makeMove()
-    Socket Service->>Server: MAKE_MOVE event
-    Server->>Game Service: validateMove()
-    Game Service-->>Server: Move Valid
-    Server-->>Socket Service: GAME_UPDATED event
-    Socket Service-->>Client: Update UI
+    Client->>Socket.IO: makeMove
+    Socket.IO->>GameNamespace: on_makeMove
+    GameNamespace->>GameStorage: record_move
+    GameStorage-->>GameNamespace: Updated State
+    GameNamespace-->>Socket.IO: emit('gameUpdated')
+    Socket.IO-->>Client: Game State Update
 ```
 
-### Socket Testing
-```typescript
-// Socket test setup
-const mockSocket = createMockSocket({
-  events: {
-    'gameCreated': (data) => {},
-    'gameUpdated': (data) => {},
-    'error': (error) => {}
-  }
-});
+## Testing Architecture
 
-// Test socket interactions
-describe('Socket Integration', () => {
-  it('emits events correctly', () => {
-    // Test implementation
-  });
-
-  it('handles received events', () => {
-    // Test implementation
-  });
-});
-```
-
-## Error Handling Strategy
-
-### Error Boundaries
-```typescript
-// Error boundary component
-class GameErrorBoundary extends React.Component {
-  // Implementation
-}
-
-// Usage in tests
-describe('ErrorBoundary', () => {
-  it('catches rendering errors');
-  it('shows fallback UI');
-  it('logs errors');
-});
-```
-
-### Socket Error Handling
-```typescript
-// Socket error handling
-socket.on('error', (error) => {
-  if (error.type === 'connection') {
-    // Handle connection errors
-  } else if (error.type === 'game') {
-    // Handle game-specific errors
-  }
-});
-
-// Testing error scenarios
-describe('Socket Error Handling', () => {
-  it('handles connection errors');
-  it('handles game errors');
-  it('shows appropriate error messages');
-});
-```
-
-## State Management
-
-### Game State Flow
+### Test Types
 ```mermaid
-stateDiagram-v2
-    [*] --> Initializing
-    Initializing --> WaitingForPlayers
-    WaitingForPlayers --> InProgress
-    InProgress --> GameOver
-    GameOver --> [*]
-```
-
-### Testing State Changes
-```typescript
-describe('Game State Management', () => {
-  it('initializes game state', () => {
-    const { result } = renderHook(() => useGameState());
-    expect(result.current.status).toBe('initializing');
-  });
-
-  it('transitions through game states', () => {
-    // Test state transitions
-  });
-});
-```
-
-## Performance Considerations
-
-### Performance Testing Strategy
-```typescript
-// Performance test setup
-import { bench } from 'vitest';
-
-bench('Component rendering', () => {
-  const { rerender } = render(<GameBoard />);
-  // Measure rendering performance
-});
-
-// Load testing
-describe('Load Tests', () => {
-  it('handles multiple concurrent games');
-  it('maintains performance under load');
-});
+graph TB
+    A[Tests] --> B[Unit Tests]
+    A --> C[Integration Tests]
+    A --> D[E2E Tests]
+    A --> E[Performance Tests]
+    
+    B --> F[Game Rules]
+    B --> G[Components]
+    B --> H[Hooks]
+    
+    C --> I[Socket.IO]
+    C --> J[Storage]
+    C --> K[API]
+    
+    D --> L[Game Flow]
+    D --> M[Multiplayer]
+    
+    E --> N[Load Tests]
+    E --> O[Stress Tests]
 ```
 
 ### Test Coverage Goals
+| Component | Target | Critical Paths |
+|-----------|--------|----------------|
+| Game Logic | 95% | Captures, Scoring |
+| Socket.IO | 90% | Real-time Events |
+| Storage | 85% | Data Consistency |
+| UI | 80% | User Interactions |
 
-| Component Type | Coverage Target | Critical Paths |
-|---------------|-----------------|----------------|
-| UI Components | 80% | User Interactions |
-| Game Logic    | 95% | Game Rules |
-| Socket Logic  | 90% | Real-time Events |
-| State Management | 85% | State Transitions |
+## Security Considerations
 
-## Deployment Strategy
+### WebSocket Security
+- Connection validation
+- Rate limiting
+- Input validation
+- Move validation
+- State verification
 
-### Testing in CI/CD Pipeline
+### Data Security
+- Game state integrity
+- Move history integrity
+- Score validation
+- Player authentication
+
+## Performance Optimization
+
+### Caching Strategy
+- Game state caching
+- Move validation results
+- Player session data
+- Room membership
+
+### Data Compression
+- Move history compression
+- Board state serialization
+- Event payload optimization
+
+## Deployment Architecture
+
+### Docker Components
 ```mermaid
 graph LR
-    A[Commit] --> B[Build]
-    B --> C[Unit Tests]
-    C --> D[Integration Tests]
-    D --> E[E2E Tests]
-    E --> F[Performance Tests]
-    F --> G[Deploy]
+    A[Nginx] --> B[Client Container]
+    A --> C[Server Container]
+    C --> D[Redis]
+    C --> E[MongoDB]
+    C --> F[File Storage]
 ```
 
-### Environment Setup
+### Environment Configuration
 ```yaml
-# Test environment configuration
-test:
+server:
   environment:
-    - NODE_ENV=test
-    - VITE_API_URL=http://localhost:3000
-    - VITE_WS_URL=ws://localhost:3000
-  services:
-    - redis
-    - postgres
+    - NODE_ENV=production
+    - MONGODB_URL=mongodb://mongo:27017
+    - REDIS_URL=redis://redis:6379
+    - STORAGE_PATH=/data/games
+  volumes:
+    - game_data:/data/games
 ```
 
-## Documentation Requirements
+## Monitoring and Metrics
 
-### Component Documentation
+### Key Metrics
+- Active games count
+- Player connection status
+- Move processing time
+- Capture calculation time
+- Storage operation latency
+- WebSocket event latency
+
+### Health Checks
+- Database connectivity
+- Redis availability
+- Storage access
+- Memory usage
+- CPU utilization
+
+## Documentation Structure
+
+### Code Documentation
 ```typescript
 /**
- * GameBoard Component
- * 
- * @component
- * @example
- * ```tsx
- * <GameBoard
- *   state={gameState}
- *   onMove={handleMove}
- * />
- * ```
+ * Process game move and calculate captures
+ * @param state Current game state
+ * @param move Player move
+ * @returns Updated game state and captures
  */
+function processMove(state: GameState, move: GameMove): MoveResult {
+    // Implementation
+}
 ```
 
-### Test Documentation
-```typescript
-/**
- * Tests GameBoard component functionality
- * 
- * @group unit
- * @requires React Testing Library
- */
-describe('GameBoard', () => {
-  // Test cases
-});
-```
+### API Documentation
+- WebSocket events
+- REST endpoints
+- Data structures
+- Error codes
+- Response formats
