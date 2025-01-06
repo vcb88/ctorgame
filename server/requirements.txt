@@ -1,0 +1,4 @@
+aiohttp>=3.8.0
+python-socketio>=5.8.0
+aiohttp-cors>=0.7.0
+python-engineio>=4.5.0

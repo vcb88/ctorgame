@@ -1,7 +1,7 @@
 import { useEffect, useRef } from 'react';
 import io, { Socket } from 'socket.io-client';
 
-const SOCKET_URL = process.env.VITE_WS_URL || 'ws://localhost:8080/ws';
+const SOCKET_URL = process.env.VITE_WS_URL || 'http://localhost:8080';
 
 export const useSocket = () => {
     const socketRef = useRef<Socket | null>(null);
