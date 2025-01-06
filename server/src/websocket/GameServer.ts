@@ -14,10 +14,14 @@ import { GameService } from '../services/GameService';
 import { GameLogicService } from '../services/GameLogicService';
 import { AppDataSource } from '../config/database';
 
+const GAME_EXPIRY_TIMEOUT = 30 * 60 * 1000; // 30 минут
+const PLAYER_RECONNECT_TIMEOUT = 5 * 60 * 1000; // 5 минут
+
 export class GameServer {
   private io: Server<ClientToServerEvents, ServerToClientEvents>;
   private gameService: GameService;
   private activeGames: Map<string, IGameRoom> = new Map(); // Временное хранение активных игр
+  private disconnectedPlayers: Map<string, { gameId: string, playerNumber: number, disconnectTime: number }> = new Map();
 
   constructor(httpServer: HttpServer) {
     this.io = new Server(httpServer, {
@@ -251,22 +255,107 @@ export class GameServer {
         }
       });
 
+      // Обработка переподключения игрока
+      socket.on(WebSocketEvents.Reconnect, async ({ gameId }) => {
+        try {
+          const activeGame = this.activeGames.get(gameId);
+          const disconnectedPlayer = this.disconnectedPlayers.get(socket.id);
+
+          if (!activeGame) {
+            socket.emit(WebSocketEvents.Error, { message: 'Game not found or expired' });
+            return;
+          }
+
+          if (!disconnectedPlayer || disconnectedPlayer.gameId !== gameId) {
+            socket.emit(WebSocketEvents.Error, { message: 'No active session found for this game' });
+            return;
+          }
+
+          // Проверяем не истек ли таймаут переподключения
+          if (Date.now() - disconnectedPlayer.disconnectTime > PLAYER_RECONNECT_TIMEOUT) {
+            socket.emit(WebSocketEvents.GameExpired, { 
+              gameId, 
+              reason: 'Reconnection timeout expired' 
+            });
+            this.activeGames.delete(gameId);
+            this.disconnectedPlayers.delete(socket.id);
+            return;
+          }
+
+          // Обновляем ID сокета в списке игроков
+          const player = activeGame.players[disconnectedPlayer.playerNumber];
+          if (player) {
+            player.id = socket.id;
+          }
+
+          // Присоединяем к комнате игры
+          socket.join(gameId);
+
+          // Удаляем из списка отключенных
+          this.disconnectedPlayers.delete(socket.id);
+
+          // Отправляем текущее состояние игры переподключившемуся игроку
+          socket.emit(WebSocketEvents.PlayerReconnected, {
+            gameState: activeGame.currentState,
+            currentPlayer: activeGame.currentPlayer,
+            playerNumber: disconnectedPlayer.playerNumber
+          });
+
+          // Уведомляем других игроков о переподключении
+          socket.to(gameId).emit(WebSocketEvents.PlayerReconnected, {
+            gameState: activeGame.currentState,
+            currentPlayer: activeGame.currentPlayer,
+            playerNumber: disconnectedPlayer.playerNumber
+          });
+
+        } catch (error) {
+          console.error('Error reconnecting:', error);
+          socket.emit(WebSocketEvents.Error, { message: 'Failed to reconnect' });
+        }
+      });
+
+      // Обработка отключения игрока
       socket.on(WebSocketEvents.Disconnect, () => {
         for (const [gameId, game] of this.activeGames.entries()) {
           const playerIndex = game.players.findIndex(p => p.id === socket.id);
           if (playerIndex !== -1) {
+            // Сохраняем информацию об отключившемся игроке
+            this.disconnectedPlayers.set(socket.id, {
+              gameId,
+              playerNumber: playerIndex,
+              disconnectTime: Date.now()
+            });
+
+            // Уведомляем других игроков об отключении
             this.io.to(gameId).emit(WebSocketEvents.PlayerDisconnected, {
               player: playerIndex
             });
             
-            // Оставляем игру в памяти на случай переподключения игрока
-            // Можно добавить таймер для удаления игры через определенное время
-            setTimeout(() => {
-              const game = this.activeGames.get(gameId);
-              if (game && game.players.find(p => p.id === socket.id)) {
-                this.activeGames.delete(gameId);
+            // Запускаем таймер на удаление игры
+            setTimeout(async () => {
+              try {
+                const game = this.activeGames.get(gameId);
+                if (game && this.disconnectedPlayers.has(socket.id)) {
+                  // Если игрок не переподключился - завершаем игру
+                  await this.gameService.finishGame(gameId, {
+                    winner: 1 - playerIndex, // Победителем становится оставшийся игрок
+                    reason: 'Player disconnected'
+                  });
+
+                  // Уведомляем оставшихся игроков
+                  this.io.to(gameId).emit(WebSocketEvents.GameExpired, {
+                    gameId,
+                    reason: 'Player disconnection timeout'
+                  });
+
+                  // Удаляем игру и информацию об отключении
+                  this.activeGames.delete(gameId);
+                  this.disconnectedPlayers.delete(socket.id);
+                }
+              } catch (error) {
+                console.error('Error handling disconnection timeout:', error);
               }
-            }, 5 * 60 * 1000); // 5 минут на переподключение
+            }, PLAYER_RECONNECT_TIMEOUT);
             
             break;
           }
@@ -275,7 +364,5 @@ export class GameServer {
     });
   }
 
-  private isValidMove(board: (number | null)[][], move: IMove): boolean {
-    return board[move.row][move.col] === null;
-  }
+
 }

@@ -8,6 +8,7 @@ export enum WebSocketEvents {
     MakeMove = 'makeMove',
     EndTurn = 'endTurn',
     Disconnect = 'disconnect',
+    Reconnect = 'reconnect',
 
     // События от сервера к клиенту
     GameCreated = 'gameCreated',
@@ -16,6 +17,8 @@ export enum WebSocketEvents {
     AvailableReplaces = 'availableReplaces',
     GameOver = 'gameOver',
     PlayerDisconnected = 'playerDisconnected',
+    PlayerReconnected = 'playerReconnected',
+    GameExpired = 'gameExpired',
     Error = 'error'
 }
 
@@ -59,6 +62,18 @@ export interface WebSocketPayloads {
     };
     [WebSocketEvents.Error]: {
         message: string;
+    };
+    [WebSocketEvents.Reconnect]: {
+        gameId: string;
+    };
+    [WebSocketEvents.PlayerReconnected]: {
+        gameState: IGameState;
+        currentPlayer: number;
+        playerNumber: number;
+    };
+    [WebSocketEvents.GameExpired]: {
+        gameId: string;
+        reason: string;
     };
 }
 

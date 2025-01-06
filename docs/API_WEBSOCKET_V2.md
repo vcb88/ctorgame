@@ -205,21 +205,105 @@ sequenceDiagram
     Note over Player1,Server,Player2: Players must create new game
 ```
 
+### Reconnection Flow
+```mermaid
+sequenceDiagram
+    participant Player
+    participant Server
+    participant OtherPlayer
+    
+    Note over Player,Server: Player disconnects
+    Server-->>OtherPlayer: PLAYER_DISCONNECTED
+    
+    alt Within 5 minutes
+        Player->>Server: RECONNECT {gameId}
+        alt Valid Session
+            Server-->>Player: PLAYER_RECONNECTED
+            Server-->>OtherPlayer: PLAYER_RECONNECTED
+            Note over Player,OtherPlayer: Game continues
+        else Invalid or Expired
+            Server-->>Player: GAME_EXPIRED
+            Server-->>OtherPlayer: GAME_EXPIRED
+            Note over Player,OtherPlayer: Game ends
+        end
+    else After 5 minutes
+        Server-->>OtherPlayer: GAME_EXPIRED
+        Note over Player,Server: Game ends, other player wins
+    end
+```
+
 ## Connection Management
 
-### Reconnection with Code
+### Connection Recovery
 ```typescript
+/**
+ * Connection recovery flow:
+ * 1. Client detects disconnection
+ * 2. Client attempts to reconnect using stored gameId
+ * 3. Server validates reconnection request
+ * 4. Server restores game state
+ * 5. All players get updated state
+ */
+
 // Client implementation
-const reconnectToGame = (socket: Socket, code: string) => {
-  socket.emit(WebSocketEvents.RECONNECT, { code });
+interface ReconnectPayload {
+  gameId: string;
+}
+
+// Store game information before disconnection
+localStorage.setItem('gameData', JSON.stringify({
+  gameId: currentGame.id,
+  playerNumber: currentPlayer.number
+}));
+
+// Reconnection attempt
+const reconnectToGame = (socket: Socket) => {
+  const gameData = JSON.parse(localStorage.getItem('gameData'));
+  if (gameData) {
+    socket.emit(WebSocketEvents.Reconnect, { gameId: gameData.gameId });
+  }
 };
 
-socket.on('reconnect', () => {
-  const savedCode = localStorage.getItem('gameCode');
-  if (savedCode) {
-    reconnectToGame(socket, savedCode);
-  }
+// Handle socket events
+socket.on('connect', () => {
+  reconnectToGame(socket);
 });
+
+socket.on(WebSocketEvents.PlayerReconnected, (data) => {
+  // Update game state with received data
+  updateGameState(data.gameState);
+  setCurrentPlayer(data.currentPlayer);
+});
+
+socket.on(WebSocketEvents.GameExpired, ({ gameId, reason }) => {
+  // Handle game expiration (timeout, disconnection, etc.)
+  handleGameExpiration(reason);
+  localStorage.removeItem('gameData');
+});
+```
+
+#### Reconnection Timeouts
+- Player reconnection window: 5 minutes
+- Game session expiration: 30 minutes of inactivity
+
+#### Reconnection States
+```typescript
+interface ReconnectionState {
+  gameId: string;
+  playerNumber: number;
+  disconnectTime: number;
+}
+
+interface PlayerReconnectedPayload {
+  gameState: GameState;
+  currentPlayer: number;
+  playerNumber: number;
+}
+
+interface GameExpiredPayload {
+  gameId: string;
+  reason: string;
+}
 ```
 
 ## Game History
