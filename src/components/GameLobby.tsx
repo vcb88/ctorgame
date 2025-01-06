@@ -9,7 +9,20 @@ export const GameLobby: React.FC<GameLobbyProps> = ({ onGameStart }) => {
     const [joinCode, setJoinCode] = useState('');
     const [error, setError] = useState<string | null>(null);
     const [isLoading, setIsLoading] = useState(false);
-    const socket = useSocket();
+    const { socket } = useSocket({
+        onGameCreated: (gameId, _, playerNumber) => {
+            setIsLoading(false);
+            onGameStart(gameId, playerNumber);
+        },
+        onGameJoined: (gameId, playerNumber) => {
+            setIsLoading(false);
+            onGameStart(gameId, playerNumber);
+        },
+        onError: (errorMsg) => {
+            setIsLoading(false);
+            setError(errorMsg);
+        }
+    });
 
     const handleCreateGame = useCallback(async () => {
         try {
@@ -45,33 +58,7 @@ export const GameLobby: React.FC<GameLobbyProps> = ({ onGameStart }) => {
         }
     }, [joinCode, socket]);
 
-    // Socket event handlers
-    React.useEffect(() => {
-        const onGameCreated = (data: any) => {
-            setIsLoading(false);
-            onGameStart(data.gameId, data.playerNumber);
-        };
 
-        const onGameJoined = (data: any) => {
-            setIsLoading(false);
-            onGameStart(data.gameId, data.playerNumber);
-        };
-
-        const onError = (error: any) => {
-            setIsLoading(false);
-            setError(error.message);
-        };
-
-        socket.on('gameCreated', onGameCreated);
-        socket.on('gameJoined', onGameJoined);
-        socket.on('error', onError);
-
-        return () => {
-            socket.off('gameCreated', onGameCreated);
-            socket.off('gameJoined', onGameJoined);
-            socket.off('error', onError);
-        };
-    }, [socket, onGameStart]);
 
     return (
         <div className="game-lobby">

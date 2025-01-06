@@ -22,62 +22,36 @@ export const MultiplayerGame: React.FC<MultiplayerGameProps> = ({
     playerNumber,
     onGameEnd
 }) => {
-    const socket = useSocket();
+    const { socket } = useSocket({
+        onGameUpdated: (gameId, update) => {
+            if (update.currentPlayer) {
+                setIsMyTurn(update.currentPlayer === playerNumber);
+            }
+            if (update.lastMove) {
+                dispatch({
+                    type: A.PL,
+                    x: update.lastMove.col,
+                    y: update.lastMove.row,
+                    p: playerNumber === 1 ? P.B : P.A
+                });
+                dispatch({ type: A.RP });
+            }
+        },
+        onPlayerLeft: () => {
+            setGameOverMessage('Opponent left the game');
+            setShowGameOver(true);
+        },
+        onPlayerDisconnected: () => {
+            setGameOverMessage('Opponent disconnected');
+            setShowGameOver(true);
+        }
+    });
     const [state, dispatch] = useReducer(reducer, initialState);
     const [showGameOver, setShowGameOver] = useState(false);
     const [gameOverMessage, setGameOverMessage] = useState('');
     const [isMyTurn, setIsMyTurn] = useState(playerNumber === 1);
 
-    // Handle incoming game updates
-    useEffect(() => {
-        const handleGameUpdate = (data: any) => {
-            if (data.gameId === gameId) {
-                // Update game state
-                if (data.move) {
-                    dispatch({
-                        type: A.PL,
-                        x: data.move.x,
-                        y: data.move.y,
-                        p: data.move.player === 1 ? P.A : P.B
-                    });
-                    dispatch({ type: A.RP });
-                }
 
-                // Update turn
-                setIsMyTurn(data.nextPlayer === playerNumber);
-            }
-        };
-
-        const handleGameOver = (data: any) => {
-            if (data.gameId === gameId) {
-                setGameOverMessage(
-                    data.winner ? 
-                        `Player ${data.winner} wins!` : 
-                        'Game ended in a draw!'
-                );
-                setShowGameOver(true);
-            }
-        };
-
-        const handlePlayerLeft = (data: any) => {
-            if (data.gameId === gameId) {
-                setGameOverMessage('Opponent left the game');
-                setShowGameOver(true);
-            }
-        };
-
-        socket.on('gameUpdated', handleGameUpdate);
-        socket.on('gameOver', handleGameOver);
-        socket.on('playerLeft', handlePlayerLeft);
-        socket.on('playerDisconnected', handlePlayerLeft);
-
-        return () => {
-            socket.off('gameUpdated', handleGameUpdate);
-            socket.off('gameOver', handleGameOver);
-            socket.off('playerLeft', handlePlayerLeft);
-            socket.off('playerDisconnected', handlePlayerLeft);
-        };
-    }, [socket, gameId, playerNumber]);
 
     const handleCellClick = (x: number, y: number) => {
         if (!isMyTurn || state.board[x][y] !== P.N || state.ops <= 0) {
