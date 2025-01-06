@@ -22,24 +22,79 @@
 
 ## In Progress (v0.3.1)
 Priority Tasks:
-- [ ] Game History
-  - [ ] Move history storage in Redis/MongoDB
-  - [ ] Full game replay functionality
-  - [ ] Game state snapshots
-  - [ ] History browsing interface
 
-- [ ] State Management and Recovery
-  - [ ] Redis integration for distributed state
-  - [ ] Game state persistence improvements
-  - [ ] State synchronization between servers
-  - [ ] Automatic state recovery
+1. Server Architecture Refactoring
+   - [ ] GameServer.ts Refactoring
+     - [ ] Remove Map activeGames and related code
+     - [ ] Add RedisService and Redis configuration
+     - [ ] Rewrite event handlers for Redis usage:
+       - [ ] CreateGame handler
+       - [ ] JoinGame handler
+       - [ ] MakeMove handler
+       - [ ] EndTurn handler
+       - [ ] Disconnect handler
+     - [ ] Add Redis events processing
+     - [ ] Implement state recovery mechanism
+     - [ ] Error handling and timeouts
 
-- [ ] Monitoring and Metrics
-  - [ ] Game metrics collection
-  - [ ] Performance monitoring
-  - [ ] Connection quality tracking
-  - [ ] Server health monitoring
-  - [ ] Analytics dashboard
+2. Testing Infrastructure
+   - [ ] Update Existing Tests
+     - [ ] Refactor GameServer tests
+     - [ ] Add Redis functionality tests
+     - [ ] Add state recovery tests
+     - [ ] Add error handling tests
+   - [ ] Integration Tests
+     - [ ] Redis integration tests
+     - [ ] State synchronization tests
+     - [ ] Connection recovery tests
+
+3. Types and Interfaces
+   - [ ] WebSocket Events
+     - [ ] Review and update existing types
+     - [ ] Add Redis event types
+     - [ ] Update game state types
+   - [ ] Configuration Types
+     - [ ] Redis configuration
+     - [ ] Timeout settings
+     - [ ] Recovery settings
+
+4. Monitoring and Debugging
+   - [ ] Logging System
+     - [ ] Redis operations logging
+     - [ ] Performance metrics
+     - [ ] Connection state tracking
+   - [ ] Metrics Collection
+     - [ ] Performance monitoring
+     - [ ] State synchronization monitoring
+     - [ ] Error tracking
+
+5. Documentation Updates
+   - [ ] Architecture Documentation
+     - [ ] Update architecture diagrams
+     - [ ] Add sync mechanism description
+     - [ ] Update data flow diagrams
+   - [ ] Configuration Guide
+     - [ ] Redis setup guide
+     - [ ] Timeout configuration
+     - [ ] Recovery settings
+   - [ ] Examples
+     - [ ] Usage examples
+     - [ ] Configuration examples
+     - [ ] Troubleshooting guide
+
+6. Configuration and Settings
+   - [ ] Timeout Configuration
+     - [ ] Connection timeouts
+     - [ ] Operation timeouts
+     - [ ] Recovery timeouts
+   - [ ] Retry Settings
+     - [ ] Operation retries
+     - [ ] Reconnection attempts
+     - [ ] State recovery retries
+   - [ ] Data Management
+     - [ ] Cleanup settings
+     - [ ] Data retention policies
+     - [ ] Cache invalidation rules
 
 Secondary Tasks:
 - [ ] Game Experience
