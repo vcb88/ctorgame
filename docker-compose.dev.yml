@@ -2,7 +2,6 @@ services:
   client:
     image: node:18-alpine
     working_dir: /app
-    user: "node"
     init: true
     ports:
       - "5173:5173"
@@ -20,20 +19,20 @@ services:
              mkdir -p /app/client/node_modules /app/shared/node_modules &&
              chown -R node:node /app/client/node_modules /app/shared/node_modules &&
              npm install -g pnpm &&
+             su node -c 'cd /app && 
              pnpm install &&
              cd /app/shared &&
              pnpm install &&
              pnpm build &&
              cd /app/client &&
              pnpm install &&
-             pnpm dev"
+             pnpm dev'"
     depends_on:
       - server
 
   server:
     image: node:18-alpine
     working_dir: /app
-    user: "node"
     init: true
     ports:
       - "3000:3000"
@@ -50,13 +49,14 @@ services:
              mkdir -p /app/server/node_modules /app/shared/node_modules &&
              chown -R node:node /app/server/node_modules /app/shared/node_modules &&
              npm install -g pnpm &&
+             su node -c 'cd /app &&
              pnpm install &&
              cd /app/shared &&
              pnpm install &&
              pnpm build &&
              cd /app/server &&
              pnpm install &&
-             pnpm dev"
+             pnpm dev'"
     depends_on:
       - redis
       - mongodb
