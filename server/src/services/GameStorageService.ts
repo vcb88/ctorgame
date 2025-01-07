@@ -1,11 +1,9 @@
 import { GameMetadata, GameMove, GameHistory, GameDetails } from '@ctor-game/shared/types/storage';
-import { mkdirSync, existsSync } from 'fs';
-import { mkdir } from 'fs/promises';
+import { mkdirSync, existsSync, promises as fs } from 'fs';
 import { join } from 'path';
-import { MongoClient, Collection } from 'mongodb';
+import { MongoClient, Collection, WithId } from 'mongodb';
 import { Redis } from 'ioredis';
 import * as uuid from 'uuid';
-import * as npy from 'npyjs';
 
 export class GameStorageError extends Error {
     constructor(message: string) {
@@ -45,7 +43,7 @@ export class GameStorageService {
             now.getDate().toString().padStart(2, '0')
         );
         mkdirSync(path, { recursive: true });
-        return join(path, `${gameId}.npz`);
+        return join(path, `${gameId}.json`);
     }
 
     async connect(): Promise<void> {
@@ -137,7 +135,7 @@ export class GameStorageService {
             { returnDocument: 'after' }
         );
 
-        if (!result.value) {
+        if (!result) {
             // Check why join failed
             const game = await this.gamesCollection.findOne({ code });
             if (!game) {
@@ -151,7 +149,7 @@ export class GameStorageService {
             }
         }
 
-        return result.value;
+        return result;
     }
 
     async recordMove(gameId: string, move: GameMove): Promise<void> {
@@ -160,7 +158,7 @@ export class GameStorageService {
 
         // Load existing moves if any
         if (existsSync(gamePath)) {
-            const data = await npy.load(gamePath);
+            const data = JSON.parse(await fs.readFile(gamePath, 'utf-8'));
             if ('moves' in data) {
                 moves = data.moves;
             }
@@ -169,12 +167,12 @@ export class GameStorageService {
         moves.push(move);
 
         // Update file
-        await npy.save(gamePath, {
+        await fs.writeFile(gamePath, JSON.stringify({
             moves: moves,
             metadata: {
                 lastUpdate: new Date().toISOString()
             }
-        });
+        }, null, 2));
 
         // Update game metadata
         const now = new Date();
@@ -210,12 +208,12 @@ export class GameStorageService {
             { returnDocument: 'after' }
         );
 
-        if (!game.value) {
+        if (!game) {
             throw new GameStorageError('Game not found');
         }
 
         // Calculate duration
-        const startTime = new Date(game.value.startTime);
+        const startTime = new Date(game.startTime);
         const duration = (now.getTime() - startTime.getTime()) / 1000;
 
         await this.gamesCollection.updateOne(
@@ -247,7 +245,7 @@ export class GameStorageService {
         }
 
         try {
-            const data = await npy.load(gamePath);
+            const data = JSON.parse(await fs.readFile(gamePath, 'utf-8'));
             const moves = data.moves || [];
             const details = data.metadata || {};
 
