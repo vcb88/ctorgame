@@ -1,6 +1,7 @@
 import { Server as HTTPServer } from 'http';
 import { Server as SocketServer } from 'socket.io';
 import { GameService } from '../services/GameService';
+import { GameStorageService } from '../services/GameStorageService';
 import { registerGameHandlers } from './handlers/gameHandlers';
 import { registerReplayHandlers } from './handlers/replayHandlers';
 import { registerHistoryHandlers } from './handlers/historyHandlers';
@@ -14,12 +15,13 @@ export function initializeWebSocket(httpServer: HTTPServer) {
     });
 
     const gameService = new GameService();
+    const storageService = new GameStorageService();
 
     io.on('connection', (socket) => {
         console.log(`Client connected: ${socket.id}`);
 
         // Регистрируем обработчики основных игровых событий
-        registerGameHandlers(socket, gameService);
+        registerGameHandlers(socket, gameService, storageService);
 
         // Регистрируем обработчики событий replay
         registerReplayHandlers(socket, gameService);

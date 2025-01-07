@@ -34,7 +34,9 @@ export function registerReplayHandlers(socket: Socket, gameService: GameService)
             // Начинаем автоматическое воспроизведение
             playNextMove(socket, gameService, gameCode);
         } catch (error) {
-            socket.emit('REPLAY_ERROR', { message: error.message });
+            socket.emit('REPLAY_ERROR', { 
+                message: error instanceof Error ? error.message : 'Unknown error occurred'
+            });
         }
     });
 
