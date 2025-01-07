@@ -10,7 +10,7 @@ export class Move {
     @Column('uuid')
     gameId: string;
 
-    @ManyToOne(() => Game, game => game.moves, { onDelete: 'CASCADE' })
+    @ManyToOne(() => Game, (game: Game) => game.moves, { onDelete: 'CASCADE' })
     @JoinColumn({ name: 'gameId' })
     game: Game;
 

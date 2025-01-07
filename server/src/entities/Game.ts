@@ -19,7 +19,7 @@ export class Game {
     @Column({ default: false })
     isCompleted: boolean;
 
-    @OneToMany(() => Move, move => move.game)
+    @OneToMany(() => Move, (move: Move) => move.game)
     moves: Move[];
 
     @Column({ type: 'jsonb' })
