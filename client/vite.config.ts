@@ -1,10 +1,25 @@
-import { defineConfig } from 'vite';
+import { defineConfig, Plugin } from 'vite';
 import react from '@vitejs/plugin-react';
 import path from 'path';
 
+// Custom logger plugin
+const loggerPlugin = (): Plugin => ({
+  name: 'logger',
+  configureServer(server) {
+    server.middlewares.use((req, res, next) => {
+      const start = Date.now();
+      res.on('finish', () => {
+        const duration = Date.now() - start;
+        console.log(`[${new Date().toISOString()}] ${req.method} ${req.url} - ${res.statusCode} (${duration}ms)`);
+      });
+      next();
+    });
+  }
+});
+
 export default defineConfig({
   root: process.cwd(),
-  plugins: [react()],
+  plugins: [react(), loggerPlugin()],
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src')
