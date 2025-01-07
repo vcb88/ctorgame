@@ -1,7 +1,7 @@
 // Re-export all shared types and interfaces
-export * from '../types/game';
-export * from '../types/player';
-export * from '../types/coordinates';
+export * from '@/game';
+export * from '@/player';
+export * from '@/coordinates';
 
 // Re-export shared constants from game
 export {
@@ -9,7 +9,7 @@ export {
     MIN_ADJACENT_FOR_REPLACE,
     MAX_PLACE_OPERATIONS,
     DIRECTIONS
-} from '../types/game';
+} from '@/game';
 
 // Export shared utilities
 export function isValidGameId(id: string): boolean {

@@ -1,4 +1,4 @@
-import { IGameState } from './game';
+import { IGameState } from '@/game';
 
 export interface IPlayer {
     id: string;

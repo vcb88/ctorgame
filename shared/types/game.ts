@@ -1,4 +1,5 @@
-import { IPlayer } from './player';
+import { IPlayer } from '@/player';
+import { IPosition, IBoard } from '@/coordinates';
 
 // Константы игры
 export const BOARD_SIZE = 10;
@@ -11,8 +12,6 @@ export enum OperationType {
   REPLACE = 'replace',
   END_TURN = 'end_turn'
 }
-
-import { IPosition, IBoard } from './coordinates';
 
 // Расширенный тип хода
 export interface IGameMove {
