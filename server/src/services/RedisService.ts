@@ -4,11 +4,11 @@ import {
     IRedisGameState,
     IRedisPlayerSession,
     IRedisGameRoom,
-    IRedisGameEvent
+    IRedisGameEvent,
+    GameEventType
 } from '@ctor-game/shared/types';
 import { redisClient, REDIS_KEYS, REDIS_EVENTS, withLock, cacheConfig } from '../config/redis';
 import { GameLogicService } from './GameLogicService';
-
 export class RedisService {
     /**
      * Сохраняет состояние игры
@@ -278,6 +278,31 @@ export class RedisService {
     async getGameStats(gameId: string): Promise<any | null> {
         const stats = await redisClient.hget(REDIS_KEYS.GAME_STATS, gameId);
         return stats ? JSON.parse(stats) : null;
+    }
+
+    /**
+     * Создает новую игру
+     */
+    async createGame(gameId: string, player: IPlayer, initialState: IGameState): Promise<void> {
+        await Promise.all([
+            this.setGameState(gameId, initialState),
+            this.setGameRoom(gameId, [player]),
+            this.addActiveGame(gameId)
+        ]);
+    }
+
+    /**
+     * Присоединяет игрока к существующей игре
+     */
+    async joinGame(gameId: string, player: IPlayer): Promise<void> {
+        await this.addPlayerToRoom(gameId, player);
+    }
+
+    /**
+     * Получает номер текущего игрока из состояния игры
+     */
+    getCurrentPlayer(state: IGameState): number {
+        return state.currentTurn.moves.length % 2;
     }
 }
 

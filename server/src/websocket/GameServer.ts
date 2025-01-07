@@ -10,14 +10,15 @@ import {
   ClientToServerEvents,
   IGameState,
   IBoard,
-  BOARD_SIZE
+  BOARD_SIZE,
+  MAX_PLACE_OPERATIONS
 } from '@ctor-game/shared/types';
 import { validateGameMove, validateGameState } from '@ctor-game/shared/validation/game';
 import { GameService } from '../services/GameService';
 import { GameLogicService } from '../services/GameLogicService';
 import { GameStorageService } from '../services/GameStorageService';
 import { redisService } from '../services/RedisService';
-import { connectRedis } from '../config/redis';
+import { redisClient, connectRedis } from '../config/redis';
 import { GameEventResponse } from '../types/events';
 
 const PLAYER_RECONNECT_TIMEOUT = 5 * 60 * 1000; // 5 минут
@@ -43,7 +44,7 @@ export class GameServer {
       this.gameService = new GameService();
       this.storageService = new GameStorageService(
         process.env.MONGODB_URL,
-        redisService.client
+        redisClient
       );
       this.setupEventHandlers();
     }).catch(error => console.error("Initialization error:", error));
@@ -106,10 +107,15 @@ export class GameServer {
 
           // Получаем актуальное состояние игры
           const gameState = await redisService.getGameState(gameId);
+          if (!gameState) {
+            socket.emit(WebSocketEvents.Error, { message: 'Game state not found' });
+            return;
+          }
 
+          const currentPlayer = redisService.getCurrentPlayer(gameState);
           this.io.to(gameId).emit(WebSocketEvents.GameStarted, {
-            gameState: gameState,
-            currentPlayer: 0 // Первый ход всегда за первым игроком
+            gameState,
+            currentPlayer
           });
         } catch (error) {
           console.error('Error joining game:', error);
@@ -141,7 +147,8 @@ export class GameServer {
             return;
           }
 
-          if (player.number !== state.currentPlayer) {
+          const currentPlayer = redisService.getCurrentPlayer(state);
+          if (player.number !== currentPlayer) {
             socket.emit(WebSocketEvents.Error, { message: 'Not your turn' });
             return;
           }
@@ -161,10 +168,11 @@ export class GameServer {
           // Сохраняем ход в БД
           await this.gameService.makeMove(gameId, player.number, move);
 
+          const nextPlayer = redisService.getCurrentPlayer(updatedState);
           // Отправляем обновленное состояние всем игрокам
           this.io.to(gameId).emit(WebSocketEvents.GameStateUpdated, {
             gameState: updatedState,
-            currentPlayer: updatedState.currentPlayer
+            currentPlayer: nextPlayer
           });
 
           // Проверяем доступные замены для операции размещения
@@ -185,10 +193,7 @@ export class GameServer {
           if (updatedState.gameOver) {
             await Promise.all([
               redisService.cleanupGame(gameId),
-              this.gameService.finishGame(gameId, {
-                winner: updatedState.winner,
-                reason: 'Game completed'
-              })
+              this.gameService.finishGame(gameId, updatedState.winner)
             ]);
 
             this.io.to(gameId).emit(WebSocketEvents.GameOver, {
@@ -220,28 +225,32 @@ export class GameServer {
             return;
           }
 
-          if (player.number !== state.currentPlayer) {
+          const currentPlayer = redisService.getCurrentPlayer(state);
+          if (player.number !== currentPlayer) {
             socket.emit(WebSocketEvents.Error, { message: 'Not your turn' });
             return;
           }
 
           // Обновляем состояние для следующего хода
-          const updatedState = await redisService.updateGameState(gameId, (state) => ({
+          const updatedState: IGameState = {
             ...state,
             currentTurn: {
-              placeOperationsLeft: 2,
+              placeOperationsLeft: MAX_PLACE_OPERATIONS,
               moves: []
-            },
-            currentPlayer: (state.currentPlayer + 1) % 2
-          }));
+            }
+          };
 
-          // Сохраняем состояние в БД
-          await this.gameService.updateGameState(gameId, updatedState);
+          await redisService.setGameState(gameId, updatedState);
+          await this.gameService.makeMove(gameId, player.number, {
+            type: OperationType.END_TURN,
+            position: { x: -1, y: -1 }
+          });
 
+          const nextPlayer = redisService.getCurrentPlayer(updatedState);
           // Отправляем обновленное состояние всем игрокам
           this.io.to(gameId).emit(WebSocketEvents.GameStateUpdated, {
             gameState: updatedState,
-            currentPlayer: updatedState.currentPlayer
+            currentPlayer: nextPlayer
           });
         } catch (error) {
           console.error('Error ending turn:', error);
@@ -266,10 +275,7 @@ export class GameServer {
                 if (currentSession && currentSession.gameId === session.gameId) {
                   // Если игрок не переподключился - завершаем игру
                   await Promise.all([
-                    this.gameService.finishGame(session.gameId, {
-                      winner: 1 - session.playerNumber,
-                      reason: 'Player disconnected'
-                    }),
+                    this.gameService.finishGame(session.gameId, 1 - session.playerNumber),
                     redisService.cleanupGame(session.gameId)
                   ]);
 
@@ -313,17 +319,18 @@ export class GameServer {
           // Присоединяем к комнате игры
           socket.join(gameId);
 
+          const currentPlayer = redisService.getCurrentPlayer(state);
           // Отправляем текущее состояние игры
           socket.emit(WebSocketEvents.PlayerReconnected, {
             gameState: state,
-            currentPlayer: state.currentPlayer,
+            currentPlayer,
             playerNumber: player.number
           });
 
           // Уведомляем других игроков
           socket.to(gameId).emit(WebSocketEvents.PlayerReconnected, {
             gameState: state,
-            currentPlayer: state.currentPlayer,
+            currentPlayer,
             playerNumber: player.number
           });
         } catch (error) {
