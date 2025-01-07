@@ -203,7 +203,7 @@ export class GameLogicService {
   private static cloneGameState(state: IGameState): IGameState {
     return {
       board: {
-        cells: state.board.cells.map(row => [...row]),
+        cells: state.board.cells.map((row: number[]) => [...row]),
         size: { ...state.board.size }
       },
       gameOver: state.gameOver,

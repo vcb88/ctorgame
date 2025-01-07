@@ -169,12 +169,12 @@ try {
   console.log('Current directory:', process.cwd());
   console.log('Directory contents:', require('fs').readdirSync('.'));
   
-  httpServer.listen(PORT, '0.0.0.0', () => {
+  httpServer.listen(Number(PORT), () => {
     console.log(`Environment: ${process.env.NODE_ENV}`);
     console.log(`Process running as: ${process.getuid?.()}`);
     console.log('Server network interfaces:');
-    require('os').networkInterfaces()['eth0']?.forEach(interface => {
-      console.log(`  - ${interface.address} (${interface.family})`);
+    require('os').networkInterfaces()['eth0']?.forEach((iface: any) => {
+      console.log(`  - ${iface.address} (${iface.family})`);
     });
     isServerReady = true;  // Set server as ready after successful start
     console.log(`🚀 Server is running at http://0.0.0.0:${PORT}`);

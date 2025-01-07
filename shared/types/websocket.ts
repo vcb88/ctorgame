@@ -1,4 +1,4 @@
-import { IGameState, IGameMove } from './game';
+import { IGameState, IGameMove } from '@/game';
 
 // WebSocket события
 export enum WebSocketEvents {
