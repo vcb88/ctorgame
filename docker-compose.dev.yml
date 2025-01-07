@@ -5,6 +5,12 @@ services:
     init: true
     ports:
       - "5173:5173"
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:5173"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
     volumes:
       - .:/app
       - pnpm_store:/root/.local/share/pnpm/store/v3
@@ -16,6 +22,7 @@ services:
       - VITE_API_URL=http://localhost:3000
     command: >
       sh -c "cd /app &&
+             apk add --no-cache wget &&
              mkdir -p /app/client/node_modules /app/shared/node_modules &&
              chown -R node:node . &&
              npm install -g pnpm@latest &&
@@ -28,7 +35,8 @@ services:
              pnpm install --frozen-lockfile &&
              pnpm dev'"
     depends_on:
-      - server
+      server:
+        condition: service_healthy
 
   server:
     image: node:18-alpine
@@ -36,6 +44,12 @@ services:
     init: true
     ports:
       - "3000:3000"
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:3000/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
     volumes:
       - .:/app
       - game_data:/data/games
@@ -46,6 +60,7 @@ services:
       - .env
     command: >
       sh -c "cd /app &&
+             apk add --no-cache wget &&
              mkdir -p /app/server/node_modules /app/shared/node_modules &&
              chown -R node:node . &&
              npm install -g pnpm@latest &&
@@ -58,13 +73,20 @@ services:
              pnpm install --frozen-lockfile &&
              pnpm dev'"
     depends_on:
-      - redis
-      - mongodb
+      redis:
+        condition: service_healthy
+      mongodb:
+        condition: service_healthy
 
   redis:
     image: redis:7-alpine
     ports:
       - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 3
     volumes:
       - redis_data:/data
 
@@ -72,6 +94,12 @@ services:
     image: mongo:6-jammy
     ports:
       - "27017:27017"
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
     volumes:
       - mongodb_data:/data/db
 
