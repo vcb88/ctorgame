@@ -73,8 +73,8 @@ services:
           echo "$response" | grep -q '"status":"ok"' || exit 1
       interval: 10s
       timeout: 10s
-      retries: 3
-      start_period: 40s
+      retries: 5
+      start_period: 60s
     volumes:
       - .:/app
       - game_data:/data/games
