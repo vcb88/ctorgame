@@ -7,8 +7,10 @@ import {
     IGameMove, 
     IPlayer, 
     OperationType,
-    BOARD_SIZE 
+    BOARD_SIZE,
+    MAX_PLACE_OPERATIONS
 } from '@ctor-game/shared/types';
+import { positionToRowCol, rowColToPosition } from '@ctor-game/shared/types';
 
 export class GameService {
     private gameRepository: Repository<Game>;
@@ -78,24 +80,24 @@ export class GameService {
             await queryRunner.manager.save(newMove);
 
             // Обновляем состояние игры в зависимости от типа хода
-            const { row, col } = move.position;
-            
+            const { row, col } = positionToRowCol(move.position);
+
             if (move.type === OperationType.PLACE) {
                 // Для операции размещения уменьшаем количество доступных ходов
                 game.currentState.currentTurn.placeOperationsLeft--;
-                game.currentState.board[row][col] = playerNumber;
+                game.currentState.board.cells[row][col] = playerNumber;
             } else if (move.type === OperationType.REPLACE) {
                 // Для операции замены просто меняем владельца клетки
-                game.currentState.board[row][col] = playerNumber;
+                game.currentState.board.cells[row][col] = playerNumber;
             }
 
             // Обновляем счет
             let player1Count = 0;
             let player2Count = 0;
-            for (let i = 0; i < BOARD_SIZE; i++) {
-                for (let j = 0; j < BOARD_SIZE; j++) {
-                    if (game.currentState.board[i][j] === 0) player1Count++;
-                    else if (game.currentState.board[i][j] === 1) player2Count++;
+            for (let i = 0; i < game.currentState.board.size.height; i++) {
+                for (let j = 0; j < game.currentState.board.size.width; j++) {
+                    if (game.currentState.board.cells[i][j] === 0) player1Count++;
+                    else if (game.currentState.board.cells[i][j] === 1) player2Count++;
                 }
             }
             game.currentState.scores = {
@@ -104,7 +106,7 @@ export class GameService {
             };
 
             // Проверяем окончание игры
-            const isBoardFull = game.currentState.board.every(row => 
+            const isBoardFull = game.currentState.board.cells.every(row => 
                 row.every(cell => cell !== null)
             );
 
@@ -240,22 +242,22 @@ export class GameService {
      * @param playerNumber номер игрока
      */
     private applyMoveToState(state: IGameState, move: IGameMove, playerNumber: number): void {
-        const { row, col } = move.position;
+        const { row, col } = positionToRowCol(move.position);
 
         if (move.type === OperationType.PLACE) {
-            state.board[row][col] = playerNumber;
+            state.board.cells[row][col] = playerNumber;
             state.currentTurn.placeOperationsLeft--;
         } else if (move.type === OperationType.REPLACE) {
-            state.board[row][col] = playerNumber;
+            state.board.cells[row][col] = playerNumber;
         }
 
         // Обновляем счет
         let player1Count = 0;
         let player2Count = 0;
-        for (let i = 0; i < BOARD_SIZE; i++) {
-            for (let j = 0; j < BOARD_SIZE; j++) {
-                if (state.board[i][j] === 0) player1Count++;
-                else if (state.board[i][j] === 1) player2Count++;
+        for (let i = 0; i < state.board.size.height; i++) {
+            for (let j = 0; j < state.board.size.width; j++) {
+                if (state.board.cells[i][j] === 0) player1Count++;
+                else if (state.board.cells[i][j] === 1) player2Count++;
             }
         }
         state.scores = {
@@ -269,18 +271,21 @@ export class GameService {
      */
     private createInitialGameState(): IGameState {
         return {
-            board: Array(BOARD_SIZE).fill(null).map(() => Array(BOARD_SIZE).fill(null)),
+            board: {
+                cells: Array(BOARD_SIZE).fill(null).map(() => Array(BOARD_SIZE).fill(null)),
+                size: { width: BOARD_SIZE, height: BOARD_SIZE }
+            },
             currentTurn: {
-                playerNumber: 0,
-                placeOperationsLeft: 2,
-                replaceOperationsLeft: 0
+                placeOperationsLeft: MAX_PLACE_OPERATIONS,
+                moves: []
             },
             scores: {
                 player1: 0,
                 player2: 0
             },
             gameOver: false,
-            winner: null
+            winner: null,
+            isFirstTurn: true
         };
     }
 
@@ -318,17 +323,18 @@ export class GameService {
      * @param playerNumber номер игрока
      */
     private isValidMove(state: IGameState, move: IGameMove, playerNumber: number): boolean {
-        const { row, col } = move.position;
+        const { row, col } = positionToRowCol(move.position);
+        const { width, height } = state.board.size;
 
         // Проверяем границы доски
-        if (row < 0 || row >= BOARD_SIZE || col < 0 || col >= BOARD_SIZE) {
+        if (row < 0 || row >= height || col < 0 || col >= width) {
             return false;
         }
 
         // Проверяем тип операции
         if (move.type === OperationType.PLACE) {
             // Для размещения клетка должна быть пустой
-            if (state.board[row][col] !== null) {
+            if (state.board.cells[row][col] !== null) {
                 return false;
             }
             // Проверяем наличие доступных операций размещения
@@ -337,7 +343,7 @@ export class GameService {
             }
         } else if (move.type === OperationType.REPLACE) {
             // Для замены клетка должна быть занята другим игроком
-            if (state.board[row][col] === null || state.board[row][col] === playerNumber) {
+            if (state.board.cells[row][col] === null || state.board.cells[row][col] === playerNumber) {
                 return false;
             }
         }
