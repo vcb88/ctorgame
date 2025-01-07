@@ -5,7 +5,7 @@ import { join } from 'path';
 import { MongoClient, Collection } from 'mongodb';
 import { Redis } from 'ioredis';
 import * as uuid from 'uuid';
-import { writeFile, readFile } from 'fs/promises';
+import * as numpy from 'numpy-ts';
 
 export class GameStorageError extends Error {
     constructor(message: string) {
@@ -45,7 +45,7 @@ export class GameStorageService {
             now.getDate().toString().padStart(2, '0')
         );
         mkdirSync(path, { recursive: true });
-        return join(path, `${gameId}.json`);
+        return join(path, `${gameId}.npz`);
     }
 
     async connect(): Promise<void> {
@@ -160,23 +160,21 @@ export class GameStorageService {
 
         // Load existing moves if any
         if (existsSync(gamePath)) {
-            const content = await readFile(gamePath, 'utf-8');
-            const data = JSON.parse(content);
-            if (data.moves) {
-                moves = data.moves;
+            const data = numpy.load(gamePath);
+            if (data.has('moves')) {
+                moves = data.get('moves').tolist();
             }
         }
 
         moves.push(move);
 
         // Update file
-        const data = {
-            moves,
-            metadata: {
+        numpy.savez_compressed(gamePath, {
+            moves: numpy.array(moves),
+            metadata: JSON.stringify({
                 lastUpdate: new Date().toISOString()
-            }
-        };
-        await writeFile(gamePath, JSON.stringify(data, null, 2), 'utf-8');
+            })
+        });
 
         // Update game metadata
         const now = new Date();
@@ -249,15 +247,14 @@ export class GameStorageService {
         }
 
         try {
-            const content = await readFile(gamePath, 'utf-8');
-            const data = JSON.parse(content);
-            const moves = data.moves || [];
-            const details = data.metadata || {};
+            const data = numpy.load(gamePath);
+            const moves = data.has('moves') ? data.get('moves').tolist() : [];
+            const metadata = data.has('metadata') ? JSON.parse(data.get('metadata')) : {};
 
             return {
                 metadata: game,
                 moves,
-                details
+                details: metadata
             };
         } catch (e) {
             throw new GameStorageError(`Failed to load game history: ${e}`);
