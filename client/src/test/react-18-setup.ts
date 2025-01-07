@@ -30,11 +30,10 @@ const render = async (element: React.ReactElement) => {
 
 // Очистка после тестов
 afterEach(() => {
-    if (root) {
-        act(() => {
-            root.unmount();
-        });
-    }
+    // Force non-null assertion here because we know root exists in tests
+    act(() => {
+        root!.unmount();
+    });
     container = null;
     root = null;
 });
