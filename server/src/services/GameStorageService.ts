@@ -179,7 +179,10 @@ export class GameStorageService {
         await npy.saveArrayAs(gamePath, {
             moves: moves,
             metadata: {
-                lastUpdate: new Date().toISOString()
+                lastUpdate: new Date().toISOString(),
+                moveTimes: [],  // TODO: implement move timing tracking
+                avgMoveTime: 0, // TODO: implement move timing tracking
+                territoryHistory: []  // TODO: implement territory history tracking
             }
         }, 'object');
 
@@ -260,7 +263,17 @@ export class GameStorageService {
             const parsed = await npy.load(gamePath);
             const data = npy.arrayify(parsed);
             const moves: GameMove[] = Array.isArray(data.moves) ? data.moves : [];
-            const details: GameDetails = data.metadata || {};
+            const storedDetails = data.metadata || {};
+
+            // Create proper GameDetails structure
+            const details: GameDetails = {
+                moves: moves,
+                timing: {
+                    moveTimes: storedDetails.moveTimes || [],
+                    avgMoveTime: storedDetails.avgMoveTime || 0
+                },
+                territoryHistory: storedDetails.territoryHistory || []
+            };
 
             return {
                 metadata: game,
