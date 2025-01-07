@@ -26,6 +26,12 @@ export interface ITurnState {
   moves: IGameMove[];
 }
 
+// Интерфейс для очков игроков
+export interface IScores {
+  player1: number;
+  player2: number;
+}
+
 // Расширенное состояние игры
 export interface IGameState {
   board: IBoard;
@@ -33,10 +39,7 @@ export interface IGameState {
   winner: number | null;
   currentTurn: ITurnState;
   currentPlayer: number;
-  scores: {
-    player1: number;
-    player2: number;
-  };
+  scores: IScores;
   isFirstTurn: boolean; // Флаг для отслеживания первого хода в игре
 }
 

@@ -1,4 +1,5 @@
 import { GameMetadata, GameMove, GameHistory, GameDetails } from '@ctor-game/shared/types/storage';
+import { IScores } from '@ctor-game/shared/types/game';
 import { mkdirSync, existsSync } from 'fs';
 import { join } from 'path';
 import * as npy from 'npyjs';
@@ -192,7 +193,7 @@ export class GameStorageService {
     async finishGame(
         gameId: string,
         winner: number,
-        scores: { player1: number; player2: number }
+        scores: IScores
     ): Promise<void> {
         // Преобразуем формат очков для MongoDB
         const finalScore = { 1: scores.player1, 2: scores.player2 };

@@ -6,7 +6,8 @@ import {
   IPlayer, 
   IGameState,
   WebSocketEvents,
-  BOARD_SIZE 
+  BOARD_SIZE,
+  IScores 
 } from '@ctor-game/shared/types';
 import { validateGameMove, validateGameState } from '@ctor-game/shared/validation/game';
 import { GameEventResponse } from '../../types/events';
@@ -118,7 +119,8 @@ export function registerGameHandlers(
 
             // Проверяем завершение игры
             if (updatedState.gameOver) {
-                const gameScores = updatedState.scores || { player1: 0, player2: 0 };
+                // Используем интерфейс IScores
+                const gameScores: IScores = updatedState.scores || { player1: 0, player2: 0 };
                 await storageService.finishGame(
                     gameId, 
                     updatedState.winner || -1, // В случае ничьей используем -1
