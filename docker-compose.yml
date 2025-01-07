@@ -26,18 +26,21 @@ services:
     build:
       context: ./server
       dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
     environment:
-      NODE_ENV: production
-      PORT: 3000
-      REDIS_URL: redis://redis:6379
-      REDIS_PREFIX: ctorgame:prod:
-      MONGODB_URL: ${MONGODB_URL:-mongodb://localhost:27017}
-      STORAGE_PATH: ${STORAGE_PATH:-/data/games}
-      REDIS_PASSWORD: ${REDIS_PASSWORD:-}
+      - NODE_ENV=production
+      - PORT=3000
+      - REDIS_URL=redis://redis:6379
+      - REDIS_PREFIX=ctorgame:prod:
+      - MONGODB_URL=mongodb://mongodb:27017
+      - STORAGE_PATH=/data/games
+      - REDIS_PASSWORD=
     volumes:
       - game_data:/data/games
     depends_on:
       - redis
+      - mongodb
 
   redis:
     image: redis:7-alpine
@@ -46,7 +49,15 @@ services:
     volumes:
       - redis_data:/data
 
+  mongodb:
+    image: mongo:6-jammy
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb_data:/data/db
+
 volumes:
   redis_data:
+  mongodb_data:
   client_dist:
   game_data:

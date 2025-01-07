@@ -29,12 +29,13 @@ services:
       - /app/node_modules
       - game_data:/data/games
     environment:
-      NODE_ENV: development
-      PORT: 3000
-      REDIS_URL: redis://redis:6379
-      REDIS_PREFIX: ctorgame:dev:
-      MONGODB_URL: ${MONGODB_URL:-mongodb://localhost:27017}
-      STORAGE_PATH: /data/games
+      - NODE_ENV=development
+      - PORT=3000
+      - REDIS_URL=redis://redis:6379
+      - REDIS_PREFIX=ctorgame:dev:
+      - MONGODB_URL=mongodb://mongodb:27017
+      - STORAGE_PATH=/data/games
+      - REDIS_PASSWORD=
     command: pnpm dev
     depends_on:
       - redis
