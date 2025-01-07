@@ -7,19 +7,25 @@ import {
   OperationType,
   WebSocketEvents,
   ServerToClientEvents,
-  ClientToServerEvents
+  ClientToServerEvents,
+  IGameState,
+  IBoard,
+  BOARD_SIZE
 } from '@ctor-game/shared/types';
+import { validateGameMove, validateGameState } from '@ctor-game/shared/validation/game';
 import { GameService } from '../services/GameService';
 import { GameLogicService } from '../services/GameLogicService';
-import { AppDataSource } from '../config/database';
+import { GameStorageService } from '../services/GameStorageService';
 import { redisService } from '../services/RedisService';
 import { connectRedis } from '../config/redis';
+import { GameEventResponse } from '../types/events';
 
 const PLAYER_RECONNECT_TIMEOUT = 5 * 60 * 1000; // 5 минут
 
 export class GameServer {
   private io: Server<ClientToServerEvents, ServerToClientEvents>;
   private gameService: GameService;
+  private storageService: GameStorageService;
 
   constructor(httpServer: HttpServer) {
     this.io = new Server(httpServer, {
@@ -29,13 +35,16 @@ export class GameServer {
       }
     });
 
-    // Инициализируем базу данных и сервисы
+    // Инициализируем сервисы
     Promise.all([
-      AppDataSource.initialize(),
       connectRedis()
     ]).then(() => {
-      console.log("Database and Redis initialized");
+      console.log("Redis initialized");
       this.gameService = new GameService();
+      this.storageService = new GameStorageService(
+        process.env.MONGODB_URL,
+        redisService.client
+      );
       this.setupEventHandlers();
     }).catch(error => console.error("Initialization error:", error));
   }
