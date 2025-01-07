@@ -1,10 +1,13 @@
 import React from 'react';
 import { GameCell } from './GameCell';
 
+import { IPosition } from '@ctor-game/shared/types';
+
 interface GameBoardProps {
   board: (number | null)[][];
   onCellClick?: (row: number, col: number) => void;
   disabled?: boolean;
+  lastMove?: IPosition;
 }
 
 export function GameBoard({ board, onCellClick, disabled = false }: GameBoardProps) {

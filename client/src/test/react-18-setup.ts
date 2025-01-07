@@ -32,7 +32,7 @@ const render = async (element: React.ReactElement) => {
 afterEach(() => {
     // Force non-null assertion here because we know root exists in tests
     act(() => {
-        root!.unmount();
+        if (root) root.unmount();
     });
     container = null;
     root = null;

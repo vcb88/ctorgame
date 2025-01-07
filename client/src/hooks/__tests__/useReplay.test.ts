@@ -61,11 +61,13 @@ describe('useReplay', () => {
 
         act(() => {
             result.current.startReplay();
-            mockHandler({ 
-                state: mockGameState, 
-                moveIndex: 0, 
-                totalMoves: 10 
-            });
+            if (mockHandler) {
+                mockHandler({ 
+                    state: mockGameState, 
+                    moveIndex: 0, 
+                    totalMoves: 10 
+                });
+            }
         });
 
         expect(mockSocket.emit).toHaveBeenCalledWith(
@@ -163,7 +165,9 @@ describe('useReplay', () => {
             .find(([event]) => event === ReplayEvent.REPLAY_ERROR)?.[1];
 
         act(() => {
-            mockErrorHandler({ message: 'Test error' });
+            if (mockErrorHandler) {
+                mockErrorHandler({ message: 'Test error' });
+            }
         });
 
         expect(result.current.error).toBe('Test error');

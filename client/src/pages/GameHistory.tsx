@@ -20,6 +20,8 @@ export function GameHistory() {
     const navigate = useNavigate();
 
     useEffect(() => {
+        if (!socket) return;
+        
         // Запрашиваем список сохраненных игр
         socket.emit('GET_SAVED_GAMES');
 
