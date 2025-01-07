@@ -4,6 +4,8 @@ import {
   OperationType,
   BOARD_SIZE,
   MIN_ADJACENT_FOR_REPLACE,
+  IPosition,
+  IBoard,
   normalizePosition,
   getAdjacentPositions,
   IReplaceValidation
@@ -15,7 +17,10 @@ export class GameLogicService {
    */
   static createInitialState(): IGameState {
     return {
-      board: Array(BOARD_SIZE).fill(null).map(() => Array(BOARD_SIZE).fill(null)),
+      board: {
+        cells: Array(BOARD_SIZE).fill(null).map(() => Array(BOARD_SIZE).fill(null)),
+        size: { width: BOARD_SIZE, height: BOARD_SIZE }
+      },
       gameOver: false,
       winner: null,
       currentTurn: {
@@ -35,10 +40,11 @@ export class GameLogicService {
    */
   static isValidMove(state: IGameState, move: IGameMove, playerNumber: number): boolean {
     const { type, position } = move;
-    const { row, col } = position;
+    const { x, y } = position;
+    const { width, height } = state.board.size;
 
     // Проверяем базовые условия
-    if (row < 0 || row >= BOARD_SIZE || col < 0 || col >= BOARD_SIZE) {
+    if (x < 0 || x >= width || y < 0 || y >= height) {
       return false;
     }
 
@@ -48,15 +54,15 @@ export class GameLogicService {
       // 2. Свободна ли клетка
       return (
         state.currentTurn.placeOperationsLeft > 0 &&
-        state.board[row][col] === null
+        state.board.cells[y][x] === null
       );
     } else if (type === OperationType.REPLACE) {
       // Для операции замены проверяем:
       // 1. Находится ли в клетке фишка противника
       // 2. Достаточно ли своих фишек вокруг
       return (
-        state.board[row][col] === (playerNumber === 0 ? 1 : 0) &&
-        this.validateReplace(state.board, row, col, playerNumber).isValid
+        state.board.cells[y][x] === (playerNumber === 0 ? 1 : 0) &&
+        this.validateReplace(state.board, position, playerNumber).isValid
       );
     }
 
@@ -67,14 +73,13 @@ export class GameLogicService {
    * Проверяет возможность замены фишки
    */
   static validateReplace(
-    board: (number | null)[][],
-    row: number,
-    col: number,
+    board: IBoard,
+    position: IPosition,
     playerNumber: number
   ): IReplaceValidation {
-    const adjacentPositions = getAdjacentPositions(row, col);
+    const adjacentPositions = getAdjacentPositions(position, board);
     const playerPieces = adjacentPositions.filter(pos => 
-      board[pos.row][pos.col] === playerNumber
+      board.cells[pos.y][pos.x] === playerNumber
     );
 
     return {
@@ -90,11 +95,11 @@ export class GameLogicService {
   static applyMove(state: IGameState, move: IGameMove, playerNumber: number): IGameState {
     const newState = this.cloneGameState(state);
     const { type, position } = move;
-    const { row, col } = position;
+    const { x, y } = position;
 
     if (type === OperationType.PLACE) {
       // Размещаем фишку
-      newState.board[row][col] = playerNumber;
+      newState.board.cells[y][x] = playerNumber;
       newState.currentTurn.placeOperationsLeft--;
       
       // Автоматически выполняем все возможные замены
@@ -106,8 +111,8 @@ export class GameLogicService {
         if (availableReplaces.length > 0) {
           replacementsFound = true;
           for (const replaceMove of availableReplaces) {
-            const { row: replaceRow, col: replaceCol } = replaceMove.position;
-            newState.board[replaceRow][replaceCol] = playerNumber;
+            const { x: replaceX, y: replaceY } = replaceMove.position;
+            newState.board.cells[replaceY][replaceX] = playerNumber;
           }
         }
       } while (replacementsFound);
@@ -134,16 +139,18 @@ export class GameLogicService {
    */
   static getAvailableReplaces(state: IGameState, playerNumber: number): IGameMove[] {
     const availableReplaces: IGameMove[] = [];
+    const { width, height } = state.board.size;
 
-    for (let row = 0; row < BOARD_SIZE; row++) {
-      for (let col = 0; col < BOARD_SIZE; col++) {
+    for (let y = 0; y < height; y++) {
+      for (let x = 0; x < width; x++) {
         // Проверяем только фишки противника
-        if (state.board[row][col] === (playerNumber === 0 ? 1 : 0)) {
-          const validation = this.validateReplace(state.board, row, col, playerNumber);
+        if (state.board.cells[y][x] === (playerNumber === 0 ? 1 : 0)) {
+          const position: IPosition = { x, y };
+          const validation = this.validateReplace(state.board, position, playerNumber);
           if (validation.isValid) {
             availableReplaces.push({
               type: OperationType.REPLACE,
-              position: { row, col }
+              position
             });
           }
         }
@@ -159,11 +166,12 @@ export class GameLogicService {
   private static updateScores(state: IGameState): void {
     let player1Count = 0;
     let player2Count = 0;
+    const { width, height } = state.board.size;
 
-    for (let row = 0; row < BOARD_SIZE; row++) {
-      for (let col = 0; col < BOARD_SIZE; col++) {
-        if (state.board[row][col] === 0) player1Count++;
-        else if (state.board[row][col] === 1) player2Count++;
+    for (let y = 0; y < height; y++) {
+      for (let x = 0; x < width; x++) {
+        if (state.board.cells[y][x] === 0) player1Count++;
+        else if (state.board.cells[y][x] === 1) player2Count++;
       }
     }
 
@@ -174,9 +182,9 @@ export class GameLogicService {
   /**
    * Проверяет, закончилась ли игра
    */
-  private static checkGameOver(board: (number | null)[][]): boolean {
+  private static checkGameOver(board: IBoard): boolean {
     // Игра заканчивается, когда все клетки заняты
-    return board.every(row => row.every(cell => cell !== null));
+    return board.cells.every(row => row.every(cell => cell !== null));
   }
 
   /**
@@ -193,7 +201,10 @@ export class GameLogicService {
    */
   private static cloneGameState(state: IGameState): IGameState {
     return {
-      board: state.board.map(row => [...row]),
+      board: {
+        cells: state.board.cells.map(row => [...row]),
+        size: { ...state.board.size }
+      },
       gameOver: state.gameOver,
       winner: state.winner,
       currentTurn: {
@@ -203,7 +214,8 @@ export class GameLogicService {
       scores: {
         player1: state.scores.player1,
         player2: state.scores.player2
-      }
+      },
+      isFirstTurn: state.isFirstTurn
     };
   }
 }
