@@ -5,6 +5,7 @@ import { GameStorageService } from '../services/GameStorageService';
 import { registerGameHandlers } from './handlers/gameHandlers';
 import { registerReplayHandlers } from './handlers/replayHandlers';
 import { registerHistoryHandlers } from './handlers/historyHandlers';
+import { redisClient } from '../config/redis';
 
 export function initializeWebSocket(httpServer: HTTPServer) {
     const io = new SocketServer(httpServer, {
@@ -15,7 +16,7 @@ export function initializeWebSocket(httpServer: HTTPServer) {
     });
 
     const gameService = new GameService();
-    const storageService = new GameStorageService(process.env.MONGODB_URL);
+    const storageService = new GameStorageService(process.env.MONGODB_URL, redisClient);
 
     io.on('connection', (socket) => {
         console.log(`Client connected: ${socket.id}`);
