@@ -4,10 +4,11 @@ import { cn } from '@/lib/utils';
 export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: 'default' | 'destructive' | 'outline' | 'ghost';
   size?: 'default' | 'sm' | 'lg';
+  asChild?: boolean;
 }
 
 export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
-  ({ className, variant = 'default', size = 'default', ...props }, ref) => {
+  ({ className, variant = 'default', size = 'default', asChild, children, ...props }, ref) => {
     const baseStyles = 'inline-flex items-center justify-center rounded-md font-medium transition-colors disabled:opacity-50';
     
     const variantStyles = {
@@ -23,8 +24,11 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
       lg: 'h-12 px-8',
     };
 
+    const Comp = asChild ? React.Children.only(children)?.type : 'button';
+    const childProps = asChild ? React.Children.only(children)?.props : {};
+
     return (
-      <button
+      <Comp
         className={cn(
           baseStyles,
           variantStyles[variant],
@@ -32,6 +36,7 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
           className
         )}
         ref={ref}
+        {...childProps}
         {...props}
       />
     );
