@@ -1,4 +1,5 @@
-import { IGameState, IPlayer } from './game';
+import { IGameState } from './game';
+import { IPlayer } from './player';
 
 export interface IRedisGameState extends IGameState {
     lastUpdate: number;

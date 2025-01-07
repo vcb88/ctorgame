@@ -1,8 +1,4 @@
-// Интерфейс игрока
-export interface IPlayer {
-  id: string;
-  number: number;  // 0 или 1
-}
+import { IPlayer } from './player';
 
 // Константы игры
 export const BOARD_SIZE = 10;

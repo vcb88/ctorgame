@@ -1,4 +1,5 @@
 import { IGameState } from './game';
+import { IPlayer } from './player';
 
 export interface GameMetadata {
     gameId: string;           // Unique game identifier
@@ -13,7 +14,7 @@ export interface GameMetadata {
         first?: string;      // First player ID
         second?: string;     // Second player ID
     };
-    winner?: number;        // Winner player number (0 or 1)
+    winner?: number;        // Player number (0 or 1)
     finalScore?: {          // Final score
         1: number;          // First player score
         2: number;          // Second player score
