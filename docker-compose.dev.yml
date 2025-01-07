@@ -36,12 +36,12 @@ services:
              chown -R node:node /app/client/node_modules /app/shared/node_modules /app/client /app/shared &&
              npm install -g pnpm@latest &&
              su node -c 'cd /app && 
-             pnpm install --no-workspace-root --frozen-lockfile &&
+             pnpm install --no-workspace-root &&
              cd /app/shared &&
-             pnpm install --frozen-lockfile &&
+             pnpm install &&
              pnpm build &&
              cd /app/client &&
-             pnpm install --frozen-lockfile &&
+             pnpm install &&
              pnpm dev'"
     depends_on:
       server:
@@ -89,12 +89,12 @@ services:
              chown -R node:node /app/server/node_modules /app/shared/node_modules /app/server /app/shared &&
              npm install -g pnpm@latest &&
              su node -c 'cd /app &&
-             pnpm install --no-workspace-root --frozen-lockfile &&
+             pnpm install --no-workspace-root &&
              cd /app/shared &&
-             pnpm install --frozen-lockfile &&
+             pnpm install &&
              pnpm build &&
              cd /app/server &&
-             pnpm install --frozen-lockfile &&
+             pnpm install &&
              pnpm dev'"
     depends_on:
       redis:
