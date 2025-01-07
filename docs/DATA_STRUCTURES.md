@@ -185,6 +185,26 @@ function validateGameState(state: IGameState): boolean;
 function validatePosition(pos: IPosition, size: IBoardSize): boolean;
 ```
 
+### Game Events
+
+Events used for real-time game updates:
+```typescript
+enum GameEventType {
+    MOVE = 'move',
+    DISCONNECT = 'disconnect',
+    RECONNECT = 'reconnect',
+    END_TURN = 'end_turn'
+}
+
+interface IGameEvent {
+    type: GameEventType;
+    gameId: string;
+    playerId: string;
+    data: Record<string, any>;
+    timestamp: number;
+}
+```
+
 ### Error Handling
 
 Standard error format:
