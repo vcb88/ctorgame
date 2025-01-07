@@ -3,6 +3,15 @@
 echo "Starting server startup script..."
 set -ex
 
+# Print diagnostic information
+echo "Current user: $(whoami)"
+echo "Current directory: $(pwd)"
+echo "Node version: $(node --version)"
+echo "NPM version: $(npm --version)"
+echo "PNPM version: $(pnpm --version)"
+echo "Directory contents:"
+ls -la
+
 echo "Step 1: Installing root dependencies"
 cd /app
 pnpm install --no-frozen-lockfile
