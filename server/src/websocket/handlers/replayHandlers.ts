@@ -1,6 +1,6 @@
 import { Socket } from 'socket.io';
 import { GameService } from '../../services/GameService';
-import { IGameState, IReplayState } from '@ctor-game/shared/types';
+import { IGameState, IReplayState, GameHistory } from '@ctor-game/shared/types';
 
 // Состояние replay для каждой игры
 const replayStates = new Map<string, IReplayState>();
@@ -9,13 +9,13 @@ export function registerReplayHandlers(socket: Socket, gameService: GameService)
     // Начать воспроизведение
     socket.on('START_REPLAY', async ({ gameCode }) => {
         try {
-            // Получаем все ходы игры
-            const moves = await gameService.getGameHistory(gameCode);
+            // Получаем количество ходов
+            const totalMoves = await gameService.getGameHistory(gameCode);
             
             // Создаем состояние воспроизведения
             const replayState: IReplayState = {
                 currentMoveIndex: 0,
-                totalMoves: moves.length,
+                totalMoves,
                 isPlaying: true,
                 playbackSpeed: 1,
                 gameCode

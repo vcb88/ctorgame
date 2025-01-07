@@ -27,6 +27,7 @@ export class GameLogicService {
         placeOperationsLeft: 1, // Первый игрок начинает с одной операции
         moves: []
       },
+      currentPlayer: 0, // Добавляем currentPlayer (0 - первый игрок)
       scores: {
         player1: 0,
         player2: 0
@@ -211,6 +212,7 @@ export class GameLogicService {
         placeOperationsLeft: state.currentTurn.placeOperationsLeft,
         moves: [...state.currentTurn.moves]
       },
+      currentPlayer: state.currentPlayer,
       scores: {
         player1: state.scores.player1,
         player2: state.scores.player2
