@@ -6,11 +6,18 @@ services:
     ports:
       - "5173:5173"
     healthcheck:
-      test: ["CMD", "wget", "--spider", "-q", "http://localhost:5173"]
+      test:
+        - CMD-SHELL
+        - |
+          set -e
+          if [ ! -f /usr/bin/wget ]; then
+            apk add --no-cache wget
+          fi
+          wget --spider -q http://localhost:5173 || exit 1
       interval: 10s
-      timeout: 5s
+      timeout: 10s
       retries: 3
-      start_period: 30s
+      start_period: 40s
     volumes:
       - .:/app
       - pnpm_store:/root/.local/share/pnpm/store/v3
@@ -37,6 +44,10 @@ services:
     depends_on:
       server:
         condition: service_healthy
+      redis:
+        condition: service_healthy
+      mongodb:
+        condition: service_healthy
 
   server:
     image: node:18-alpine
@@ -45,11 +56,18 @@ services:
     ports:
       - "3000:3000"
     healthcheck:
-      test: ["CMD", "wget", "--spider", "-q", "http://localhost:3000/health"]
+      test: 
+        - CMD-SHELL
+        - |
+          set -e
+          if [ ! -f /usr/bin/wget ]; then
+            apk add --no-cache wget
+          fi
+          wget --spider -q http://localhost:3000/health || exit 1
       interval: 10s
-      timeout: 5s
+      timeout: 10s
       retries: 3
-      start_period: 30s
+      start_period: 40s
     volumes:
       - .:/app
       - game_data:/data/games
