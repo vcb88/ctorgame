@@ -6,12 +6,17 @@ import {
   OperationType,
   WebSocketEvents,
   ClientToServerEvents,
-  ServerToClientEvents
+  ServerToClientEvents,
+  IPosition,
+  BOARD_SIZE
 } from '../../../shared/types';
+import { validateGameMove, validateGameState } from '../../../shared/validation/game';
 
 const SOCKET_SERVER_URL = process.env.NODE_ENV === 'production' 
   ? window.location.origin 
   : 'http://localhost:3000';
+
+const DEFAULT_BOARD_SIZE = { width: BOARD_SIZE, height: BOARD_SIZE };
 
 export const useMultiplayerGame = () => {
   const [socket, setSocket] = useState<Socket<ServerToClientEvents, ClientToServerEvents> | null>(null);
@@ -93,12 +98,19 @@ export const useMultiplayerGame = () => {
     socket.emit(WebSocketEvents.JoinGame, { gameId });
   }, [socket]);
 
-  const makeMove = useCallback((row: number, col: number, type: OperationType = OperationType.PLACE) => {
+  const makeMove = useCallback((x: number, y: number, type: OperationType = OperationType.PLACE) => {
     if (!socket || !gameId) return;
     const move: IGameMove = {
       type,
-      position: { row, col }
+      position: { x, y }
     };
+    
+    // Валидируем ход перед отправкой
+    if (!validateGameMove(move, DEFAULT_BOARD_SIZE)) {
+      setError('Invalid move');
+      return;
+    }
+    
     socket.emit(WebSocketEvents.MakeMove, { gameId, move });
   }, [socket, gameId]);
 
