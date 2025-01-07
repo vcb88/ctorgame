@@ -8,7 +8,8 @@ interface Listener {
 
 export interface MockSocket extends Socket {
   simulateEvent: (event: string, data: unknown) => Promise<void>;
-  listeners: Listener[];
+  _listeners: Listener[]; // internal storage
+  listeners: Socket['listeners']; // maintain Socket.io type compatibility
   mockEmit: Mock;
   mockClose: Mock;
   mockOff: Mock;
@@ -50,7 +51,10 @@ export function createMockSocket(): MockSocket {
       }
       return Promise.resolve();
     },
-    listeners,
+    _listeners: listeners,
+    listeners: (event: string) => {
+      return listeners.filter(l => l.event === event).map(l => l.callback as any);
+    },
     mockEmit: emit,
     mockClose: close,
     mockOff: off,
@@ -82,11 +86,11 @@ export function createMockSocket(): MockSocket {
     active: true,
   } as unknown as MockSocket;
 
-  // Привязываем this к методам
-  emit.mockThis(socket);
-  on.mockThis(socket);
-  off.mockThis(socket);
-  close.mockThis(socket);
+  // Привязываем this к методам с использованием bind
+  socket.emit = emit.bind(socket);
+  socket.on = on.bind(socket);
+  socket.off = off.bind(socket);
+  socket.close = close.bind(socket);
 
   return socket;
 }
