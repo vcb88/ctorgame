@@ -3,11 +3,9 @@ declare module 'npyjs' {
         [key: string]: any;
     }
 
-    interface NpyMethods {
+    export default class NpyJS {
+        constructor();
         load(path: string): Promise<NpyData>;
         save(path: string, data: NpyData): Promise<void>;
     }
-
-    const npy: NpyMethods;
-    export = npy;
 }
