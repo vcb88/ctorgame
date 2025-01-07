@@ -2,16 +2,23 @@ services:
   client:
     image: node:18-alpine
     working_dir: /app
+    user: "node"
+    init: true
     ports:
       - "5173:5173"
     volumes:
       - .:/app
+      - pnpm_store:/root/.local/share/pnpm/store/v3
+      - client_modules:/app/client/node_modules
+      - shared_modules:/app/shared/node_modules
     env_file:
       - .env
     environment:
       - VITE_API_URL=http://localhost:3000
     command: >
       sh -c "cd /app &&
+             mkdir -p /app/client/node_modules /app/shared/node_modules &&
+             chown -R node:node /app/client/node_modules /app/shared/node_modules &&
              npm install -g pnpm &&
              pnpm install &&
              cd /app/shared &&
@@ -26,15 +33,22 @@ services:
   server:
     image: node:18-alpine
     working_dir: /app
+    user: "node"
+    init: true
     ports:
       - "3000:3000"
     volumes:
       - .:/app
       - game_data:/data/games
+      - pnpm_store:/root/.local/share/pnpm/store/v3
+      - server_modules:/app/server/node_modules
+      - shared_modules:/app/shared/node_modules
     env_file:
       - .env
     command: >
       sh -c "cd /app &&
+             mkdir -p /app/server/node_modules /app/shared/node_modules &&
+             chown -R node:node /app/server/node_modules /app/shared/node_modules &&
              npm install -g pnpm &&
              pnpm install &&
              cd /app/shared &&
@@ -65,3 +79,7 @@ volumes:
   redis_data:
   mongodb_data:
   game_data:
+  pnpm_store:
+  client_modules:
+  server_modules:
+  shared_modules:
