@@ -162,21 +162,26 @@ export class GameStorageService {
 
         // Load existing moves if any
         if (existsSync(gamePath)) {
-            const data = await npy.load(gamePath);
-            if ('moves' in data) {
-                moves = data.moves;
+            try {
+                const parsed = await npy.load(gamePath);
+                const data = npy.arrayify(parsed);
+                if (data && Array.isArray(data.moves)) {
+                    moves = data.moves;
+                }
+            } catch (e) {
+                console.error('Failed to load existing moves:', e);
             }
         }
 
         moves.push(move);
 
         // Update file
-        await npy.save(gamePath, {
+        await npy.saveArrayAs(gamePath, {
             moves: moves,
             metadata: {
                 lastUpdate: new Date().toISOString()
             }
-        });
+        }, 'object');
 
         // Update game metadata
         const now = new Date();
@@ -252,9 +257,10 @@ export class GameStorageService {
         }
 
         try {
-            const data = await npy.load(gamePath);
-            const moves = data.moves || [];
-            const details = data.metadata || {};
+            const parsed = await npy.load(gamePath);
+            const data = npy.arrayify(parsed);
+            const moves: GameMove[] = Array.isArray(data.moves) ? data.moves : [];
+            const details: GameDetails = data.metadata || {};
 
             return {
                 metadata: game,
