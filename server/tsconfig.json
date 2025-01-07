@@ -14,7 +14,11 @@
     "baseUrl": ".",
     "paths": {
       "@ctor-game/shared/*": ["../shared/*"]
-    }
+    },
+    "typeRoots": [
+      "./node_modules/@types",
+      "./src/types"
+    ]
   },
   "references": [
     { "path": "../shared" }
