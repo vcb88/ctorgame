@@ -29,20 +29,21 @@ services:
       - .env
     environment:
       - VITE_API_URL=http://localhost:3000
-    command: >
-      sh -c "cd /app &&
-             apk add --no-cache wget &&
-             mkdir -p /app/client/node_modules /app/shared/node_modules &&
-             chown -R node:node /app/client/node_modules /app/shared/node_modules /app/client /app/shared &&
-             npm install -g pnpm@latest &&
-             su node -c 'cd /app && 
-             pnpm install --no-workspace-root &&
-             cd /app/shared &&
-             pnpm install &&
-             pnpm build &&
-             cd /app/client &&
-             pnpm install &&
-             pnpm dev'"
+    command: |
+      sh -c '
+        cd /app
+        apk add --no-cache wget
+        mkdir -p /app/client/node_modules /app/shared/node_modules
+        chown -R node:node /app/client/node_modules /app/shared/node_modules /app/client /app/shared
+        npm install -g pnpm@latest
+        su node -c "cd /app && 
+          pnpm install --no-workspace-root &&
+          cd /app/shared &&
+          pnpm install &&
+          pnpm build &&
+          cd /app/client &&
+          pnpm install &&
+          pnpm dev"'
     depends_on:
       server:
         condition: service_healthy
@@ -82,24 +83,26 @@ services:
       - shared_modules:/app/shared/node_modules
     env_file:
       - .env
-    command: >
-      sh -c "cd /app &&
-             apk add --no-cache wget &&
-             mkdir -p /app/server/node_modules /app/shared/node_modules &&
-             chown -R node:node /app/server/node_modules /app/shared/node_modules /app/server /app/shared &&
-             npm install -g pnpm@latest &&
-             su node -c 'cd /app &&
-             pnpm install --no-workspace-root &&
-             cd /app/shared &&
-             pnpm install &&
-             pnpm build &&
-             cd /app/server &&
-             pnpm install &&
-             echo "Running TypeScript check..." &&
-             pnpm run type-check &&
-             echo "Starting server in debug mode..." &&
-             mkdir -p dist && ls -la dist/ || true &&
-             DEBUG=* NODE_DEBUG=* pnpm dev'"
+    command: |
+      sh -c '
+        cd /app
+        apk add --no-cache wget
+        mkdir -p /app/server/node_modules /app/shared/node_modules
+        chown -R node:node /app/server/node_modules /app/shared/node_modules /app/server /app/shared
+        npm install -g pnpm@latest
+        su node -c "cd /app &&
+          pnpm install --no-workspace-root &&
+          cd /app/shared &&
+          pnpm install &&
+          pnpm build &&
+          cd /app/server &&
+          pnpm install &&
+          echo Running TypeScript check... &&
+          pnpm run type-check &&
+          echo Starting server in debug mode... &&
+          mkdir -p dist &&
+          ls -la dist/ || true &&
+          DEBUG=* NODE_DEBUG=* pnpm dev"'
     depends_on:
       redis:
         condition: service_healthy
