@@ -195,8 +195,6 @@ export class GameStorageService {
         winner: number,
         scores: IScores
     ): Promise<void> {
-        // Преобразуем формат очков для MongoDB
-        const finalScore = { 1: scores.player1, 2: scores.player2 };
         const now = new Date();
         const game = await this.gamesCollection.findOneAndUpdate(
             { gameId },
@@ -205,7 +203,10 @@ export class GameStorageService {
                     status: 'finished',
                     endTime: now.toISOString(),
                     winner,
-                    finalScore,
+                    finalScore: {
+                        player1: scores.player1,
+                        player2: scores.player2
+                    },
                     lastActivityAt: now.toISOString()
                 }
             },
