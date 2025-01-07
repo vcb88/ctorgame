@@ -88,8 +88,8 @@ interface GameMetadata {
   };
   winner?: number;
   finalScore?: {
-    1: number;
-    2: number;
+    player1: number;
+    player2: number;
   };
   totalTurns: number;
   boardSize: IBoardSize;
@@ -105,12 +105,12 @@ interface GameMetrics {
     averageMoveTime: number;
     replacementsCount: number;
     territoryControl: {
-      1: number[];
-      2: number[];
+      player1: number[];
+      player2: number[];
     };
     piecesCaptured: {
-      1: number;
-      2: number;
+      player1: number;
+      player2: number;
     };
   };
 }

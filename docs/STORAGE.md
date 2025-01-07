@@ -27,8 +27,8 @@ interface GameMetadata {
     };
     winner?: 1 | 2;         // Winner player number
     finalScore: {           // Final score
-        1: number;          // First player score
-        2: number;          // Second player score
+        player1: number;    // First player score
+        player2: number;    // Second player score
     };
     totalTurns: number;     // Total number of turns
     boardSize: {            // Board dimensions
@@ -49,12 +49,12 @@ interface GameMetrics {
         averageMoveTime: number;
         replacementsCount: number;
         territoryControl: {
-            1: number[];    // Territory control history for player 1
-            2: number[];    // Territory control history for player 2
+            player1: number[];    // Territory control history for player 1
+            player2: number[];    // Territory control history for player 2
         };
         piecesCaptured: {
-            1: number;      // Pieces captured by player 1
-            2: number;      // Pieces captured by player 2
+            player1: number;      // Pieces captured by player 1
+            player2: number;      // Pieces captured by player 2
         };
     };
 }
@@ -114,8 +114,8 @@ Each .npz file contains:
            avgMoveTime: number;
        };
        territoryHistory: Array<{
-           1: number;
-           2: number;
+           player1: number;
+           player2: number;
        }>;
    }
    ```
