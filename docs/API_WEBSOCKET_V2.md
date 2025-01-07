@@ -4,6 +4,229 @@
 
 This document describes the WebSocket events and protocols used in the CTORGame application.
 
+## Complete Game Flow
+
+Below is a detailed sequence of WebSocket events for a complete game session, from game creation to completion:
+
+```mermaid
+sequenceDiagram
+    participant Player1
+    participant Server
+    participant Redis
+    participant Player2
+    
+    Note over Player1,Player2: Game Creation Phase
+    Player1->>Server: connect()
+    Server->>Player1: connected
+    Player1->>Server: CREATE_GAME
+    Server->>Redis: Create game state
+    Server->>Redis: Set player session
+    Server->>Player1: GAME_CREATED {gameId: "abc123"}
+    
+    Note over Player1,Player2: Join Phase
+    Player2->>Server: connect()
+    Server->>Player2: connected
+    Player2->>Server: JOIN_GAME {gameId: "abc123"}
+    Server->>Redis: Update game state
+    Server->>Redis: Set player session
+    Server->>Player2: GAME_JOINED
+    Server->>Player1: GAME_STARTED
+    Server->>Player2: GAME_STARTED
+    
+    Note over Player1,Player2: Gameplay Phase
+    
+    Note right of Player1: Player1's First Turn
+    Player1->>Server: MAKE_MOVE {x: 3, y: 4}
+    Server->>Redis: Lock game state
+    Server->>Redis: Update state
+    Server->>Player1: GAME_STATE_UPDATED
+    Server->>Player2: GAME_STATE_UPDATED
+    
+    Note right of Player2: Player2's Turn
+    Player2->>Server: MAKE_MOVE {x: 5, y: 6}
+    Server->>Redis: Lock game state
+    Server->>Redis: Update state
+    Server->>Player1: GAME_STATE_UPDATED
+    Server->>Player2: GAME_STATE_UPDATED
+    
+    Note over Player1,Player2: Disconnection Scenario
+    Player1--xServer: Connection lost
+    Server->>Redis: Mark player disconnected
+    Server->>Player2: PLAYER_DISCONNECTED
+    Player1->>Server: reconnect()
+    Player1->>Server: RECONNECT {gameId: "abc123"}
+    Server->>Redis: Restore session
+    Server->>Player1: PLAYER_RECONNECTED
+    Server->>Player2: PLAYER_RECONNECTED
+    
+    Note over Player1,Player2: Game End
+    Player1->>Server: MAKE_MOVE {x: 7, y: 8}
+    Server->>Redis: Lock game state
+    Server->>Redis: Update state
+    Server->>Redis: Check win condition
+    Server->>Player1: GAME_OVER
+    Server->>Player2: GAME_OVER
+    Server->>Redis: Cleanup game
+```
+
+### Detailed Event Flow Description
+
+1. **Game Creation**
+   ```typescript
+   // Player1 connects
+   socket.connect()
+   // Server responds with connection confirmation
+   << 'connected'
+   
+   // Player1 creates game
+   socket.emit('createGame')
+   // Server responds with game details
+   << {
+       event: 'gameCreated',
+       payload: {
+           gameId: "abc123",
+           playerNumber: 0
+       }
+   }
+   ```
+
+2. **Game Join**
+   ```typescript
+   // Player2 connects and joins
+   socket.emit('joinGame', { gameId: "abc123" })
+   // Server responds to Player2
+   << {
+       event: 'gameJoined',
+       payload: {
+           gameId: "abc123",
+           playerNumber: 1
+       }
+   }
+   
+   // Both players receive game start notification
+   << {
+       event: 'gameStarted',
+       payload: {
+           gameState: {
+               board: [[]], // 10x10 empty board
+               currentPlayer: 0,
+               currentTurn: {
+                   placeOperationsLeft: 1, // First turn has 1 operation
+                   moves: []
+               },
+               score: { player1: 0, player2: 0 }
+           }
+       }
+   }
+   ```
+
+3. **Game Turns**
+   ```typescript
+   // Player1 makes first move
+   socket.emit('makeMove', {
+       gameId: "abc123",
+       move: {
+           type: "PLACE",
+           x: 3,
+           y: 4
+       }
+   })
+   
+   // Both players receive state update
+   << {
+       event: 'gameStateUpdated',
+       payload: {
+           gameState: {
+               board: [[/* updated board */]],
+               currentPlayer: 1, // Turn switches to Player2
+               currentTurn: {
+                   placeOperationsLeft: 2,
+                   moves: []
+               },
+               score: { player1: 0, player2: 0 }
+           }
+       }
+   }
+   ```
+
+4. **Disconnection Handling**
+   ```typescript
+   // Player1 disconnects unexpectedly
+   >> 'disconnect'
+   
+   // Player2 receives notification
+   << {
+       event: 'playerDisconnected',
+       payload: {
+           player: 0
+       }
+   }
+   
+   // Player1 reconnects
+   socket.emit('reconnect', { 
+       gameId: "abc123"
+   })
+   
+   // Both players receive reconnection notification
+   << {
+       event: 'playerReconnected',
+       payload: {
+           gameState: {/* current game state */},
+           playerNumber: 0
+       }
+   }
+   ```
+
+5. **Game End**
+   ```typescript
+   // After winning move
+   << {
+       event: 'gameOver',
+       payload: {
+           gameState: {/* final game state */},
+           winner: 0, // Player1 wins
+           score: {
+               player1: 55,
+               player2: 45
+           }
+       }
+   }
+   ```
+
+### State Transitions
+
+```mermaid
+stateDiagram-v2
+    [*] --> WaitingForPlayers: CREATE_GAME
+    WaitingForPlayers --> GameStarted: JOIN_GAME
+    GameStarted --> Player1Turn: GAME_STARTED
+    
+    Player1Turn --> ProcessingMove1: MAKE_MOVE
+    ProcessingMove1 --> Player2Turn: STATE_UPDATED
+    
+    Player2Turn --> ProcessingMove2: MAKE_MOVE
+    ProcessingMove2 --> Player1Turn: STATE_UPDATED
+    
+    Player1Turn --> Disconnected: DISCONNECT
+    Player2Turn --> Disconnected: DISCONNECT
+    Disconnected --> ReconnectionWindow: Start 5min timer
+    ReconnectionWindow --> GameStarted: RECONNECT
+    ReconnectionWindow --> GameOver: Timeout
+    
+    Player1Turn --> GameOver: Winning Move
+    Player2Turn --> GameOver: Winning Move
+    GameOver --> [*]
+```
+
+### Event Timing Constraints
+
+- Connection timeout: 10 seconds
+- Move validation timeout: 5 seconds
+- State update timeout: 5 seconds
+- Reconnection window: 5 minutes
+- Game expiration: 30 minutes of inactivity
+- Lock timeout: 5 seconds
+
 ## System Architecture
 
 ### Components
