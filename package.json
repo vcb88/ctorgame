@@ -2,7 +2,7 @@
   "name": "ctor-game-monorepo",
   "private": true,
   "version": "0.1.0",
-  "packageManager": "pnpm@8.6.0",
+  "packageManager": "pnpm@9.15.3",
   "type": "module",
   "homepage": "https://vcb88.github.io/ctorgame",
   "workspaces": ["client", "server", "shared"],

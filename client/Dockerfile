@@ -6,17 +6,27 @@ RUN corepack enable && corepack prepare pnpm@latest --activate
 
 WORKDIR /app
 
-# Copy package files
-COPY client/package.json client/pnpm-lock.yaml ./
+# Copy workspace config
+COPY pnpm-workspace.yaml ./
+
+# Copy all package.json and pnpm-lock.yaml files
+COPY package.json pnpm-lock.yaml ./
+COPY shared/package.json ./shared/
+COPY client/package.json ./client/
 
 # Install dependencies
 RUN pnpm install
 
-# Copy shared package
-COPY shared/ ../shared/
-
 # Copy source files
-COPY client/ .
+COPY shared/ ./shared/
+COPY client/ ./client/
+
+# Build shared package first
+WORKDIR /app/shared
+RUN pnpm build
+
+# Build client
+WORKDIR /app/client
 
 # Build application
 RUN pnpm build
