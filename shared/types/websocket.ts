@@ -12,6 +12,7 @@ export enum WebSocketEvents {
 
     // События от сервера к клиенту
     GameCreated = 'gameCreated',
+    GameJoined = 'gameJoined',
     GameStarted = 'gameStarted',
     GameStateUpdated = 'gameStateUpdated',
     AvailableReplaces = 'availableReplaces',
@@ -40,6 +41,9 @@ export interface WebSocketPayloads {
 
     // Ответы (сервер -> клиент)
     [WebSocketEvents.GameCreated]: {
+        gameId: string;
+    };
+    [WebSocketEvents.GameJoined]: {
         gameId: string;
     };
     [WebSocketEvents.GameStarted]: {

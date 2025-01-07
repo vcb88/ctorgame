@@ -14,7 +14,7 @@ export interface GameMetadata {
         first?: string;      // First player ID
         second?: string;     // Second player ID
     };
-    winner?: number;        // Player number (0 or 1)
+    winner?: number;        // Player number (1 or 2)
     finalScore?: {          // Final score
         1: number;          // First player score
         2: number;          // Second player score
@@ -24,6 +24,14 @@ export interface GameMetadata {
         width: number;
         height: number;
     };
+    currentState?: IGameState;  // Current game state
+    isCompleted?: boolean;      // Game completion flag
+    gameOver?: boolean;         // Game over flag
+    scores?: {                  // Current scores
+        1: number;              // First player score
+        2: number;              // Second player score
+    };
+    currentPlayer?: number;     // Current player (1 or 2)
 }
 
 export interface GameMove {

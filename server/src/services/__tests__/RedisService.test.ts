@@ -2,7 +2,8 @@ import { describe, it, expect, beforeEach, jest } from '@jest/globals';
 import { redisService } from '../RedisService';
 import { redisClient, REDIS_KEYS, REDIS_EVENTS } from '../../config/redis';
 import { GameLogicService } from '../GameLogicService';
-import { IGameState, IPlayer, IGameEvent, IGameEventType } from '@ctor-game/shared/types';
+import { IGameState, IPlayer } from '@ctor-game/shared/types';
+import { IGameEvent, GameEventType } from '@ctor-game/shared/types/events';
 
 // Мокаем Redis и GameLogicService
 jest.mock('../../config/redis', () => ({
@@ -60,7 +61,8 @@ describe('RedisService', () => {
         },
         gameOver: false,
         winner: null,
-        isFirstTurn: true
+        isFirstTurn: true,
+        currentPlayer: 0
     };
 
     const mockPlayer: IPlayer = {
@@ -199,7 +201,7 @@ describe('RedisService', () => {
     describe('Game Events', () => {
         it('should add game event', async () => {
             const event: IGameEvent = {
-                type: IGameEventType.MOVE,
+                type: GameEventType.MOVE,
                 gameId: 'test-game',
                 playerId: 'test-player',
                 data: {},

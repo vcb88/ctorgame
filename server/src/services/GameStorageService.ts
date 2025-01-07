@@ -3,7 +3,7 @@ import { mkdirSync, existsSync } from 'fs';
 import { join } from 'path';
 import * as npy from 'npyjs';
 import { MongoClient, Collection, WithId } from 'mongodb';
-import { Redis } from 'ioredis';
+import Redis from 'ioredis';
 import * as uuid from 'uuid';
 
 export class GameStorageError extends Error {
@@ -192,7 +192,7 @@ export class GameStorageService {
     async finishGame(
         gameId: string,
         winner: number,
-        finalScore: { [key: number]: number }
+        finalScore: { 1: number; 2: number }
     ): Promise<void> {
         const now = new Date();
         const game = await this.gamesCollection.findOneAndUpdate(

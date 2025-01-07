@@ -32,6 +32,7 @@ export interface IGameState {
   gameOver: boolean;
   winner: number | null;
   currentTurn: ITurnState;
+  currentPlayer: number;
   scores: {
     player1: number;
     player2: number;

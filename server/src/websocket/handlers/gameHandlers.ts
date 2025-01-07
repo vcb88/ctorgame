@@ -32,7 +32,8 @@ export function registerGameHandlers(
                 scores: { player1: 0, player2: 0 },
                 gameOver: false,
                 winner: null,
-                isFirstTurn: true
+                isFirstTurn: true,
+                currentPlayer: 0
             };
 
             // Создаем игру в Redis и MongoDB
