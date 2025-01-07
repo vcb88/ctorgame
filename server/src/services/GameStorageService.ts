@@ -1,8 +1,7 @@
 import { GameMetadata, GameMove, GameHistory, GameDetails } from '@ctor-game/shared/types/storage';
 import { IScores } from '@ctor-game/shared/types/game';
-import { mkdirSync, existsSync } from 'fs';
+import { mkdirSync, existsSync, readFileSync, writeFileSync } from 'fs';
 import { join } from 'path';
-import NpyJS from 'npyjs';
 import { MongoClient, Collection, WithId } from 'mongodb';
 import Redis from 'ioredis';
 import * as uuid from 'uuid';
@@ -47,7 +46,20 @@ export class GameStorageService {
             now.getDate().toString().padStart(2, '0')
         );
         mkdirSync(path, { recursive: true });
-        return join(path, `${gameId}.npz`);
+        return join(path, `${gameId}.json`);
+    }
+
+    private readGameFile(path: string): { moves: GameMove[], metadata: any } {
+        try {
+            const content = readFileSync(path, 'utf8');
+            return JSON.parse(content);
+        } catch (e) {
+            return { moves: [], metadata: {} };
+        }
+    }
+
+    private writeGameFile(path: string, data: { moves: GameMove[], metadata: any }): void {
+        writeFileSync(path, JSON.stringify(data, null, 2), 'utf8');
     }
 
     async connect(): Promise<void> {
@@ -158,35 +170,21 @@ export class GameStorageService {
 
     async recordMove(gameId: string, move: GameMove): Promise<void> {
         const gamePath = this.getGamePath(gameId);
-        let moves: GameMove[] = [];
+        const gameData = this.readGameFile(gamePath);
+        gameData.moves.push(move);
 
-        // Load existing moves if any
-        if (existsSync(gamePath)) {
-            try {
-                const parsed = await npy.load(gamePath);
-                const data = npy.arrayify(parsed);
-                if (data && Array.isArray(data.moves)) {
-                    moves = data.moves;
-                }
-            } catch (e) {
-                console.error('Failed to load existing moves:', e);
-            }
-        }
+        // Update metadata
+        gameData.metadata = {
+            ...gameData.metadata,
+            lastUpdate: new Date().toISOString(),
+            moveTimes: gameData.metadata.moveTimes || [],  // TODO: implement move timing tracking
+            avgMoveTime: gameData.metadata.avgMoveTime || 0, // TODO: implement move timing tracking
+            territoryHistory: gameData.metadata.territoryHistory || []  // TODO: implement territory history tracking
+        };
 
-        moves.push(move);
+        this.writeGameFile(gamePath, gameData);
 
-        // Update file
-        await npy.saveArrayAs(gamePath, {
-            moves: moves,
-            metadata: {
-                lastUpdate: new Date().toISOString(),
-                moveTimes: [],  // TODO: implement move timing tracking
-                avgMoveTime: 0, // TODO: implement move timing tracking
-                territoryHistory: []  // TODO: implement territory history tracking
-            }
-        }, 'object');
-
-        // Update game metadata
+        // Update game metadata in MongoDB
         const now = new Date();
         await this.gamesCollection.updateOne(
             { gameId },
@@ -260,10 +258,9 @@ export class GameStorageService {
         }
 
         try {
-            const parsed = await npy.load(gamePath);
-            const data = npy.arrayify(parsed);
-            const moves: GameMove[] = Array.isArray(data.moves) ? data.moves : [];
-            const storedDetails = data.metadata || {};
+            const gameData = this.readGameFile(gamePath);
+            const moves = gameData.moves;
+            const storedDetails = gameData.metadata || {};
 
             // Create proper GameDetails structure
             const details: GameDetails = {
