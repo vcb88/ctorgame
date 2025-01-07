@@ -14,7 +14,7 @@ Triggers on:
 
 Jobs:
 - **Test**: Runs unit tests across multiple Node.js versions
-  - Includes PostgreSQL and Redis services
+  - Includes Redis service for state management
   - Runs linting and type checking
   - Executes unit and integration tests
 - **Coverage**: Tracks code coverage

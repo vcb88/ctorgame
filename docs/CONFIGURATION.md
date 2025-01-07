@@ -22,8 +22,9 @@ VITE_ENV=development
 # Server
 PORT=3000
 NODE_ENV=development
-DATABASE_URL=postgresql://user:password@localhost:5432/ctorgame
 REDIS_URL=redis://localhost:6379
+REDIS_PASSWORD=
+REDIS_PREFIX=ctorgame:dev:
 ```
 
 ### Production Environment
@@ -38,8 +39,9 @@ VITE_ENV=production
 # Server
 PORT=3000
 NODE_ENV=production
-DATABASE_URL=postgresql://user:password@postgres:5432/ctorgame
 REDIS_URL=redis://redis:6379
+REDIS_PASSWORD=your_secure_password
+REDIS_PREFIX=ctorgame:prod:
 ```
 
 ## TypeScript Configuration
@@ -125,19 +127,10 @@ services:
       - "3000:3000"
     environment:
       - NODE_ENV=development
-      - DATABASE_URL=postgresql://user:password@postgres:5432/ctorgame
       - REDIS_URL=redis://redis:6379
+      - REDIS_PREFIX=ctorgame:dev:
 
-  postgres:
-    image: postgres:14-alpine
-    environment:
-      POSTGRES_USER: user
-      POSTGRES_PASSWORD: password
-      POSTGRES_DB: ctorgame
-    ports:
-      - "5432:5432"
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
+
 
   redis:
     image: redis:7-alpine
@@ -168,20 +161,6 @@ jobs:
     runs-on: ubuntu-latest
     
     services:
-      postgres:
-        image: postgres:14-alpine
-        env:
-          POSTGRES_USER: test
-          POSTGRES_PASSWORD: test
-          POSTGRES_DB: ctorgame_test
-        ports:
-          - 5432:5432
-        options: >-
-          --health-cmd pg_isready
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-
       redis:
         image: redis:7-alpine
         ports:
@@ -216,7 +195,8 @@ jobs:
           cd client && pnpm test
           cd ../server && pnpm test
         env:
-          DATABASE_URL: postgresql://test:test@localhost:5432/ctorgame_test
+          REDIS_URL: redis://localhost:6379
+          REDIS_PREFIX: ctorgame:test:
           REDIS_URL: redis://localhost:6379
 ```
 
@@ -333,22 +313,34 @@ module.exports = {
 };
 ```
 
-## Database Configuration
+## Redis Configuration
 
-### TypeORM Configuration (server/src/config/database.ts)
+### Redis Client Configuration (server/src/config/redis.ts)
 ```typescript
-import { DataSource } from 'typeorm';
-import { Game } from '../entities/Game';
-import { Move } from '../entities/Move';
+import Redis from 'ioredis';
+import { ICacheConfig } from '@ctor-game/shared/types';
 
-export const AppDataSource = new DataSource({
-  type: 'postgres',
-  url: process.env.DATABASE_URL,
-  synchronize: process.env.NODE_ENV === 'development',
-  logging: process.env.NODE_ENV === 'development',
-  entities: [Game, Move],
-  migrations: ['src/migrations/*.ts'],
-  subscribers: []
+export const cacheConfig: ICacheConfig = {
+  ttl: {
+    gameState: parseInt(process.env.CACHE_TTL_GAME_STATE || '3600'),
+    playerSession: parseInt(process.env.CACHE_TTL_PLAYER_SESSION || '7200'),
+    gameRoom: parseInt(process.env.CACHE_TTL_GAME_ROOM || '3600')
+  }
+};
+
+export const redisClient = new Redis({
+  host: process.env.REDIS_HOST || 'localhost',
+  port: parseInt(process.env.REDIS_PORT || '6379'),
+  password: process.env.REDIS_PASSWORD,
+  keyPrefix: process.env.REDIS_PREFIX || 'ctorgame:',
+  retryStrategy: (times) => {
+    const maxRetryTime = 3000;
+    const delay = Math.min(times * 500, maxRetryTime);
+    return delay;
+  },
+  maxRetriesPerRequest: 3,
+  enableReadyCheck: true,
+  maxLoadingRetryTime: 5000
 });
 ```
 

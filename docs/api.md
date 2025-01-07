@@ -124,59 +124,112 @@ The server emits 'error' events with the following message types:
 
 2. Network Issues:
    - Socket.IO handles automatic reconnection
-   - Game state preserved in database and memory
-   - Move validation prevents duplicate moves
-   - Transaction support for critical operations
+   - Game state preserved in Redis
+   - Move validation with distributed locks
+   - Atomic operations for consistency
 
 3. State Persistence:
-   - All game states saved in PostgreSQL
-   - Move history tracked for replay
-   - Real-time state sync between servers
-   - Automatic cleanup of expired games
+   - All game states saved in Redis with AOF
+   - Move history in Redis Lists
+   - Real-time state sync via Pub/Sub
+   - TTL-based automatic cleanup
 
-## Database Schema
+## Redis Data Structures
 
-### Games Table
-```sql
-CREATE TABLE games (
-    id UUID PRIMARY KEY,
-    game_code VARCHAR(10) UNIQUE NOT NULL,
-    current_state JSONB NOT NULL,
-    created_at TIMESTAMP NOT NULL DEFAULT NOW(),
-    updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
-    completed_at TIMESTAMP,
-    winner INTEGER
-);
+### Game State
+```typescript
+// Key: game:{gameId}:state
+interface GameState {
+    board: number[][];           // Game board
+    currentPlayer: number;       // Active player
+    currentTurn: {
+        placeOperationsLeft: number;
+        moves: GameMove[];
+    };
+    score: {
+        player1: number;
+        player2: number;
+    };
+    gameOver: boolean;
+    winner: number | null;
+    lastUpdate: number;          // Timestamp
+}
 ```
 
-### Moves Table
-```sql
-CREATE TABLE moves (
-    id SERIAL PRIMARY KEY,
-    game_id UUID REFERENCES games(id),
-    player_number INTEGER NOT NULL,
-    move_data JSONB NOT NULL,
-    created_at TIMESTAMP NOT NULL DEFAULT NOW()
-);
+### Move History
+```typescript
+// Key: game:{gameId}:moves (Redis List)
+interface GameMove {
+    type: 'PLACE' | 'REPLACE';
+    x: number;
+    y: number;
+    playerNumber: number;
+    timestamp: number;
+}
 ```
 
-### State Management
+### State Management with Redis
 1. Game Creation:
-   - Generate unique game code
-   - Create initial game state
-   - Store in both database and memory
+   ```typescript
+   // 1. Acquire lock for game creation
+   const lock = await redis.acquireLock('create:game');
+   try {
+     // 2. Generate unique game code
+     const gameId = generateUniqueId();
+     
+     // 3. Create initial state
+     const initialState = createInitialState();
+     
+     // 4. Store state with transaction
+     await redis.multi()
+       .hset(`game:${gameId}:state`, initialState)
+       .sadd('games:active', gameId)
+       .exec();
+   } finally {
+     await redis.releaseLock(lock);
+   }
+   ```
 
-2. Moves:
-   - Validate move
-   - Update game state atomically
-   - Store move history
-   - Broadcast updates
+2. Move Processing:
+   ```typescript
+   // 1. Acquire game state lock
+   const lock = await redis.acquireLock(`game:${gameId}:lock`);
+   try {
+     // 2. Get and validate current state
+     const state = await redis.hgetall(`game:${gameId}:state`);
+     validateMove(state, move);
+     
+     // 3. Apply move and update state
+     const newState = applyMove(state, move);
+     
+     // 4. Save state and move atomically
+     await redis.multi()
+       .hset(`game:${gameId}:state`, newState)
+       .lpush(`game:${gameId}:moves`, move)
+       .publish(`game:${gameId}:events`, { type: 'MOVE', data: move })
+       .exec();
+   } finally {
+     await redis.releaseLock(lock);
+   }
+   ```
 
 3. Game Completion:
-   - Mark game as completed
-   - Record winner
-   - Preserve final state
-   - Start cleanup timer
+   ```typescript
+   // 1. Update game state
+   await redis.multi()
+     .hset(`game:${gameId}:state`, { 
+       ...finalState,
+       gameOver: true,
+       winner
+     })
+     // 2. Move from active to finished games
+     .srem('games:active', gameId)
+     .sadd('games:finished', gameId)
+     // 3. Set TTL for cleanup
+     .expire(`game:${gameId}:state`, COMPLETED_GAME_TTL)
+     .expire(`game:${gameId}:moves`, COMPLETED_GAME_TTL)
+     .exec();
+   ```
 
 ## Future Improvements
 
