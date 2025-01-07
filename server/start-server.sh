@@ -13,7 +13,7 @@ echo "PNPM version: $(pnpm --version)"
 echo "Step 1: Setting up shared package"
 cd /app/shared
 echo "Current directory: $(pwd)"
-NODE_ENV=development pnpm install --no-frozen-lockfile
+NODE_ENV=development pnpm install
 
 echo "Building shared package..."
 pnpm run build
@@ -21,17 +21,10 @@ pnpm run build
 echo "Step 2: Setting up server dependencies"
 cd /app/server
 echo "Current directory: $(pwd)"
-NODE_ENV=development pnpm install --no-frozen-lockfile
+NODE_ENV=development pnpm install
+
 echo "Checking shared build:"
-ls -la dist/ || echo "No dist directory found"
-
-cd /app/server
-echo "Step 2: Setting up server"
-echo "Current directory: $(pwd)"
-ls -la
-
-# Installing dependencies
-NODE_ENV=development pnpm install --force
+ls -la ../shared/dist/ || echo "No shared/dist directory found"
 echo "Step 3: Checking TypeScript compilation"
 pnpm run type-check
 
