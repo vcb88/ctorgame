@@ -3,6 +3,8 @@ services:
     image: node:18-alpine
     working_dir: /app
     init: true
+    networks:
+      - app_network
     ports:
       - "5173:5173"
     healthcheck:
@@ -53,6 +55,8 @@ services:
     image: node:18-alpine
     working_dir: /app
     init: true
+    networks:
+      - app_network
     ports:
       - "3000:3000"
     healthcheck:
@@ -63,7 +67,9 @@ services:
           if [ ! -f /usr/bin/wget ]; then
             apk add --no-cache wget
           fi
-          wget --spider -q http://localhost:3000/health || exit 1
+          response=$(wget -qO- http://localhost:3000/health)
+          echo "Health check response: $response"
+          echo "$response" | grep -q '"status":"ok"' || exit 1
       interval: 10s
       timeout: 10s
       retries: 3
@@ -98,6 +104,8 @@ services:
 
   redis:
     image: redis:7-alpine
+    networks:
+      - app_network
     ports:
       - "6379:6379"
     healthcheck:
@@ -110,6 +118,8 @@ services:
 
   mongodb:
     image: mongo:6-jammy
+    networks:
+      - app_network
     ports:
       - "27017:27017"
     healthcheck:
@@ -129,3 +139,7 @@ volumes:
   client_modules:
   server_modules:
   shared_modules:
+
+networks:
+  app_network:
+    driver: bridge

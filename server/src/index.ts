@@ -3,6 +3,7 @@ import express from 'express';
 import { createServer } from 'http';
 import { GameServer } from './websocket/GameServer';
 import path from 'path';
+import cors from 'cors';
 
 console.log('Starting server initialization...');
 
@@ -20,6 +21,8 @@ const requestLogger = (req: express.Request, res: express.Response, next: expres
 console.log('Creating Express application...');
 const app = express();
 console.log('Adding middleware...');
+app.use(cors());
+app.use(express.json());
 app.use(requestLogger);
 
 // Simple test endpoint
@@ -73,6 +76,12 @@ process.on('unhandledRejection', (reason, promise) => {
 try {
   console.log('Starting HTTP server...');
   httpServer.listen(PORT, '0.0.0.0', () => {
+    console.log(`Environment: ${process.env.NODE_ENV}`);
+    console.log(`Process running as: ${process.getuid?.()}`);
+    console.log('Server network interfaces:');
+    require('os').networkInterfaces()['eth0']?.forEach(interface => {
+      console.log(`  - ${interface.address} (${interface.family})`);
+    });
     console.log(`🚀 Server is running at http://0.0.0.0:${PORT}`);
     console.log('Available endpoints:');
     console.log(`- GET http://localhost:${PORT}/test (test endpoint)`);
