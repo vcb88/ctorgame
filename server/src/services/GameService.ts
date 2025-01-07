@@ -137,7 +137,6 @@ export class GameService {
             await queryRunner.release();
         }
     }
-    }
 
     async getGame(gameCode: string): Promise<Game | null> {
         return await this.gameRepository.findOne({ 
@@ -369,4 +368,3 @@ export class GameService {
 
         return games;
     }
-}
