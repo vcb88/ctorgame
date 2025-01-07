@@ -10,7 +10,10 @@ WORKDIR /app
 COPY server/package.json server/pnpm-lock.yaml ./
 
 # Install dependencies
-RUN pnpm install --frozen-lockfile
+RUN pnpm install
+
+# Copy shared package
+COPY shared/ ../shared/
 
 # Copy source files
 COPY server/ .
@@ -31,7 +34,7 @@ COPY --from=builder /app/package.json /app/pnpm-lock.yaml ./
 COPY --from=builder /app/dist ./dist
 
 # Install production dependencies only
-RUN pnpm install --prod --frozen-lockfile
+RUN pnpm install --prod
 
 # Expose port
 EXPOSE 3000

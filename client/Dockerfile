@@ -10,7 +10,10 @@ WORKDIR /app
 COPY client/package.json client/pnpm-lock.yaml ./
 
 # Install dependencies
-RUN pnpm install --frozen-lockfile
+RUN pnpm install
+
+# Copy shared package
+COPY shared/ ../shared/
 
 # Copy source files
 COPY client/ .
