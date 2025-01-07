@@ -12,17 +12,29 @@ echo "PNPM version: $(pnpm --version)"
 echo "Directory contents:"
 ls -la
 
-echo "Step 1: Installing root dependencies"
-cd /app
-pnpm install --no-frozen-lockfile
-
-echo "Step 2: Installing shared dependencies"
+echo "Step 1: Setting up shared package"
 cd /app/shared
-pnpm install --no-frozen-lockfile
-echo "Step 3: Building shared package"
-pnpm build
+echo "Current directory for shared setup:"
+pwd
+ls -la
+echo "Installing shared dependencies..."
+NODE_ENV=development pnpm install --no-frozen-lockfile
+echo "Building shared package..."
+pnpm run build
+echo "Checking shared build:"
+ls -la dist/
 
-echo "Step 4: Installing server dependencies"
+echo "Step 2: Setting up server"
+cd /app/server
+echo "Current directory for server setup:"
+pwd
+ls -la
+echo "Installing server dependencies..."
+NODE_ENV=development pnpm install --shamefully-hoist --no-frozen-lockfile
+echo "Step 3: Checking TypeScript compilation"
+pnpm run type-check
+
+echo "Step 4: Starting server in dev mode"
 cd /app/server
 pnpm install --no-frozen-lockfile
 
