@@ -225,6 +225,22 @@ interface Player {
 
 ## Development Setup
 
+### Environment Configuration
+
+Before starting the development environment, you need to set up environment variables:
+
+1. Copy `.env.example` to `.env` for production environment:
+   ```bash
+   cp .env.example .env
+   ```
+
+2. Copy `.env.dev.example` to `.env.dev` for development environment:
+   ```bash
+   cp .env.dev.example .env.dev
+   ```
+
+These files contain necessary configuration for both the client and server components. Review and adjust the values according to your environment.
+
 ### Using Docker (recommended for production-like environment)
 
 1. Install Docker and Docker Compose

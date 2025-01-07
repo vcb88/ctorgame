@@ -10,10 +10,8 @@ services:
     volumes:
       - ./client:/app
       - /app/node_modules
-    environment:
-      - NODE_ENV=development
-      - VITE_API_URL=http://localhost:3000
-      - VITE_HOST=0.0.0.0
+    env_file:
+      - .env.dev
     command: pnpm dev
     depends_on:
       - server
@@ -28,14 +26,8 @@ services:
       - ./server:/app
       - /app/node_modules
       - game_data:/data/games
-    environment:
-      - NODE_ENV=development
-      - PORT=3000
-      - REDIS_URL=redis://redis:6379
-      - REDIS_PREFIX=ctorgame:dev:
-      - MONGODB_URL=mongodb://mongodb:27017
-      - STORAGE_PATH=/data/games
-      - REDIS_PASSWORD=
+    env_file:
+      - .env.dev
     command: pnpm dev
     depends_on:
       - redis
