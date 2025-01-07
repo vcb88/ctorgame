@@ -9,13 +9,12 @@ export enum OperationType {
   REPLACE = 'replace'
 }
 
+import { IPosition, IBoard } from './coordinates';
+
 // Расширенный тип хода
 export interface IGameMove {
   type: OperationType;
-  position: {
-    row: number;
-    col: number;
-  };
+  position: IPosition;
 }
 
 // Интерфейс для отслеживания хода
@@ -26,7 +25,7 @@ export interface ITurnState {
 
 // Расширенное состояние игры
 export interface IGameState {
-  board: (number | null)[][];
+  board: IBoard;
   gameOver: boolean;
   winner: number | null;
   currentTurn: ITurnState;
@@ -41,7 +40,7 @@ export interface IGameState {
 export interface IReplaceValidation {
   isValid: boolean;
   adjacentCount: number;
-  positions: Array<{ row: number; col: number }>;
+  positions: IPosition[];
 }
 
 // Направления для проверки соседних клеток
@@ -51,15 +50,10 @@ export const DIRECTIONS = [
   [1, -1],  [1, 0],  [1, 1]
 ] as const;
 
-// Функции для работы с тороидальной доской
-export const normalizePosition = (pos: number): number => {
-  return ((pos % BOARD_SIZE) + BOARD_SIZE) % BOARD_SIZE;
-};
-
 // Получение координат всех соседних клеток с учетом тороидальности
-export const getAdjacentPositions = (row: number, col: number): Array<{ row: number; col: number }> => {
-  return DIRECTIONS.map(([dRow, dCol]) => ({
-    row: normalizePosition(row + dRow),
-    col: normalizePosition(col + dCol)
+export const getAdjacentPositions = (pos: IPosition, board: IBoard): IPosition[] => {
+  return DIRECTIONS.map(([dx, dy]) => ({
+    x: ((pos.x + dx + board.size.width) % board.size.width),
+    y: ((pos.y + dy + board.size.height) % board.size.height)
   }));
 };
