@@ -24,7 +24,7 @@ services:
       sh -c "cd /app &&
              apk add --no-cache wget &&
              mkdir -p /app/client/node_modules /app/shared/node_modules &&
-             chown -R node:node . &&
+             chown -R node:node /app/client/node_modules /app/shared/node_modules /app/client /app/shared &&
              npm install -g pnpm@latest &&
              su node -c 'cd /app && 
              pnpm install --no-workspace-root --frozen-lockfile &&
@@ -62,7 +62,7 @@ services:
       sh -c "cd /app &&
              apk add --no-cache wget &&
              mkdir -p /app/server/node_modules /app/shared/node_modules &&
-             chown -R node:node . &&
+             chown -R node:node /app/server/node_modules /app/shared/node_modules /app/server /app/shared &&
              npm install -g pnpm@latest &&
              su node -c 'cd /app &&
              pnpm install --no-workspace-root --frozen-lockfile &&
