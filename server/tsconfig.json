@@ -13,17 +13,16 @@
     "strictPropertyInitialization": false,
     "baseUrl": ".",
     "paths": {
-      "@ctor-game/shared": ["../shared"],
-      "@ctor-game/shared/types": ["../shared/types"]
-    },
-    "typeRoots": [
-      "./src/types",
-      "./node_modules/@types"
-    ]
+      "@ctor-game/shared": ["../shared/dist"],
+      "@ctor-game/shared/types": ["../shared/dist/types"]
+    }
   },
   "references": [
     { "path": "../shared" }
   ],
   "include": ["src/**/*"],
-  "exclude": ["node_modules"]
+  "exclude": [
+    "node_modules",
+    "../shared/**/*"
+  ]
 }
