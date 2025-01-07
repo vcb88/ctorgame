@@ -122,10 +122,7 @@ export function registerGameHandlers(
                 await storageService.finishGame(
                     gameId, 
                     updatedState.winner || -1, // В случае ничьей используем -1
-                    {
-                        1: scores.player1,
-                        2: scores.player2
-                    }
+                    scores
                 );
 
                 // Уведомляем игроков
