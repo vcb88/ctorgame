@@ -90,19 +90,12 @@ services:
         mkdir -p /app/server/node_modules /app/shared/node_modules
         chown -R node:node /app/server/node_modules /app/shared/node_modules /app/server /app/shared
         npm install -g pnpm@latest
-        su node -c "cd /app &&
-          pnpm install --no-workspace-root &&
-          cd /app/shared &&
-          pnpm install &&
-          pnpm build &&
-          cd /app/server &&
-          pnpm install &&
-          echo Running TypeScript check... &&
-          pnpm run type-check &&
-          echo Starting server in debug mode... &&
-          mkdir -p dist &&
-          ls -la dist/ || true &&
-          DEBUG=* NODE_DEBUG=* pnpm dev"'
+        echo "[1/7] Installing start script..."
+        cp /app/server/start-server.sh /tmp/start-server.sh &&
+        chmod +x /tmp/start-server.sh &&
+        chown node:node /tmp/start-server.sh &&
+        echo "[2/7] Running as node user..."
+        exec su node -c "/tmp/start-server.sh"'
     depends_on:
       redis:
         condition: service_healthy
