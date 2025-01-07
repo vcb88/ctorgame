@@ -95,10 +95,10 @@ services:
              pnpm build &&
              cd /app/server &&
              pnpm install &&
-             echo "Running tsc to check compilation..." &&
-             pnpm tsc --noEmit &&
+             echo "Running TypeScript check..." &&
+             pnpm run type-check &&
              echo "Starting server in debug mode..." &&
-             ls -la dist/ || true &&
+             mkdir -p dist && ls -la dist/ || true &&
              DEBUG=* NODE_DEBUG=* pnpm dev'"
     depends_on:
       redis:
