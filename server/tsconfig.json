@@ -16,8 +16,8 @@
       "@ctor-game/shared/*": ["../shared/*"]
     },
     "typeRoots": [
-      "./node_modules/@types",
-      "./src/types"
+      "./src/types",
+      "./node_modules/@types"
     ]
   },
   "references": [
