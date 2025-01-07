@@ -78,7 +78,7 @@ services:
     volumes:
       - .:/app
       - game_data:/data/games
-      - pnpm_store:/root/.local/share/pnpm/store/v3
+      - pnpm_store:/app/.pnpm-store
       - server_modules:/app/server/node_modules
       - shared_modules:/app/shared/node_modules
     env_file:

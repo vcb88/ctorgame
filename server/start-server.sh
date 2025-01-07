@@ -12,25 +12,38 @@ echo "PNPM version: $(pnpm --version)"
 echo "Directory contents:"
 ls -la
 
-echo "Step 1: Setting up shared package"
+echo "Step 1: Setting up directories and permissions"
+mkdir -p /app/.pnpm-store
+chown -R node:node /app/.pnpm-store
+
+# Ensure node_modules directories exist with correct permissions
+for dir in /app/shared /app/server /app/client; do
+    mkdir -p $dir/node_modules
+    chown -R node:node $dir/node_modules
+done
+
 cd /app/shared
-echo "Current directory for shared setup:"
-pwd
+echo "Step 2: Setting up shared package"
+echo "Current directory: $(pwd)"
 ls -la
-echo "Installing shared dependencies..."
-NODE_ENV=development pnpm install --force --no-frozen-lockfile
+
+# Clean install without dependencies
+rm -rf node_modules package-lock.json pnpm-lock.yaml
+NODE_ENV=development pnpm install --prefer-offline
+
 echo "Building shared package..."
 pnpm run build
 echo "Checking shared build:"
-ls -la dist/
+ls -la dist/ || echo "No dist directory found"
 
-echo "Step 2: Setting up server"
 cd /app/server
-echo "Current directory for server setup:"
-pwd
+echo "Step 3: Setting up server"
+echo "Current directory: $(pwd)"
 ls -la
-echo "Installing server dependencies..."
-NODE_ENV=development pnpm install --force --shamefully-hoist --no-frozen-lockfile
+
+# Clean install without dependencies
+rm -rf node_modules package-lock.json pnpm-lock.yaml
+NODE_ENV=development pnpm install --prefer-offline
 echo "Step 3: Checking TypeScript compilation"
 pnpm run type-check
 
