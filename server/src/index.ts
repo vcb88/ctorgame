@@ -75,8 +75,10 @@ app.get('/test', (req, res) => {
 
 // Health check endpoint
 app.get('/health', (req, res) => {
+  console.log(`Health check called. Server ready: ${isServerReady}`);
   // Отправляем 503 пока сервер не готов принимать соединения
   if (!isServerReady) {
+    console.log('Server not ready yet, returning 503');
     res.status(503).json({ 
       status: 'starting',
       timestamp: new Date().toISOString(),
@@ -84,6 +86,7 @@ app.get('/health', (req, res) => {
     });
     return;
   }
+  console.log('Server ready, returning 200');
   res.json({ 
     status: 'ok',
     timestamp: new Date().toISOString(),
@@ -173,6 +176,7 @@ try {
     require('os').networkInterfaces()['eth0']?.forEach(interface => {
       console.log(`  - ${interface.address} (${interface.family})`);
     });
+    isServerReady = true;  // Set server as ready after successful start
     console.log(`🚀 Server is running at http://0.0.0.0:${PORT}`);
     console.log('Available endpoints:');
     console.log(`- GET http://localhost:${PORT}/test (test endpoint)`);
