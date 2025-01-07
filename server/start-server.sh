@@ -18,7 +18,7 @@ echo "Current directory for shared setup:"
 pwd
 ls -la
 echo "Installing shared dependencies..."
-NODE_ENV=development pnpm install --no-frozen-lockfile
+NODE_ENV=development pnpm install --force --no-frozen-lockfile
 echo "Building shared package..."
 pnpm run build
 echo "Checking shared build:"
@@ -30,13 +30,11 @@ echo "Current directory for server setup:"
 pwd
 ls -la
 echo "Installing server dependencies..."
-NODE_ENV=development pnpm install --shamefully-hoist --no-frozen-lockfile
+NODE_ENV=development pnpm install --force --shamefully-hoist --no-frozen-lockfile
 echo "Step 3: Checking TypeScript compilation"
 pnpm run type-check
 
 echo "Step 4: Starting server in dev mode"
-cd /app/server
-pnpm install --no-frozen-lockfile
 
 echo "Step 5: Checking server directory"
 pwd
