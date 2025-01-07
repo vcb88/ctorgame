@@ -27,14 +27,18 @@ services:
     volumes:
       - ./server:/app
       - /app/node_modules
+      - game_data:/data/games
     environment:
-      - NODE_ENV=development
-      - PORT=3000
-      - REDIS_URL=redis://redis:6379
-      - REDIS_PREFIX=ctorgame:dev:
+      NODE_ENV: development
+      PORT: 3000
+      REDIS_URL: redis://redis:6379
+      REDIS_PREFIX: ctorgame:dev:
+      MONGODB_URL: ${MONGODB_URL:-mongodb://localhost:27017}
+      STORAGE_PATH: /data/games
     command: pnpm dev
     depends_on:
       - redis
+      - mongodb
 
   redis:
     image: redis:7-alpine
@@ -43,5 +47,14 @@ services:
     volumes:
       - redis_data:/data
 
+  mongodb:
+    image: mongo:6-jammy
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb_data:/data/db
+
 volumes:
   redis_data:
+  mongodb_data:
+  game_data:
