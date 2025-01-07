@@ -73,8 +73,28 @@ process.on('unhandledRejection', (reason, promise) => {
   console.error('Unhandled Rejection at:', promise, 'reason:', reason);
 });
 
+// Log any uncaught errors
+process.on('unhandledRejection', (error: Error) => {
+  console.error('Unhandled Promise Rejection:', error);
+  console.error(error.stack);
+});
+
+process.on('uncaughtException', (error: Error) => {
+  console.error('Uncaught Exception:', error);
+  console.error(error.stack);
+});
+
+// Add error handler for the http server
+httpServer.on('error', (error: Error) => {
+  console.error('HTTP Server Error:', error);
+  console.error(error.stack);
+});
+
 try {
   console.log('Starting HTTP server...');
+  console.log('Current directory:', process.cwd());
+  console.log('Directory contents:', require('fs').readdirSync('.'));
+  
   httpServer.listen(PORT, '0.0.0.0', () => {
     console.log(`Environment: ${process.env.NODE_ENV}`);
     console.log(`Process running as: ${process.getuid?.()}`);

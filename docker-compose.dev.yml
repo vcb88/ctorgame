@@ -95,7 +95,11 @@ services:
              pnpm build &&
              cd /app/server &&
              pnpm install &&
-             pnpm dev'"
+             echo "Running tsc to check compilation..." &&
+             pnpm tsc --noEmit &&
+             echo "Starting server in debug mode..." &&
+             ls -la dist/ || true &&
+             DEBUG=* NODE_DEBUG=* pnpm dev'"
     depends_on:
       redis:
         condition: service_healthy
