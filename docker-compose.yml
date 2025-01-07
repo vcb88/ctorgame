@@ -15,7 +15,7 @@ services:
     image: ${CLIENT_TAG:-ctorgame-client:latest}
     build:
       context: .
-      dockerfile: client/Dockerfile
+      dockerfile: Dockerfile.client
     env_file:
       - .env
     volumes:
