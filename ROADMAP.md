@@ -50,6 +50,12 @@
      - [ ] Handle partial state recovery
 
 2. Testing Infrastructure (High Priority)
+   - [ ] Game Storage Tests
+     - [ ] MongoDB integration tests
+     - [ ] NPZ file storage tests
+     - [ ] Game history retrieval tests
+     - [ ] Clean up and maintenance tests
+     - [ ] Concurrent operations tests
    - [ ] Redis Integration Tests
      - [ ] Basic Redis operations
      - [ ] Transaction handling
@@ -58,10 +64,20 @@
      - [ ] Connection loss scenarios
      - [ ] Partial state recovery
      - [ ] Data consistency checks
+   - [ ] Game State Tests
+     - [ ] Transition between Redis and MongoDB
+     - [ ] State consistency validation
+     - [ ] Data integrity checks
    - [ ] Performance Tests
      - [ ] Redis operation latency
+     - [ ] MongoDB operation latency
+     - [ ] File system operation speed
      - [ ] State synchronization speed
      - [ ] Memory usage patterns
+   - [ ] Load Tests
+     - [ ] Concurrent game creation
+     - [ ] Multiple active tournaments
+     - [ ] Large game history retrieval
 
 3. Distributed Tournament System (High Priority)
    - [ ] Tournament Data Structure

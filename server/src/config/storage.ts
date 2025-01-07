@@ -1,0 +1,8 @@
+export const STORAGE_CONFIG = {
+    MONGODB_URL: process.env.MONGODB_URL || 'mongodb://localhost:27017',
+    STORAGE_PATH: process.env.STORAGE_PATH || 'storage/games',
+    MAX_CONCURRENT_GAMES: 50,
+    GAME_EXPIRATION_MINUTES: 30,
+    RECONNECTION_WINDOW_MINUTES: 5,
+    COMPLETED_GAME_TTL_DAYS: 30
+};
