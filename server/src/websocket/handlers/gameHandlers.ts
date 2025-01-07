@@ -118,11 +118,11 @@ export function registerGameHandlers(
 
             // Проверяем завершение игры
             if (updatedState.gameOver) {
-                const scores = updatedState.scores || { player1: 0, player2: 0 };
+                const gameScores = updatedState.scores || { player1: 0, player2: 0 };
                 await storageService.finishGame(
                     gameId, 
                     updatedState.winner || -1, // В случае ничьей используем -1
-                    scores
+                    gameScores
                 );
 
                 // Уведомляем игроков

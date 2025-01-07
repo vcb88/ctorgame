@@ -194,7 +194,8 @@ export class GameStorageService {
         winner: number,
         scores: { player1: number; player2: number }
     ): Promise<void> {
-        const finalScore = scores;
+        // Преобразуем формат очков для MongoDB
+        const finalScore = { 1: scores.player1, 2: scores.player2 };
         const now = new Date();
         const game = await this.gamesCollection.findOneAndUpdate(
             { gameId },

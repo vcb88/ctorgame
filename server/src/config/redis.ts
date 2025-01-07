@@ -71,12 +71,12 @@ export async function acquireLock(gameId: string, timeout = 5000): Promise<boole
     const lockValue = Date.now().toString();
     
     // Пытаемся установить блокировку с помощью SET NX и TTL
+    // Используем SET с опциями в виде строки команды
     const acquired = await redisClient.set(
         key,
         lockValue,
         'EX',
-        Math.ceil(timeout / 1000),
-        'NX'
+        Math.ceil(timeout / 1000)
     );
     return acquired === 'OK';
 }
