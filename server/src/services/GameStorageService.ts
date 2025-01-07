@@ -5,7 +5,7 @@ import { join } from 'path';
 import { MongoClient, Collection } from 'mongodb';
 import { Redis } from 'ioredis';
 import * as uuid from 'uuid';
-import * as numpy from 'numpy-ts';
+import * as npy from 'npyjs';
 
 export class GameStorageError extends Error {
     constructor(message: string) {
@@ -160,20 +160,20 @@ export class GameStorageService {
 
         // Load existing moves if any
         if (existsSync(gamePath)) {
-            const data = numpy.load(gamePath);
-            if (data.has('moves')) {
-                moves = data.get('moves').tolist();
+            const data = await npy.load(gamePath);
+            if ('moves' in data) {
+                moves = data.moves;
             }
         }
 
         moves.push(move);
 
         // Update file
-        numpy.savez_compressed(gamePath, {
-            moves: numpy.array(moves),
-            metadata: JSON.stringify({
+        await npy.save(gamePath, {
+            moves: moves,
+            metadata: {
                 lastUpdate: new Date().toISOString()
-            })
+            }
         });
 
         // Update game metadata
@@ -247,14 +247,14 @@ export class GameStorageService {
         }
 
         try {
-            const data = numpy.load(gamePath);
-            const moves = data.has('moves') ? data.get('moves').tolist() : [];
-            const metadata = data.has('metadata') ? JSON.parse(data.get('metadata')) : {};
+            const data = await npy.load(gamePath);
+            const moves = data.moves || [];
+            const details = data.metadata || {};
 
             return {
                 metadata: game,
                 moves,
-                details: metadata
+                details
             };
         } catch (e) {
             throw new GameStorageError(`Failed to load game history: ${e}`);
