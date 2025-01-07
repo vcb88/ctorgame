@@ -2,7 +2,7 @@ import { GameMetadata, GameMove, GameHistory, GameDetails } from '@ctor-game/sha
 import { IScores } from '@ctor-game/shared/types/game';
 import { mkdirSync, existsSync } from 'fs';
 import { join } from 'path';
-import * as npy from 'npyjs';
+import npy from 'npyjs';
 import { MongoClient, Collection, WithId } from 'mongodb';
 import Redis from 'ioredis';
 import * as uuid from 'uuid';
