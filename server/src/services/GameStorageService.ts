@@ -36,12 +36,24 @@ export class GameStorageService {
     }
 
     /**
-     * Get the full path to the game file
+     * Get the full path to the game file, organized in date-based directories
+     * Format: <storage_path>/YYYY/MM/DD/<gameId>.json
      * @param gameId unique game identifier
      * @returns full path to the JSON file
      */
     private getGamePath(gameId: string): string {
-        return join(this.storagePath, `${gameId}.json`);
+        const now = new Date();
+        const datePath = join(
+            this.storagePath,
+            now.getFullYear().toString(),
+            (now.getMonth() + 1).toString().padStart(2, '0'),
+            now.getDate().toString().padStart(2, '0')
+        );
+        
+        // Create date-based directory structure
+        mkdirSync(datePath, { recursive: true });
+        
+        return join(datePath, `${gameId}.json`);
     }
 
     /**
@@ -65,6 +77,42 @@ export class GameStorageService {
      */
     private writeGameFile(path: string, data: { moves: GameMove[], metadata: any }): void {
         writeFileSync(path, JSON.stringify(data, null, 2), 'utf8');
+    }
+
+    /**
+     * Find the actual path to a game file by searching through date directories
+     * This is useful when we need to find a file that was created on a different day
+     * @param gameId unique game identifier
+     * @returns full path to the JSON file or null if not found
+     */
+    private findGameFile(gameId: string): string | null {
+        // Function to check a specific date
+        const checkDate = (date: Date): string | null => {
+            const datePath = join(
+                this.storagePath,
+                date.getFullYear().toString(),
+                (date.getMonth() + 1).toString().padStart(2, '0'),
+                date.getDate().toString().padStart(2, '0'),
+                `${gameId}.json`
+            );
+            return existsSync(datePath) ? datePath : null;
+        };
+
+        // Check today first
+        const today = new Date();
+        const todayPath = checkDate(today);
+        if (todayPath) return todayPath;
+
+        // Check yesterday
+        const yesterday = new Date(today);
+        yesterday.setDate(yesterday.getDate() - 1);
+        const yesterdayPath = checkDate(yesterday);
+        if (yesterdayPath) return yesterdayPath;
+
+        // For MVP, we only check today and yesterday
+        // In production, we might want to implement a more comprehensive search
+        // or store file locations in a database
+        return null;
     }
 
     async connect(): Promise<void> {
@@ -262,9 +310,9 @@ export class GameStorageService {
             throw new GameStorageError('Game not found');
         }
 
-        // Get detailed data from file
-        const gamePath = this.getGamePath(gameId);
-        if (!existsSync(gamePath)) {
+        // Try to find the game file
+        const gamePath = this.findGameFile(gameId);
+        if (!gamePath) {
             throw new GameStorageError('Game history not found');
         }
 
