@@ -17,15 +17,15 @@ services:
     command: >
       sh -c "cd /app &&
              mkdir -p /app/client/node_modules /app/shared/node_modules &&
-             chown -R node:node /app/client/node_modules /app/shared/node_modules &&
-             npm install -g pnpm &&
+             chown -R node:node . &&
+             npm install -g pnpm@latest &&
              su node -c 'cd /app && 
-             pnpm install &&
+             pnpm install --no-workspace-root --frozen-lockfile &&
              cd /app/shared &&
-             pnpm install &&
+             pnpm install --frozen-lockfile &&
              pnpm build &&
              cd /app/client &&
-             pnpm install &&
+             pnpm install --frozen-lockfile &&
              pnpm dev'"
     depends_on:
       - server
@@ -47,15 +47,15 @@ services:
     command: >
       sh -c "cd /app &&
              mkdir -p /app/server/node_modules /app/shared/node_modules &&
-             chown -R node:node /app/server/node_modules /app/shared/node_modules &&
-             npm install -g pnpm &&
+             chown -R node:node . &&
+             npm install -g pnpm@latest &&
              su node -c 'cd /app &&
-             pnpm install &&
+             pnpm install --no-workspace-root --frozen-lockfile &&
              cd /app/shared &&
-             pnpm install &&
+             pnpm install --frozen-lockfile &&
              pnpm build &&
              cd /app/server &&
-             pnpm install &&
+             pnpm install --frozen-lockfile &&
              pnpm dev'"
     depends_on:
       - redis
