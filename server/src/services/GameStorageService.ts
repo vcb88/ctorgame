@@ -1,6 +1,7 @@
 import { GameMetadata, GameMove, GameHistory, GameDetails } from '@ctor-game/shared/types/storage';
-import { mkdirSync, existsSync, promises as fs } from 'fs';
+import { mkdirSync, existsSync } from 'fs';
 import { join } from 'path';
+import * as npy from 'npyjs';
 import { MongoClient, Collection, WithId } from 'mongodb';
 import { Redis } from 'ioredis';
 import * as uuid from 'uuid';
@@ -43,7 +44,7 @@ export class GameStorageService {
             now.getDate().toString().padStart(2, '0')
         );
         mkdirSync(path, { recursive: true });
-        return join(path, `${gameId}.json`);
+        return join(path, `${gameId}.npz`);
     }
 
     async connect(): Promise<void> {
@@ -158,7 +159,7 @@ export class GameStorageService {
 
         // Load existing moves if any
         if (existsSync(gamePath)) {
-            const data = JSON.parse(await fs.readFile(gamePath, 'utf-8'));
+            const data = await npy.load(gamePath);
             if ('moves' in data) {
                 moves = data.moves;
             }
@@ -167,12 +168,12 @@ export class GameStorageService {
         moves.push(move);
 
         // Update file
-        await fs.writeFile(gamePath, JSON.stringify({
+        await npy.save(gamePath, {
             moves: moves,
             metadata: {
                 lastUpdate: new Date().toISOString()
             }
-        }, null, 2));
+        });
 
         // Update game metadata
         const now = new Date();
@@ -245,7 +246,7 @@ export class GameStorageService {
         }
 
         try {
-            const data = JSON.parse(await fs.readFile(gamePath, 'utf-8'));
+            const data = await npy.load(gamePath);
             const moves = data.moves || [];
             const details = data.metadata || {};
 
