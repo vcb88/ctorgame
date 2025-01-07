@@ -28,12 +28,25 @@ export function createMockSocket(): MockSocket {
     return this;
   });
 
-  const off = vi.fn(function(this: MockSocket, event: string, callback?: Function) {
-    const index = callback 
-      ? listeners.findIndex(l => l.event === event && l.callback === callback)
-      : listeners.findIndex(l => l.event === event);
-    if (index > -1) {
-      listeners.splice(index, 1);
+  const off = vi.fn(function<Ev extends string>(this: MockSocket, ev?: Ev, listener?: Function) {
+    if (!ev) {
+      // Clear all listeners
+      listeners.length = 0;
+    } else if (!listener) {
+      // Clear all listeners for event
+      const indexes = listeners
+        .map((l, i) => l.event === ev ? i : -1)
+        .filter(i => i !== -1)
+        .reverse();
+      for (const index of indexes) {
+        listeners.splice(index, 1);
+      }
+    } else {
+      // Clear specific listener
+      const index = listeners.findIndex(l => l.event === ev && l.callback === listener);
+      if (index > -1) {
+        listeners.splice(index, 1);
+      }
     }
     return this;
   });
