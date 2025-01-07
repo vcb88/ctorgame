@@ -6,8 +6,6 @@ import { MongoClient, Collection, WithId } from 'mongodb';
 import Redis from 'ioredis';
 import * as uuid from 'uuid';
 
-const npy = new NpyJS();
-
 export class GameStorageError extends Error {
     constructor(message: string) {
         super(message);
@@ -37,18 +35,20 @@ export class GameStorageService {
         }
     }
 
+    /**
+     * Get the full path to the game file
+     * @param gameId unique game identifier
+     * @returns full path to the JSON file
+     */
     private getGamePath(gameId: string): string {
-        const now = new Date();
-        const path = join(
-            this.storagePath,
-            now.getFullYear().toString(),
-            (now.getMonth() + 1).toString().padStart(2, '0'),
-            now.getDate().toString().padStart(2, '0')
-        );
-        mkdirSync(path, { recursive: true });
-        return join(path, `${gameId}.json`);
+        return join(this.storagePath, `${gameId}.json`);
     }
 
+    /**
+     * Read game data from a JSON file
+     * @param path path to the game file
+     * @returns game data with moves and metadata
+     */
     private readGameFile(path: string): { moves: GameMove[], metadata: any } {
         try {
             const content = readFileSync(path, 'utf8');
@@ -58,6 +58,11 @@ export class GameStorageService {
         }
     }
 
+    /**
+     * Write game data to a JSON file
+     * @param path path to the game file
+     * @param data game data to write
+     */
     private writeGameFile(path: string, data: { moves: GameMove[], metadata: any }): void {
         writeFileSync(path, JSON.stringify(data, null, 2), 'utf8');
     }
@@ -244,6 +249,12 @@ export class GameStorageService {
         return result.deletedCount;
     }
 
+    /**
+     * Get full game history including metadata, moves and details
+     * @param gameId unique game identifier
+     * @returns complete game history
+     * @throws GameStorageError if game not found or history file is corrupted
+     */
     async getGameHistory(gameId: string): Promise<GameHistory> {
         // Get metadata from MongoDB
         const game = await this.gamesCollection.findOne({ gameId });
