@@ -28,7 +28,7 @@ export function registerReplayHandlers(socket: Socket, gameService: GameService)
             socket.emit('REPLAY_STATE_UPDATED', { 
                 state: initialState, 
                 moveIndex: 0,
-                totalMoves: moves.length
+                totalMoves
             });
             
             // Начинаем автоматическое воспроизведение

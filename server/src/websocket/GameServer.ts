@@ -193,7 +193,7 @@ export class GameServer {
           if (updatedState.gameOver) {
             await Promise.all([
               redisService.cleanupGame(gameId),
-              this.gameService.finishGame(gameId, updatedState.winner)
+              this.gameService.finishGame(gameId, updatedState.winner, updatedState.scores)
             ]);
 
             this.io.to(gameId).emit(WebSocketEvents.GameOver, {
@@ -275,7 +275,7 @@ export class GameServer {
                 if (currentSession && currentSession.gameId === session.gameId) {
                   // Если игрок не переподключился - завершаем игру
                   await Promise.all([
-                    this.gameService.finishGame(session.gameId, 1 - session.playerNumber),
+                    this.gameService.finishGame(session.gameId, 1 - session.playerNumber, { 1: 0, 2: 0 }), // При дисконнекте считаем счет 0:0
                     redisService.cleanupGame(session.gameId)
                   ]);
 

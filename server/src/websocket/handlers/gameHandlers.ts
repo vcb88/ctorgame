@@ -101,7 +101,7 @@ export function registerGameHandlers(
             }
 
             // Валидация хода
-            const player = await gameService.getPlayer(gameId, socket.id);
+            const player = await gameService.getPlayer(gameId, parseInt(socket.id, 10));
             if (!player || player.number.toString() !== state.currentPlayer.toString()) {
                 throw new Error('Not your turn');
             }
@@ -118,12 +118,13 @@ export function registerGameHandlers(
 
             // Проверяем завершение игры
             if (updatedState.gameOver) {
+                const scores = updatedState.scores || { player1: 0, player2: 0 };
                 await storageService.finishGame(
                     gameId, 
                     updatedState.winner || -1, // В случае ничьей используем -1
                     {
-                        1: updatedState.scores.player1,
-                        2: updatedState.scores.player2
+                        1: scores.player1,
+                        2: scores.player2
                     }
                 );
 

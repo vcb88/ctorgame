@@ -72,8 +72,8 @@ export class GameService {
 
     async makeMove(gameCode: string, playerNumber: number, move: IGameMove): Promise<GameMetadata> {
         const game = await this.gamesCollection.findOne({ code: gameCode });
-        if (!game) {
-            throw new Error('Game not found');
+        if (!game || !game.currentState) {
+            throw new Error('Game not found or invalid state');
         }
 
         if (game.status === 'finished') {
@@ -142,7 +142,7 @@ export class GameService {
 
     async getGameStateAtMove(gameCode: string, moveNumber: number): Promise<IGameState | null> {
         const game = await this.gamesCollection.findOne({ code: gameCode });
-        if (!game) return null;
+        if (!game || !game.currentState) return null;
         return game.currentState;
     }
 
