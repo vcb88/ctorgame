@@ -20,7 +20,8 @@ services:
     env_file:
       - .env
     volumes:
-      - client_dist:/app/dist
+      - ./nginx.client.conf:/etc/nginx/conf.d/default.conf:ro
+      - client_dist:/usr/share/nginx/html
 
   server:
     image: ${SERVER_TAG:-ctorgame-server:latest}
