@@ -6,24 +6,17 @@ interface Listener {
   callback: Function;
 }
 
-type MockSocketType = {
+export interface MockSocket extends Socket {
   simulateEvent: (event: string, data: unknown) => Promise<void>;
   listeners: Listener[];
+  mockEmit: ReturnType<typeof vi.fn>;
+  mockClose: ReturnType<typeof vi.fn>;
+  mockOff: ReturnType<typeof vi.fn>;
   emit: ReturnType<typeof vi.fn>;
   on: ReturnType<typeof vi.fn>;
   off: ReturnType<typeof vi.fn>;
   close: ReturnType<typeof vi.fn>;
-  mockEmit: ReturnType<typeof vi.fn>;
-  mockClose: ReturnType<typeof vi.fn>;
-  mockOff: ReturnType<typeof vi.fn>;
-  connected: boolean;
-  _pid?: string;
-  _lastOffset?: number;
-  _queue?: unknown[];
-  _queueSeq?: number;
-};
-
-export type MockSocket = Socket & MockSocketType;
+}
 
 export function createMockSocket(): MockSocket {
   const listeners: Listener[] = [];
@@ -58,18 +51,21 @@ export function createMockSocket(): MockSocket {
       }
     },
     listeners,
+    // Базовые свойства и методы Socket
     connected: true,
-    _pid: 'test-pid',
-    _lastOffset: 0,
-    _queue: [],
-    _queueSeq: 0,
     volatile: { emit },
     timeout: (ms: number) => socket,
     disconnect: () => socket,
     connect: () => socket,
     send: (...args: any[]) => socket,
     compress: (compress: boolean) => socket,
-  } as unknown as MockSocket;
+    io: {} as any,
+    nsp: '/',
+    id: 'mock-socket-id',
+    handshake: {} as any,
+    data: {},
+    auth: {},
+  } as MockSocket;
 
   return socket;
 }

@@ -129,7 +129,7 @@ describe('useGameHistory', () => {
         const eventTypes = ['GAME_HISTORY', 'ERROR', 'NEW_MOVE'];
         
         for (const eventType of eventTypes) {
-            expect(mockSocket.listeners.filter(l => l.event === eventType)).toHaveLength(0);
+            expect(mockSocket.listeners.filter((l: { event: string }) => l.event === eventType)).toHaveLength(0);
         }
 
         expect(mockSocket.off).toHaveBeenCalledTimes(3);
