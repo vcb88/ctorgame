@@ -23,7 +23,7 @@ const render = async (element: React.ReactElement) => {
         throw new Error('Root is not initialized');
     }
     await act(async () => {
-        root.render(element);
+        root!.render(element);
     });
     return container;
 };
