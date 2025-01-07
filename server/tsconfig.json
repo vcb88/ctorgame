@@ -13,7 +13,8 @@
     "strictPropertyInitialization": false,
     "baseUrl": ".",
     "paths": {
-      "@ctor-game/shared/*": ["../shared/*"]
+      "@ctor-game/shared": ["../shared/src"],
+      "@ctor-game/shared/*": ["../shared/src/*"]
     },
     "typeRoots": [
       "./src/types",
