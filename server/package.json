@@ -9,7 +9,7 @@
     "start": "node dist/index.js",
     "lint": "eslint -c eslint.config.cjs . --max-warnings 0",
     "lint:fix": "eslint -c eslint.config.cjs . --fix",
-    "type-check": "tsc --noEmit",
+    "type-check": "tsc -p tsconfig.build.json --noEmit",
     "test": "jest",
     "test:watch": "jest --watch"
   },

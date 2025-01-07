@@ -9,19 +9,19 @@ echo "Current directory: $(pwd)"
 echo "Node version: $(node --version)"
 echo "NPM version: $(npm --version)"
 echo "PNPM version: $(pnpm --version)"
-echo "Directory contents:"
-ls -la
 
 echo "Step 1: Setting up shared package"
 cd /app/shared
 echo "Current directory: $(pwd)"
-ls -la
-
-# Installing dependencies
-NODE_ENV=development pnpm install --force
+NODE_ENV=development pnpm install --no-frozen-lockfile
 
 echo "Building shared package..."
 pnpm run build
+
+echo "Step 2: Setting up server dependencies"
+cd /app/server
+echo "Current directory: $(pwd)"
+NODE_ENV=development pnpm install --no-frozen-lockfile
 echo "Checking shared build:"
 ls -la dist/ || echo "No dist directory found"
 
