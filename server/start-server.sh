@@ -28,9 +28,15 @@ ls -la ../shared/dist/ || echo "No shared/dist directory found"
 echo "Step 3: Checking TypeScript compilation"
 pnpm run type-check
 
-echo "Step 4: Starting server in dev mode"
-cd /app/server # Убедимся, что мы в правильной директории
-NODE_ENV=development DEBUG=* npx ts-node-dev --project /app/server/tsconfig.json --respawn --transpile-only --debug --trace-warnings /app/server/src/index.ts
+echo "Step 4: Verifying index.ts exists"
+if [ ! -f "/app/server/src/index.ts" ]; then
+    echo "Error: /app/server/src/index.ts not found"
+    exit 1
+fi
+
+echo "Step 5: Starting server in dev mode"
+cd /app/server
+NODE_ENV=development DEBUG=* pnpm exec ts-node-dev --project tsconfig.build.json src/index.ts
 
 # End of script
 
