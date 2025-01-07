@@ -16,8 +16,8 @@ export interface GameMetadata {
     };
     winner?: number;        // Player number (1 or 2)
     finalScore?: {          // Final score
-        1: number;          // First player score
-        2: number;          // Second player score
+        player1: number;    // First player score
+        player2: number;    // Second player score
     };
     totalTurns: number;     // Total number of turns
     boardSize: {            // Board dimensions
@@ -28,8 +28,8 @@ export interface GameMetadata {
     isCompleted?: boolean;      // Game completion flag
     gameOver?: boolean;         // Game over flag
     scores?: {                  // Current scores
-        1: number;              // First player score
-        2: number;              // Second player score
+        player1: number;        // First player score
+        player2: number;        // Second player score
     };
     currentPlayer?: number;     // Current player (1 or 2)
 }
@@ -49,8 +49,8 @@ export interface GameDetails {
         avgMoveTime: number;
     };
     territoryHistory: Array<{
-        1: number;
-        2: number;
+        player1: number;
+        player2: number;
     }>;
 }
 

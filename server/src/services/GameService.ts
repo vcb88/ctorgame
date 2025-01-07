@@ -97,8 +97,8 @@ export class GameService {
             updateData.endTime = now;
             updateData.winner = newState.winner || undefined;
             updateData.finalScore = {
-                1: newState.scores.player1,
-                2: newState.scores.player2
+                player1: newState.scores.player1,
+                player2: newState.scores.player2
             };
             updateData.duration = (new Date(now).getTime() - new Date(game.startTime).getTime()) / 1000;
         }
@@ -160,8 +160,8 @@ export class GameService {
                     lastActivityAt: now,
                     winner: winner !== null ? winner : undefined,
                     finalScore: {
-                        1: scores.player1,
-                        2: scores.player2
+                        player1: scores.player1,
+                        player2: scores.player2
                     },
                     duration: (new Date(now).getTime() - new Date(game.startTime).getTime()) / 1000
                 }
