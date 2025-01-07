@@ -5,17 +5,17 @@ set -ex
 
 echo "Step 1: Installing root dependencies"
 cd /app
-pnpm install --no-workspace-root
+pnpm install --no-frozen-lockfile
 
 echo "Step 2: Installing shared dependencies"
 cd /app/shared
-pnpm install
+pnpm install --no-frozen-lockfile
 echo "Step 3: Building shared package"
 pnpm build
 
 echo "Step 4: Installing server dependencies"
 cd /app/server
-pnpm install
+pnpm install --no-frozen-lockfile
 
 echo "Step 5: Checking server directory"
 pwd
