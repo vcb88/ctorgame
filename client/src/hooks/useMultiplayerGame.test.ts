@@ -163,7 +163,8 @@ describe('useMultiplayerGame', () => {
       },
       gameOver: false,
       winner: null,
-      isFirstTurn: true
+      isFirstTurn: true,
+      currentPlayer: 0
     };
 
     await act(async () => {
@@ -221,7 +222,8 @@ describe('useMultiplayerGame', () => {
       },
       gameOver: true,
       winner: 0,
-      isFirstTurn: false
+      isFirstTurn: false,
+      currentPlayer: 0
     };
 
     await act(async () => {

@@ -1,5 +1,13 @@
 import { io, Socket } from 'socket.io-client';
 
+interface ImportMetaEnv {
+  VITE_WS_URL: string;
+}
+
+interface ImportMeta {
+  readonly env: ImportMetaEnv;
+}
+
 let socket: Socket | null = null;
 
 export function getSocket(): Socket {

@@ -1,14 +1,22 @@
 import { Socket } from 'socket.io-client';
 import { vi } from 'vitest';
+import { DefaultEventsMap } from 'socket.io/dist/typed-events';
 
 interface Listener {
   event: string;
   callback: Function;
 }
 
-export interface MockSocket extends Socket {
+export interface MockSocket extends Partial<Socket<DefaultEventsMap, DefaultEventsMap>> {
   simulateEvent: (event: string, data: unknown) => Promise<void>;
   listeners: Listener[];
+  emit: jest.Mock;
+  on: jest.Mock;
+  off: jest.Mock;
+  close: jest.Mock;
+  mockEmit?: jest.Mock;
+  mockClose?: jest.Mock;
+  mockOff?: jest.Mock;
 }
 
 export function createMockSocket(): MockSocket {

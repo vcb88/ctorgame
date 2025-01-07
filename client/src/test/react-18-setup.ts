@@ -19,6 +19,9 @@ document.createElement = function (tagName: string) {
 
 // Обновляем render для использования createRoot
 const render = async (element: React.ReactElement) => {
+    if (!root) {
+        throw new Error('Root is not initialized');
+    }
     await act(async () => {
         root.render(element);
     });
