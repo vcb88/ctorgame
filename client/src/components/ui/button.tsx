@@ -1,4 +1,4 @@
-import React, { ButtonHTMLAttributes } from 'react';
+import React, { ButtonHTMLAttributes, ReactElement } from 'react';
 import { cn } from '@/lib/utils';
 
 export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
@@ -24,11 +24,25 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
       lg: 'h-12 px-8',
     };
 
-    const Comp = asChild ? React.Children.only(children)?.type : 'button';
-    const childProps = asChild ? React.Children.only(children)?.props : {};
+    if (asChild) {
+      const child = React.Children.only(children) as ReactElement;
+      const Comp = child.type;
+      return React.createElement(Comp, {
+        ...child.props,
+        ...props,
+        className: cn(
+          baseStyles,
+          variantStyles[variant],
+          sizeStyles[size],
+          className,
+          child.props.className
+        ),
+        ref
+      });
+    }
 
     return (
-      <Comp
+      <button
         className={cn(
           baseStyles,
           variantStyles[variant],
@@ -36,9 +50,10 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
           className
         )}
         ref={ref}
-        {...childProps}
         {...props}
-      />
+      >
+        {children}
+      </button>
     );
   }
 );
