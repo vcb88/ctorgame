@@ -36,13 +36,9 @@ echo "Step 3: Checking TypeScript compilation"
 pnpm run type-check
 
 echo "Step 4: Starting server in dev mode"
+cd /app/server # Убедимся, что мы в правильной директории
+NODE_ENV=development DEBUG=* ts-node-dev --project tsconfig.json --respawn --transpile-only --debug --trace-warnings src/index.ts
 
-echo "Step 5: Checking server directory"
-pwd
-ls -la
+# End of script
 
-echo "Step 6: Checking TypeScript compilation"
-pnpm run type-check
 
-echo "Step 7: Starting server in dev mode"
-DEBUG=express:*,socket.io:* NODE_DEBUG=http,net,stream pnpm run dev
