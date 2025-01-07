@@ -14,24 +14,26 @@ export const cacheConfig: ICacheConfig = {
 };
 
 // Создаем инстанс Redis с настройками подключения
-export const redisClient = new Redis({
-    host: process.env.REDIS_HOST || 'localhost',
-    port: parseInt(process.env.REDIS_PORT || '6379'),
-    username: process.env.REDIS_USERNAME || 'default',
-    password: process.env.REDIS_PASSWORD,
+export const redisClient = new Redis(process.env.REDIS_URL || 'redis://localhost:6379', {
     retryStrategy: (times) => {
         const maxRetryTime = 3000; // Максимальное время ожидания - 3 секунды
         const delay = Math.min(times * 500, maxRetryTime);
+        console.log(`Redis retry attempt ${times}, delay ${delay}ms`);
         return delay;
     },
     maxRetriesPerRequest: 3,
     enableReadyCheck: true,
     maxLoadingRetryTime: 5000, // Максимальное время для повторных попыток загрузки
+    reconnectOnError: (err) => {
+        console.error('Redis connection error:', err);
+        return true; // Всегда пытаемся переподключиться
+    },
 });
 
 // Функция для подключения к Redis
 export const connectRedis = async (): Promise<void> => {
     try {
+        console.log('Connecting to Redis at', process.env.REDIS_URL || 'redis://localhost:6379');
         await redisClient.ping();
         console.log('Redis connected successfully');
     } catch (error) {
