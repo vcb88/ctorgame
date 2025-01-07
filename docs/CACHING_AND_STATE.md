@@ -9,17 +9,25 @@ Redis is used as a primary state store for real-time game data and session manag
 #### Game State
 ```typescript
 // Key: game:{gameId}:state
-{
-    board: number[][], // Current board state
-    currentPlayer: number,
+interface RedisGameState {
+    board: number[][];           // Current board state
+    currentPlayer: number;       // Active player (1 or 2)
     currentTurn: {
-        placeOperationsLeft: number,
-        moves: Move[]
-    },
+        placeOperationsLeft: number;  // Remaining operations in current turn
+        moves: {
+            type: 'place' | 'replace';
+            position: IPosition;
+            captures?: IPosition[];
+        }[];
+    };
     scores: {
-        player1: number,
-        player2: number
-    }
+        player1: number;
+        player2: number;
+    };
+    isFirstTurn: boolean;       // First turn flag for special rules
+    gameOver: boolean;          // Game over flag
+    winner: number | null;      // Winner (1, 2, or null)
+    lastUpdate: number;         // Last update timestamp
 }
 // TTL: 1 hour
 ```
@@ -54,11 +62,22 @@ Redis is used as a primary state store for real-time game data and session manag
 // Key: game:{gameId}:events
 [
     {
-        type: 'move' | 'disconnect' | 'reconnect',
-        data: any,
+        type: GameEventType,
+        gameId: string,
+        playerId: string,
+        data: Record<string, any>,
         timestamp: number
     }
 ]
+
+// Event Types
+enum GameEventType {
+    MOVE = 'move',
+    DISCONNECT = 'disconnect',
+    RECONNECT = 'reconnect',
+    END_TURN = 'end_turn'
+}
+
 // TTL: 1 hour
 ```
 
