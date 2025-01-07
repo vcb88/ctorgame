@@ -1,34 +1,48 @@
-version: '3.8'
-
 services:
   client:
-    build:
-      context: .
-      dockerfile: client/Dockerfile.dev
+    image: node:18-alpine
+    working_dir: /app
     ports:
       - "5173:5173"
     volumes:
-      - ./client:/app
-      - /app/node_modules
+      - .:/app
     env_file:
-      - .env.dev
-    command: pnpm dev
+      - .env
+    environment:
+      - VITE_API_URL=http://localhost:3000
+    command: >
+      sh -c "cd /app &&
+             npm install -g pnpm &&
+             pnpm install &&
+             cd /app/shared &&
+             pnpm install &&
+             pnpm build &&
+             cd /app/client &&
+             pnpm install &&
+             pnpm dev"
     depends_on:
       - server
 
   server:
-    build:
-      context: .
-      dockerfile: server/Dockerfile.dev
+    image: node:18-alpine
+    working_dir: /app
     ports:
       - "3000:3000"
     volumes:
-      - ./server:/app
-      - /app/node_modules
+      - .:/app
       - game_data:/data/games
     env_file:
-      - .env.dev
-    command: pnpm dev
+      - .env
+    command: >
+      sh -c "cd /app &&
+             npm install -g pnpm &&
+             pnpm install &&
+             cd /app/shared &&
+             pnpm install &&
+             pnpm build &&
+             cd /app/server &&
+             pnpm install &&
+             pnpm dev"
     depends_on:
       - redis
       - mongodb
