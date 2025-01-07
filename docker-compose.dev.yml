@@ -86,25 +86,31 @@ services:
     command: |
       sh -c '
         cd /app
-        echo "Initial directory contents:"
-        ls -la
+
+        # Install required packages
         apk add --no-cache wget
-        mkdir -p /app/server/node_modules /app/shared/node_modules
-        echo "After creating directories:"
-        ls -la /app/server/
-        chown -R node:node /app/server/node_modules /app/shared/node_modules /app/server /app/shared
+
+        # Create and set up directories
+        mkdir -p /app/.pnpm-store
+        mkdir -p /app/server/node_modules
+        mkdir -p /app/shared/node_modules
+        mkdir -p /app/client/node_modules
+        
+        # Set permissions
+        chown -R node:node /app/.pnpm-store
+        chown -R node:node /app/server
+        chown -R node:node /app/shared
+        chown -R node:node /app/client/node_modules
+        
+        # Install pnpm
         npm install -g pnpm@latest
-        echo "[1/7] Installing start script..."
-        echo "Content of server directory:"
-        ls -la /app/server/
-        echo "Copying start-server.sh..."
+        
+        # Copy and prepare start script
         cp /app/server/start-server.sh /tmp/start-server.sh
-        echo "Checking copied script:"
-        ls -la /tmp/start-server.sh
-        cat /tmp/start-server.sh
         chmod +x /tmp/start-server.sh
         chown node:node /tmp/start-server.sh
-        echo "[2/7] Running as node user..."
+        
+        # Run as node user
         exec su node -c "/tmp/start-server.sh"'
     depends_on:
       redis:
