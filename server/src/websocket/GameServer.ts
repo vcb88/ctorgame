@@ -275,7 +275,7 @@ export class GameServer {
                 if (currentSession && currentSession.gameId === session.gameId) {
                   // Если игрок не переподключился - завершаем игру
                   await Promise.all([
-                    this.gameService.finishGame(session.gameId, 1 - session.playerNumber, { 1: 0, 2: 0 }), // При дисконнекте считаем счет 0:0
+                    this.gameService.finishGame(session.gameId, 1 - session.playerNumber, { player1: 0, player2: 0 }), // При дисконнекте считаем счет 0:0
                     redisService.cleanupGame(session.gameId)
                   ]);
 

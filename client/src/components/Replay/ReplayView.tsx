@@ -1,10 +1,11 @@
 import React from 'react';
+import { Socket } from 'socket.io-client';
 import { useReplay } from '../../hooks/useReplay';
 import { useGameHistory } from '../../hooks/useGameHistory';
 import { ReplayControls } from './ReplayControls';
 import { MoveTimeline } from './MoveTimeline';
 import { GameBoard } from '../GameBoard';
-import { Alert, AlertDescription } from '../ui/alert';
+import { Alert } from '../ui/alert';
 
 interface ReplayViewProps {
     gameCode: string;
@@ -49,9 +50,7 @@ export function ReplayView({ gameCode, socket, onClose }: ReplayViewProps) {
     if (replayError || historyError) {
         return (
             <Alert variant="destructive">
-                <AlertDescription>
-                    {replayError || historyError}
-                </AlertDescription>
+                {replayError || historyError}
             </Alert>
         );
     }
@@ -78,7 +77,7 @@ export function ReplayView({ gameCode, socket, onClose }: ReplayViewProps) {
                 <div className="flex flex-col gap-4">
                     {gameState && (
                         <GameBoard
-                            board={gameState.board}
+                            board={gameState.board.cells}
                             disabled={true} // В режиме replay доска неактивна
                             lastMove={moves[currentMove - 1]?.move.position}
                         />

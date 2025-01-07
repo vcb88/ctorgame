@@ -6,7 +6,7 @@ interface GameCellProps {
   col: number;
   value: number | null;
   disabled: boolean;
-  onClick: () => void;
+  onClick?: () => void;
 }
 
 export const GameCell: React.FC<GameCellProps> = ({

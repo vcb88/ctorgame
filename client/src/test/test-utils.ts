@@ -1,7 +1,16 @@
 import { Socket } from 'socket.io-client';
 import { vi } from 'vitest';
 
-export const createMockSocket = () => {
+interface IMockSocket extends Socket {
+  mockEmit: ReturnType<typeof vi.fn>;
+  mockOn: ReturnType<typeof vi.fn>;
+  mockOff: ReturnType<typeof vi.fn>;
+  mockClose: ReturnType<typeof vi.fn>;
+  simulateEvent: (event: string, data: unknown) => Promise<void>;
+  getListeners: (event: string) => Function[];
+}
+
+export const createMockSocket = (): IMockSocket => {
   const listeners: Record<string, Function[]> = {};
   
   const mockSocket = {
@@ -51,5 +60,5 @@ export const createMockSocket = () => {
     }
   };
 
-  return mockSocket as unknown as Socket;
+  return mockSocket as unknown as IMockSocket;
 };

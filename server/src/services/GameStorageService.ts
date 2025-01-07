@@ -192,8 +192,9 @@ export class GameStorageService {
     async finishGame(
         gameId: string,
         winner: number,
-        finalScore: { 1: number; 2: number }
+        scores: { player1: number; player2: number }
     ): Promise<void> {
+        const finalScore = { 1: scores.player1, 2: scores.player2 };
         const now = new Date();
         const game = await this.gamesCollection.findOneAndUpdate(
             { gameId },

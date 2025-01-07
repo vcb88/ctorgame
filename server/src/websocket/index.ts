@@ -15,7 +15,7 @@ export function initializeWebSocket(httpServer: HTTPServer) {
     });
 
     const gameService = new GameService();
-    const storageService = new GameStorageService();
+    const storageService = new GameStorageService(process.env.MONGODB_URL);
 
     io.on('connection', (socket) => {
         console.log(`Client connected: ${socket.id}`);
