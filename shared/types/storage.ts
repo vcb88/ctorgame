@@ -1,4 +1,4 @@
-import { GameState, Player } from './game';
+import { IGameState } from './game';
 
 export interface GameMetadata {
     gameId: string;           // Unique game identifier
@@ -13,7 +13,7 @@ export interface GameMetadata {
         first?: string;      // First player ID
         second?: string;     // Second player ID
     };
-    winner?: Player;        // Winner player number
+    winner?: number;        // Winner player number (0 or 1)
     finalScore?: {          // Final score
         1: number;          // First player score
         2: number;          // Second player score
@@ -26,7 +26,7 @@ export interface GameMetadata {
 }
 
 export interface GameMove {
-    player: Player;
+    player: number;  // Player number (0 or 1)
     x: number;
     y: number;
     timestamp: number;

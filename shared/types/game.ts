@@ -1,3 +1,9 @@
+// Интерфейс игрока
+export interface IPlayer {
+  id: string;
+  number: number;  // 0 или 1
+}
+
 // Константы игры
 export const BOARD_SIZE = 10;
 export const MIN_ADJACENT_FOR_REPLACE = 5;
