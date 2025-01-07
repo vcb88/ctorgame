@@ -19,7 +19,7 @@ describe('useGameHistory', () => {
             playerNumber: 0,
             move: {
                 type: OperationType.PLACE,
-                position: { row: 0, col: 0 }
+                position: { x: 0, y: 0 }
             },
             timestamp: new Date('2024-12-24T10:00:00')
         },
@@ -28,7 +28,7 @@ describe('useGameHistory', () => {
             playerNumber: 1,
             move: {
                 type: OperationType.PLACE,
-                position: { row: 1, col: 1 }
+                position: { x: 1, y: 1 }
             },
             timestamp: new Date('2024-12-24T10:00:05')
         }
@@ -87,7 +87,7 @@ describe('useGameHistory', () => {
             ...mockMoves[0],
             move: {
                 type: OperationType.REPLACE,
-                position: { row: 2, col: 2 }
+                position: { x: 2, y: 2 }
             }
         });
         expect(moveDescription2).toBe('Player 1 replaced at (3,3)');
@@ -107,7 +107,7 @@ describe('useGameHistory', () => {
             playerNumber: 0,
             move: {
                 type: OperationType.REPLACE,
-                position: { row: 2, col: 2 }
+                position: { x: 2, y: 2 }
             },
             timestamp: new Date('2024-12-24T10:00:10')
         };

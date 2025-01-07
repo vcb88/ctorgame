@@ -5,7 +5,9 @@ import {
   WebSocketEvents, 
   IGameState, 
   IGameMove, 
-  OperationType 
+  OperationType,
+  BOARD_SIZE,
+  MAX_PLACE_OPERATIONS
 } from '@ctor-game/shared/types';
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { createMockSocket } from '../test/test-utils';
@@ -73,7 +75,7 @@ describe('useMultiplayerGame', () => {
       gameId: 'test-game-id',
       move: {
         type: OperationType.PLACE,
-        position: { row, col }
+        position: { x: col, y: row }
       },
     });
   });
@@ -100,7 +102,7 @@ describe('useMultiplayerGame', () => {
       gameId: 'test-game-id',
       move: {
         type: OperationType.REPLACE,
-        position: { row, col }
+        position: { x: col, y: row }
       },
     });
   });
@@ -110,7 +112,7 @@ describe('useMultiplayerGame', () => {
     const availableReplaces: IGameMove[] = [
       {
         type: OperationType.REPLACE,
-        position: { row: 0, col: 0 }
+        position: { x: 0, y: 0 }
       }
     ];
 
@@ -147,9 +149,21 @@ describe('useMultiplayerGame', () => {
     const { result } = renderHook(() => useMultiplayerGame());
 
     const testGameState: IGameState = {
-      board: [[null, null, null], [null, null, null], [null, null, null]],
+      board: {
+        cells: Array(10).fill(null).map(() => Array(10).fill(null)),
+        size: { width: 10, height: 10 }
+      },
+      currentTurn: {
+        placeOperationsLeft: 2,
+        moves: []
+      },
+      scores: {
+        player1: 0,
+        player2: 0
+      },
       gameOver: false,
       winner: null,
+      isFirstTurn: true
     };
 
     await act(async () => {
@@ -193,9 +207,21 @@ describe('useMultiplayerGame', () => {
   it('should handle game over', async () => {
     const { result } = renderHook(() => useMultiplayerGame());
     const testGameState: IGameState = {
-      board: [[0, 0, 0], [null, null, null], [null, null, null]],
+      board: {
+        cells: Array(10).fill(null).map((_, i) => i === 0 ? Array(10).fill(0) : Array(10).fill(null)),
+        size: { width: 10, height: 10 }
+      },
+      currentTurn: {
+        placeOperationsLeft: 2,
+        moves: []
+      },
+      scores: {
+        player1: 3,
+        player2: 0
+      },
       gameOver: true,
       winner: 0,
+      isFirstTurn: false
     };
 
     await act(async () => {

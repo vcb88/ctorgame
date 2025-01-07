@@ -20,7 +20,7 @@ export const Game: React.FC = () => {
 
   const handleCellClick = (row: number, col: number) => {
     if (!isMyTurn || 
-        gameState?.board[row][col] !== null || 
+        gameState?.board.cells[row][col] !== null || 
         gameState?.gameOver ||
         gameState?.currentTurn.placeOperationsLeft <= 0) {
       return;
@@ -122,7 +122,7 @@ export const Game: React.FC = () => {
         </div>
 
         <div className="grid grid-cols-10 gap-1 bg-gray-200 p-2">
-          {gameState.board.map((row, rowIndex) =>
+          {gameState.board.cells.map((row, rowIndex) =>
             row.map((cell, colIndex) => (
               <GameCell
                 key={`${rowIndex}-${colIndex}`}

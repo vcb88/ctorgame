@@ -64,7 +64,7 @@ export function useGameHistory({ socket, gameCode }: UseGameHistoryProps): UseGa
     const formatMoveDescription = (entry: HistoryEntry): string => {
         const { playerNumber, move } = entry;
         const playerName = `Player ${playerNumber + 1}`;
-        const position = `(${move.position.row + 1},${move.position.col + 1})`;
+        const position = `(${move.position.x + 1},${move.position.y + 1})`;
         const operation = move.type === OperationType.PLACE ? 'placed' : 'replaced';
 
         return `${playerName} ${operation} at ${position}`;

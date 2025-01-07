@@ -14,18 +14,21 @@ const mockSocket = {
 
 // Мок для начального состояния игры
 const mockGameState: IGameState = {
-    board: Array(10).fill(null).map(() => Array(10).fill(null)),
+    board: {
+        cells: Array(10).fill(null).map(() => Array(10).fill(null)),
+        size: { width: 10, height: 10 }
+    },
     currentTurn: {
-        playerNumber: 0,
         placeOperationsLeft: 2,
-        replaceOperationsLeft: 0
+        moves: []
     },
     scores: {
         player1: 0,
         player2: 0
     },
     gameOver: false,
-    winner: null
+    winner: null,
+    isFirstTurn: true
 };
 
 describe('useReplay', () => {
