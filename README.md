@@ -53,9 +53,8 @@ Detailed documentation can be found in the [docs](./docs) directory:
 - **Backend**: 
   - Node.js + Express + TypeScript
   - Socket.IO for real-time game events
-  - PostgreSQL for persistent game storage
-  - Redis for session management and caching
-  - TypeORM for database operations
+  - Redis for state management and persistence
+  - Distributed state synchronization
 
 - **DevOps**:
   - Docker + Docker Compose for containerization
@@ -74,56 +73,80 @@ graph TD
     Client[Web Client] -->|WebSocket| LoadBalancer[Nginx Load Balancer]
     LoadBalancer -->|HTTP/WS| Server1[Game Server 1]
     LoadBalancer -->|HTTP/WS| Server2[Game Server 2]
-    Server1 -->|Pub/Sub| Redis[Redis Cluster]
+    Server1 -->|Pub/Sub| Redis[(Redis Cluster)]
     Server2 -->|Pub/Sub| Redis
-    Server1 -->|SQL| DB[PostgreSQL]
-    Server2 -->|SQL| DB
     Redis -->|State Sync| Server1
     Redis -->|State Sync| Server2
-```
-
-### Database Schema
-
-#### PostgreSQL Tables
-
-```sql
--- Games table for persistent storage
-CREATE TABLE games (
-    id UUID PRIMARY KEY,
-    game_code VARCHAR(10) UNIQUE NOT NULL,
-    current_state JSONB NOT NULL,
-    created_at TIMESTAMP NOT NULL DEFAULT NOW(),
-    updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
-    completed_at TIMESTAMP,
-    winner INTEGER
-);
-
--- Moves history for replay functionality
-CREATE TABLE moves (
-    id SERIAL PRIMARY KEY,
-    game_id UUID REFERENCES games(id),
-    player_number INTEGER NOT NULL,
-    move_data JSONB NOT NULL,
-    created_at TIMESTAMP NOT NULL DEFAULT NOW()
-);
+    Redis -->|Persistence| Storage[Redis Persistence]
+    
+    subgraph Redis State Management
+        GameState[Game State]
+        PlayerSessions[Player Sessions]
+        MoveHistory[Move History]
+        RoomState[Room State]
+    end
 ```
 
 #### Redis Data Structures
 
-```
-# Active game sessions
-game:<game_code> -> Hash
-    state -> JSON string (current game state)
-    lastMove -> timestamp
-    players -> JSON array of player IDs
+```typescript
+// Game State (Key: game:{gameId}:state)
+{
+    board: number[][];       // Current board state
+    currentPlayer: number;   // Active player (0 or 1)
+    currentTurn: {
+        placeOperationsLeft: number;
+        moves: GameMove[];
+    };
+    score: {
+        player1: number;
+        player2: number;
+    };
+    gameOver: boolean;
+    winner: number | null;
+    lastUpdate: number;     // Timestamp
+}
 
-# Player sessions
-player:<socket_id> -> Hash
-    gameCode -> string
-    playerNumber -> integer
+// Game Room (Key: game:{gameId}:room)
+{
+    players: Array<{
+        id: string;         // Socket ID
+        number: number;     // Player number
+    }>;
+    status: 'waiting' | 'playing' | 'finished';
+    lastUpdate: number;     // Timestamp
+}
 
-# Game move pub/sub channels
-game:<game_code>:moves -> PubSub Channel
+// Player Session (Key: player:{socketId}:session)
+{
+    gameId: string;        // Current game ID
+    playerNumber: number;  // Player's number
+    lastActivity: number;  // Timestamp
+}
+
+// Move History (Key: game:{gameId}:moves)
+List<{
+    type: 'PLACE' | 'REPLACE';
+    x: number;
+    y: number;
+    playerNumber: number;
+    timestamp: number;
+}>
+
+// PubSub Channels
+game:{gameId}:events -> Channel for game events
+player:events -> Channel for player events
+system:events -> Channel for system events
+
+// Sets
+games:active -> Set of active game IDs
+games:finished -> Set of finished game IDs
+
+// TTL Settings
+- Game State: 1 hour
+- Player Session: 2 hours
+- Game Room: 1 hour
+- Move History: 24 hours
 ```
 
 ### Project Structure
@@ -291,25 +314,14 @@ services:
     environment:
       - NODE_ENV=production
       - PORT=3000
-      - POSTGRES_URL=postgres://user:password@postgres:5432/ctorgame
       - REDIS_URL=redis://redis:6379
+      - REDIS_PREFIX=ctorgame:prod:
+      - REDIS_PASSWORD=secure_password
     volumes:
       - ./server:/app
       - /app/node_modules
     depends_on:
-      - postgres
       - redis
-
-  postgres:
-    image: postgres:14-alpine
-    environment:
-      - POSTGRES_USER=user
-      - POSTGRES_PASSWORD=password
-      - POSTGRES_DB=ctorgame
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-    ports:
-      - "5432:5432"
 
   redis:
     image: redis:7-alpine
@@ -319,9 +331,37 @@ services:
       - redis_data:/data
 
 volumes:
-  postgres_data:
   redis_data:
 ```
+
+### Redis Configuration
+
+The project uses Redis in cluster mode for scalability and reliability:
+
+```yaml
+redis:
+  image: redis:7-alpine
+  command: redis-server --appendonly yes --requirepass ${REDIS_PASSWORD}
+  environment:
+    - REDIS_PASSWORD=secure_password
+  volumes:
+    - redis_data:/data
+  ports:
+    - "6379:6379"
+  healthcheck:
+    test: ["CMD", "redis-cli", "ping"]
+    interval: 5s
+    timeout: 3s
+    retries: 5
+```
+
+Key Redis features used:
+- AOF persistence for data durability
+- Key space notifications for real-time events
+- Pub/Sub for game events distribution
+- Hash sets for game state storage
+- Lists for move history
+- Sets for active games tracking
 
 ### Development Setup
 
@@ -351,12 +391,99 @@ docker-compose logs -f
 docker-compose up -d --scale server=3
 ```
 
-### Service URLs
+### Service URLs and Monitoring
 
-- Client: http://localhost
+#### Service Endpoints
+- Client Application: http://localhost
 - API/WebSocket: ws://localhost/socket.io
-- PostgreSQL: postgres://localhost:5432
-- Redis: redis://localhost:6379
+- Redis Commander: http://localhost:8081 (development only)
+
+#### Monitoring Endpoints
+- Health Check: http://localhost:3000/health
+- WebSocket Status: http://localhost:3000/ws/status
+- Redis Metrics: http://localhost:9121/metrics
+- Application Metrics: http://localhost:3000/metrics
+
+#### Development Tools
+- Redis Commander for data inspection
+- Prometheus for metrics collection
+- Grafana for visualization (optional)
+
+#### Health Checks
+The application includes comprehensive health checks:
+```typescript
+interface HealthStatus {
+    status: 'healthy' | 'degraded' | 'unhealthy';
+    redis: {
+        connected: boolean;
+        latency: number;  // in ms
+        usedMemory: number;
+        commandsProcessed: number;
+    };
+    websocket: {
+        connections: number;
+        rooms: number;
+        events: {
+            received: number;
+            sent: number;
+            errors: number;
+        };
+    };
+    uptime: number;
+    lastCheck: string;
+}
+
+## State Management
+
+### Distributed State Architecture
+
+The game uses Redis as the primary state store with the following key features:
+
+1. **State Synchronization**
+   - All game state is stored in Redis
+   - Multiple game servers share the same state
+   - Atomic operations using Redis locks
+   - Real-time updates via Pub/Sub
+
+2. **Data Persistence**
+   - AOF (Append-Only File) persistence
+   - Regular RDB snapshots
+   - Configurable backup frequency
+   - Automatic recovery
+
+3. **Event Distribution**
+   ```mermaid
+   sequenceDiagram
+       participant Client
+       participant Server1
+       participant Redis
+       participant Server2
+       
+       Client->>Server1: Make Move
+       Server1->>Redis: Lock Game State
+       Server1->>Redis: Update State
+       Redis-->>Server1: Confirm Update
+       Redis-)Server2: Publish State Change
+       Server2->>Client: Update Game State
+   ```
+
+4. **State Recovery**
+   - Automatic session recovery
+   - Game state restoration
+   - Player reconnection handling
+   - Timeout management
+
+5. **Scalability Features**
+   - Horizontal scaling of game servers
+   - Load distribution across nodes
+   - Connection persistence
+   - State replication
+
+6. **Monitoring and Debugging**
+   - Real-time state tracking
+   - Performance metrics
+   - Error logging
+   - Health checks
 
 ## Testing
 
