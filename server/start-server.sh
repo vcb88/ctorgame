@@ -37,7 +37,7 @@ pnpm run type-check
 
 echo "Step 4: Starting server in dev mode"
 cd /app/server # Убедимся, что мы в правильной директории
-NODE_ENV=development DEBUG=* ts-node-dev --project tsconfig.json --respawn --transpile-only --debug --trace-warnings src/index.ts
+NODE_ENV=development DEBUG=* npx ts-node-dev --project tsconfig.json --respawn --transpile-only --debug --trace-warnings src/index.ts
 
 # End of script
 
