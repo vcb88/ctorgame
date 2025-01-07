@@ -1,5 +1,5 @@
-import { IPlayer } from '@/player';
-import { IPosition, IBoard } from '@/coordinates';
+import { IPlayer } from './player';
+import { IPosition, IBoard } from './coordinates';
 
 // Константы игры
 export const BOARD_SIZE = 10;

@@ -7,17 +7,14 @@
     "declarationMap": true,
     "sourceMap": true,
     "outDir": "./dist",
-    "rootDir": ".",
+    "rootDirs": ["src", "types"],
     "strict": true,
     "esModuleInterop": true,
     "skipLibCheck": true,
     "composite": true,
     "jsx": "react-jsx",
     "lib": ["ESNext", "DOM"],
-    "baseUrl": ".",
-    "paths": {
-      "@/*": ["types/*"]
-    }
+    "baseUrl": "."
   },
   "include": [
     "src/**/*",
