@@ -5,3 +5,5 @@ export * from './player';
 export * from './replay';
 export * from './redis';
 export * from './coordinates';
+export * from './events';
+export * from './storage';

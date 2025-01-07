@@ -8,7 +8,8 @@ export const MAX_PLACE_OPERATIONS = 2;
 // Типы операций
 export enum OperationType {
   PLACE = 'place',
-  REPLACE = 'replace'
+  REPLACE = 'replace',
+  END_TURN = 'end_turn'
 }
 
 import { IPosition, IBoard } from './coordinates';

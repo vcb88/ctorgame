@@ -99,6 +99,41 @@ export class GameService {
         return game?.currentState || null;
     }
 
+    async getPlayer(gameCode: string, playerNumber: number): Promise<IPlayer | null> {
+        const game = await this.gamesCollection.findOne({ gameCode });
+        return game?.players.find(p => p.number === playerNumber) || null;
+    }
+
+    async getSavedGames(): Promise<GameMetadata[]> {
+        return this.gamesCollection.find({
+            status: 'finished'
+        }).sort({ endTime: -1 }).limit(50).toArray();
+    }
+
+    async getGameHistory(gameCode: string): Promise<GameHistory | null> {
+        const game = await this.gamesCollection.findOne({ gameCode });
+        if (!game) return null;
+
+        return {
+            metadata: game,
+            moves: [],
+            details: {
+                moves: [],
+                timing: {
+                    moveTimes: [],
+                    avgMoveTime: 0
+                },
+                territoryHistory: []
+            }
+        };
+    }
+
+    async getGameStateAtMove(gameCode: string, moveNumber: number): Promise<IGameState | null> {
+        const game = await this.gamesCollection.findOne({ gameCode });
+        if (!game) return null;
+        return game.currentState;
+    }
+
     async finishGame(gameCode: string, winner: number | null): Promise<void> {
         await this.gamesCollection.updateOne(
             { gameCode },

@@ -21,11 +21,14 @@ declare module 'ioredis' {
         set(key: RedisKey, value: RedisValue, mode?: string, duration?: number): Pipeline;
         get(key: RedisKey): Pipeline;
         del(...keys: RedisKey[]): Pipeline;
+        srem(key: RedisKey, value: RedisValue): Pipeline;
         expire(key: RedisKey, seconds: number): Pipeline;
         lpush(key: RedisKey, ...values: RedisValue[]): Pipeline;
         publish(channel: string, message: string): Pipeline;
         hset(key: RedisKey, field: RedisKey, value: RedisValue): Pipeline;
         multi(): Pipeline;
+        select(db: number): Pipeline;
+        sadd(key: RedisKey, ...members: RedisValue[]): Pipeline;
     }
 
     export default class Redis {
