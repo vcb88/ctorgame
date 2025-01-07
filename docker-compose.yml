@@ -27,15 +27,21 @@ services:
     build:
       context: .
       dockerfile: server/Dockerfile
+      target: builder  # Используем этап сборки
     ports:
       - "3000:3000"
     env_file:
       - .env
     volumes:
       - game_data:/data/games
+      - ./server/src:/app/server/src  # Монтируем исходники для разработки
+      - ./shared/src:/app/shared/src  # Монтируем shared исходники
     depends_on:
-      - redis
-      - mongodb
+      redis:
+        condition: service_started
+      mongodb:
+        condition: service_started
+    command: sh -c "cd /app/server && pnpm build && pnpm start"
     healthcheck:
       test: ["CMD", "wget", "--spider", "-q", "http://localhost:3000/health"]
       interval: 10s
