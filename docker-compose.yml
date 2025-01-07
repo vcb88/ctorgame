@@ -29,26 +29,11 @@ services:
     environment:
       - NODE_ENV=production
       - PORT=3000
-      - DB_HOST=postgres
-      - DB_PORT=5432
-      - DB_USER=${DB_USER:-postgres}
-      - DB_PASSWORD=${DB_PASSWORD:-postgres}
-      - DB_NAME=${DB_NAME:-ctorgame}
       - REDIS_URL=redis://redis:6379
+      - REDIS_PREFIX=ctorgame:prod:
+      - REDIS_PASSWORD=${REDIS_PASSWORD}
     depends_on:
-      - postgres
       - redis
-
-  postgres:
-    image: postgres:14-alpine
-    environment:
-      - POSTGRES_USER=${DB_USER:-postgres}
-      - POSTGRES_PASSWORD=${DB_PASSWORD:-postgres}
-      - POSTGRES_DB=${DB_NAME:-ctorgame}
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-    ports:
-      - "5432:5432"
 
   redis:
     image: redis:7-alpine
@@ -58,6 +43,5 @@ services:
       - redis_data:/data
 
 volumes:
-  postgres_data:
   redis_data:
   client_dist:
