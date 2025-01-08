@@ -1,15 +1,8 @@
 import { useEffect, useState, useCallback } from 'react';
 import { io, Socket } from 'socket.io-client';
-import { 
-  IGameState, 
-  IGameMove,
-  OperationType,
-  WebSocketEvents,
-  ClientToServerEvents,
-  ServerToClientEvents,
-  IPosition
-} from '../../../shared/types';
-import { validateGameMove, validateGameState } from '../../../shared/validation/game';
+import { IGameState, IGameMove, OperationType, IPosition } from '../../../shared/types/game';
+import { WebSocketEvents, ClientToServerEvents, ServerToClientEvents } from '../../../shared/types/websocket';
+import { validateGameMove, validateGameState } from '../../../shared/src';
 
 const SOCKET_SERVER_URL = process.env.NODE_ENV === 'production' 
   ? window.location.origin 
