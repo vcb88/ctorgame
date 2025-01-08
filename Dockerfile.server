@@ -14,14 +14,14 @@ COPY shared/package.json ./shared/
 COPY shared/ ./shared/
 COPY server/ ./server/
 
-# Build shared package first
-WORKDIR /app/shared
-RUN pnpm install --no-frozen-lockfile && pnpm build
-RUN ls -la dist/ || echo "dist directory not created"
+# Install dependencies without dev packages
+WORKDIR /app
+RUN pnpm install --no-frozen-lockfile --prod
 
-# Install server dependencies
-WORKDIR /app/server
-RUN pnpm install --no-frozen-lockfile
+# Build shared package
+WORKDIR /app/shared
+RUN pnpm install --no-frozen-lockfile typescript && pnpm build
+RUN ls -la dist/ || echo "dist directory not created"
 
 # Set environment
 ENV NODE_ENV=development
