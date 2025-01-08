@@ -260,6 +260,49 @@ export interface GameHistory {
 
 export type GameStatus = 'waiting' | 'playing' | 'finished';
 
+// Replay types
+export interface IReplayState {
+  currentMoveIndex: number;
+  totalMoves: number;
+  isPlaying: boolean;
+  playbackSpeed: number;
+  gameCode: string;
+}
+
+export enum ReplayEvent {
+  // Client to server
+  START_REPLAY = 'START_REPLAY',
+  PAUSE_REPLAY = 'PAUSE_REPLAY',
+  RESUME_REPLAY = 'RESUME_REPLAY',
+  NEXT_MOVE = 'NEXT_MOVE',
+  PREV_MOVE = 'PREV_MOVE',
+  GOTO_MOVE = 'GOTO_MOVE',
+  SET_PLAYBACK_SPEED = 'SET_PLAYBACK_SPEED',
+  END_REPLAY = 'END_REPLAY',
+
+  // Server to client
+  REPLAY_STATE_UPDATED = 'REPLAY_STATE_UPDATED',
+  REPLAY_PAUSED = 'REPLAY_PAUSED',
+  REPLAY_RESUMED = 'REPLAY_RESUMED',
+  REPLAY_COMPLETED = 'REPLAY_COMPLETED',
+  REPLAY_ERROR = 'REPLAY_ERROR',
+  PLAYBACK_SPEED_UPDATED = 'PLAYBACK_SPEED_UPDATED'
+}
+
+export interface IReplayStateUpdate {
+  state: IGameState;
+  moveIndex: number;
+  totalMoves: number;
+}
+
+export interface IReplayError {
+  message: string;
+}
+
+export interface IPlaybackSpeedUpdate {
+  speed: number;
+}
+
 // Coordinate transformation utilities
 export function positionToRowCol(pos: IPosition): { row: number; col: number } {
   return { row: pos.y, col: pos.x };
