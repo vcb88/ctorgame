@@ -9,7 +9,7 @@ import {
   normalizePosition,
   getAdjacentPositions,
   IReplaceValidation
-} from '@ctor-game/shared/types';
+} from '@ctor-game/shared';
 
 export class GameLogicService {
   /**

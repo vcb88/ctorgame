@@ -6,7 +6,7 @@ import {
     IRedisGameRoom,
     IRedisGameEvent,
     GameEventType
-} from '@ctor-game/shared/types';
+} from '@ctor-game/shared';
 import { redisClient, REDIS_KEYS, REDIS_EVENTS, withLock, cacheConfig } from '../config/redis';
 import { GameLogicService } from './GameLogicService';
 export class RedisService {

@@ -1,6 +1,6 @@
 import Redis from 'ioredis';
 import * as dotenv from 'dotenv';
-import { ICacheConfig } from '@ctor-game/shared/types';
+import { ICacheConfig } from '@ctor-game/shared';
 
 dotenv.config();
 

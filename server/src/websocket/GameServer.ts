@@ -12,7 +12,7 @@ import {
   IBoard,
   BOARD_SIZE,
   MAX_PLACE_OPERATIONS
-} from '@ctor-game/shared/types';
+} from '@ctor-game/shared';
 import { validateGameMove, validateGameState } from '@ctor-game/shared/validation/game';
 import { GameService } from '../services/GameService';
 import { GameLogicService } from '../services/GameLogicService';
