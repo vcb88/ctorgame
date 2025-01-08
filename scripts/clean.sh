@@ -23,6 +23,11 @@ ROOT_DIR=$(pwd)
 
 print_message "yellow" "Starting cleanup process..."
 
+# Check if pnpm is installed
+if ! command -v pnpm &> /dev/null; then
+    handle_error "pnpm is not installed. Please install pnpm first: npm install -g pnpm"
+fi
+
 # Clean build artifacts
 print_message "green" "Cleaning build artifacts..."
 find . -type d \( -name "dist" -o -name ".vite" -o -name "build" -o -name ".next" -o -name ".nuxt" -o -name ".output" \) -exec rm -rf {} + || handle_error "Failed to clean build artifacts"
@@ -33,7 +38,7 @@ find . -type d -name "node_modules" -exec rm -rf {} + || handle_error "Failed to
 
 # Clean lock files
 print_message "green" "Cleaning lock files..."
-find . -type f \( -name "pnpm-lock.yaml" -o -name "package-lock.json" -o -name "yarn.lock" \) -exec rm -f {} + || handle_error "Failed to clean lock files"
+find . -type f -name "pnpm-lock.yaml" -exec rm -f {} + || handle_error "Failed to clean lock files"
 
 # Clean TypeScript build info
 print_message "green" "Cleaning TypeScript build info..."
@@ -41,29 +46,10 @@ find . -type f -name "tsconfig.tsbuildinfo" -exec rm -f {} + || handle_error "Fa
 
 # Clean pnpm store
 print_message "green" "Cleaning pnpm store..."
-if command -v pnpm &> /dev/null; then
-    pnpm store prune || handle_error "Failed to clean pnpm store"
-else
-    print_message "yellow" "pnpm not found, skipping store cleanup"
-fi
+pnpm store prune || handle_error "Failed to clean pnpm store"
 
-# Clean npm cache (if npm is installed)
-if command -v npm &> /dev/null; then
-    print_message "green" "Cleaning npm cache..."
-    npm cache clean --force || print_message "yellow" "Failed to clean npm cache"
-else
-    print_message "yellow" "npm not found, skipping cache cleanup"
-fi
-
-# Clean yarn cache (if yarn is installed)
-if command -v yarn &> /dev/null; then
-    print_message "green" "Cleaning yarn cache..."
-    yarn cache clean || print_message "yellow" "Failed to clean yarn cache"
-else
-    print_message "yellow" "yarn not found, skipping cache cleanup"
-fi
-
-print_message "green" "Cleanup completed successfully!"
+print_message "green" "✨ Cleanup completed successfully!"
 print_message "yellow" "To rebuild the project, run:"
-print_message "yellow" "  pnpm install"
-print_message "yellow" "  pnpm build"
+print_message "yellow" "  pnpm install && pnpm build"
+print_message "yellow" "Or use the shortcut:"
+print_message "yellow" "  pnpm clean:rebuild"
