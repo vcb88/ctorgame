@@ -11,7 +11,7 @@ RUN pnpm install --no-frozen-lockfile
 
 COPY . .
 
-RUN cd /app/shared && pnpm install && pnpm build && cd /app/client && pnpm install && pnpm build
+RUN cd /app/shared && pnpm install && npm install -g typescript && pnpm build && cd /app/client && pnpm install && pnpm build
 
 FROM nginx:alpine
 

@@ -45,6 +45,7 @@ services:
     command: >
       sh -c "cd /app/shared && 
              pnpm install --force && 
+             npm install -g typescript && 
              pnpm build && 
              cd /app/server && 
              pnpm install --force && 
