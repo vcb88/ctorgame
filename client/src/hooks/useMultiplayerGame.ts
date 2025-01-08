@@ -7,9 +7,10 @@ import {
   IPosition,
   WebSocketEvents, 
   ClientToServerEvents, 
-  ServerToClientEvents 
-} from '@ctor-game/shared/types';
-import { validateGameMove, validateGameState } from '@ctor-game/shared/validation/game';
+  ServerToClientEvents,
+  validateGameMove,
+  validateGameState 
+} from '@ctor-game/shared';
 
 const SOCKET_SERVER_URL = process.env.NODE_ENV === 'production' 
   ? window.location.origin 
