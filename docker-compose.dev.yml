@@ -12,10 +12,10 @@ services:
         - CMD-SHELL
         - |
           set -e
-          if [ ! -f /usr/bin/wget ]; then
-            apk add --no-cache wget
+          if ! command -v curl &> /dev/null; then
+            apk add --no-cache curl
           fi
-          wget --spider -q http://localhost:5173 || exit 1
+          curl -sf http://localhost:5173 || exit 1
       interval: 10s
       timeout: 10s
       retries: 3
@@ -32,7 +32,7 @@ services:
     command: |
       sh -c '
         cd /app
-        apk add --no-cache wget
+        apk add --no-cache wget curl
         mkdir -p /app/client/node_modules /app/shared/node_modules
         chown -R node:node /app/client/node_modules /app/shared/node_modules /app/client /app/shared
         npm install -g pnpm@latest
