@@ -17,7 +17,7 @@
     "outDir": "./dist",
     "rootDir": "./src",
     "paths": {
-      "@ctor-game/shared": ["../shared/dist/index.js"]
+      "@ctor-game/shared": ["../shared/dist/*"]
     }
   }
 }
