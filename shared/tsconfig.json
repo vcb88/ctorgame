@@ -18,7 +18,8 @@
   },
   "include": [
     "src/**/*",
-    "types/**/*"
+    "types/**/*",
+    "validation/**/*"
   ],
   "exclude": [
     "node_modules",
