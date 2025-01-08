@@ -79,7 +79,7 @@ export class GameLogicService {
     playerNumber: number
   ): IReplaceValidation {
     const adjacentPositions = getAdjacentPositions(position, board);
-    const playerPieces = adjacentPositions.filter(pos => 
+    const playerPieces = adjacentPositions.filter((pos: IPosition) => 
       board.cells[pos.y][pos.x] === playerNumber
     );
 
@@ -185,7 +185,7 @@ export class GameLogicService {
    */
   private static checkGameOver(board: IBoard): boolean {
     // Игра заканчивается, когда все клетки заняты
-    return board.cells.every(row => row.every(cell => cell !== null));
+    return board.cells.every((row: (number | null)[]) => row.every((cell: number | null) => cell !== null));
   }
 
   /**
