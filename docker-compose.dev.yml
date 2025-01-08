@@ -52,12 +52,12 @@ services:
 
         # Run as node user with all configs in place
         su node -c "cd /app && 
-          pnpm install --no-workspace-root --registry=https://registry.npmjs.org/ &&
+          pnpm install --no-workspace-root --force --registry=https://registry.npmjs.org/ &&
           cd /app/shared &&
-          pnpm install --registry=https://registry.npmjs.org/ &&
+          pnpm install --force --registry=https://registry.npmjs.org/ &&
           pnpm build &&
           cd /app/client &&
-          pnpm install --registry=https://registry.npmjs.org/ &&
+          pnpm install --force --registry=https://registry.npmjs.org/ &&
           pnpm dev --host 0.0.0.0"'
     depends_on:
       server:

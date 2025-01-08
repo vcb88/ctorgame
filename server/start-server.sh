@@ -13,7 +13,7 @@ echo "PNPM version: $(pnpm --version)"
 echo "Step 1: Setting up shared package"
 cd /app/shared
 echo "Current directory: $(pwd)"
-NODE_ENV=development pnpm install
+NODE_ENV=development pnpm install --force
 
 echo "Building shared package..."
 pnpm run build
@@ -21,7 +21,7 @@ pnpm run build
 echo "Step 2: Setting up server dependencies"
 cd /app/server
 echo "Current directory: $(pwd)"
-NODE_ENV=development pnpm install
+NODE_ENV=development pnpm install --force
 
 echo "Checking shared build:"
 ls -la ../shared/dist/ || echo "No shared/dist directory found"
