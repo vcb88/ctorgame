@@ -1,13 +1,9 @@
 import 'reflect-metadata';
 import express from 'express';
-import { createServer } from 'http';
+import http from 'http';
 import { GameServer } from './websocket/GameServer';
-import path from 'path';
 import cors from 'cors';
-import { fileURLToPath } from 'url';
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+import path from 'path';
 
 console.log('Starting server initialization...');
 
@@ -102,7 +98,7 @@ let isServerReady = false;
 
 console.log('Creating HTTP server...');
 console.log('Creating HTTP server...');
-const httpServer = createServer(app);
+const httpServer = http.createServer(app);
 
 httpServer.on('listening', () => {
   console.log('HTTP server is now listening');
