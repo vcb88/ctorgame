@@ -16,11 +16,11 @@ COPY server/ ./server/
 
 # Install dependencies without dev packages
 WORKDIR /app
-RUN pnpm install --no-frozen-lockfile --prod
+RUN pnpm install --prod
 
 # Build shared package
 WORKDIR /app/shared
-RUN pnpm install --no-frozen-lockfile typescript && pnpm build
+RUN pnpm add -D typescript && pnpm build
 RUN ls -la dist/ || echo "dist directory not created"
 
 # Set environment
