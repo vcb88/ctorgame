@@ -36,16 +36,28 @@ services:
       sh -c '
         cd /app
         apk add --no-cache wget curl
+
+        # Set up directories and permissions
         mkdir -p /app/client/node_modules /app/shared/node_modules
         chown -R node:node /app/client/node_modules /app/shared/node_modules /app/client /app/shared
-        npm install -g pnpm@latest
+
+        # Create pnpm config to avoid prompts
+        mkdir -p /app/.pnpm-store
+        echo "auto-install-peers=true" > /app/.npmrc
+        echo "strict-peer-dependencies=false" >> /app/.npmrc
+        chown -R node:node /app/.pnpm-store /app/.npmrc
+
+        # Install pnpm without update notifications
+        NPM_CONFIG_UPDATE_NOTIFIER=false npm install -g pnpm@latest
+
+        # Run as node user with all configs in place
         su node -c "cd /app && 
-          FORCE=true pnpm install --no-workspace-root &&
+          pnpm install --no-workspace-root --registry=https://registry.npmjs.org/ &&
           cd /app/shared &&
-          FORCE=true pnpm install &&
+          pnpm install --registry=https://registry.npmjs.org/ &&
           pnpm build &&
           cd /app/client &&
-          FORCE=true pnpm install &&
+          pnpm install --registry=https://registry.npmjs.org/ &&
           pnpm dev --host 0.0.0.0"'
     depends_on:
       server:
