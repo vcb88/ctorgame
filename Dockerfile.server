@@ -2,16 +2,16 @@ FROM node:18-slim
 
 WORKDIR /app
 
-# Install pnpm
-RUN npm install -g pnpm@9.15.3
+# Install pnpm and clean npm cache
+RUN npm install -g pnpm@9.15.3 && npm cache clean --force
 
-# Copy only necessary files first
+# Copy workspace files
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 COPY server/package.json ./server/
 COPY shared/package.json ./shared/
 
-# Install dependencies and update lockfile
-RUN pnpm install --no-frozen-lockfile
+# Install dependencies with clean cache
+RUN pnpm install --no-frozen-lockfile && pnpm store prune
 
 # Copy source code
 COPY shared/ ./shared/
@@ -22,7 +22,8 @@ RUN cd shared && pnpm build
 
 # Set environment
 ENV NODE_ENV=development
+ENV PATH="/app/server/node_modules/.bin:${PATH}"
 
-# Start server
+# Start server using ts-node directly
 WORKDIR /app/server
-CMD ["pnpm", "dev"]
+CMD ["node", "--loader", "ts-node/esm", "--watch", "src/index.ts"]
