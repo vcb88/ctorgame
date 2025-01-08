@@ -12,8 +12,8 @@ import {
   IBoard,
   BOARD_SIZE,
   MAX_PLACE_OPERATIONS
-} from '../../node_modules/@ctor-game/shared/dist/index.js';
-import { validateGameMove, validateGameState } from '../../node_modules/@ctor-game/shared/dist/validation/game.js';
+} from '../shared';
+import { validateGameMove, validateGameState } from '../validation/game';
 import { GameService } from '../services/GameService';
 import { GameLogicService } from '../services/GameLogicService';
 import { GameStorageService } from '../services/GameStorageService';

@@ -5,20 +5,11 @@ WORKDIR /app
 # Install pnpm and clean npm cache
 RUN npm install -g pnpm@9.15.3 && npm cache clean --force
 
-# Copy workspace files
-COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
+# Copy server files
 COPY server/package.json ./server/
-COPY shared/package.json ./shared/
 
-# Copy source code first to allow building shared
-COPY shared/ ./shared/
+# Copy source code
 COPY server/ ./server/
-
-# Build shared package first
-WORKDIR /app/shared
-RUN pnpm install
-RUN pnpm build
-RUN ls -la dist/ || echo "dist directory not created"
 
 # Install server dependencies
 WORKDIR /app/server
