@@ -1,4 +1,24 @@
 services:
+  shared:
+    image: node:18-alpine
+    working_dir: /app/shared
+    volumes:
+      - .:/app
+      - pnpm_store:/root/.local/share/pnpm/store/v3
+      - shared_modules:/app/shared/node_modules
+    command: |
+      sh -c '
+        echo "Building shared package..."
+        apk add --no-cache curl
+        npm install -g pnpm@latest
+        
+        # Create directories and set permissions
+        mkdir -p /app/shared/node_modules
+        chown -R node:node /app/shared
+        
+        # Run as node user
+        su node -c "pnpm install --force && pnpm build"'
+
   client:
     image: node:18-alpine
     working_dir: /app
@@ -60,6 +80,8 @@ services:
           pnpm install --force --registry=https://registry.npmjs.org/ &&
           pnpm dev --host 0.0.0.0"'
     depends_on:
+      shared:
+        condition: service_completed_successfully
       server:
         condition: service_healthy
       redis:
@@ -126,6 +148,8 @@ services:
         # Run as node user
         exec su node -c "/tmp/start-server.sh"'
     depends_on:
+      shared:
+        condition: service_completed_successfully
       redis:
         condition: service_healthy
       mongodb:
