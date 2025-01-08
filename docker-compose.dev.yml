@@ -1,23 +1,47 @@
 services:
   shared:
     image: node:18-alpine
-    working_dir: /app/shared
+    working_dir: /app
     volumes:
       - .:/app
       - pnpm_store:/root/.local/share/pnpm/store/v3
       - shared_modules:/app/shared/node_modules
+      - server_modules:/app/server/node_modules
+      - client_modules:/app/client/node_modules
     command: |
       sh -c '
-        echo "Building shared package..."
+        echo "Setting up shared package..."
+        
+        # Install required packages
         apk add --no-cache curl
+        
+        # Install pnpm globally
         npm install -g pnpm@latest
         
-        # Create directories and set permissions
+        # Create all necessary directories
         mkdir -p /app/shared/node_modules
-        chown -R node:node /app/shared
+        mkdir -p /app/server/node_modules
+        mkdir -p /app/client/node_modules
+        mkdir -p /root/.local/share/pnpm/store/v3
+        mkdir -p /app/.pnpm-store
         
-        # Run as node user
-        su node -c "pnpm install --force && pnpm build"'
+        # Set up pnpm config
+        echo "strict-peer-dependencies=false" > /app/.npmrc
+        echo "auto-install-peers=true" >> /app/.npmrc
+        
+        # Set correct permissions
+        chown -R node:node /app/shared/node_modules
+        chown -R node:node /app/server/node_modules
+        chown -R node:node /app/client/node_modules
+        chown -R node:node /app/.pnpm-store
+        chown -R node:node /app/.npmrc
+        chmod -R 777 /root/.local/share/pnpm
+        
+        # Build shared package as node user
+        cd /app/shared
+        su node -c "pnpm install --force" && \
+        su node -c "pnpm build" && \
+        echo "Shared package built successfully"'
 
   client:
     image: node:18-alpine
@@ -71,13 +95,8 @@ services:
         NPM_CONFIG_UPDATE_NOTIFIER=false npm install -g pnpm@latest
 
         # Run as node user with all configs in place
-        su node -c "cd /app && 
-          pnpm install --no-workspace-root --force --registry=https://registry.npmjs.org/ &&
-          cd /app/shared &&
-          pnpm install --force --registry=https://registry.npmjs.org/ &&
-          pnpm build &&
-          cd /app/client &&
-          pnpm install --force --registry=https://registry.npmjs.org/ &&
+        su node -c "cd /app/client && 
+          pnpm install --force &&
           pnpm dev --host 0.0.0.0"'
     depends_on:
       shared:
