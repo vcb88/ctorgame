@@ -1,6 +1,6 @@
 import { Socket } from 'socket.io';
-import { GameService } from '../../services/GameService';
-import { GameStorageService } from '../../services/GameStorageService';
+import { GameService } from '../../services/GameService.js';
+import { GameStorageService } from '../../services/GameStorageService.js';
 import { 
   IGameMove, 
   IPlayer, 
@@ -9,8 +9,8 @@ import {
   BOARD_SIZE,
   IScores 
 } from '@ctor-game/shared';
-import { validateGameMove, validateGameState } from '@ctor-game/shared/validation/game';
-import { GameEventResponse } from '../../types/events';
+import { validateGameMove, validateGameState } from '@ctor-game/shared/validation/game.js';
+import { GameEventResponse } from '../../types/events.js';
 
 export function registerGameHandlers(
   socket: Socket, 
@@ -53,7 +53,7 @@ export function registerGameHandlers(
     });
 
     // Присоединение к существующей игре
-    socket.on(WebSocketEvents.JoinGame, async ({ gameId }) => {
+    socket.on(WebSocketEvents.JoinGame, async ({ gameId }: { gameId: string }) => {
         try {
             // Получаем состояние игры из Redis
             const state = await gameService.getGameState(gameId);
@@ -88,7 +88,7 @@ export function registerGameHandlers(
     });
 
     // Выполнение хода
-    socket.on(WebSocketEvents.MakeMove, async ({ gameId, move }) => {
+    socket.on(WebSocketEvents.MakeMove, async ({ gameId, move }: { gameId: string, move: IGameMove }) => {
         try {
             // Валидация хода
             if (!validateGameMove(move, { width: BOARD_SIZE, height: BOARD_SIZE })) {
