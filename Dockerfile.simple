@@ -21,7 +21,7 @@ RUN pnpm install --force
 COPY . .
 
 # Собираем shared пакет
-RUN cd /app && pnpm --filter @ctor-game/shared build
+RUN pnpm --filter "@ctor-game/shared" -w build
 
 # Проверяем структуру
 RUN echo "Project structure after setup:" && \
