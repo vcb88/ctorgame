@@ -7,6 +7,10 @@ services:
       dockerfile: Dockerfile.simple
     volumes:
       - .:/app
+      - /app/node_modules
+      - /app/shared/node_modules
+      - /app/client/node_modules
+      - /app/server/node_modules
     ports:
       - "5173:5173"
     environment:
@@ -19,6 +23,10 @@ services:
       dockerfile: Dockerfile.simple
     volumes:
       - .:/app
+      - /app/node_modules
+      - /app/shared/node_modules
+      - /app/client/node_modules
+      - /app/server/node_modules
     ports:
       - "3001:3001"
     environment:

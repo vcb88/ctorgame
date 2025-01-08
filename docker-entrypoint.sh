@@ -1,29 +1,12 @@
 #!/bin/sh
 set -e
 
-# Диагностика и сборка
-echo "Environment setup..."
+# Проверяем и пересобираем shared пакет если нужно
 cd /app
-echo "Current directory: $(pwd)"
-echo "Node version: $(node --version)"
-echo "TypeScript version: $(tsc --version)"
-echo "ts-node-dev version: $(ts-node-dev --version || echo 'not found')"
-
-echo "\nProject structure:"
-ls -la
-echo "\nWorkspace packages:"
-pnpm ls -r
-
-echo "\nRebuilding shared package..."
-echo "Checking shared package files:"
-ls -la shared/src/
-echo "Running shared build..."
-pnpm --filter @ctor-game/shared build
-
-echo "\nChecking server package:"
-ls -la server/src/
-echo "Node modules in server:"
-ls -la server/node_modules/
+if [ -f "shared/src/index.ts" ]; then
+    echo "Rebuilding shared package..."
+    pnpm --filter @ctor-game/shared build
+fi
 
 # Запуск команды
 exec "$@"
