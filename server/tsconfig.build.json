@@ -1,5 +1,6 @@
 {
   "extends": "./tsconfig.json",
+  "include": ["src/**/*"],
   "exclude": [
     "node_modules",
     "**/*.test.ts",
@@ -8,5 +9,15 @@
     "src/**/__tests__/**",
     "src/**/*.test.ts",
     "src/**/*.spec.ts"
-  ]
+  ],
+  "compilerOptions": {
+    "composite": true,
+    "declaration": true,
+    "sourceMap": true,
+    "outDir": "./dist",
+    "rootDir": "./src",
+    "paths": {
+      "@ctor-game/shared": ["../shared/dist"]
+    }
+  }
 }
