@@ -112,9 +112,11 @@ export function registerGameHandlers(
 
             // Сохраняем в долгосрочное хранилище
             await storageService.recordMove(gameId, {
-                ...move,
-                playerNumber: player.number,
-                timestamp: Date.now()
+                player: player.number,
+                x: move.position.x,
+                y: move.position.y,
+                timestamp: Date.now(),
+                ...(move.type === 'replace' ? { replacements: [[move.position.x, move.position.y]] } : {})
             });
 
             // Проверяем завершение игры
