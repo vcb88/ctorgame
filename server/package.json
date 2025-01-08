@@ -4,7 +4,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "NODE_OPTIONS=\"--loader ts-node/esm\" NODE_ENV=development ts-node-dev --project tsconfig.dev.json --respawn --transpile-only --debug --trace-warnings --ignore-watch node_modules --clear ./src/index.ts",
+    "dev": "NODE_ENV=development NODE_OPTIONS=\"--experimental-specifier-resolution=node --loader ts-node/esm\" ts-node-dev --project tsconfig.dev.json --respawn --transpile-only --debug --trace-warnings --ignore-watch node_modules --clear ./src/index.ts",
     "build": "tsc -p tsconfig.build.json",
     "start": "node dist/index.js",
     "lint": "eslint -c eslint.config.cjs . --max-warnings 0",
