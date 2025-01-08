@@ -1,0 +1,16 @@
+FROM node:18.19.0
+
+# Установка pnpm
+RUN npm install -g pnpm@9.15.3
+
+WORKDIR /app
+
+# Мы будем использовать volumes для разработки, 
+# поэтому здесь минимальная конфигурация
+COPY package.json pnpm-workspace.yaml ./
+
+# Создаем структуру каталогов
+RUN mkdir -p shared server client
+
+# Команда для разработки
+CMD ["pnpm", "dev"]
