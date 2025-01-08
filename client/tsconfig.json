@@ -20,7 +20,8 @@
     "baseUrl": ".",
     "paths": {
       "@/*": ["src/*"],
-      "@shared/*": ["../shared/*"]
+      "@ctor-game/shared": ["../shared/src/index.ts"],
+      "@ctor-game/shared/*": ["../shared/*"]
     }
   },
   "include": ["src"],

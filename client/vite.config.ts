@@ -22,7 +22,8 @@ export default defineConfig({
   plugins: [react(), loggerPlugin()],
   resolve: {
     alias: {
-      '@': path.resolve(__dirname, './src')
+      '@': path.resolve(__dirname, './src'),
+      '@ctor-game/shared': path.resolve(__dirname, '../shared/src/index.ts')
     }
   },
   server: {
