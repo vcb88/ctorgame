@@ -47,6 +47,12 @@ export const useMultiplayerGame = () => {
       setError(null);
     });
 
+    socket.on(WebSocketEvents.GameJoined, ({ gameId }: { gameId: string }) => {
+      setGameId(gameId);
+      setPlayerNumber(1);
+      setError(null);
+    });
+
     socket.on(WebSocketEvents.GameStarted, ({ gameState, currentPlayer }: { gameState: IGameState; currentPlayer: number }) => {
       setGameState(gameState);
       setCurrentPlayer(currentPlayer);
@@ -80,6 +86,7 @@ export const useMultiplayerGame = () => {
 
     return () => {
       socket.off(WebSocketEvents.GameCreated);
+      socket.off(WebSocketEvents.GameJoined);
       socket.off(WebSocketEvents.GameStarted);
       socket.off(WebSocketEvents.GameStateUpdated);
       socket.off(WebSocketEvents.GameOver);
