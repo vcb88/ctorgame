@@ -7,9 +7,12 @@ WORKDIR /app
 
 # Мы будем использовать volumes для разработки
 COPY package.json pnpm-workspace.yaml ./
+COPY shared/package.json ./shared/
+COPY server/package.json ./server/
+COPY client/package.json ./client/
 
-# Создаем структуру каталогов
-RUN mkdir -p shared server client
+# Установка TypeScript глобально
+RUN npm install -g typescript@5.3.3
 
 # Добавляем скрипт для установки зависимостей при старте
 COPY docker-entrypoint.sh /usr/local/bin/
