@@ -13,7 +13,9 @@
     "strictPropertyInitialization": false,
     "baseUrl": ".",
     "paths": {
-      "@ctor-game/shared": ["../shared/src/*"]
+      "@ctor-game/shared": ["../shared/src/index"],
+      "@ctor-game/shared/types/*": ["../shared/types/*"],
+      "@ctor-game/shared/validation/*": ["../shared/validation/*"]
     }
   },
   "references": [

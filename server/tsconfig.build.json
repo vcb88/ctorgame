@@ -1,28 +1,32 @@
 {
   "extends": "./tsconfig.json",
-  "include": ["src/**/*"],
+  "include": [
+    "src/**/*",
+    "../shared/src/**/*",
+    "../shared/types/**/*",
+    "../shared/validation/**/*"
+  ],
   "exclude": [
     "node_modules",
+    "dist",
     "**/*.test.ts",
     "**/*.spec.ts",
-    "**/__tests__/**",
-    "src/**/__tests__/**",
-    "src/**/*.test.ts",
-    "src/**/*.spec.ts"
+    "**/__tests__/**"
   ],
   "compilerOptions": {
     "composite": true,
     "declaration": true,
     "sourceMap": true,
     "outDir": "./dist",
-    "rootDir": "./src",
+    "rootDir": "../",
     "module": "ESNext",
     "moduleResolution": "node",
     "esModuleInterop": true,
     "baseUrl": ".",
     "paths": {
-      "@ctor-game/shared": ["../shared/src/index.ts"],
-      "@ctor-game/shared/*": ["../shared/src/*"]
+      "@ctor-game/shared": ["../shared/src/index"],
+      "@ctor-game/shared/types/*": ["../shared/types/*"],
+      "@ctor-game/shared/validation/*": ["../shared/validation/*"]
     },
     "rootDirs": ["./src", "../shared/src"]
   }
