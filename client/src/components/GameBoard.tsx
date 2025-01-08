@@ -1,7 +1,7 @@
 import React from 'react';
 import { GameCell } from './GameCell';
 
-import { IPosition } from '@ctor-game/shared/types';
+import { IPosition } from '@ctor-game/shared';
 
 interface GameBoardProps {
   board: (number | null)[][];

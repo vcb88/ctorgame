@@ -8,7 +8,7 @@ import {
   OperationType,
   BOARD_SIZE,
   MAX_PLACE_OPERATIONS
-} from '@ctor-game/shared/types';
+} from '@ctor-game/shared';
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { createMockSocket } from '../test/test-utils';
 

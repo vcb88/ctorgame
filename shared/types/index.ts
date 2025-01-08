@@ -1,6 +1,6 @@
 // Barrel file - только экспорты
 export * from './game';
-export * from './websocket';
+export * from './websocket';  // This already exports WebSocketEvents
 export * from './player';
 export * from './replay';
 export * from './redis';

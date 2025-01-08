@@ -1,6 +1,6 @@
 import { renderHook } from '@testing-library/react';
 import { useGameHistory, HistoryEntry } from '../useGameHistory';
-import { OperationType } from '@ctor-game/shared/types';
+import { OperationType } from '@ctor-game/shared';
 import { vi, describe, it, expect, beforeEach } from 'vitest';
 import { createMockSocket, type MockSocket } from '../../test/socket-test-utils';
 

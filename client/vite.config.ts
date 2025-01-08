@@ -23,8 +23,11 @@ export default defineConfig({
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),
-      '@ctor-game/shared': path.resolve(__dirname, '../shared/src/index.ts')
+      '@ctor-game/shared': path.resolve(__dirname, '../shared/src')
     }
+  },
+  optimizeDeps: {
+    include: ['@ctor-game/shared']
   },
   server: {
     host: '0.0.0.0',

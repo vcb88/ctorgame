@@ -20,9 +20,9 @@
     "baseUrl": ".",
     "paths": {
       "@/*": ["src/*"],
-      "@ctor-game/shared": ["../shared/src/index.ts"],
-      "@ctor-game/shared/*": ["../shared/*"]
-    }
+      "@ctor-game/shared": ["../shared/src"]
+    },
+    "rootDirs": [".", "../shared/src"]
   },
   "include": ["src"],
   "references": [{ "path": "./tsconfig.node.json" }]

@@ -1,5 +1,5 @@
 import { Socket } from 'socket.io-client';
-import { IGameMove, IGameState } from '@ctor-game/shared/types';
+import { IGameMove, IGameState } from '@ctor-game/shared';
 
 export interface ITurnState {
   placeOperationsLeft: number;

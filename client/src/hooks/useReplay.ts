@@ -5,7 +5,7 @@ import {
     ReplayEvent,
     IReplayStateUpdate,
     IReplayError 
-} from '@ctor-game/shared/types';
+} from '@ctor-game/shared';
 
 interface UseReplayProps {
     socket: Socket;

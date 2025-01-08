@@ -38,6 +38,9 @@ importers:
       react-router-dom:
         specifier: ^7.1.1
         version: 7.1.1(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      socket.io-client:
+        specifier: ^4.7.2
+        version: 4.8.1
       tailwindcss-animate:
         specifier: ^1.0.7
         version: 1.0.7(tailwindcss@3.4.17)
@@ -108,9 +111,6 @@ importers:
       prettier:
         specifier: ^3.3.3
         version: 3.4.2
-      socket.io-client:
-        specifier: ^4.7.2
-        version: 4.8.1
       start-server-and-test:
         specifier: ^2.0.3
         version: 2.0.9

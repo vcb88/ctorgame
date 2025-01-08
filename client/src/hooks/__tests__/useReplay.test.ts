@@ -1,7 +1,7 @@
 import { renderHook, act } from '@testing-library/react-hooks';
 import { useReplay } from '../useReplay';
 import { Socket } from 'socket.io-client';
-import { ReplayEvent, IGameState } from '@ctor-game/shared/types';
+import { ReplayEvent, IGameState } from '@ctor-game/shared';
 
 import { vi } from 'vitest';
 
