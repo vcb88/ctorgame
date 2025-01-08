@@ -24,6 +24,8 @@ RUN cd shared && pnpm build
 ENV NODE_ENV=development
 ENV PATH="/app/server/node_modules/.bin:${PATH}"
 
-# Start server using ts-node directly
+# Start server using ts-node with ESM settings
 WORKDIR /app/server
-CMD ["node", "--loader", "ts-node/esm", "--watch", "src/index.ts"]
+ENV TS_NODE_EXPERIMENTAL_RESOLVE=true
+ENV NODE_OPTIONS="--loader ts-node/esm --experimental-specifier-resolution=node"
+CMD ["node", "--watch", "src/index.ts"]

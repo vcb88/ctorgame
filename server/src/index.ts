@@ -1,7 +1,7 @@
 import 'reflect-metadata';
 import express from 'express';
 import { createServer } from 'http';
-import { GameServer } from './websocket/GameServer';
+import { GameServer } from './websocket/GameServer.js';
 import path from 'path';
 import cors from 'cors';
 import { fileURLToPath } from 'url';
