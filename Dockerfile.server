@@ -17,8 +17,8 @@ RUN pnpm install --no-frozen-lockfile && pnpm store prune
 COPY shared/ ./shared/
 COPY server/ ./server/
 
-# Build shared package
-RUN cd shared && pnpm build
+# Build shared package and link it
+RUN cd shared && pnpm build && cd ../server && pnpm install --no-frozen-lockfile
 
 # Set environment
 ENV NODE_ENV=development
