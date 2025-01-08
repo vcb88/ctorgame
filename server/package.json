@@ -2,9 +2,9 @@
   "name": "@ctor-game/server",
   "version": "0.1.0",
   "private": true,
-  "type": "module",
+  "type": "commonjs",
   "scripts": {
-    "dev": "NODE_ENV=development node --import tsx ./src/index.ts",
+    "dev": "ts-node-dev --respawn --transpile-only src/index.ts",
     "build": "tsc -p tsconfig.build.json",
     "start": "node dist/index.js",
     "lint": "eslint -c eslint.config.cjs . --max-warnings 0",

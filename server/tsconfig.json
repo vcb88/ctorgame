@@ -1,8 +1,8 @@
 {
   "compilerOptions": {
     "target": "ES2020",
-    "module": "ESNext",
-    "moduleResolution": "node16",
+    "module": "CommonJS",
+    "moduleResolution": "node",
     "esModuleInterop": true,
     "strict": true,
     "outDir": "./dist",
@@ -11,24 +11,19 @@
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true,
     "strictPropertyInitialization": false,
-    "baseUrl": "src",
-    "allowJs": true,
-    "resolveJsonModule": true,
+    "baseUrl": ".",
     "paths": {
-      "@ctor-game/shared": ["../../shared/src/index"],
-      "@ctor-game/shared/types/*": ["../../shared/types/*"],
-      "@ctor-game/shared/validation/*": ["../../shared/validation/*"]
+      "@ctor-game/shared": ["../shared/src"],
+      "@ctor-game/shared/*": ["../shared/src/*"]
     },
-    "extensionAlias": {
-      ".js": [".ts", ".js"]
-    }
+    "typeRoots": [
+      "./src/types",
+      "./node_modules/@types"
+    ]
   },
   "references": [
-    { "path": "../shared/tsconfig.json" }
+    { "path": "../shared" }
   ],
   "include": ["src/**/*"],
-  "exclude": [
-    "node_modules",
-    "../shared/**/*"
-  ]
+  "exclude": ["node_modules"]
 }
