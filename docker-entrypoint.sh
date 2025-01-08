@@ -1,20 +1,9 @@
 #!/bin/sh
 set -e
 
-# Установка зависимостей при первом запуске
-if [ ! -d "node_modules" ]; then
-    echo "Installing dependencies..."
-    pnpm install --force
-fi
-
-# Сборка shared пакета
-echo "Building shared package..."
-cd shared
-if [ ! -d "node_modules" ]; then
-    pnpm install --force
-fi
-pnpm build
-cd ..
+# Полная пересборка проекта из корневого каталога
+echo "Cleaning and rebuilding all packages..."
+pnpm clean:rebuild
 
 # Запуск команды
 exec "$@"

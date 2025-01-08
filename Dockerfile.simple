@@ -11,8 +11,8 @@ COPY shared/package.json ./shared/
 COPY server/package.json ./server/
 COPY client/package.json ./client/
 
-# Установка TypeScript глобально
-RUN npm install -g typescript@5.3.3
+# Установка глобальных зависимостей
+RUN npm install -g typescript@5.3.3 vite@5.4.11
 
 # Добавляем скрипт для установки зависимостей при старте
 COPY docker-entrypoint.sh /usr/local/bin/
