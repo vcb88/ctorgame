@@ -7,7 +7,7 @@ RUN npm install -g pnpm@9.15.3
 
 # Copy package files
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
-COPY client/package.json ./client/
+COPY server/package.json ./server/
 COPY shared/package.json ./shared/
 
 # Install dependencies
@@ -15,7 +15,7 @@ RUN pnpm install
 
 # Copy source code
 COPY shared/ ./shared/
-COPY client/ ./client/
+COPY server/ ./server/
 
 # Build shared package
 RUN cd shared && pnpm build
@@ -23,9 +23,6 @@ RUN cd shared && pnpm build
 # Set environment
 ENV NODE_ENV=development
 
-# Expose Vite dev server port
-EXPOSE 5173
-
-# Start client dev server
-WORKDIR /app/client
-CMD ["pnpm", "dev", "--host"]
+# Start server
+WORKDIR /app/server
+CMD ["pnpm", "dev"]
