@@ -5,7 +5,7 @@ import {
     IPlayer,
     GameMetadata
 } from '@ctor-game/shared';
-import { GameLogicService } from './GameLogicService';
+import { GameLogicService } from './GameLogicService.js';
 
 export class GameService {
     private gamesCollection: Collection<GameMetadata>;

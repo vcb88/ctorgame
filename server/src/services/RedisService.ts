@@ -6,8 +6,8 @@ import {
     IRedisGameRoom,
     IRedisGameEvent
 } from '@ctor-game/shared';
-import { redisClient, REDIS_KEYS, REDIS_EVENTS, withLock, cacheConfig } from '../config/redis';
-import { GameLogicService } from './GameLogicService';
+import { redisClient, REDIS_KEYS, REDIS_EVENTS, withLock, cacheConfig } from '../config/redis.js';
+import { GameLogicService } from './GameLogicService.js';
 export class RedisService {
     /**
      * Сохраняет состояние игры
@@ -189,7 +189,7 @@ export class RedisService {
         await withLock(gameId, async () => {
             const room = await this.getGameRoom(gameId);
             if (room) {
-                room.players = room.players.filter(p => p.id !== socketId);
+                room.players = room.players.filter((p: IPlayer) => p.id !== socketId);
                 if (room.players.length === 0) {
                     // Если комната пустая, удаляем её
                     await redisClient.del(REDIS_KEYS.GAME_ROOM(gameId));
@@ -218,7 +218,7 @@ export class RedisService {
      */
     async getGameEvents(gameId: string, limit: number = 10): Promise<IRedisGameEvent[]> {
         const events = await redisClient.lrange(REDIS_KEYS.GAME_EVENTS(gameId), 0, limit - 1);
-        return events.map(e => JSON.parse(e));
+        return events.map((e: string) => JSON.parse(e));
     }
 
     /**
