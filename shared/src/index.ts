@@ -1,17 +1,8 @@
-// Re-export all shared types and interfaces
-export * from '../types/game';
-export * from '../types/player';
-export * from '../types/coordinates';
-export * from '../types/events';
-export * from '../types/websocket';
+// Re-export all shared types from index
+export * from '../types';
 
-// Re-export shared constants from game
-export {
-    BOARD_SIZE,
-    MIN_ADJACENT_FOR_REPLACE,
-    MAX_PLACE_OPERATIONS,
-    DIRECTIONS
-} from '../types/game';
+// Re-export validation utilities
+export * from '../validation/game';
 
 // Export shared utilities
 export function isValidGameId(id: string): boolean {
