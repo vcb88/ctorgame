@@ -1,5 +1,5 @@
 import { Socket } from 'socket.io';
-import { GameService } from '../../services/GameService';
+import { GameService } from '../../services/GameService.js';
 
 export function registerHistoryHandlers(socket: Socket, gameService: GameService) {
     // Получение списка сохраненных игр
