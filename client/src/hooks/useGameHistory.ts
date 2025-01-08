@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Socket } from 'socket.io-client';
-import { IGameMove, OperationType } from '@ctor-game/shared';
+import { IGameMove, OperationType } from '../shared';
 
 interface UseGameHistoryProps {
     socket: Socket;
