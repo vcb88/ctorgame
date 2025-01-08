@@ -34,6 +34,15 @@ Thumbs.db
 
 # TypeScript
 *.tsbuildinfo
+*.d.ts
+*.d.ts.map
+*.js.map
+
+# Shared package build files
+shared/src/**/*.js
+shared/types/**/*.js
+shared/validation/**/*.js
+.pnpm-store/
 
 # PWA files
 **/public/sw.js
