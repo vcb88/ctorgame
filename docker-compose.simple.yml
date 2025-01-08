@@ -22,15 +22,15 @@ services:
     ports:
       - "3000:3000"
     environment:
-      - NODE_ENV=development
-      - PORT=3000
-      - REDIS_URL=redis://redis:6379
-      - REDIS_PREFIX=ctorgame:dev:
-      - MONGODB_URL=mongodb://mongodb:27017
-      - STORAGE_PATH=/app/data/games
-      - REDIS_PASSWORD=
-      - VITE_API_URL=http://localhost:3000
-      - VITE_HOST=0.0.0.0
+      NODE_ENV: development
+      PORT: 3000
+      REDIS_URL: redis://redis:6379
+      REDIS_PREFIX: ctorgame:dev:
+      MONGODB_URL: mongodb://mongodb:27017
+      STORAGE_PATH: /app/data/games
+      REDIS_PASSWORD: ""
+      VITE_API_URL: http://localhost:3000
+      VITE_HOST: 0.0.0.0
     depends_on:
       - mongodb
       - redis
@@ -42,9 +42,9 @@ services:
     ports:
       - "5173:5173"
     environment:
-      - NODE_ENV=development
-      - VITE_API_URL=http://localhost:3000
-      - VITE_HOST=0.0.0.0
+      NODE_ENV: development
+      VITE_API_URL: http://localhost:3000
+      VITE_HOST: 0.0.0.0
     depends_on:
       - server
 
