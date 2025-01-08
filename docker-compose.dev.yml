@@ -37,13 +37,13 @@ services:
         chown -R node:node /app/client/node_modules /app/shared/node_modules /app/client /app/shared
         npm install -g pnpm@latest
         su node -c "cd /app && 
-          pnpm install --no-workspace-root &&
+          pnpm install --no-workspace-root -y &&
           cd /app/shared &&
-          pnpm install &&
+          pnpm install -y &&
           pnpm build &&
           cd /app/client &&
-          pnpm install &&
-          pnpm dev"'
+          pnpm install -y &&
+          pnpm dev --host 0.0.0.0"'
     depends_on:
       server:
         condition: service_healthy
