@@ -10,15 +10,18 @@ COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 COPY server/package.json ./server/
 COPY shared/package.json ./shared/
 
-# Install dependencies with clean cache
-RUN pnpm install --no-frozen-lockfile && pnpm store prune
-
-# Copy source code
+# Copy source code first to allow building shared
 COPY shared/ ./shared/
 COPY server/ ./server/
 
-# Build shared package and link it
-RUN cd shared && pnpm build && cd ../server && pnpm install --no-frozen-lockfile
+# Build shared package first
+WORKDIR /app/shared
+RUN pnpm install --no-frozen-lockfile && pnpm build
+RUN ls -la dist/ || echo "dist directory not created"
+
+# Install server dependencies
+WORKDIR /app/server
+RUN pnpm install --no-frozen-lockfile
 
 # Set environment
 ENV NODE_ENV=development
