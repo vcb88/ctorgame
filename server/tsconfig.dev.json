@@ -1,0 +1,14 @@
+{
+  "extends": "./tsconfig.json",
+  "ts-node": {
+    "files": true,
+    "esm": true,
+    "experimentalSpecifierResolution": "node"
+  },
+  "compilerOptions": {
+    "module": "ESNext",
+    "moduleResolution": "node",
+    "allowJs": true,
+    "outDir": "./dist"
+  }
+}
