@@ -7,8 +7,7 @@ import {
   WebSocketEvents,
   ClientToServerEvents,
   ServerToClientEvents,
-  IPosition,
-  BOARD_SIZE
+  IPosition
 } from '../../../shared/types';
 import { validateGameMove, validateGameState } from '../../../shared/validation/game';
 
@@ -16,7 +15,7 @@ const SOCKET_SERVER_URL = process.env.NODE_ENV === 'production'
   ? window.location.origin 
   : 'http://localhost:3000';
 
-const DEFAULT_BOARD_SIZE = { width: BOARD_SIZE, height: BOARD_SIZE };
+// Board size is now taken from game state
 
 export const useMultiplayerGame = () => {
   const [socket, setSocket] = useState<Socket<ServerToClientEvents, ClientToServerEvents> | null>(null);
@@ -106,7 +105,7 @@ export const useMultiplayerGame = () => {
     };
     
     // Валидируем ход перед отправкой
-    if (!validateGameMove(move, DEFAULT_BOARD_SIZE)) {
+    if (!gameState || !validateGameMove(move, gameState.board.size)) {
       setError('Invalid move');
       return;
     }
