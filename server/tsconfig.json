@@ -13,7 +13,7 @@
     "strictPropertyInitialization": false,
     "baseUrl": ".",
     "paths": {
-      "@ctor-game/shared": ["../shared/src"]
+      "@ctor-game/shared": ["../shared/src/index.ts"]
     }
   },
   "references": [
