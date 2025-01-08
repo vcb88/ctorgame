@@ -10,14 +10,8 @@ COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 COPY server/package.json ./server/
 COPY shared/package.json ./shared/
 
-# Clean install in production mode first (this will install correct platform binaries)
-RUN pnpm install --frozen-lockfile
-
-# Then remove node_modules
-RUN rm -rf node_modules server/node_modules shared/node_modules
-
-# Now install in development mode
-RUN pnpm install
+# Install dependencies and update lockfile
+RUN pnpm install --no-frozen-lockfile
 
 # Copy source code
 COPY shared/ ./shared/
