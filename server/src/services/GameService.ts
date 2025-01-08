@@ -14,23 +14,63 @@ export class GameService {
     constructor(
         private readonly mongoUrl: string = process.env.MONGODB_URL || 'mongodb://localhost:27017'
     ) {
-        this.initializeDatabase();
+        // Инициализация будет выполнена при первом запросе
+    }
+
+    private initialized = false;
+    private initializationPromise: Promise<void> | null = null;
+
+    private async ensureInitialized() {
+        if (this.initialized) return;
+        if (!this.initializationPromise) {
+            this.initializationPromise = this.initializeDatabase().then(() => {
+                this.initialized = true;
+            });
+        }
+        await this.initializationPromise;
     }
 
     private async initializeDatabase() {
-        this.mongoClient = new MongoClient(this.mongoUrl);
-        await this.mongoClient.connect();
-        this.gamesCollection = this.mongoClient.db('ctorgame').collection<GameMetadata>('games');
+        const maxRetries = 5;
+        const retryDelay = 5000; // 5 seconds
         
-        // Create indexes
-        await this.gamesCollection.createIndex({ code: 1 }, { unique: true });
-        await this.gamesCollection.createIndex({ status: 1 });
-        await this.gamesCollection.createIndex({ startTime: 1 });
-        await this.gamesCollection.createIndex({ lastActivityAt: 1 });
-        await this.gamesCollection.createIndex({ gameId: 1 });
+        for (let i = 0; i < maxRetries; i++) {
+            try {
+                console.log(`Attempting to connect to MongoDB at ${this.mongoUrl} (attempt ${i + 1}/${maxRetries})`);
+                this.mongoClient = new MongoClient(this.mongoUrl, {
+                    serverSelectionTimeoutMS: 5000,
+                    connectTimeoutMS: 10000,
+                });
+                
+                await this.mongoClient.connect();
+                console.log('Successfully connected to MongoDB');
+                
+                this.gamesCollection = this.mongoClient.db('ctorgame').collection<GameMetadata>('games');
+                
+                // Create indexes
+                await this.gamesCollection.createIndex({ code: 1 }, { unique: true });
+                await this.gamesCollection.createIndex({ status: 1 });
+                await this.gamesCollection.createIndex({ startTime: 1 });
+                await this.gamesCollection.createIndex({ lastActivityAt: 1 });
+                await this.gamesCollection.createIndex({ gameId: 1 });
+                
+                console.log('MongoDB indexes created successfully');
+                return; // Success - exit the retry loop
+            } catch (error) {
+                console.error(`Failed to connect to MongoDB (attempt ${i + 1}/${maxRetries}):`, error);
+                if (i < maxRetries - 1) {
+                    console.log(`Retrying in ${retryDelay/1000} seconds...`);
+                    await new Promise(resolve => setTimeout(resolve, retryDelay));
+                } else {
+                    console.error('Max retries reached. Failed to initialize MongoDB connection.');
+                    throw error;
+                }
+            }
+        }
     }
 
     async createGame(gameCode: string, player: IPlayer, initialState: IGameState): Promise<GameMetadata> {
+        await this.ensureInitialized();
         const game: GameMetadata = {
             gameId: gameCode,
             code: gameCode,
@@ -51,6 +91,7 @@ export class GameService {
     }
 
     async joinGame(gameCode: string, player: IPlayer): Promise<GameMetadata> {
+        await this.ensureInitialized();
         const result = await this.gamesCollection.findOneAndUpdate(
             { code: gameCode, status: 'waiting' },
             { 
@@ -71,6 +112,7 @@ export class GameService {
     }
 
     async makeMove(gameCode: string, playerNumber: number, move: IGameMove): Promise<GameMetadata> {
+        await this.ensureInitialized();
         const game = await this.gamesCollection.findOne({ code: gameCode });
         if (!game || !game.currentState) {
             throw new Error('Game not found or invalid state');
@@ -117,11 +159,13 @@ export class GameService {
     }
 
     async getGameState(gameCode: string): Promise<IGameState | null> {
+        await this.ensureInitialized();
         const game = await this.gamesCollection.findOne({ code: gameCode });
         return game?.currentState || null;
     }
 
     async getPlayer(gameCode: string, playerNumber: number): Promise<IPlayer | null> {
+        await this.ensureInitialized();
         const game = await this.gamesCollection.findOne({ code: gameCode });
         if (!game) return null;
         const playerId = playerNumber === 0 ? game.players.first : game.players.second;
@@ -129,24 +173,28 @@ export class GameService {
     }
 
     async getSavedGames(): Promise<GameMetadata[]> {
+        await this.ensureInitialized();
         return this.gamesCollection.find({
             status: 'finished'
         }).sort({ endTime: -1 }).limit(50).toArray();
     }
 
     async getGameHistory(gameCode: string): Promise<number> {
+        await this.ensureInitialized();
         const game = await this.gamesCollection.findOne({ code: gameCode });
         if (!game) return 0;
         return game.currentState?.currentTurn.moves.length || 0;
     }
 
     async getGameStateAtMove(gameCode: string, moveNumber: number): Promise<IGameState | null> {
+        await this.ensureInitialized();
         const game = await this.gamesCollection.findOne({ code: gameCode });
         if (!game || !game.currentState) return null;
         return game.currentState;
     }
 
     async finishGame(gameCode: string, winner: number | null, scores: { player1: number; player2: number }): Promise<void> {
+        await this.ensureInitialized();
         const now = new Date().toISOString();
         const game = await this.gamesCollection.findOne({ code: gameCode });
         if (!game) return;
