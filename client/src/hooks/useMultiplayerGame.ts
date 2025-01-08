@@ -8,8 +8,8 @@ import {
   ClientToServerEvents,
   ServerToClientEvents,
   IPosition
-} from '../../../shared/types';
-import { validateGameMove, validateGameState } from '../../../shared/validation/game';
+} from '@ctor-game/shared';
+import { validateGameMove, validateGameState } from '@ctor-game/shared';
 
 const SOCKET_SERVER_URL = process.env.NODE_ENV === 'production' 
   ? window.location.origin 
