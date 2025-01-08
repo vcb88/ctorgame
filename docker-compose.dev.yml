@@ -29,6 +29,9 @@ services:
       - .env
     environment:
       - VITE_API_URL=http://localhost:3000
+      - PNPM_HOME=/app/.pnpm
+      - NPM_CONFIG_UPDATE_NOTIFIER=false
+      - PNPM_CONFIG_AUTO_INSTALL_PEERS=true
     command: |
       sh -c '
         cd /app
@@ -37,12 +40,12 @@ services:
         chown -R node:node /app/client/node_modules /app/shared/node_modules /app/client /app/shared
         npm install -g pnpm@latest
         su node -c "cd /app && 
-          pnpm install --no-workspace-root -y &&
+          FORCE=true pnpm install --no-workspace-root &&
           cd /app/shared &&
-          pnpm install -y &&
+          FORCE=true pnpm install &&
           pnpm build &&
           cd /app/client &&
-          pnpm install -y &&
+          FORCE=true pnpm install &&
           pnpm dev --host 0.0.0.0"'
     depends_on:
       server:
