@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useMultiplayerGame } from '../hooks/useMultiplayerGame';
-import { OperationType } from '../../../shared/types';
+import { OperationType, IBoard } from '../../../shared/types';
 import { cn } from '@/lib/utils';
 import { GameCell } from './GameCell';
 
@@ -122,8 +122,8 @@ export const Game: React.FC = () => {
         </div>
 
         <div className="grid grid-cols-10 gap-1 bg-gray-200 p-2">
-          {gameState.board.cells.map((row, rowIndex) =>
-            row.map((cell, colIndex) => (
+          {gameState.board.cells.map((row: (number | null)[], rowIndex: number) =>
+            row.map((cell: number | null, colIndex: number) => (
               <GameCell
                 key={`${rowIndex}-${colIndex}`}
                 row={rowIndex}

@@ -8,8 +8,8 @@ import {
   ClientToServerEvents,
   ServerToClientEvents,
   IPosition
-} from '@ctor-game/shared';
-import { validateGameMove, validateGameState } from '@ctor-game/shared';
+} from '../../../shared/types';
+import { validateGameMove, validateGameState } from '../../../shared/validation/game';
 
 const SOCKET_SERVER_URL = process.env.NODE_ENV === 'production' 
   ? window.location.origin 
@@ -40,39 +40,39 @@ export const useMultiplayerGame = () => {
   useEffect(() => {
     if (!socket) return;
 
-    socket.on(WebSocketEvents.GameCreated, ({ gameId }) => {
+    socket.on(WebSocketEvents.GameCreated, ({ gameId }: { gameId: string }) => {
       setGameId(gameId);
       setPlayerNumber(0);
       setError(null);
     });
 
-    socket.on(WebSocketEvents.GameStarted, ({ gameState, currentPlayer }) => {
+    socket.on(WebSocketEvents.GameStarted, ({ gameState, currentPlayer }: { gameState: IGameState; currentPlayer: number }) => {
       setGameState(gameState);
       setCurrentPlayer(currentPlayer);
       setError(null);
     });
 
-    socket.on(WebSocketEvents.GameStateUpdated, ({ gameState, currentPlayer }) => {
+    socket.on(WebSocketEvents.GameStateUpdated, ({ gameState, currentPlayer }: { gameState: IGameState; currentPlayer: number }) => {
       setGameState(gameState);
       setCurrentPlayer(currentPlayer);
       setError(null);
       setAvailableReplaces([]); // Сбрасываем доступные замены при обновлении состояния
     });
 
-    socket.on(WebSocketEvents.AvailableReplaces, ({ moves }) => {
+    socket.on(WebSocketEvents.AvailableReplaces, ({ moves }: { moves: IGameMove[] }) => {
       setAvailableReplaces(moves);
     });
 
-    socket.on(WebSocketEvents.GameOver, ({ gameState, winner }) => {
+    socket.on(WebSocketEvents.GameOver, ({ gameState, winner }: { gameState: IGameState; winner: number | null }) => {
       setGameState(gameState);
       setError(winner === null ? 'Game ended in a draw!' : `Player ${winner} won!`);
     });
 
-    socket.on(WebSocketEvents.Error, ({ message }) => {
+    socket.on(WebSocketEvents.Error, ({ message }: { message: string }) => {
       setError(message);
     });
 
-    socket.on(WebSocketEvents.PlayerDisconnected, ({ player }) => {
+    socket.on(WebSocketEvents.PlayerDisconnected, ({ player }: { player: number }) => {
       setError(`Player ${player} disconnected`);
       // Не сбрасываем состояние, чтобы можно было переподключиться
     });
