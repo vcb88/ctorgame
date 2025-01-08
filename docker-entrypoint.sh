@@ -1,9 +1,9 @@
 #!/bin/sh
 set -e
 
-# Полная пересборка проекта из корневого каталога
-echo "Cleaning and rebuilding all packages..."
-pnpm clean:rebuild
+# Пересобираем shared пакет на случай изменений
+echo "Rebuilding shared package..."
+cd /app/shared && pnpm build
 
 # Запуск команды
 exec "$@"
