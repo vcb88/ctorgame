@@ -36,7 +36,7 @@ fi
 
 echo "Step 5: Starting server in dev mode"
 cd /app/server
-NODE_ENV=development DEBUG=* pnpm exec ts-node-dev --project tsconfig.build.json --esm src/index.ts
+NODE_ENV=development DEBUG=* pnpm exec ts-node-dev --respawn --transpile-only --ignore-watch node_modules --esm --files --experimental-specifier-resolution=node ./src/index.ts
 
 # End of script
 

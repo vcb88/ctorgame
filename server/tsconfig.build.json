@@ -20,7 +20,7 @@
     "outDir": "./dist",
     "rootDir": "../",
     "module": "ESNext",
-    "moduleResolution": "node",
+    "moduleResolution": "NodeNext",
     "esModuleInterop": true,
     "baseUrl": ".",
     "paths": {

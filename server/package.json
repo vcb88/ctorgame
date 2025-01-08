@@ -4,7 +4,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "NODE_ENV=development ts-node-dev --respawn --transpile-only --debug --trace-warnings --ignore-watch node_modules --clear --esm ./src/index.ts",
+    "dev": "NODE_ENV=development ts-node-dev --respawn --transpile-only --ignore-watch node_modules --esm --files --experimental-specifier-resolution=node ./src/index.ts",
     "build": "tsc -p tsconfig.build.json",
     "start": "node dist/index.js",
     "lint": "eslint -c eslint.config.cjs . --max-warnings 0",
