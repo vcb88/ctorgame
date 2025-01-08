@@ -44,10 +44,10 @@ services:
         condition: service_started
     command: >
       sh -c "cd /app/shared && 
-             pnpm install && 
+             pnpm install --force && 
              pnpm build && 
              cd /app/server && 
-             pnpm install && 
+             pnpm install --force && 
              rm -rf dist && 
              pnpm build && 
              ls -la dist && 
