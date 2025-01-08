@@ -135,7 +135,7 @@ export class GameServer {
             return;
           }
 
-          const player = room.players.find(p => p.id === socket.id);
+          const player = room.players.find((p: IPlayer) => p.id === socket.id);
           if (!player) {
             socket.emit(WebSocketEvents.Error, { message: 'Player not found in game' });
             return;
@@ -219,7 +219,7 @@ export class GameServer {
             return;
           }
 
-          const player = room.players.find(p => p.id === socket.id);
+          const player = room.players.find((p: IPlayer) => p.id === socket.id);
           if (!player) {
             socket.emit(WebSocketEvents.Error, { message: 'Player not found in game' });
             return;
@@ -307,7 +307,7 @@ export class GameServer {
             return;
           }
 
-          const player = room.players.find(p => p.id === socket.id);
+          const player = room.players.find((p: IPlayer) => p.id === socket.id);
           if (!player) {
             socket.emit(WebSocketEvents.Error, { message: 'Player not found in this game' });
             return;
