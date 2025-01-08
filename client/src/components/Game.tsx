@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useMultiplayerGame } from '../hooks/useMultiplayerGame';
 import { OperationType, IBoard } from '../shared';
 import { cn } from '@/lib/utils';
 import { GameCell } from './GameCell';
+import { logger } from '../utils/logger';
 
 export const Game: React.FC = () => {
   const {
@@ -16,16 +17,66 @@ export const Game: React.FC = () => {
     makeMove,
   } = useMultiplayerGame();
 
+  // Log component mount
+  useEffect(() => {
+    logger.debug('Game component mounted', { component: 'Game' });
+    return () => {
+      logger.debug('Game component unmounted', { component: 'Game' });
+    };
+  }, []);
+
+  // Log state changes
+  useEffect(() => {
+    logger.debug('Game state updated', {
+      component: 'Game',
+      data: {
+        gameId,
+        playerNumber,
+        gameState,
+        error,
+        isMyTurn
+      }
+    });
+  }, [gameId, playerNumber, gameState, error, isMyTurn]);
+
   const [joinGameId, setJoinGameId] = useState('');
 
   const handleCellClick = (row: number, col: number) => {
-    if (!isMyTurn || 
-        gameState?.board.cells[row][col] !== null || 
-        gameState?.gameOver ||
-        gameState?.currentTurn.placeOperationsLeft <= 0) {
+    logger.userAction('cellClick', { row, col });
+
+    if (!isMyTurn) {
+      logger.debug('Cell click ignored - not player\'s turn', {
+        component: 'Game',
+        data: { row, col, currentPlayer: gameState?.currentPlayer }
+      });
       return;
     }
 
+    if (gameState?.board.cells[row][col] !== null) {
+      logger.debug('Cell click ignored - cell not empty', {
+        component: 'Game',
+        data: { row, col, cellValue: gameState?.board.cells[row][col] }
+      });
+      return;
+    }
+
+    if (gameState?.gameOver) {
+      logger.debug('Cell click ignored - game is over', {
+        component: 'Game',
+        data: { row, col }
+      });
+      return;
+    }
+
+    if (gameState?.currentTurn.placeOperationsLeft <= 0) {
+      logger.debug('Cell click ignored - no operations left', {
+        component: 'Game',
+        data: { row, col, operationsLeft: gameState?.currentTurn.placeOperationsLeft }
+      });
+      return;
+    }
+
+    logger.userAction('makeMove', { row, col, type: OperationType.PLACE });
     makeMove(row, col, OperationType.PLACE);
   };
 
