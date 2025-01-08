@@ -65,16 +65,14 @@ services:
         - CMD-SHELL
         - |
           set -e
-          if [ ! -f /usr/bin/wget ]; then
-            apk add --no-cache wget
+          if ! command -v curl &> /dev/null; then
+            apk add --no-cache curl
           fi
-          response=$(wget -qO- http://localhost:3000/health)
-          echo "Health check response: $response"
-          echo "$response" | grep -q '"status":"ok"' || exit 1
+          curl -sf http://localhost:3000/test || exit 1
       interval: 10s
       timeout: 10s
-      retries: 5
-      start_period: 60s
+      retries: 3
+      start_period: 40s
     volumes:
       - .:/app
       - game_data:/data/games
@@ -88,7 +86,7 @@ services:
         cd /app
 
         # Install required packages
-        apk add --no-cache wget
+        apk add --no-cache wget curl
 
         # Create and set up directories
         mkdir -p /app/.pnpm-store
