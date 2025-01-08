@@ -2,13 +2,17 @@
   "extends": "./tsconfig.json",
   "ts-node": {
     "files": true,
-    "esm": true,
-    "experimentalSpecifierResolution": "node"
+    "transpileOnly": true,
+    "moduleTypes": {
+      "src/**/*": "esm"
+    }
   },
   "compilerOptions": {
+    "target": "ES2020",
     "module": "ESNext",
     "moduleResolution": "node",
     "allowJs": true,
-    "outDir": "./dist"
+    "outDir": "./dist",
+    "sourceMap": true
   }
 }

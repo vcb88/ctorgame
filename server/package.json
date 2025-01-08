@@ -4,7 +4,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "NODE_ENV=development ts-node-dev --project tsconfig.dev.json --esm --respawn --transpile-only --debug --trace-warnings --ignore-watch node_modules --clear ./src/index.ts",
+    "dev": "NODE_OPTIONS=\"--loader ts-node/esm\" NODE_ENV=development ts-node-dev --project tsconfig.dev.json --respawn --transpile-only --debug --trace-warnings --ignore-watch node_modules --clear ./src/index.ts",
     "build": "tsc -p tsconfig.build.json",
     "start": "node dist/index.js",
     "lint": "eslint -c eslint.config.cjs . --max-warnings 0",
@@ -37,6 +37,7 @@
     "eslint": "^8.57.0",
     "jest": "^29.7.0",
     "ts-jest": "^29.2.5",
+    "ts-node": "^10.9.2",
     "ts-node-dev": "^2.0.0",
     "typescript": "^5.3.3",
     "vitest": "^1.4.0"
