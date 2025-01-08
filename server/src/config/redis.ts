@@ -29,10 +29,6 @@ export const redisClient = new Redis({
     maxRetriesPerRequest: 3,
     enableReadyCheck: true,
     maxLoadingRetryTime: 5000, // Максимальное время для повторных попыток загрузки
-    reconnectOnError: (err: Error) => {
-        console.error('Redis connection error:', err);
-        return true; // Всегда пытаемся переподключиться
-    },
 });
 
 // Функция для подключения к Redis
