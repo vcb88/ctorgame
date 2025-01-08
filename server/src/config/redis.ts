@@ -14,7 +14,12 @@ export const cacheConfig: ICacheConfig = {
 };
 
 // Создаем инстанс Redis с настройками подключения
-export const redisClient = new Redis(process.env.REDIS_URL || 'redis://localhost:6379', {
+const redisUrl = process.env.REDIS_URL || 'redis://localhost:6379';
+export const redisClient = new Redis({
+    host: new URL(redisUrl).hostname,
+    port: parseInt(new URL(redisUrl).port || '6379'),
+    username: new URL(redisUrl).username || undefined,
+    password: new URL(redisUrl).password || undefined,
     retryStrategy: (times: number) => {
         const maxRetryTime = 3000; // Максимальное время ожидания - 3 секунды
         const delay = Math.min(times * 500, maxRetryTime);
