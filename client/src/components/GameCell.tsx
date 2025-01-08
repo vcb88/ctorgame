@@ -1,5 +1,5 @@
 import { cn } from '@/lib/utils';
-import { BOARD_SIZE } from '@ctor-game/shared';
+import { BOARD_SIZE } from '../shared';
 
 interface GameCellProps {
   row: number;

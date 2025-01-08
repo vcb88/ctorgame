@@ -10,7 +10,7 @@ import {
   ServerToClientEvents,
   validateGameMove,
   validateGameState 
-} from '@ctor-game/shared';
+} from '../shared';
 
 const SOCKET_SERVER_URL = process.env.NODE_ENV === 'production' 
   ? window.location.origin 
