@@ -23,7 +23,7 @@ RUN echo "Checking project structure:" && \
     cat pnpm-workspace.yaml
 
 # Установка глобальных зависимостей
-RUN npm install -g typescript@5.3.3 vite@5.4.11
+RUN npm install -g typescript@5.3.3 vite@5.4.11 ts-node-dev@2.0.0
 
 # Устанавливаем все зависимости и собираем проект
 RUN pnpm install --force && \
