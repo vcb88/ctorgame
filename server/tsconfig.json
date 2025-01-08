@@ -2,20 +2,20 @@
   "compilerOptions": {
     "target": "ES2020",
     "module": "ESNext",
-    "moduleResolution": "bundler",
+    "moduleResolution": "node16",
     "esModuleInterop": true,
     "strict": true,
     "outDir": "./dist",
-    "rootDir": "../",
+    "rootDir": "./src",
     "skipLibCheck": true,
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true,
     "strictPropertyInitialization": false,
-    "baseUrl": ".",
+    "baseUrl": "src",
     "paths": {
-      "@ctor-game/shared": ["../shared/src/index"],
-      "@ctor-game/shared/types/*": ["../shared/types/*"],
-      "@ctor-game/shared/validation/*": ["../shared/validation/*"]
+      "@ctor-game/shared": ["../../shared/src/index"],
+      "@ctor-game/shared/types/*": ["../../shared/types/*"],
+      "@ctor-game/shared/validation/*": ["../../shared/validation/*"]
     }
   },
   "references": [
