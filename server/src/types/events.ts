@@ -1,4 +1,4 @@
-import { IGameState, IGameMove, WebSocketEvents } from '@ctor-game/shared';
+import { IGameState, IGameMove, WebSocketEvents } from '../shared';
 
 export interface GameEventHandlers {
   [WebSocketEvents.CreateGame]: () => Promise<void>;

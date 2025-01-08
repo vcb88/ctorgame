@@ -2,8 +2,7 @@ import { describe, it, expect, beforeEach, jest } from '@jest/globals';
 import { redisService } from '../RedisService';
 import { redisClient, REDIS_KEYS, REDIS_EVENTS } from '../../config/redis';
 import { GameLogicService } from '../GameLogicService';
-import { IGameState, IPlayer } from '@ctor-game/shared';
-import { IGameEvent, GameEventType } from '@ctor-game/shared/events';
+import { IGameState, IPlayer, IGameEvent, GameEventType } from '../../shared';
 
 // Мокаем Redis и GameLogicService
 jest.mock('../../config/redis', () => ({
