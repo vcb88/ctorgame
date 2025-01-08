@@ -1,13 +1,13 @@
 {
   "compilerOptions": {
     "target": "ES2020",
-    "module": "ESNext",
+    "module": "NodeNext",
     "moduleResolution": "NodeNext",
-    "allowImportingTsExtensions": true,
+    "allowImportingTsExtensions": false,
     "esModuleInterop": true,
     "strict": true,
     "outDir": "./dist",
-    "rootDir": "../",
+    "rootDir": "./src",
     "skipLibCheck": true,
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true,
@@ -19,9 +19,6 @@
       "@ctor-game/shared/validation/*": ["../shared/validation/*"]
     }
   },
-  "references": [
-    { "path": "../shared/tsconfig.json" }
-  ],
   "include": ["src/**/*"],
   "exclude": [
     "node_modules",
