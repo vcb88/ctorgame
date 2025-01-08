@@ -5,12 +5,15 @@ RUN npm install -g pnpm@9.15.3
 
 WORKDIR /app
 
-# Мы будем использовать volumes для разработки, 
-# поэтому здесь минимальная конфигурация
+# Мы будем использовать volumes для разработки
 COPY package.json pnpm-workspace.yaml ./
 
 # Создаем структуру каталогов
 RUN mkdir -p shared server client
 
-# Команда для разработки
+# Добавляем скрипт для установки зависимостей при старте
+COPY docker-entrypoint.sh /usr/local/bin/
+RUN chmod +x /usr/local/bin/docker-entrypoint.sh
+
+ENTRYPOINT ["docker-entrypoint.sh"]
 CMD ["pnpm", "dev"]
