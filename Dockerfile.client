@@ -5,20 +5,14 @@ WORKDIR /app
 # Install pnpm
 RUN npm install -g pnpm@9.15.3
 
-# Copy only necessary files first
-COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
+# Copy client files
 COPY client/package.json ./client/
-COPY shared/package.json ./shared/
 
-# Install dependencies and update lockfile
-RUN pnpm install --no-frozen-lockfile
+# Install dependencies
+RUN cd client && pnpm install
 
 # Copy source code
-COPY shared/ ./shared/
 COPY client/ ./client/
-
-# Build shared package
-RUN cd shared && pnpm build
 
 # Set environment
 ENV NODE_ENV=development
