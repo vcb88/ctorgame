@@ -15,7 +15,9 @@
     "test:coverage": "pnpm -r test:coverage",
     "format": "pnpm -r format",
     "format:check": "pnpm -r format:check",
-    "type-check": "pnpm -r type-check"
+    "type-check": "pnpm -r type-check",
+    "clean": "bash scripts/clean.sh",
+    "clean:rebuild": "pnpm clean && pnpm install && pnpm build"
   },
   "dependencies": {
     "@radix-ui/react-alert-dialog": "^1.1.2",
