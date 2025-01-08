@@ -15,8 +15,7 @@
     "composite": true,
     "jsx": "react-jsx",
     "lib": ["ESNext", "DOM"],
-    "isolatedModules": true,
-    "preserveModules": true
+    "isolatedModules": true
   },
   "include": [
     "src/**/*",

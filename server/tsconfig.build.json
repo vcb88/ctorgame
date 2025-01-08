@@ -19,9 +19,11 @@
     "module": "ESNext",
     "moduleResolution": "node",
     "esModuleInterop": true,
+    "baseUrl": ".",
     "paths": {
-      "@ctor-game/shared": ["../shared/src"],
+      "@ctor-game/shared": ["../shared/src/index.ts"],
       "@ctor-game/shared/*": ["../shared/src/*"]
-    }
+    },
+    "rootDirs": ["./src", "../shared/src"]
   }
 }
