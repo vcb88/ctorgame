@@ -14,14 +14,15 @@ COPY shared/package.json ./shared/
 COPY shared/ ./shared/
 COPY server/ ./server/
 
-# Install dependencies without dev packages
-WORKDIR /app
-RUN pnpm install --prod
-
-# Build shared package
+# Build shared package first
 WORKDIR /app/shared
-RUN pnpm add -D typescript && pnpm build
+RUN pnpm install
+RUN pnpm build
 RUN ls -la dist/ || echo "dist directory not created"
+
+# Install server dependencies
+WORKDIR /app/server
+RUN pnpm install
 
 # Set environment
 ENV NODE_ENV=development
