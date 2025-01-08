@@ -1,9 +1,9 @@
 import { useEffect, useState, useCallback } from 'react';
 import { io, Socket } from 'socket.io-client';
-import { IGameState, IGameMove, OperationType } from '../../../shared/types/game';
-import { IPosition } from '../../../shared/types/coordinates';
-import { WebSocketEvents, ClientToServerEvents, ServerToClientEvents } from '../../../shared/types/websocket';
-import { validateGameMove, validateGameState } from '../../../shared/validation/game';
+import { IGameState, IGameMove, OperationType } from '../../../shared/types/game.js';
+import { IPosition } from '../../../shared/types/coordinates.js';
+import { WebSocketEvents, ClientToServerEvents, ServerToClientEvents } from '../../../shared/types/websocket.js';
+import { validateGameMove, validateGameState } from '../../../shared/validation/game.js';
 
 const SOCKET_SERVER_URL = process.env.NODE_ENV === 'production' 
   ? window.location.origin 
