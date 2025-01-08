@@ -1,9 +1,15 @@
 import { useEffect, useState, useCallback } from 'react';
 import { io, Socket } from 'socket.io-client';
-import { IGameState, IGameMove, OperationType } from '../../../shared/types/game.js';
-import { IPosition } from '../../../shared/types/coordinates.js';
-import { WebSocketEvents, ClientToServerEvents, ServerToClientEvents } from '../../../shared/types/websocket.js';
-import { validateGameMove, validateGameState } from '../../../shared/validation/game.js';
+import { 
+  IGameState, 
+  IGameMove, 
+  OperationType,
+  IPosition,
+  WebSocketEvents, 
+  ClientToServerEvents, 
+  ServerToClientEvents 
+} from '@ctor-game/shared/types';
+import { validateGameMove, validateGameState } from '@ctor-game/shared/validation/game';
 
 const SOCKET_SERVER_URL = process.env.NODE_ENV === 'production' 
   ? window.location.origin 
