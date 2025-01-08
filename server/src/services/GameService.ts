@@ -4,7 +4,7 @@ import {
     IGameMove, 
     IPlayer,
     GameMetadata
-} from '@ctor-game/shared';
+} from '../shared';
 import { GameLogicService } from './GameLogicService';
 
 export class GameService {

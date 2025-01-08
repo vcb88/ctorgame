@@ -8,8 +8,8 @@ import {
   WebSocketEvents,
   BOARD_SIZE,
   IScores 
-} from '@ctor-game/shared';
-import { validateGameMove, validateGameState } from '@ctor-game/shared/validation/game';
+} from '../../shared';
+import { validateGameMove, validateGameState } from '../../../../shared/src/validation/game';
 import { GameEventResponse } from '../../types/events';
 
 export function registerGameHandlers(
