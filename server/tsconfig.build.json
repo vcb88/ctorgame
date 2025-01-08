@@ -19,7 +19,7 @@
     "sourceMap": true,
     "outDir": "./dist",
     "rootDir": "../",
-    "module": "ESNext",
+    "module": "NodeNext",
     "moduleResolution": "NodeNext",
     "esModuleInterop": true,
     "baseUrl": ".",
