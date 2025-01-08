@@ -14,12 +14,23 @@ COPY client/package.json ./client/
 # Копируем все исходники
 COPY . .
 
+# Вывод отладочной информации
+RUN echo "Checking project structure:" && \
+    ls -la /app && \
+    echo "\nChecking shared directory:" && \
+    ls -la /app/shared && \
+    echo "\nChecking pnpm-workspace.yaml:" && \
+    cat pnpm-workspace.yaml
+
 # Установка глобальных зависимостей
 RUN npm install -g typescript@5.3.3 vite@5.4.11
 
 # Устанавливаем все зависимости и собираем проект
-RUN pnpm install --force
-RUN pnpm --filter shared build
+RUN pnpm install --force && \
+    echo "\nChecking node_modules after install:" && \
+    ls -la /app/node_modules && \
+    echo "\nBuilding shared package..." && \
+    cd /app && pnpm --filter @ctor-game/shared build
 
 # Добавляем скрипт для запуска
 COPY docker-entrypoint.sh /usr/local/bin/

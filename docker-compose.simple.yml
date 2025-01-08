@@ -8,10 +8,10 @@ services:
     volumes:
       - .:/app
     ports:
-      - "3000:3000"
+      - "5173:5173"
     environment:
       - NODE_ENV=development
-    command: sh -c "cd /app && pnpm --filter client dev"
+    command: sh -c "cd /app && pnpm --filter @ctor-game/client dev"
 
   server:
     build:
@@ -25,7 +25,7 @@ services:
       - NODE_ENV=development
       - REDIS_URL=redis://redis:6379
       - MONGODB_URL=mongodb://mongodb:27017
-    command: sh -c "cd /app && pnpm --filter server dev"
+    command: sh -c "cd /app && pnpm --filter @ctor-game/server dev"
     depends_on:
       - mongodb
       - redis
