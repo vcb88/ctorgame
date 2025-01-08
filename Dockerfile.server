@@ -5,12 +5,18 @@ WORKDIR /app
 # Install pnpm
 RUN npm install -g pnpm@9.15.3
 
-# Copy package files
+# Copy only necessary files first
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 COPY server/package.json ./server/
 COPY shared/package.json ./shared/
 
-# Install dependencies
+# Clean install in production mode first (this will install correct platform binaries)
+RUN pnpm install --frozen-lockfile
+
+# Then remove node_modules
+RUN rm -rf node_modules server/node_modules shared/node_modules
+
+# Now install in development mode
 RUN pnpm install
 
 # Copy source code
