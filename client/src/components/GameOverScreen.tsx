@@ -1,11 +1,12 @@
 import React from 'react';
 import { cn } from '@/lib/utils';
+import { Player, GameOutcome } from '../shared';
 
 interface GameOverScreenProps {
-  winner: number | null;
+  winner: Player | null;
   scores: {
-    player1: number;
-    player2: number;
+    [Player.First]: number;
+    [Player.Second]: number;
   };
   onReturnToMenu: () => void;
 }
@@ -92,16 +93,16 @@ export const GameOverScreen: React.FC<GameOverScreenProps> = ({
                   "w-12 h-12 rounded-lg",
                   "animate-winner-glow",
                   {
-                    "bg-cyan-500": winner === 0,
-                    "bg-red-500": winner === 1
+                    "bg-cyan-500": winner === Player.First,
+                    "bg-red-500": winner === Player.Second
                   }
                 )} />
                 <span>
-                  Player {winner + 1} Wins!
+                  {winner === Player.First ? 'First' : 'Second'} Player Wins!
                 </span>
               </div>
               <div className="text-xl font-mono mt-4 opacity-80">
-                Final Score: {winner === 0 ? scores.player1 : scores.player2} pieces
+                Final Score: {scores[winner]} pieces
               </div>
             </div>
           )}
