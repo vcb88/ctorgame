@@ -35,7 +35,57 @@
 
 ### Current Sprint Tasks
 
-1. Legacy Features Integration (Critical Priority)
+1. Game Logic Improvements (Critical Priority)
+   - [ ] Player Identification Refactoring
+     - [ ] Replace numeric player IDs with Player enum
+     - [ ] Unify player1/player2 naming with First/Second enum
+     - [ ] Add type-safe player comparison functions
+     - [ ] Update scores interface to use Player enum
+     - [ ] Add constants for game outcomes (draw)
+
+   - [ ] Game State Management
+     - [ ] Fix isFirstTurn flag updating
+     - [ ] Add turn order validation
+     - [ ] Implement state consistency checks
+     - [ ] Add game phase transitions validation
+     - [ ] Create state invariants verification
+
+   - [ ] Error Handling (High Priority)
+     - [ ] Add error types for game logic
+     - [ ] Implement error messages in English
+     - [ ] Add validation for incorrect player turns
+     - [ ] Implement move validation error reporting
+     - [ ] Add state transition error handling
+
+   - [ ] Replacement Logic Validation (High Priority)
+     - [ ] Add null-safety checks in comparisons
+     - [ ] Implement comprehensive board state validation
+     - [ ] Add edge case handling for toroidal board
+     - [ ] Improve recursive replacement loop clarity
+     - [ ] Add state consistency validation
+
+   - [ ] Code Quality Improvements (Medium Priority)
+     - [ ] Translate comments to English
+     - [ ] Add complete JSDoc documentation
+     - [ ] Split GameLogicService into smaller components
+     - [ ] Separate business logic from data transformations
+     - [ ] Add parameter and return type documentation
+
+   - [ ] Testing Infrastructure Update (Medium Priority)
+     - [ ] Update unit tests to use Player enum
+     - [ ] Add test cases for getOpponent helper
+     - [ ] Add validation for incorrect Player values
+     - [ ] Update test fixtures with new types
+     - [ ] Add type safety tests
+
+   - [ ] Client Code Migration (High Priority)
+     - [ ] Update client state management
+     - [ ] Migrate WebSocket event handlers
+     - [ ] Update UI components
+     - [ ] Add type safety for move validation
+     - [ ] Update game board rendering
+
+2. Legacy Features Integration (Critical Priority)
    - [ ] AI Service Implementation
      - [ ] Port advanced evaluation algorithms
      - [ ] Add pattern recognition
