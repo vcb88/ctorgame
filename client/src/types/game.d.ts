@@ -1,17 +1,17 @@
 import { Socket } from 'socket.io-client';
-import { IGameMove, IGameState } from '@ctor-game/shared';
+import { IGameMove, IGameState, Player } from '@ctor-game/shared';
 
 export interface ITurnState {
   placeOperationsLeft: number;
   replaceOperationsLeft: number;
-  playerNumber: number;
+  playerNumber: Player;
 }
 
 export interface IGameStateWithTurn extends IGameState {
   currentTurn: ITurnState;
   scores: {
-    player1: number;
-    player2: number;
+    [Player.First]: number;
+    [Player.Second]: number;
   };
   isFirstTurn: boolean;
 }
@@ -26,7 +26,7 @@ export interface MockedSocket extends Socket {
 
 export interface GameHistoryEntry {
   moveNumber: number;
-  playerNumber: number;
+  playerNumber: Player;
   move: IGameMove;
   timestamp: Date;
 }
