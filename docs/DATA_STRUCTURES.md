@@ -22,9 +22,18 @@ interface IBoardSize {
   height: number;  // Board height (default: 10)
 }
 
+/**
+ * Player identification in the game
+ */
+enum Player {
+    None = 0,     // Empty cell or no player
+    First = 1,    // First player
+    Second = 2    // Second player
+}
+
 interface IBoard {
-  cells: number[][];  // 2D array of cell values
-  size: IBoardSize;   // Board dimensions
+  cells: (Player | null)[][];  // 2D array of Player enum values or null
+  size: IBoardSize;            // Board dimensions
 }
 ```
 
@@ -32,17 +41,33 @@ interface IBoard {
 
 ```typescript
 interface IGameState {
+  /** Current board state */
   board: IBoard;
+  
+  /** Whether the game has ended */
   gameOver: boolean;
-  winner: number | null;
+  
+  /** Winner of the game or null for ongoing/draw */
+  winner: Player | null;
+  
+  /** Current turn state */
   currentTurn: {
+    /** Number of placement operations left in current turn */
     placeOperationsLeft: number;
+    /** Moves made in current turn */
     moves: IGameMove[];
   };
+  
+  /** Current active player */
+  currentPlayer: Player;
+  
+  /** Player scores */
   scores: {
-    player1: number;
-    player2: number;
+    [Player.First]: number;   // First player's score
+    [Player.Second]: number;  // Second player's score
   };
+  
+  /** Special flag for first turn (1 operation only) */
   isFirstTurn: boolean;
 }
 
@@ -86,10 +111,10 @@ interface GameMetadata {
     first?: string;
     second?: string;
   };
-  winner?: number;
+  winner?: Player | null;
   finalScore?: {
-    player1: number;
-    player2: number;
+    [Player.First]: number;
+    [Player.Second]: number;
   };
   totalTurns: number;
   boardSize: IBoardSize;
@@ -105,12 +130,12 @@ interface GameMetrics {
     averageMoveTime: number;
     replacementsCount: number;
     territoryControl: {
-      player1: number[];
-      player2: number[];
+      [Player.First]: number[];
+      [Player.Second]: number[];
     };
     piecesCaptured: {
-      player1: number;
-      player2: number;
+      [Player.First]: number;
+      [Player.Second]: number;
     };
   };
 }
