@@ -1,17 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import { GameCell } from './GameCell';
 
-import { IPosition } from '@ctor-game/shared';
+import { IPosition, Player } from '@ctor-game/shared';
 
 interface GameBoardProps {
-  board: (number | null)[][];
+  board: (Player | null)[][];
   onCellClick?: (row: number, col: number) => void;
   disabled?: boolean;
   lastMove?: IPosition;
 }
 
 export function GameBoard({ board, onCellClick, disabled = false }: GameBoardProps) {
-  const [previousBoard, setPreviousBoard] = useState<(number | null)[][]>([]);
+  const [previousBoard, setPreviousBoard] = useState<(Player | null)[][]>([]);
   const [capturedCells, setCapturedCells] = useState<{ [key: string]: boolean }>({});
 
   // Track cell captures by comparing previous and current board states
