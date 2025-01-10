@@ -1,8 +1,12 @@
 import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
-import { Game } from './components/Game';
-import { GameHistory } from './pages/GameHistory';
 import { Layout } from './components/layout/Layout';
+import { LandingPage } from './pages/LandingPage';
+import { CreateGame } from './pages/CreateGame';
+import { JoinGame } from './pages/JoinGame';
+import { WaitingRoom } from './pages/WaitingRoom';
+import { GameBoard } from './pages/GameBoard';
+import { GameHistory } from './pages/GameHistory';
 import './index.css';
 
 const App: React.FC = () => {
@@ -10,8 +14,16 @@ const App: React.FC = () => {
     <BrowserRouter>
       <Layout>
         <Routes>
-          {/* Главная страница - игра */}
-          <Route path="/" element={<Game />} />
+          {/* Главная страница */}
+          <Route path="/" element={<LandingPage />} />
+          
+          {/* Создание и подключение к игре */}
+          <Route path="/create" element={<CreateGame />} />
+          <Route path="/join" element={<JoinGame />} />
+          <Route path="/waiting/:gameId" element={<WaitingRoom />} />
+          
+          {/* Игровой процесс */}
+          <Route path="/game/:gameId" element={<GameBoard />} />
           
           {/* История игр */}
           <Route path="/history" element={<GameHistory />} />
