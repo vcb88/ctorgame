@@ -3,9 +3,11 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { useMultiplayerGame } from '@/hooks/useMultiplayerGame';
 import { OperationType } from '@/shared';
 import { GameCell } from '@/components/GameCell';
+import { TurnTimer } from '@/components/TurnTimer';
 import { DisconnectionOverlay } from '@/components/modals/DisconnectionOverlay';
 import { logger } from '@/utils/logger';
 import { cn } from '@/lib/utils';
+import { useEffect, useState, useCallback } from 'react';
 
 export const GameBoard: React.FC = () => {
   const navigate = useNavigate();
@@ -18,6 +20,47 @@ export const GameBoard: React.FC = () => {
     isMyTurn,
     makeMove,
   } = useMultiplayerGame();
+
+  const TURN_DURATION = 30; // seconds
+  const [validMoves, setValidMoves] = useState<{ [key: string]: boolean }>({});
+  const [capturedCells, setCapturedCells] = useState<{ [key: string]: boolean }>({});
+  const [previousBoard, setPreviousBoard] = useState<(number | null)[][]>([]);
+
+  // Update valid moves whenever the board state changes
+  useEffect(() => {
+    if (!gameState || !isMyTurn) {
+      setValidMoves({});
+      return;
+    }
+
+    const moves: { [key: string]: boolean } = {};
+    gameState.board.cells.forEach((row, rowIndex) => {
+      row.forEach((cell, colIndex) => {
+        if (cell === null) {
+          moves[`${rowIndex}-${colIndex}`] = true;
+        }
+      });
+    });
+    setValidMoves(moves);
+  }, [gameState?.board.cells, isMyTurn]);
+
+  // Track cell captures by comparing previous and current board states
+  useEffect(() => {
+    if (!gameState?.board.cells) return;
+
+    const captures: { [key: string]: boolean } = {};
+    gameState.board.cells.forEach((row, rowIndex) => {
+      row.forEach((cell, colIndex) => {
+        const prevValue = previousBoard[rowIndex]?.[colIndex];
+        if (prevValue !== undefined && prevValue !== null && cell !== prevValue) {
+          captures[`${rowIndex}-${colIndex}`] = true;
+        }
+      });
+    });
+    
+    setCapturedCells(captures);
+    setPreviousBoard(gameState.board.cells);
+  }, [gameState?.board.cells]);
 
   useEffect(() => {
     logger.debug('GameBoard mounted', { 
@@ -136,19 +179,29 @@ export const GameBoard: React.FC = () => {
             </div>
           </div>
 
-          <div className="grid grid-cols-10 gap-1 bg-black/90 p-2 rounded border border-cyan-500/30 shadow-[0_0_30px_rgba(6,182,212,0.2)]">
-            {gameState.board.cells.map((row: (number | null)[], rowIndex: number) =>
-              row.map((cell: number | null, colIndex: number) => (
-                <GameCell
-                  key={`${rowIndex}-${colIndex}`}
-                  row={rowIndex}
-                  col={colIndex}
-                  value={cell}
-                  disabled={!isMyTurn || cell !== null || gameState.gameOver || gameState.currentTurn.placeOperationsLeft <= 0}
-                  onClick={() => handleCellClick(rowIndex, colIndex)}
-                />
-              ))
-            )}
+          <div className="flex justify-between items-center mb-4">
+            <TurnTimer
+              duration={TURN_DURATION}
+              isActive={isMyTurn}
+              className="mr-4"
+            />
+            <div className="grid grid-cols-10 gap-1 bg-black/90 p-2 rounded border border-cyan-500/30 shadow-[0_0_30px_rgba(6,182,212,0.2)] flex-1">
+              {gameState.board.cells.map((row: (number | null)[], rowIndex: number) =>
+                row.map((cell: number | null, colIndex: number) => (
+                  <GameCell
+                    key={`${rowIndex}-${colIndex}`}
+                    row={rowIndex}
+                    col={colIndex}
+                    value={cell}
+                    disabled={!isMyTurn || cell !== null || gameState.gameOver || gameState.currentTurn.placeOperationsLeft <= 0}
+                    onClick={() => handleCellClick(rowIndex, colIndex)}
+                    isValidMove={validMoves[`${rowIndex}-${colIndex}`]}
+                    isBeingCaptured={capturedCells[`${rowIndex}-${colIndex}`]}
+                    previousValue={previousBoard[rowIndex]?.[colIndex]}
+                  />
+                ))
+              )}
+            </div>
           </div>
 
           <div className="mt-4 flex items-center justify-center font-mono">
