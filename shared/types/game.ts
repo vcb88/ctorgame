@@ -95,6 +95,20 @@ export interface IReplaceValidation {
 }
 
 /**
+ * Represents a candidate for replacement with additional validation and priority information
+ */
+export interface ReplaceCandidate {
+    /** Position of the cell to be replaced */
+    position: IPosition;
+    /** Number of adjacent pieces that make this replacement possible */
+    adjacentCount: number;
+    /** List of adjacent positions that contribute to this replacement */
+    adjacentPositions: IPosition[];
+    /** Calculated priority for this replacement (higher means more important) */
+    priority: number;
+}
+
+/**
  * Array of relative coordinates for checking adjacent cells
  */
 export const DIRECTIONS = [
