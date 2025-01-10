@@ -35,7 +35,33 @@
 
 ### Current Sprint Tasks
 
-1. Error Handling and Connection Management (Critical Priority)
+1. Legacy Features Integration (Critical Priority)
+   - [ ] AI Service Implementation
+     - [ ] Port advanced evaluation algorithms
+     - [ ] Add pattern recognition
+     - [ ] Implement danger evaluation
+     - [ ] Add group formation analysis
+     - [ ] Integrate blocking moves evaluation
+   - [ ] Flexible Board Size Support
+     - [ ] Update game configuration types
+     - [ ] Modify board rendering components
+     - [ ] Update move validation logic
+     - [ ] Add board size selection UI
+     - [ ] Test different board configurations
+   - [ ] Position Analysis System
+     - [ ] Implement territory analysis
+     - [ ] Add influence mapping
+     - [ ] Port group strength evaluation
+     - [ ] Create analysis visualization
+     - [ ] Add real-time analysis updates
+   - [ ] Enhanced Visualization
+     - [ ] Port heatmap visualization
+     - [ ] Add position strength indicators
+     - [ ] Implement move suggestion overlay
+     - [ ] Add territory control visualization
+     - [ ] Create group strength indicators
+
+2. Error Handling and Connection Management (Critical Priority)
    - [ ] Update UI Components
      - [ ] Add connection status indicator
      - [ ] Implement error message display component

@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.3.1] - 2025-01-10
+
+### Added
+- AI service infrastructure with position evaluation and move analysis
+- Legacy features documentation detailing valuable components
+- Type definitions for AI and position analysis
+- Initial integration of enhanced visualization components
+- Comprehensive test suite for AI functionality
+
 ## [Unreleased]
 
 ### Added
