@@ -4,6 +4,7 @@ import {
   OperationType,
   BOARD_SIZE,
   MIN_ADJACENT_FOR_REPLACE,
+  MAX_PLACE_OPERATIONS,
   IPosition,
   IBoard,
   Player,
@@ -17,10 +18,8 @@ import {
 export class GameLogicService {
   /**
    * Создает начальное состояние игры
-   */
-  /**
-   * Создает начальное состояние игры
    * Первый ход в игре особенный - только 1 операция размещения
+   * @returns Начальное состояние игры
    */
   static createInitialState(): IGameState {
     return {
@@ -53,7 +52,7 @@ export class GameLogicService {
    * @param playerNumber Номер игрока, делающего ход
    * @returns true если ход допустим
    */
-  static isValidMove(state: IGameState, move: IGameMove, playerNumber: number): boolean {
+  static isValidMove(state: IGameState, move: IGameMove, playerNumber: Player): boolean {
     const { type, position } = move;
     const { x, y } = position;
     const { width, height } = state.board.size;
@@ -93,7 +92,7 @@ export class GameLogicService {
   static validateReplace(
     board: IBoard,
     position: IPosition,
-    playerNumber: number
+    playerNumber: Player
   ): IReplaceValidation {
     const adjacentPositions = getAdjacentPositions(position, board);
     const playerPieces = adjacentPositions.filter(pos => 
@@ -111,7 +110,7 @@ export class GameLogicService {
   /**
    * Применяет ход к текущему состоянию игры
    */
-  static applyMove(state: IGameState, move: IGameMove, playerNumber: number): IGameState {
+  static applyMove(state: IGameState, move: IGameMove, playerNumber: Player): IGameState {
     const newState = this.cloneGameState(state);
     const { type, position } = move;
     const { x, y } = position;
@@ -168,7 +167,7 @@ export class GameLogicService {
   /**
    * Проверяет доступные замены после размещения фишки
    */
-  static getAvailableReplaces(state: IGameState, playerNumber: number): IGameMove[] {
+  static getAvailableReplaces(state: IGameState, playerNumber: Player): IGameMove[] {
     const availableReplaces: IGameMove[] = [];
     const { width, height } = state.board.size;
 
@@ -236,7 +235,7 @@ export class GameLogicService {
   private static cloneGameState(state: IGameState): IGameState {
     return {
       board: {
-        cells: state.board.cells.map((row: number[]) => [...row]),
+        cells: state.board.cells.map((row: (Player | null)[]) => [...row]),
         size: { ...state.board.size }
       },
       gameOver: state.gameOver,
