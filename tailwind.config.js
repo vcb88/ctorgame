@@ -76,6 +76,8 @@ module.exports = {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
         "scan": "scan 2s ease-in-out infinite",
+        "glitch-1": "glitch-1 0.5s ease-in-out infinite",
+        "glitch-2": "glitch-2 0.5s ease-in-out infinite",
       },
       keyframes: {
         "accordion-down": {
@@ -89,6 +91,16 @@ module.exports = {
         "scan": {
           "0%, 100%": { backgroundPosition: "0% 0%" },
           "50%": { backgroundPosition: "0% 100%" },
+        },
+        "glitch-1": {
+          "0%, 100%": { transform: "translate(0)" },
+          "33%": { transform: "translate(-5px, 2px)" },
+          "66%": { transform: "translate(5px, -2px)" },
+        },
+        "glitch-2": {
+          "0%, 100%": { transform: "translate(0)" },
+          "33%": { transform: "translate(5px, -2px)" },
+          "66%": { transform: "translate(-5px, 2px)" },
         },
       },
       backgroundImage: {
