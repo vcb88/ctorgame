@@ -18,6 +18,7 @@ module.exports = {
     },
     extend: {
       colors: {
+        'zima-blue': '#2B95C3',
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
         ring: "hsl(var(--ring))",
@@ -88,6 +89,7 @@ module.exports = {
         "float": "float 6s ease-in-out infinite",
         "winner-glow": "winner-glow 2s ease-in-out infinite",
         "gradient-x": "gradient-x 4s ease-in-out infinite",
+        "pulse-slow": "pulse-slow 4s ease-in-out infinite",
       },
       keyframes: {
         "accordion-down": {
@@ -209,6 +211,16 @@ module.exports = {
           "50%": {
             "background-size": "200% 200%",
             "background-position": "right center"
+          }
+        },
+        "pulse-slow": {
+          "0%, 100%": {
+            opacity: 1,
+            transform: "scale(1)"
+          },
+          "50%": {
+            opacity: 0.7,
+            transform: "scale(0.98)"
           }
         },
       },
