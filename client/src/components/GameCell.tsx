@@ -1,15 +1,15 @@
 import { cn } from '@/lib/utils';
-import { BOARD_SIZE } from '../shared';
+import { BOARD_SIZE, Player } from '../shared';
 
 interface GameCellProps {
   row: number;
   col: number;
-  value: number | null;
+  value: Player | null;
   disabled: boolean;
   onClick?: () => void;
   isValidMove?: boolean;
   isBeingCaptured?: boolean;
-  previousValue?: number | null;
+  previousValue?: Player | null;
 }
 
 export const GameCell: React.FC<GameCellProps> = ({
@@ -36,8 +36,8 @@ export const GameCell: React.FC<GameCellProps> = ({
           // Base piece effects
           "animate-piece-placed": value !== null && !shouldShowCaptureAnimation,
           "animate-piece-capture": shouldShowCaptureAnimation,
-          "shadow-[0_0_15px_rgba(6,182,212,0.5)]": value === 0,
-          "shadow-[0_0_15px_rgba(239,68,68,0.5)]": value === 1,
+          "shadow-[0_0_15px_rgba(6,182,212,0.5)]": value === Player.First,
+          "shadow-[0_0_15px_rgba(239,68,68,0.5)]": value === Player.Second,
           
           // Valid move indicator
           "after:absolute after:inset-0 after:border-2 after:border-dashed": isValidMove,
@@ -58,16 +58,16 @@ export const GameCell: React.FC<GameCellProps> = ({
           "absolute inset-0 flex items-center justify-center",
           "transition-all duration-300 animate-piece-glow",
           {
-            "bg-cyan-500/20 text-cyan-400": value === 0,
-            "bg-red-500/20 text-red-400": value === 1,
+            "bg-cyan-500/20 text-cyan-400": value === Player.First,
+            "bg-red-500/20 text-red-400": value === Player.Second,
           }
         )}>
           <div className={cn(
             "w-8 h-8 rounded-full",
             "transition-all duration-300",
             {
-              "bg-cyan-500 shadow-[0_0_10px_rgba(6,182,212,0.8)]": value === 0,
-              "bg-red-500 shadow-[0_0_10px_rgba(239,68,68,0.8)]": value === 1,
+              "bg-cyan-500 shadow-[0_0_10px_rgba(6,182,212,0.8)]": value === Player.First,
+              "bg-red-500 shadow-[0_0_10px_rgba(239,68,68,0.8)]": value === Player.Second,
             }
           )}></div>
         </div>
