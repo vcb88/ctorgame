@@ -83,26 +83,16 @@ export interface IGameState {
 }
 
 /**
- * Represents validation result for replace operation
- */
-export interface IReplaceValidation {
-    /** Whether the replace operation is valid */
-    isValid: boolean;
-    /** Number of adjacent pieces found */
-    adjacentCount: number;
-    /** List of positions that would be affected */
-    positions: IPosition[];
-}
-
-/**
- * Represents a candidate for replacement with additional validation and priority information
+ * Represents validation result and priority information for a replacement operation
  */
 export interface ReplaceCandidate {
     /** Position of the cell to be replaced */
     position: IPosition;
+    /** Whether the replacement is valid */
+    isValid: boolean;
     /** Number of adjacent pieces that make this replacement possible */
     adjacentCount: number;
-    /** List of adjacent positions that contribute to this replacement */
+    /** List of positions that contribute to this replacement */
     adjacentPositions: IPosition[];
     /** Calculated priority for this replacement (higher means more important) */
     priority: number;

@@ -8,7 +8,7 @@ import {
   IBoard,
   normalizePosition,
   getAdjacentPositions,
-  IReplaceValidation
+  ReplaceCandidate
 } from '../shared';
 
 export class GameLogicService {
@@ -77,16 +77,18 @@ export class GameLogicService {
     board: IBoard,
     position: IPosition,
     playerNumber: number
-  ): IReplaceValidation {
+  ): ReplaceCandidate {
     const adjacentPositions = getAdjacentPositions(position, board);
     const playerPieces = adjacentPositions.filter(pos => 
       board.cells[pos.y][pos.x] === playerNumber
     );
-
+    
     return {
+      position,
       isValid: playerPieces.length >= MIN_ADJACENT_FOR_REPLACE,
       adjacentCount: playerPieces.length,
-      positions: playerPieces
+      adjacentPositions: playerPieces,
+      priority: playerPieces.length  // Базовый приоритет равен количеству соседних фишек
     };
   }
 
@@ -147,8 +149,8 @@ export class GameLogicService {
         // Проверяем только фишки противника
         if (state.board.cells[y][x] === (playerNumber === 0 ? 1 : 0)) {
           const position: IPosition = { x, y };
-          const validation = this.validateReplace(state.board, position, playerNumber);
-          if (validation.isValid) {
+          const candidate = this.validateReplace(state.board, position, playerNumber);
+          if (candidate.isValid) {
             availableReplaces.push({
               type: OperationType.REPLACE,
               position
