@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Socket } from 'socket.io-client';
-import { IGameMove, OperationType } from '../shared';
+import { IGameMove, OperationType, Player } from '../shared';
 
 interface UseGameHistoryProps {
     socket: Socket;
@@ -9,7 +9,7 @@ interface UseGameHistoryProps {
 
 export interface HistoryEntry {
     moveNumber: number;
-    playerNumber: number;
+    playerNumber: Player;
     move: IGameMove;
     timestamp: Date;
 }
@@ -63,7 +63,7 @@ export function useGameHistory({ socket, gameCode }: UseGameHistoryProps): UseGa
     // Функция для форматирования описания хода
     const formatMoveDescription = (entry: HistoryEntry): string => {
         const { playerNumber, move } = entry;
-        const playerName = `Player ${playerNumber + 1}`;
+        const playerName = `${playerNumber === Player.First ? 'First' : 'Second'} Player`;
         const position = `(${move.position.x + 1},${move.position.y + 1})`;
         const operation = move.type === OperationType.PLACE ? 'placed' : 'replaced';
 
