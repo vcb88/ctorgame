@@ -9,27 +9,53 @@ CTORGame is a two-player strategic board game played on a toroidal surface (a bo
   - Top edge connects to bottom edge
   - Left edge connects to right edge
 - Cell States:
-  - Empty (0)
-  - Player 1's piece (1)
-  - Player 2's piece (2)
+```typescript
+enum Player {
+    None = 0,     // Empty cell
+    First = 1,    // First player's piece
+    Second = 2    // Second player's piece
+}
+```
 
 ## Game Flow
 
 ### Turn Structure
-1. Player gets 2 operations per turn (except first player's first turn - only 1 operation)
+
+#### First Turn Special Rule
+- First player's initial turn allows only 1 placement operation
+- This special rule applies only once at the start of the game
+- Tracked using `isFirstTurn` flag in game state
+- After first turn, regular turn rules apply
+
+#### Regular Turns
+1. Each player gets 2 placement operations per turn
 2. Each operation consists of:
    - Placing a piece
    - Automatic capture check and resolution
-3. Turn ends when:
-   - All operations are used
-   - Player manually ends turn
+   - Updates remaining operations count
+
+#### Turn Transitions
+1. Turn automatically ends when:
+   - All placement operations are used
+   - First turn's single operation is completed
+2. On turn end:
+   - Current player changes
+   - Operations count resets (2 for regular turns)
+   - Move history is cleared for new turn
+3. Turn state tracking:
+   - Uses `currentTurn.placeOperationsLeft`
+   - Maintains `currentTurn.moves` history
+   - Updates `currentPlayer` on transitions
 
 ### Move Validation
 A move is valid if:
-1. It's the player's turn
-2. The target cell is empty
-3. The player has operations remaining
+1. It's the player's turn (matches `currentPlayer`)
+2. The target cell is empty (`null` value)
+3. The player has operations remaining (`placeOperationsLeft > 0`)
 4. The coordinates are within board bounds (considering wrapping)
+5. Special first turn conditions are met:
+   - If `isFirstTurn` is true, only one operation is allowed
+   - Move count must be less than operation limit
 
 ## Capture Mechanics
 
@@ -112,14 +138,16 @@ function getAdjacentPositions(pos: Position): Position[] {
 ### Game State Structure
 ```typescript
 interface GameState {
-    board: Player[][];       // Current board state
-    currentPlayer: Player;   // Current active player
-    status: GameStatus;      // Game status
-    moves: GameMove[];       // Move history
-    score: GameScore;        // Current scores
-    winner: Player | null;   // Winner (if game over)
-    opsRemaining: number;    // Operations left in current turn
-}
+    board: Player[][];         // Current board state
+    currentPlayer: Player;     // Current active player (First/Second)
+    currentTurn: {
+        placeOperationsLeft: number;  // Remaining operations in turn
+        moves: GameMove[];    // Moves made in current turn
+    };
+    scores: GameScore;        // Current scores for both players
+    winner: Player | null;    // Winner or null for draw/ongoing
+    gameOver: boolean;        // Whether game has ended
+    isFirstTurn: boolean;     // Special first turn flag
 ```
 
 ### Score Tracking
