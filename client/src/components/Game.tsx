@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useMultiplayerGame } from '../hooks/useMultiplayerGame';
-import { OperationType, IBoard } from '../shared';
+import { OperationType, IBoard, Player, GameOutcome } from '../shared';
 import { cn } from '@/lib/utils';
 import { GameCell } from './GameCell';
 import { logger } from '../utils/logger';
@@ -144,12 +144,12 @@ export const Game: React.FC = () => {
         Game ID: <span className="font-mono">{gameId}</span>
       </div>
       <div className="text-xl mb-4">
-        You are Player {playerNumber === 0 ? 'X' : 'O'}
+        You are {playerNumber === Player.First ? 'First' : 'Second'} Player
       </div>
       <div className="text-xl mb-8">
         {gameState.gameOver
           ? gameState.winner !== null
-            ? `Player ${gameState.winner === 0 ? 'X' : 'O'} wins!`
+            ? `${gameState.winner === Player.First ? 'First' : 'Second'} Player wins!`
             : "It's a draw!"
           : isMyTurn
           ? "Your turn"
@@ -160,11 +160,11 @@ export const Game: React.FC = () => {
           <div className="flex items-center gap-4">
             <div className="flex items-center gap-2">
               <div className="w-4 h-4 bg-blue-500"></div>
-              <span>Player 1: {gameState.scores.player1}</span>
+              <span>First Player: {gameState.scores[Player.First]}</span>
             </div>
             <div className="flex items-center gap-2">
               <div className="w-4 h-4 bg-red-500"></div>
-              <span>Player 2: {gameState.scores.player2}</span>
+              <span>Second Player: {gameState.scores[Player.Second]}</span>
             </div>
           </div>
           <div>
@@ -173,8 +173,8 @@ export const Game: React.FC = () => {
         </div>
 
         <div className="grid grid-cols-10 gap-1 bg-gray-200 p-2">
-          {gameState.board.cells.map((row: (number | null)[], rowIndex: number) =>
-            row.map((cell: number | null, colIndex: number) => {
+          {gameState.board.cells.map((row: (Player | null)[], rowIndex: number) =>
+            row.map((cell: Player | null, colIndex: number) => {
               const isDisabled = !isMyTurn || cell !== null || gameState.gameOver || gameState.currentTurn.placeOperationsLeft <= 0;
               return (
                 <GameCell
@@ -208,11 +208,11 @@ export const Game: React.FC = () => {
                 Winner: 
                 <div className={cn(
                   "w-6 h-6 rounded-full",
-                  gameState.winner === 0 ? "bg-blue-500" : "bg-red-500"
+                  gameState.winner === Player.First ? "bg-blue-500" : "bg-red-500"
                 )}></div>
-                Player {gameState.winner + 1}
+                {gameState.winner === Player.First ? 'First' : 'Second'} Player
                 <div className="text-gray-600 ml-2">
-                  ({gameState.winner === 0 ? gameState.scores.player1 : gameState.scores.player2} pieces)
+                  ({gameState.scores[gameState.winner]} pieces)
                 </div>
               </div>
             )}
