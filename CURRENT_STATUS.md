@@ -17,7 +17,28 @@ The project is now at version 0.3.0, focusing on integrating advanced features f
    - Integration plan developed
 
 ## Completed Features
-1. Core Game Functionality
+
+### Replacement Mechanics Analysis
+The replacement mechanism exhibits a deterministic cascade effect with the following properties:
+
+1. **Monotonic Progress**
+   - Each replacement converts an opponent's piece to the player's piece
+   - Player's pieces are only added, never removed during replacements
+   - The number of player's pieces can only increase during the replacement phase
+
+2. **Order Independence**
+   - The order of replacements does not affect the final board state
+   - If a replacement becomes possible at any point during the cascade, it will remain possible
+   - The final state after all cascading replacements is deterministic
+
+3. **Cascade Process**
+   - Each replacement can enable new replacements by adding player's pieces
+   - The process continues until no more replacements are possible
+   - This creates a "wave" effect where replacements can trigger chains of further replacements
+
+This deterministic nature means that prioritizing certain replacements over others would not affect the final game state, making the replacement order optimization unnecessary.
+
+### Core Game Functionality
    - Advanced game mechanics (10x10 toroidal board)
    - Real-time multiplayer with two operations per turn
    - Automatic piece replacement

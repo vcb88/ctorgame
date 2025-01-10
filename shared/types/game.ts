@@ -83,9 +83,12 @@ export interface IGameState {
 }
 
 /**
- * Represents validation result and priority information for a replacement operation
+ * Represents validation result for a replacement operation.
+ * Note: The order of replacements doesn't affect the final board state
+ * because each replacement only adds player's pieces and never removes them,
+ * making it a deterministic cascade process.
  */
-export interface ReplaceCandidate {
+export interface IReplaceValidation {
     /** Position of the cell to be replaced */
     position: IPosition;
     /** Whether the replacement is valid */
@@ -94,8 +97,6 @@ export interface ReplaceCandidate {
     adjacentCount: number;
     /** List of positions that contribute to this replacement */
     adjacentPositions: IPosition[];
-    /** Calculated priority for this replacement (higher means more important) */
-    priority: number;
 }
 
 /**

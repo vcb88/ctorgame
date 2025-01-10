@@ -1,5 +1,13 @@
 # Replacement Logic Refactoring
 
+## Analysis Update
+After analyzing the replacement mechanism, we discovered that it exhibits deterministic cascade behavior:
+- Each replacement only adds player's pieces, never removes them
+- The process continues until no more replacements are possible
+- The final state is independent of the replacement order
+
+This discovery eliminates the need for replacement prioritization, as the final board state will be the same regardless of the order in which replacements are processed.
+
 ## Current Status
 
 ### Completed Changes
