@@ -1,4 +1,4 @@
-import { IGameMove, IGameState, IPosition, IBoardSize } from '../shared';
+import { IGameMove, IGameState, IPosition, IBoardSize, Player } from '../shared';
 
 export function validatePosition(pos: IPosition, size: IBoardSize): boolean {
   return (
@@ -33,16 +33,16 @@ export function validateGameState(state: IGameState): boolean {
     board.every(row => 
       Array.isArray(row) && 
       row.length === width &&
-      row.every(cell => typeof cell === 'number' && (cell === 0 || cell === 1 || cell === 2))
+      row.every(cell => cell === null || Object.values(Player).includes(cell))
     ) &&
     typeof state.gameOver === 'boolean' &&
-    (state.winner === null || typeof state.winner === 'number') &&
+    (state.winner === null || Object.values(Player).includes(state.winner)) &&
     state.currentTurn &&
     typeof state.currentTurn.placeOperationsLeft === 'number' &&
     Array.isArray(state.currentTurn.moves) &&
     typeof state.scores === 'object' &&
-    typeof state.scores.player1 === 'number' &&
-    typeof state.scores.player2 === 'number' &&
+    typeof state.scores[Player.First] === 'number' &&
+    typeof state.scores[Player.Second] === 'number' &&
     typeof state.isFirstTurn === 'boolean'
   );
 }
