@@ -78,6 +78,8 @@ module.exports = {
         "scan": "scan 2s ease-in-out infinite",
         "glitch-1": "glitch-1 0.5s ease-in-out infinite",
         "glitch-2": "glitch-2 0.5s ease-in-out infinite",
+        "piece-placed": "piece-placed 0.5s ease-out forwards",
+        "piece-glow": "piece-glow 2s ease-in-out infinite",
       },
       keyframes: {
         "accordion-down": {
@@ -101,6 +103,24 @@ module.exports = {
           "0%, 100%": { transform: "translate(0)" },
           "33%": { transform: "translate(5px, -2px)" },
           "66%": { transform: "translate(-5px, 2px)" },
+        },
+        "piece-placed": {
+          "0%": { 
+            transform: "scale(1.2)",
+            opacity: 0
+          },
+          "100%": { 
+            transform: "scale(1)",
+            opacity: 1
+          }
+        },
+        "piece-glow": {
+          "0%, 100%": { 
+            filter: "brightness(1) drop-shadow(0 0 8px currentColor)"
+          },
+          "50%": { 
+            filter: "brightness(1.2) drop-shadow(0 0 12px currentColor)"
+          }
         },
       },
       backgroundImage: {
