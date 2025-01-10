@@ -18,6 +18,10 @@ export class GameLogicService {
   /**
    * Создает начальное состояние игры
    */
+  /**
+   * Создает начальное состояние игры
+   * Первый ход в игре особенный - только 1 операция размещения
+   */
   static createInitialState(): IGameState {
     return {
       board: {
@@ -27,7 +31,7 @@ export class GameLogicService {
       gameOver: false,
       winner: null,
       currentTurn: {
-        placeOperationsLeft: 1, // Первый игрок начинает с одной операции
+        placeOperationsLeft: 1, // Первый ход - только одна операция
         moves: []
       },
       currentPlayer: Player.First,
@@ -35,12 +39,19 @@ export class GameLogicService {
         [Player.First]: 0,
         [Player.Second]: 0
       },
-      isFirstTurn: true // Добавляем флаг первого хода
+      isFirstTurn: true // Флаг первого хода (только 1 операция размещения)
     };
   }
 
   /**
    * Проверяет, является ли ход допустимым
+   */
+  /**
+   * Проверяет, является ли ход допустимым
+   * @param state Текущее состояние игры
+   * @param move Проверяемый ход
+   * @param playerNumber Номер игрока, делающего ход
+   * @returns true если ход допустим
    */
   static isValidMove(state: IGameState, move: IGameMove, playerNumber: number): boolean {
     const { type, position } = move;
@@ -56,9 +67,12 @@ export class GameLogicService {
       // Для операции размещения проверяем:
       // 1. Остались ли операции размещения
       // 2. Свободна ли клетка
+      // 3. На первом ходу можно сделать только одну операцию
       return (
         state.currentTurn.placeOperationsLeft > 0 &&
-        state.board.cells[y][x] === null
+        state.board.cells[y][x] === null &&
+        // Проверяем, что на первом ходу не пытаемся сделать больше одной операции
+        (!state.isFirstTurn || state.currentTurn.moves.length < 1)
       );
     } else if (type === OperationType.REPLACE) {
       // Для операции замены проверяем:
@@ -107,6 +121,18 @@ export class GameLogicService {
       newState.board.cells[y][x] = playerNumber;
       newState.currentTurn.placeOperationsLeft--;
       
+      // Если это был первый ход в игре, обновляем флаг и устанавливаем количество операций для следующего хода
+      if (state.isFirstTurn) {
+        newState.isFirstTurn = false;
+      }
+      
+      // Проверяем окончание хода (нет операций или первый ход завершен)
+      if (newState.currentTurn.placeOperationsLeft === 0) {
+        newState.currentPlayer = getOpponent(newState.currentPlayer);
+        newState.currentTurn.placeOperationsLeft = newState.isFirstTurn ? 1 : MAX_PLACE_OPERATIONS;
+        newState.currentTurn.moves = [];
+      }
+
       // Автоматически выполняем все возможные замены
       let replacementsFound;
       do {
@@ -204,6 +230,8 @@ export class GameLogicService {
 
   /**
    * Создает глубокую копию состояния игры
+   * Все поля состояния копируются, включая флаг isFirstTurn,
+   * который важен для правильной обработки порядка ходов
    */
   private static cloneGameState(state: IGameState): IGameState {
     return {
