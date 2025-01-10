@@ -13,6 +13,7 @@ The project is now at version 0.3.0, focusing on game history and replay functio
 
 2. Infrastructure & Technical Foundation
    - Robust WebSocket integration with Socket.IO
+   - Enhanced error handling and connection management
    - MongoDB for game history storage
    - Redis for real-time state management
    - NPZ file format for detailed game data
@@ -53,10 +54,10 @@ The project is now at version 0.3.0, focusing on game history and replay functio
 
 ## Known Issues
 1. Technical Debt
-   - Limited error handling in GameService
+   - Partial error handling implementation
    - Missing comprehensive test coverage
    - Need Redis transaction support for complex operations
-   - WebSocket server needs better error recovery
+   - Need to implement server-side reconnection handling
 
 2. Missing Features
    - Limited move validation

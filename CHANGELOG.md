@@ -5,6 +5,15 @@ All notable changes to this project will be documented in this file.
 ## [Unreleased]
 
 ### Added
+- Enhanced error handling and connection management:
+  - Detailed error types and connection states
+  - Reconnection mechanism with retries
+  - Operation timeouts and validation
+  - Improved error reporting with context
+  - Recovery and retry capabilities
+  - Connection state management
+  - Operation tracking with timeouts
+  - Event tracking for state recovery
 - Game mechanics implementation with capture detection
 - Score tracking system
 - Enhanced game state management
