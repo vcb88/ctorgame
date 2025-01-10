@@ -174,16 +174,20 @@ export const Game: React.FC = () => {
 
         <div className="grid grid-cols-10 gap-1 bg-gray-200 p-2">
           {gameState.board.cells.map((row: (number | null)[], rowIndex: number) =>
-            row.map((cell: number | null, colIndex: number) => (
-              <GameCell
-                key={`${rowIndex}-${colIndex}`}
-                row={rowIndex}
-                col={colIndex}
-                value={cell}
-                disabled={!isMyTurn || cell !== null || gameState.gameOver || gameState.currentTurn.placeOperationsLeft <= 0}
-                onClick={() => handleCellClick(rowIndex, colIndex)}
-              />
-            ))
+            row.map((cell: number | null, colIndex: number) => {
+              const isDisabled = !isMyTurn || cell !== null || gameState.gameOver || gameState.currentTurn.placeOperationsLeft <= 0;
+              return (
+                <GameCell
+                  key={`${rowIndex}-${colIndex}`}
+                  row={rowIndex}
+                  col={colIndex}
+                  value={cell}
+                  disabled={isDisabled}
+                  onClick={() => handleCellClick(rowIndex, colIndex)}
+                  isValidMove={!isDisabled && cell === null && gameState.currentTurn.placeOperationsLeft > 0}
+                />
+              );
+            })
           )}
         </div>
 

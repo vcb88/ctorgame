@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { GameCell } from './GameCell';
 
 import { IPosition } from '@ctor-game/shared';
@@ -11,6 +11,25 @@ interface GameBoardProps {
 }
 
 export function GameBoard({ board, onCellClick, disabled = false }: GameBoardProps) {
+  const [previousBoard, setPreviousBoard] = useState<(number | null)[][]>([]);
+  const [capturedCells, setCapturedCells] = useState<{ [key: string]: boolean }>({});
+
+  // Track cell captures by comparing previous and current board states
+  useEffect(() => {
+    const captures: { [key: string]: boolean } = {};
+    board.forEach((row, rowIndex) => {
+      row.forEach((cell, colIndex) => {
+        const prevValue = previousBoard[rowIndex]?.[colIndex];
+        if (prevValue !== undefined && prevValue !== null && cell !== prevValue) {
+          captures[`${rowIndex}-${colIndex}`] = true;
+        }
+      });
+    });
+    
+    setCapturedCells(captures);
+    setPreviousBoard(board);
+  }, [board]);
+
   return (
     <div className="grid grid-cols-10 gap-1 bg-gray-200 p-2">
       {board.map((row, rowIndex) =>
@@ -22,6 +41,9 @@ export function GameBoard({ board, onCellClick, disabled = false }: GameBoardPro
             value={cell}
             disabled={disabled}
             onClick={onCellClick ? () => onCellClick(rowIndex, colIndex) : undefined}
+            isValidMove={!disabled && cell === null}
+            isBeingCaptured={capturedCells[`${rowIndex}-${colIndex}`]}
+            previousValue={previousBoard[rowIndex]?.[colIndex]}
           />
         ))
       )}
