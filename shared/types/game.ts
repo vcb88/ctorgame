@@ -1,65 +1,105 @@
 import { IPlayer } from './player';
 import { IPosition, IBoard } from './coordinates';
 
-// Константы игры
+/**
+ * Game configuration constants
+ */
 export const BOARD_SIZE = 10;
 export const MIN_ADJACENT_FOR_REPLACE = 5;
 export const MAX_PLACE_OPERATIONS = 2;
 
-// Типы операций
+/**
+ * Represents possible game operation types
+ */
 export enum OperationType {
-  PLACE = 'place',
-  REPLACE = 'replace',
-  END_TURN = 'end_turn'
+    /** Place a new piece on the board */
+    PLACE = 'place',
+    /** Replace opponent's piece */
+    REPLACE = 'replace',
+    /** End current turn */
+    END_TURN = 'end_turn'
 }
 
-// Расширенный тип хода
+/**
+ * Represents a single game move
+ */
 export interface IGameMove {
-  type: OperationType;
-  position: IPosition;
+    /** Type of the operation */
+    type: OperationType;
+    /** Position on the board */
+    position: IPosition;
 }
 
-// Интерфейс для отслеживания хода
+/**
+ * Represents the state of the current turn
+ */
 export interface ITurnState {
-  placeOperationsLeft: number;
-  moves: IGameMove[];
+    /** Number of remaining place operations in current turn */
+    placeOperationsLeft: number;
+    /** List of moves made in current turn */
+    moves: IGameMove[];
 }
 
-// Интерфейс для очков игроков
+/**
+ * Represents players' scores
+ */
 export interface IScores {
-  player1: number;
-  player2: number;
+    /** First player's score */
+    player1: number;
+    /** Second player's score */
+    player2: number;
 }
 
-// Расширенное состояние игры
+/**
+ * Represents complete game state
+ */
 export interface IGameState {
-  board: IBoard;
-  gameOver: boolean;
-  winner: number | null;
-  currentTurn: ITurnState;
-  currentPlayer: number;
-  scores: IScores;
-  isFirstTurn: boolean; // Флаг для отслеживания первого хода в игре
+    /** Current board state */
+    board: IBoard;
+    /** Whether the game is over */
+    gameOver: boolean;
+    /** Winner player number (1 or 2), null if game is not over or draw */
+    winner: number | null;
+    /** Current turn state */
+    currentTurn: ITurnState;
+    /** Current player number (1 or 2) */
+    currentPlayer: number;
+    /** Players' scores */
+    scores: IScores;
+    /** Whether this is the first turn of the game */
+    isFirstTurn: boolean;
 }
 
-// Расширенный тип для валидации замены
+/**
+ * Represents validation result for replace operation
+ */
 export interface IReplaceValidation {
-  isValid: boolean;
-  adjacentCount: number;
-  positions: IPosition[];
+    /** Whether the replace operation is valid */
+    isValid: boolean;
+    /** Number of adjacent pieces found */
+    adjacentCount: number;
+    /** List of positions that would be affected */
+    positions: IPosition[];
 }
 
-// Направления для проверки соседних клеток
+/**
+ * Array of relative coordinates for checking adjacent cells
+ */
 export const DIRECTIONS = [
-  [-1, -1], [-1, 0], [-1, 1],
-  [0, -1],          [0, 1],
-  [1, -1],  [1, 0],  [1, 1]
+    [-1, -1], [-1, 0], [-1, 1],
+    [0, -1],          [0, 1],
+    [1, -1],  [1, 0],  [1, 1]
 ] as const;
 
-// Получение координат всех соседних клеток с учетом тороидальности
+/**
+ * Gets all adjacent positions considering board's toroidal nature
+ * @param pos Center position
+ * @param board Game board
+ * @returns Array of adjacent positions
+ */
 export const getAdjacentPositions = (pos: IPosition, board: IBoard): IPosition[] => {
-  return DIRECTIONS.map(([dx, dy]) => ({
-    x: ((pos.x + dx + board.size.width) % board.size.width),
-    y: ((pos.y + dy + board.size.height) % board.size.height)
-  }));
+    return DIRECTIONS.map(([dx, dy]) => ({
+        x: ((pos.x + dx + board.size.width) % board.size.width),
+        y: ((pos.y + dy + board.size.height) % board.size.height)
+    }));
 };
