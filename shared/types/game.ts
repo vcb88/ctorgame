@@ -2,6 +2,18 @@ import { IPlayer } from './player';
 import { IPosition, IBoard } from './coordinates';
 
 /**
+ * Player identifiers in the game
+ */
+export enum Player {
+    /** Empty cell or no player */
+    None = 0,
+    /** First player */
+    First = 1,
+    /** Second player */
+    Second = 2
+}
+
+/**
  * Game configuration constants
  */
 export const BOARD_SIZE = 10;
@@ -45,9 +57,9 @@ export interface ITurnState {
  */
 export interface IScores {
     /** First player's score */
-    player1: number;
+    [Player.First]: number;
     /** Second player's score */
-    player2: number;
+    [Player.Second]: number;
 }
 
 /**
@@ -58,12 +70,12 @@ export interface IGameState {
     board: IBoard;
     /** Whether the game is over */
     gameOver: boolean;
-    /** Winner player number (1 or 2), null if game is not over or draw */
-    winner: number | null;
+    /** Winner (Player.First, Player.Second), null if game is not over or draw */
+    winner: Player | null;
     /** Current turn state */
     currentTurn: ITurnState;
-    /** Current player number (1 or 2) */
-    currentPlayer: number;
+    /** Current player (Player.First or Player.Second) */
+    currentPlayer: Player;
     /** Players' scores */
     scores: IScores;
     /** Whether this is the first turn of the game */
