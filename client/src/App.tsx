@@ -7,6 +7,7 @@ import { JoinGame } from './pages/JoinGame';
 import { WaitingRoom } from './pages/WaitingRoom';
 import { GameBoard } from './pages/GameBoard';
 import { GameHistory } from './pages/GameHistory';
+import { GameRules } from './pages/GameRules';
 import './index.css';
 
 const App: React.FC = () => {
@@ -27,6 +28,9 @@ const App: React.FC = () => {
           
           {/* История игр */}
           <Route path="/history" element={<GameHistory />} />
+          
+          {/* Правила игры */}
+          <Route path="/rules" element={<GameRules />} />
           
           {/* Редирект на главную для неизвестных путей */}
           <Route path="*" element={<Navigate to="/" replace />} />
