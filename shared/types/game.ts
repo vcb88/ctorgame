@@ -14,6 +14,27 @@ export enum Player {
 }
 
 /**
+ * Gets the opponent player
+ * @param player Current player
+ * @returns Opponent player (First -> Second, Second -> First)
+ * @throws If player is None
+ */
+export function getOpponent(player: Player): Player {
+    if (player === Player.None) {
+        throw new Error('Cannot get opponent for Player.None');
+    }
+    return player === Player.First ? Player.Second : Player.First;
+}
+
+/**
+ * Game outcome constants
+ */
+export const GameOutcome = {
+    /** Represents a draw (no winner) */
+    Draw: null,
+} as const;
+
+/**
  * Game configuration constants
  */
 export const BOARD_SIZE = 10;

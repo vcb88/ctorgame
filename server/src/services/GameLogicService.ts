@@ -6,6 +6,9 @@ import {
   MIN_ADJACENT_FOR_REPLACE,
   IPosition,
   IBoard,
+  Player,
+  GameOutcome,
+  getOpponent,
   normalizePosition,
   getAdjacentPositions,
   IReplaceValidation
@@ -27,10 +30,10 @@ export class GameLogicService {
         placeOperationsLeft: 1, // Первый игрок начинает с одной операции
         moves: []
       },
-      currentPlayer: 0, // Добавляем currentPlayer (0 - первый игрок)
+      currentPlayer: Player.First,
       scores: {
-        player1: 0,
-        player2: 0
+        [Player.First]: 0,
+        [Player.Second]: 0
       },
       isFirstTurn: true // Добавляем флаг первого хода
     };
@@ -62,7 +65,7 @@ export class GameLogicService {
       // 1. Находится ли в клетке фишка противника
       // 2. Достаточно ли своих фишек вокруг
       return (
-        state.board.cells[y][x] === (playerNumber === 0 ? 1 : 0) &&
+        state.board.cells[y][x] === getOpponent(playerNumber) &&
         this.validateReplace(state.board, position, playerNumber).isValid
       );
     }
@@ -146,7 +149,7 @@ export class GameLogicService {
     for (let y = 0; y < height; y++) {
       for (let x = 0; x < width; x++) {
         // Проверяем только фишки противника
-        if (state.board.cells[y][x] === (playerNumber === 0 ? 1 : 0)) {
+        if (state.board.cells[y][x] === getOpponent(playerNumber)) {
           const position: IPosition = { x, y };
           const candidate = this.validateReplace(state.board, position, playerNumber);
           if (candidate.isValid) {
@@ -166,19 +169,20 @@ export class GameLogicService {
    * Обновляет счет в игре
    */
   private static updateScores(state: IGameState): void {
-    let player1Count = 0;
-    let player2Count = 0;
+    let firstPlayerCount = 0;
+    let secondPlayerCount = 0;
     const { width, height } = state.board.size;
 
     for (let y = 0; y < height; y++) {
       for (let x = 0; x < width; x++) {
-        if (state.board.cells[y][x] === 0) player1Count++;
-        else if (state.board.cells[y][x] === 1) player2Count++;
+        const cell = state.board.cells[y][x];
+        if (cell === Player.First) firstPlayerCount++;
+        else if (cell === Player.Second) secondPlayerCount++;
       }
     }
 
-    state.scores.player1 = player1Count;
-    state.scores.player2 = player2Count;
+    state.scores[Player.First] = firstPlayerCount;
+    state.scores[Player.Second] = secondPlayerCount;
   }
 
   /**
@@ -192,10 +196,10 @@ export class GameLogicService {
   /**
    * Определяет победителя по очкам
    */
-  private static determineWinner(scores: { player1: number; player2: number }): number | null {
-    if (scores.player1 > scores.player2) return 0;
-    if (scores.player2 > scores.player1) return 1;
-    return null; // Ничья
+  private static determineWinner(scores: IScores): Player | null {
+    if (scores[Player.First] > scores[Player.Second]) return Player.First;
+    if (scores[Player.Second] > scores[Player.First]) return Player.Second;
+    return GameOutcome.Draw;
   }
 
   /**
@@ -215,8 +219,8 @@ export class GameLogicService {
       },
       currentPlayer: state.currentPlayer,
       scores: {
-        player1: state.scores.player1,
-        player2: state.scores.player2
+        [Player.First]: state.scores[Player.First],
+        [Player.Second]: state.scores[Player.Second]
       },
       isFirstTurn: state.isFirstTurn
     };
