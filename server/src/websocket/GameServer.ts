@@ -11,7 +11,9 @@ import {
   IGameState,
   IBoard,
   BOARD_SIZE,
-  MAX_PLACE_OPERATIONS
+  MAX_PLACE_OPERATIONS,
+  Player,
+  GameOutcome
 } from '../shared';
 import { validateGameMove, validateGameState } from '../validation/game';
 import { GameService } from '../services/GameService';
@@ -59,7 +61,7 @@ export class GameServer {
           const gameCode = Math.random().toString(36).substring(7);
           const player: IPlayer = {
             id: socket.id,
-            number: 0
+            number: Player.First
           };
 
           // Создаем начальное состояние игры
@@ -94,7 +96,7 @@ export class GameServer {
 
           const player: IPlayer = {
             id: socket.id,
-            number: 1
+            number: Player.Second
           };
 
           // Сохраняем игрока в БД и Redis
@@ -275,7 +277,11 @@ export class GameServer {
                 if (currentSession && currentSession.gameId === session.gameId) {
                   // Если игрок не переподключился - завершаем игру
                   await Promise.all([
-                    this.gameService.finishGame(session.gameId, 1 - session.playerNumber, { player1: 0, player2: 0 }), // При дисконнекте считаем счет 0:0
+                    // При дисконнекте противник побеждает, счет 0:0
+                    this.gameService.finishGame(session.gameId, getOpponent(session.playerNumber), {
+                      [Player.First]: 0,
+                      [Player.Second]: 0
+                    }),
                     redisService.cleanupGame(session.gameId)
                   ]);
 

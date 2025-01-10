@@ -4,7 +4,8 @@ import {
     IRedisGameState,
     IRedisPlayerSession,
     IRedisGameRoom,
-    IRedisGameEvent
+    IRedisGameEvent,
+    Player
 } from '../shared';
 import { redisClient, REDIS_KEYS, REDIS_EVENTS, withLock, cacheConfig } from '../config/redis';
 import { GameLogicService } from './GameLogicService';
@@ -50,7 +51,7 @@ export class RedisService {
      */
     async updateGameState(
         gameId: string,
-        playerNumber: number,
+        playerNumber: Player,
         move: any,
         validateMove: boolean = true
     ): Promise<IGameState> {
@@ -300,8 +301,8 @@ export class RedisService {
     /**
      * Получает номер текущего игрока из состояния игры
      */
-    getCurrentPlayer(state: IGameState): number {
-        return state.currentTurn.moves.length % 2;
+    getCurrentPlayer(state: IGameState): Player {
+        return state.currentTurn.moves.length % 2 === 0 ? Player.First : Player.Second;
     }
 }
 
