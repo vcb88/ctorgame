@@ -68,8 +68,11 @@ export const LandingPage: React.FC = () => {
           </button>
 
           {/* Rules Link */}
-          <a 
-            href="/rules" 
+          <button 
+            onClick={() => {
+              logger.userAction('rulesClick');
+              navigate('/rules');
+            }}
             className="mt-4 text-cyan-400 hover:text-cyan-300 
                      transition-colors duration-300 
                      font-mono tracking-wider
@@ -78,7 +81,7 @@ export const LandingPage: React.FC = () => {
             <span className="text-xs">&lt;</span>
             GAME RULES
             <span className="text-xs">/&gt;</span>
-          </a>
+          </button>
         </div>
 
         {/* Version number */}

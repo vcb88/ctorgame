@@ -1,5 +1,4 @@
 import React from 'react';
-import { Navbar } from './Navbar';
 
 interface LayoutProps {
     children: React.ReactNode;
@@ -7,9 +6,8 @@ interface LayoutProps {
 
 export function Layout({ children }: LayoutProps) {
     return (
-        <div className="min-h-screen bg-background">
-            <Navbar />
-            <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+        <div className="min-h-screen bg-slate-900">
+            <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8 pt-20">
                 {children}
             </main>
         </div>
