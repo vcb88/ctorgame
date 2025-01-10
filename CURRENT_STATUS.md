@@ -40,6 +40,14 @@ This deterministic nature means that prioritizing certain replacements over othe
 
 ### Core Game Functionality
 
+#### Turn Order System
+The game implements a special first turn rule:
+- First turn: Only 1 placement operation allowed
+- All subsequent turns: 2 placement operations allowed
+- Turn management using isFirstTurn flag
+- Automatic turn transitions
+- Type-safe operation validation
+
 #### Player Identification System
 The game uses a type-safe Player enum for player identification:
 - `Player.First` and `Player.Second` for active players
