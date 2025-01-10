@@ -82,6 +82,12 @@ module.exports = {
         "piece-glow": "piece-glow 2s ease-in-out infinite",
         "piece-capture": "piece-capture 0.7s ease-in-out forwards",
         "piece-timer": "piece-timer var(--timer-duration) linear forwards",
+        "fade-in": "fade-in 0.5s ease-out forwards",
+        "content-appear": "content-appear 0.7s ease-out forwards",
+        "slide-up": "slide-up 0.5s ease-out forwards",
+        "float": "float 6s ease-in-out infinite",
+        "winner-glow": "winner-glow 2s ease-in-out infinite",
+        "gradient-x": "gradient-x 4s ease-in-out infinite",
       },
       keyframes: {
         "accordion-down": {
@@ -144,6 +150,65 @@ module.exports = {
           },
           "100%": {
             strokeDashoffset: "100"
+          }
+        },
+        "fade-in": {
+          "0%": {
+            opacity: "0"
+          },
+          "100%": {
+            opacity: "1"
+          }
+        },
+        "content-appear": {
+          "0%": {
+            opacity: "0",
+            transform: "scale(0.9)"
+          },
+          "100%": {
+            opacity: "1",
+            transform: "scale(1)"
+          }
+        },
+        "slide-up": {
+          "0%": {
+            opacity: "0",
+            transform: "translateY(20px)"
+          },
+          "100%": {
+            opacity: "1",
+            transform: "translateY(0)"
+          }
+        },
+        "float": {
+          "0%, 100%": {
+            transform: "translateY(0) rotate(0deg) scale(1)"
+          },
+          "33%": {
+            transform: "translateY(-10px) rotate(120deg) scale(1.1)"
+          },
+          "66%": {
+            transform: "translateY(10px) rotate(240deg) scale(0.9)"
+          }
+        },
+        "winner-glow": {
+          "0%, 100%": {
+            filter: "brightness(1) blur(0)",
+            transform: "scale(1)"
+          },
+          "50%": {
+            filter: "brightness(1.3) blur(3px)",
+            transform: "scale(1.1)"
+          }
+        },
+        "gradient-x": {
+          "0%, 100%": {
+            "background-size": "200% 200%",
+            "background-position": "left center"
+          },
+          "50%": {
+            "background-size": "200% 200%",
+            "background-position": "right center"
           }
         },
       },

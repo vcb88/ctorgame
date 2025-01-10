@@ -8,6 +8,7 @@ import { DisconnectionOverlay } from '@/components/modals/DisconnectionOverlay';
 import { logger } from '@/utils/logger';
 import { cn } from '@/lib/utils';
 import { useEffect, useState, useCallback } from 'react';
+import { GameOverScreen } from '@/components/GameOverScreen';
 
 export const GameBoard: React.FC = () => {
   const navigate = useNavigate();
@@ -212,39 +213,11 @@ export const GameBoard: React.FC = () => {
         </div>
 
         {gameState.gameOver && (
-          <div className="mt-8 flex flex-col items-center gap-4">
-            <div className="text-2xl font-bold font-mono">
-              Game Over!
-              {gameState.winner === null ? (
-                <div className="text-cyan-300">It's a draw!</div>
-              ) : (
-                <div className="flex items-center gap-2">
-                  Winner: 
-                  <div className={cn(
-                    "w-6 h-6 rounded-sm",
-                    "shadow-[0_0_15px_rgba(6,182,212,0.8)]",
-                    gameState.winner === 0 ? "bg-cyan-500" : "bg-red-500"
-                  )}></div>
-                  Player {gameState.winner + 1}
-                  <div className="text-cyan-300 ml-2">
-                    ({gameState.winner === 0 ? gameState.scores.player1 : gameState.scores.player2} pieces)
-                  </div>
-                </div>
-              )}
-            </div>
-            <button
-              className={cn(
-                "px-6 py-3 rounded text-xl transition-colors font-mono",
-                "bg-black/80 border border-cyan-500/30",
-                "text-cyan-400 hover:text-cyan-300",
-                "shadow-[0_0_15px_rgba(6,182,212,0.2)]",
-                "hover:shadow-[0_0_20px_rgba(6,182,212,0.4)]"
-              )}
-              onClick={() => navigate('/')}
-            >
-              Return to Menu
-            </button>
-          </div>
+          <GameOverScreen
+            winner={gameState.winner}
+            scores={gameState.scores}
+            onReturnToMenu={() => navigate('/')}
+          />
         )}
       </div>
     </div>
