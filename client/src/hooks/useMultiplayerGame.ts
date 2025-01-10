@@ -16,7 +16,9 @@ import {
   GameErrorType,
   WebSocketErrorCode,
   ErrorResponse,
-  ReconnectionData
+  ReconnectionData,
+  Player,
+  getOpponent
 } from '../shared';
 
 const SOCKET_SERVER_URL = process.env.NODE_ENV === 'production' 
@@ -32,9 +34,9 @@ export const useMultiplayerGame = () => {
   
   // Game state
   const [gameId, setGameId] = useState<string | null>(null);
-  const [playerNumber, setPlayerNumber] = useState<number | null>(null);
+  const [playerNumber, setPlayerNumber] = useState<Player | null>(null);
   const [gameState, setGameState] = useState<IGameState | null>(null);
-  const [currentPlayer, setCurrentPlayer] = useState<number>(0);
+  const [currentPlayer, setCurrentPlayer] = useState<Player>(Player.First);
   const [availableReplaces, setAvailableReplaces] = useState<IGameMove[]>([]);
   
   // Reconnection state
@@ -142,7 +144,7 @@ export const useMultiplayerGame = () => {
 
     const reconnectionData: ReconnectionData = {
       gameId: gameId || '',
-      playerNumber: playerNumber || 0,
+      playerNumber: playerNumber || Player.First,
       lastEventId: lastEventId.current || undefined,
       timestamp: Date.now()
     };
@@ -249,7 +251,7 @@ export const useMultiplayerGame = () => {
     socket.on(WebSocketEvents.GameCreated, ({ gameId, eventId }: { gameId: string, eventId: string }) => {
       logger.socketEvent(WebSocketEvents.GameCreated, { gameId, eventId }, 'in');
       setGameId(gameId);
-      setPlayerNumber(0);
+      setPlayerNumber(Player.First);
       lastEventId.current = eventId;
       setError(null);
       clearOperationTimeout('createGame');
@@ -258,13 +260,13 @@ export const useMultiplayerGame = () => {
     socket.on(WebSocketEvents.GameJoined, ({ gameId, eventId }: { gameId: string, eventId: string }) => {
       logger.socketEvent(WebSocketEvents.GameJoined, { gameId, eventId }, 'in');
       setGameId(gameId);
-      setPlayerNumber(1);
+      setPlayerNumber(Player.Second);
       lastEventId.current = eventId;
       setError(null);
       clearOperationTimeout('joinGame');
     });
 
-    socket.on(WebSocketEvents.GameStarted, ({ gameState, currentPlayer, eventId }: { gameState: IGameState; currentPlayer: number, eventId: string }) => {
+    socket.on(WebSocketEvents.GameStarted, ({ gameState, currentPlayer, eventId }: { gameState: IGameState; currentPlayer: Player, eventId: string }) => {
       logger.socketEvent(WebSocketEvents.GameStarted, { gameState, currentPlayer, eventId }, 'in');
       if (!validateGameState(gameState)) {
         handleError({
@@ -280,7 +282,7 @@ export const useMultiplayerGame = () => {
       setError(null);
     });
 
-    socket.on(WebSocketEvents.GameStateUpdated, ({ gameState, currentPlayer, eventId }: { gameState: IGameState; currentPlayer: number, eventId: string }) => {
+    socket.on(WebSocketEvents.GameStateUpdated, ({ gameState, currentPlayer, eventId }: { gameState: IGameState; currentPlayer: Player, eventId: string }) => {
       logger.socketEvent(WebSocketEvents.GameStateUpdated, { gameState, currentPlayer, eventId }, 'in');
       if (!validateGameState(gameState)) {
         handleError({
@@ -304,7 +306,7 @@ export const useMultiplayerGame = () => {
       lastEventId.current = eventId;
     });
 
-    socket.on(WebSocketEvents.GameOver, ({ gameState, winner, eventId }: { gameState: IGameState; winner: number | null, eventId: string }) => {
+    socket.on(WebSocketEvents.GameOver, ({ gameState, winner, eventId }: { gameState: IGameState; winner: Player | null, eventId: string }) => {
       logger.socketEvent(WebSocketEvents.GameOver, { gameState, winner, eventId }, 'in');
       if (!validateGameState(gameState)) {
         handleError({
@@ -318,7 +320,7 @@ export const useMultiplayerGame = () => {
       lastEventId.current = eventId;
       handleError({
         code: WebSocketErrorCode.GAME_ENDED,
-        message: winner === null ? 'Game ended in a draw!' : `Player ${winner} won!`,
+        message: winner === null ? 'Game ended in a draw!' : `${winner === Player.First ? 'First' : 'Second'} player won!`,
         recoverable: false,
         retryable: false,
         details: { winner }
@@ -330,7 +332,7 @@ export const useMultiplayerGame = () => {
       handleError(errorResponse);
     });
 
-    socket.on(WebSocketEvents.PlayerDisconnected, ({ player, eventId }: { player: number, eventId: string }) => {
+    socket.on(WebSocketEvents.PlayerDisconnected, ({ player, eventId }: { player: Player, eventId: string }) => {
       logger.socketEvent(WebSocketEvents.PlayerDisconnected, { player, eventId }, 'in');
       lastEventId.current = eventId;
       handleError({
