@@ -39,11 +39,21 @@ The replacement mechanism exhibits a deterministic cascade effect with the follo
 This deterministic nature means that prioritizing certain replacements over others would not affect the final game state, making the replacement order optimization unnecessary.
 
 ### Core Game Functionality
-   - Advanced game mechanics (10x10 toroidal board)
-   - Real-time multiplayer with two operations per turn
-   - Automatic piece replacement
-   - Enhanced win/draw detection
-   - Comprehensive score tracking
+
+#### Player Identification System
+The game uses a type-safe Player enum for player identification:
+- `Player.First` and `Player.Second` for active players
+- `Player.None` for empty cells
+- Built-in helper functions for player operations (e.g., getOpponent)
+- Consistent usage across game state and scoring
+- Type-safe comparison and validation
+
+#### Game Mechanics
+- Advanced game mechanics (10x10 toroidal board)
+- Real-time multiplayer with two operations per turn
+- Automatic piece replacement with deterministic cascade effect
+- Enhanced win/draw detection using GameOutcome constants
+- Comprehensive score tracking with type-safe player indexing
 
 2. Infrastructure & Technical Foundation
    - Robust WebSocket integration with Socket.IO

@@ -92,36 +92,36 @@ graph TD
 ```typescript
 // Game State (Key: game:{gameId}:state)
 {
-    board: number[][];       // Current board state
-    currentPlayer: number;   // Active player (0 or 1)
+    board: Player[][];                // Current board state (using Player enum)
+    currentPlayer: Player;            // Active player (First or Second)
     currentTurn: {
         placeOperationsLeft: number;
         moves: GameMove[];
     };
-    score: {
-        player1: number;
-        player2: number;
+    scores: {                         // Using Player enum as keys
+        [Player.First]: number;
+        [Player.Second]: number;
     };
     gameOver: boolean;
-    winner: number | null;
-    lastUpdate: number;     // Timestamp
+    winner: Player | null;            // First, Second, or null for draw
+    lastUpdate: number;               // Timestamp
 }
 
 // Game Room (Key: game:{gameId}:room)
 {
     players: Array<{
-        id: string;         // Socket ID
-        number: number;     // Player number
+        id: string;                   // Socket ID
+        number: Player;               // Player enum value
     }>;
     status: 'waiting' | 'playing' | 'finished';
-    lastUpdate: number;     // Timestamp
+    lastUpdate: number;               // Timestamp
 }
 
 // Player Session (Key: player:{socketId}:session)
 {
-    gameId: string;        // Current game ID
-    playerNumber: number;  // Player's number
-    lastActivity: number;  // Timestamp
+    gameId: string;                   // Current game ID
+    playerNumber: Player;             // Player enum value
+    lastActivity: number;             // Timestamp
 }
 
 // Move History (Key: game:{gameId}:moves)
@@ -185,21 +185,52 @@ ctorgame/
 ### Data Models
 
 ```typescript
+/** Player identification in the game */
+enum Player {
+    None = 0,     // Empty cell or no player
+    First = 1,    // First player
+    Second = 2    // Second player
+}
+
+/** Game state representation */
 interface GameState {
-  board: (number | null)[][];  // Game board state
-  gameOver: boolean;           // Is game finished
-  winner: number | null;       // Winner's player number (0/1/null)
+    board: Player[][];            // Game board state with Player enum values
+    gameOver: boolean;            // Is game finished
+    winner: Player | null;        // Winner (Player.First/Second) or null for draw
+    currentPlayer: Player;        // Current active player
+    scores: {                     // Current game scores
+        [Player.First]: number;   // First player's score
+        [Player.Second]: number;  // Second player's score
+    };
 }
 
+/** Game move definition */
 interface Move {
-  row: number;    // Row index
-  col: number;    // Column index
+    type: 'place' | 'replace';   // Move type
+    position: {                  // Move position
+        x: number;              // X coordinate
+        y: number;              // Y coordinate
+    };
 }
 
+/** Player information */
 interface Player {
-  id: string;     // Socket ID
-  number: number; // Player number (0/1)
+    id: string;                 // Socket ID
+    number: Player;             // Player enum value
 }
+
+// Helper functions
+function getOpponent(player: Player): Player {
+    return player === Player.First ? Player.Second : Player.First;
+}
+```
+
+Key features of the player identification system:
+- Type-safe enum for player values
+- Clear distinction between empty cells (None) and players
+- Consistent usage across game state
+- Helper functions for common operations
+- Type-safe score indexing with enum keys
 ```
 
 ## Game Flow
