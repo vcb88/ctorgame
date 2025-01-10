@@ -7,6 +7,9 @@ interface GameCellProps {
   value: number | null;
   disabled: boolean;
   onClick?: () => void;
+  isValidMove?: boolean;
+  isBeingCaptured?: boolean;
+  previousValue?: number | null;
 }
 
 export const GameCell: React.FC<GameCellProps> = ({
@@ -14,8 +17,12 @@ export const GameCell: React.FC<GameCellProps> = ({
   col,
   value,
   disabled,
-  onClick
+  onClick,
+  isValidMove = false,
+  isBeingCaptured = false,
+  previousValue = null
 }) => {
+  const shouldShowCaptureAnimation = isBeingCaptured && previousValue !== value;
   return (
     <div
       onClick={onClick}
@@ -25,12 +32,23 @@ export const GameCell: React.FC<GameCellProps> = ({
         "border border-cyan-500/30 bg-black/80",
         "before:absolute before:inset-0 before:opacity-0",
         "before:transition-opacity before:duration-300",
-        "hover:before:opacity-100 hover:border-cyan-400/50",
         {
-          "animate-piece-placed": value !== null,
+          // Base piece effects
+          "animate-piece-placed": value !== null && !shouldShowCaptureAnimation,
+          "animate-piece-capture": shouldShowCaptureAnimation,
           "shadow-[0_0_15px_rgba(6,182,212,0.5)]": value === 0,
           "shadow-[0_0_15px_rgba(239,68,68,0.5)]": value === 1,
-          "cursor-not-allowed": disabled
+          
+          // Valid move indicator
+          "after:absolute after:inset-0 after:border-2 after:border-dashed": isValidMove,
+          "after:border-cyan-400/50": isValidMove && !disabled,
+          "after:border-red-400/50": isValidMove && disabled,
+          "after:animate-pulse": isValidMove,
+          
+          // Hover effects
+          "hover:before:opacity-100 hover:border-cyan-400/50": !disabled,
+          "cursor-not-allowed": disabled,
+          "hover:border-red-400/50": disabled && isValidMove
         }
       )}
     >
