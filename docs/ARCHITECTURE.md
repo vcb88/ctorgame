@@ -103,6 +103,46 @@ sequenceDiagram
 
 ### Game State Management
 
+#### Player Identification System
+```typescript
+/** Player identification in the game */
+enum Player {
+    None = 0,     // Empty cell or no player
+    First = 1,    // First player
+    Second = 2    // Second player
+}
+
+/**
+ * Helper functions for player operations
+ */
+// Get the opponent player (First -> Second, Second -> First)
+function getOpponent(player: Player): Player {
+    if (player === Player.None) {
+        throw new Error('Cannot get opponent for Player.None');
+    }
+    return player === Player.First ? Player.Second : Player.First;
+}
+
+// Game outcome constants for consistent result handling
+const GameOutcome = {
+    Draw: null as const,  // Represents a draw (no winner)
+};
+
+// Score tracking with type-safe indexing
+interface GameScore {
+    [Player.First]: number;  // First player's score
+    [Player.Second]: number; // Second player's score
+}
+```
+
+The Player enum system provides:
+- Type-safe player identification across the application
+- Clear distinction between empty cells (None) and players
+- Consistent player naming (First/Second instead of numeric values)
+- Helper functions for common operations
+- Type-safe score indexing with enum keys
+- Clear game outcome representation
+
 #### Redis Data Structure
 ```typescript
 // Game State (Key: game:{gameId}:state)
@@ -120,7 +160,7 @@ interface RedisGameState {
 // Player Session (Key: player:{socketId}:session)
 interface RedisPlayerSession {
     gameId: string;         // Current game ID
-    playerNumber: number;   // Player's number in game
+    playerNumber: Player;   // Player's enum value
     lastActivity: number;   // Last activity timestamp
 }
 
