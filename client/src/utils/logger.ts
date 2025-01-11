@@ -71,7 +71,7 @@ export const logger = {
     }
   },
 
-  userAction: (action: string, data: unknown) => {
+  userAction: (action: string, data?: unknown) => {
     if (DEBUG) {
       console.debug(formatMessage('debug', 'User action', {
         component: 'UserInterface',

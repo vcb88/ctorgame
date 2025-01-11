@@ -1,5 +1,5 @@
 import React from 'react';
-import { useLocation } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { logger } from '@/utils/logger';
 import { cn } from '@/lib/utils';
 import { CyberButton } from '@/components/ui/cyber-button';
