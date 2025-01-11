@@ -73,6 +73,9 @@ export class GameService {
 
     async createGame(gameId: string, player: IPlayer, initialState: IGameState): Promise<GameMetadata> {
         await this.ensureInitialized();
+        // Нормализуем gameId к верхнему регистру
+        const normalizedGameId = gameId.toUpperCase();
+        
         // Generate a unique 4-digit code
         let code: string;
         let exists: GameMetadata | null;
@@ -82,7 +85,7 @@ export class GameService {
         } while (exists);
 
         const game: GameMetadata = {
-            gameId,
+            gameId: normalizedGameId,
             code,
             status: 'waiting',
             startTime: new Date().toISOString(),
@@ -102,10 +105,11 @@ export class GameService {
 
     async findGame(gameIdOrCode: string): Promise<GameMetadata | null> {
         await this.ensureInitialized();
+        const normalizedId = gameIdOrCode.toUpperCase();
         const result = await this.gamesCollection.findOne({ 
             $or: [
-                { gameId: gameIdOrCode, status: 'waiting' },
-                { code: gameIdOrCode, status: 'waiting' }
+                { gameId: normalizedId, status: 'waiting' },
+                { code: normalizedId, status: 'waiting' }
             ]
         });
         return result;
@@ -113,11 +117,12 @@ export class GameService {
 
     async joinGame(gameIdOrCode: string, player: IPlayer): Promise<GameMetadata> {
         await this.ensureInitialized();
+        const normalizedId = gameIdOrCode.toUpperCase();
         const result = await this.gamesCollection.findOneAndUpdate(
             { 
                 $or: [
-                    { gameId: gameIdOrCode, status: 'waiting' },
-                    { code: gameIdOrCode, status: 'waiting' }
+                    { gameId: normalizedId, status: 'waiting' },
+                    { code: normalizedId, status: 'waiting' }
                 ]
             },
             { 
