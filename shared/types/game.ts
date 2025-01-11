@@ -82,46 +82,9 @@ export interface IScores {
 }
 
 /**
- * Legacy scores format (used only for backward compatibility)
+ * Validates if an object matches the IScores interface
  */
-export interface ILegacyScores {
-    player1: number;
-    player2: number;
-}
-
-/**
- * Converts legacy scores format to enum format
- */
-export function legacyToEnumScores(scores: ILegacyScores): IScores {
-    return {
-        [Player.First]: scores.player1,
-        [Player.Second]: scores.player2
-    };
-}
-
-/**
- * Converts scores to legacy format (for backward compatibility)
- */
-export function enumToLegacyScores(scores: IScores): ILegacyScores {
-    return {
-        player1: scores[Player.First],
-        player2: scores[Player.Second]
-    };
-}
-
-/**
- * Checks if the scores object matches the legacy format
- */
-export function isLegacyScores(scores: any): scores is ILegacyScores {
-    return typeof scores === 'object' && scores !== null && 
-           'player1' in scores && 'player2' in scores &&
-           typeof scores.player1 === 'number' && typeof scores.player2 === 'number';
-}
-
-/**
- * Checks if the scores object matches the enum format
- */
-export function isEnumScores(scores: any): scores is IScores {
+export function isValidScores(scores: any): scores is IScores {
     return typeof scores === 'object' && scores !== null &&
            Player.First in scores && Player.Second in scores &&
            typeof scores[Player.First] === 'number' && typeof scores[Player.Second] === 'number';

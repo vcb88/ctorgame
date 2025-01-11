@@ -1,13 +1,13 @@
-import { IGameState } from './game';
+import { IGameState, Player } from './game';
 
 export interface IPlayer {
     id: string;
-    number: number;
+    number: Player;
 }
 
 export interface IGameRoom {
     gameId: string;
     players: IPlayer[];
     currentState: IGameState;
-    currentPlayer: number;
+    currentPlayer: Player;
 }
