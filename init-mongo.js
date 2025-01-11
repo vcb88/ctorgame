@@ -1,11 +1,12 @@
 // Создаем пользователя для приложения
-db.auth(process.env.MONGO_ROOT_USER, process.env.MONGO_ROOT_PASSWORD)
+db = db.getSiblingDB('admin')
+db.auth('admin', 'adminpassword')
 
 db = db.getSiblingDB('ctorgame')
 
 db.createUser({
-    user: process.env.MONGO_APP_USER || 'ctorgame',
-    pwd: process.env.MONGO_APP_PASSWORD || 'ctorgamepass',
+    user: 'ctorgame',
+    pwd: 'ctorgamepass',
     roles: [
         {
             role: 'readWrite',
