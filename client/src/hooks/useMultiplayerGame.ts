@@ -23,16 +23,12 @@ import {
   ReconnectionData
 } from '../types/connection';
 
-const SOCKET_SERVER_URL = process.env.NODE_ENV === 'production' 
-  ? window.location.origin 
-  : 'http://localhost:3000';
-
-// Board size is now taken from game state
+import { getSocket } from '../services/socket';
 
 export const useMultiplayerGame = () => {
-  const [socket, setSocket] = useState<Socket<ServerToClientEvents, ClientToServerEvents> | null>(null);
   const [connectionState, setConnectionState] = useState<ConnectionState>(ConnectionState.CONNECTING);
   const [error, setError] = useState<GameError | null>(null);
+  const socket = getSocket();
   
   // Game state
   const [gameId, setGameId] = useState<string | null>(null);
@@ -131,6 +127,8 @@ export const useMultiplayerGame = () => {
   }, [handleError]);
 
   const attemptReconnection = useCallback(() => {
+    if (!socket) return;
+
     if (reconnectionAttempts.current >= maxReconnectionAttempts) {
       setConnectionState(ConnectionState.ERROR);
       handleError({
@@ -159,37 +157,22 @@ export const useMultiplayerGame = () => {
       }
     });
 
-    // Create new socket connection with reconnection data
-    const newSocket = io(SOCKET_SERVER_URL, {
-      query: {
-        reconnection: true,
-        ...reconnectionData
-      }
-    });
-
-    setSocket(newSocket);
+    // Try to reconnect using existing socket
+    socket.io.opts.query = {
+      reconnection: true,
+      ...reconnectionData
+    };
+    socket.connect();
   }, [gameId, playerNumber, handleError]);
 
   // Initialize socket connection
   useEffect(() => {
-    logger.info('Initializing socket connection', { 
-      component: 'useMultiplayerGame',
-      data: { url: SOCKET_SERVER_URL }
-    });
+    if (!socket) return;
 
-    const newSocket = io(SOCKET_SERVER_URL, {
-      reconnection: true,
-      reconnectionAttempts: maxReconnectionAttempts,
-      reconnectionDelay: reconnectionDelay,
-      reconnectionDelayMax: reconnectionDelay * 2,
-      timeout: defaultOperationTimeout
-    });
-    setSocket(newSocket);
-
-    newSocket.on('connect', () => {
+    socket.on('connect', () => {
       logger.info('Socket connected', { 
         component: 'useMultiplayerGame',
-        data: { socketId: newSocket.id }
+        data: { socketId: socket.id }
       });
       setConnectionState(ConnectionState.CONNECTED);
       reconnectionAttempts.current = 0;
@@ -197,7 +180,7 @@ export const useMultiplayerGame = () => {
 
       // If we were in a game, attempt to rejoin
       if (gameId && playerNumber !== null) {
-        newSocket.emit(WebSocketEvents.Reconnect, {
+        socket.emit(WebSocketEvents.Reconnect, {
           gameId,
           playerNumber,
           lastEventId: lastEventId.current
@@ -205,7 +188,7 @@ export const useMultiplayerGame = () => {
       }
     });
 
-    newSocket.on('disconnect', (reason) => {
+    socket.on('disconnect', (reason) => {
       logger.warn('Socket disconnected', { 
         component: 'useMultiplayerGame',
         data: { reason }
@@ -225,7 +208,7 @@ export const useMultiplayerGame = () => {
       }
     });
 
-    newSocket.on('connect_error', (error) => {
+    socket.on('connect_error', (error) => {
       logger.error('Socket connection error', { 
         component: 'useMultiplayerGame',
         data: { error: error.message }
@@ -238,13 +221,18 @@ export const useMultiplayerGame = () => {
       });
     });
 
+    // Check initial connection state
+    if (socket.connected) {
+      setConnectionState(ConnectionState.CONNECTED);
+    }
+
     return () => {
-      logger.info('Closing socket connection', { component: 'useMultiplayerGame' });
+      logger.info('Cleaning up socket listeners', { component: 'useMultiplayerGame' });
       // Очищаем все таймауты операций
       Object.keys(operationTimeouts.current).forEach(clearOperationTimeout);
-      newSocket.close();
+      socket.removeAllListeners();
     };
-  }, []);
+  }, [socket, gameId, playerNumber]);
 
   // Socket event listeners
   useEffect(() => {

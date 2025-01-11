@@ -22,6 +22,11 @@ export function getSocket(): Socket {
     socket = io(wsUrl, {
       transports: ['websocket'],
       autoConnect: true,
+      reconnection: true,
+      reconnectionAttempts: 5,
+      reconnectionDelay: 3000,
+      reconnectionDelayMax: 6000,
+      timeout: 10000
     });
   }
   return socket;
