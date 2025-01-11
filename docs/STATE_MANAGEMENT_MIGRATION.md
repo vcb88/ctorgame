@@ -9,6 +9,8 @@ This document outlines the plan for migrating the current state management appro
 - Maintain simple debugging capabilities
 - Keep the codebase maintainable
 - Minimize impact on existing functionality
+- Ensure backward compatibility during migration
+- Maintain synchronization between client, server, and shared code
 
 ## Migration Phases
 
@@ -144,6 +146,174 @@ This document outlines the plan for migrating the current state management appro
 2. Add integration tests for components with new state management
 3. Update component tests to use mocked GameStateManager
 4. Document new patterns and best practices
+
+## Required Changes in Shared and Server Parts
+
+### Shared Module Updates
+
+The shared module requires updates to support the new state management architecture:
+
+1. New Types and Interfaces:
+```typescript
+// shared/types/gameState.ts
+export type GamePhase = 
+  | 'INITIAL'
+  | 'CONNECTING'
+  | 'WAITING'
+  | 'PLAYING'
+  | 'GAME_OVER';
+
+export interface GameManagerState {
+  phase: GamePhase;
+  gameId: string | null;
+  playerNumber: Player | null;
+  error: GameError | null;
+  connectionState: ConnectionState;
+}
+
+export interface GameStateUpdate {
+  gameState: IGameState;
+  eventId: string;
+  phase: GamePhase;
+}
+```
+
+2. New Validators:
+```typescript
+// shared/validation/stateValidation.ts
+export function validateGamePhase(phase: GamePhase): boolean {
+  return ['INITIAL', 'CONNECTING', 'WAITING', 'PLAYING', 'GAME_OVER'].includes(phase);
+}
+
+export function validateGameManagerState(state: GameManagerState): boolean {
+  return (
+    validateGamePhase(state.phase) &&
+    (state.gameId === null || typeof state.gameId === 'string') &&
+    (state.playerNumber === null || validatePlayerNumber(state.playerNumber))
+  );
+}
+```
+
+### Server Updates
+
+Server part requires minimal changes to support the new architecture:
+
+1. Extended Event Types:
+```typescript
+// server/src/types/events.ts
+interface GameStartedEvent {
+  gameState: IGameState;
+  currentPlayer: Player;
+  eventId: string;
+  phase: GamePhase;  // new field
+}
+```
+
+2. Enhanced Validation:
+```typescript
+// server/src/services/gameService.ts
+class GameService {
+  private validateGameTransition(
+    currentPhase: GamePhase,
+    newPhase: GamePhase,
+    gameState: IGameState
+  ): boolean {
+    switch(currentPhase) {
+      case 'WAITING':
+        return newPhase === 'PLAYING' || newPhase === 'GAME_OVER';
+      case 'PLAYING':
+        return newPhase === 'GAME_OVER';
+      // ...
+    }
+  }
+}
+```
+
+3. Improved Logging:
+```typescript
+// server/src/services/loggingService.ts
+interface GameStateChangeLog {
+  previousPhase: GamePhase;
+  newPhase: GamePhase;
+  gameId: string;
+  timestamp: number;
+  playerId: string;
+  reason: string;
+}
+```
+
+### Migration Order
+
+```mermaid
+graph TD
+    A[Update Shared Types] --> B[Update Server Events]
+    A --> C[Update Client GameManager]
+    B --> D[Update Server Validation]
+    C --> E[Update Client Components]
+    D --> F[Add Enhanced Logging]
+    E --> F
+```
+
+### Implementation Steps
+
+1. Shared Updates (Phase 1):
+   - Add new types with backward compatibility
+   - Update existing interfaces
+   - Add new validators
+   ```typescript
+   // Example of backward compatible changes
+   interface GameEvent {
+     phase?: GamePhase; // optional for backward compatibility
+     // existing fields
+   }
+   ```
+
+2. Server Updates (Phase 2):
+   - Extend event structures
+   - Add phase validation
+   - Enhance logging
+   ```typescript
+   class GameServer {
+     private emitGameStarted(socket: Socket, gameState: IGameState) {
+       socket.emit('gameStarted', {
+         gameState,
+         phase: 'PLAYING', // add new field
+         // existing fields
+       });
+     }
+   }
+   ```
+
+3. Client Updates (Phase 3):
+   - Implement GameStateManager
+   - Update components
+   - Add new hooks
+   ```typescript
+   class GameStateManager {
+     private handleGameStarted(event: GameStartedEvent) {
+       const phase = event.phase || 'PLAYING';
+       this.updateState({ phase });
+     }
+   }
+   ```
+
+### Compatibility Considerations
+
+1. Backward Compatibility:
+   - Make new fields optional initially
+   - Provide default values for missing fields
+   - Add fallback logic in client code
+
+2. Deployment Strategy:
+   - Deploy shared module updates first
+   - Update server with backward compatibility
+   - Roll out client changes
+   - Make new fields mandatory after full deployment
+
+3. Testing Requirements:
+   - Test with old and new client versions
+   - Verify event handling with and without new fields
+   - Check state transitions in all scenarios
 
 ## Success Criteria
 - All game-related state managed through GameStateManager
