@@ -38,21 +38,45 @@ export class GameServer {
       cors: {
         origin: "*",
         methods: ["GET", "POST"]
-      }
+      },
+      path: '/socket.io/',
+      transports: ['websocket', 'polling'],
+      serveClient: false,
+      pingTimeout: 10000,
+      pingInterval: 5000,
+      upgradeTimeout: 10000,
+      maxHttpBufferSize: 1e6,
     });
 
     // Инициализируем сервисы
-    Promise.all([
-      connectRedis()
-    ]).then(() => {
+    this.initializeServices().catch(error => {
+      console.error("Critical initialization error:", error);
+      process.exit(1);
+    });
+  }
+
+  private async initializeServices(): Promise<void> {
+    try {
+      console.log("Starting services initialization...");
+      
+      // Ждем подключения Redis
+      await connectRedis();
       console.log("Redis initialized");
+
+      // Инициализируем сервисы
       this.gameService = new GameService();
       this.storageService = new GameStorageService(
         process.env.MONGODB_URL,
         redisClient
       );
+
+      // Настраиваем обработчики событий
       this.setupEventHandlers();
-    }).catch(error => console.error("Initialization error:", error));
+      console.log("WebSocket event handlers initialized");
+    } catch (error) {
+      console.error("Failed to initialize services:", error);
+      throw error;
+    }
   }
 
   private setupEventHandlers(): void {
@@ -76,11 +100,34 @@ export class GameServer {
             redisService.createGame(gameCode, player, initialState)
           ]);
 
-          socket.join(gameCode);
-          socket.emit(WebSocketEvents.GameCreated, { gameId: gameCode });
+          // Проверяем успешность создания игры
+          const [gameRoom] = await Promise.all([
+            redisService.getGameRoom(gameCode),
+            new Promise(resolve => socket.join(gameCode, resolve))
+          ]);
+
+          if (!gameRoom) {
+            throw new Error('Failed to create game room');
+          }
+
+          console.log(`Game created: ${gameCode}, Player: ${socket.id}`);
+          
+          // Сохраняем сессию игрока
+          await redisService.setPlayerSession(socket.id, gameCode, Player.First);
+
+          const eventId = Date.now().toString();
+          socket.emit(WebSocketEvents.GameCreated, { 
+            gameId: gameCode,
+            eventId,
+            message: 'Game created successfully'
+          });
         } catch (error) {
           console.error('Error creating game:', error);
-          socket.emit(WebSocketEvents.Error, { message: 'Failed to create game' });
+          socket.emit(WebSocketEvents.Error, { 
+            code: WebSocketErrorCode.SERVER_ERROR,
+            message: 'Failed to create game',
+            details: { error: error.message }
+          });
         }
       });
 

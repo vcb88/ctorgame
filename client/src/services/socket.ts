@@ -18,16 +18,27 @@ let socket: Socket | null = null;
 
 export function getSocket(): Socket {
   if (!socket) {
-    const wsUrl = (import.meta.env?.VITE_WS_URL as string) || 'ws://localhost:3000';
+    const wsUrl = (import.meta.env?.VITE_WS_URL as string) || window.location.origin;
+    
+    console.log('Creating socket connection to:', wsUrl);
+    
     socket = io(wsUrl, {
-      transports: ['websocket'],
+      transports: ['websocket', 'polling'],
       autoConnect: true,
       reconnection: true,
       reconnectionAttempts: 5,
       reconnectionDelay: 3000,
       reconnectionDelayMax: 6000,
-      timeout: 10000
+      timeout: 10000,
+      path: '/socket.io/',
+      upgrade: true,
     });
+
+    // Логирование событий сокета
+    socket.on('connect', () => console.log('Socket connected:', socket?.id));
+    socket.on('connect_error', (err) => console.error('Socket connection error:', err));
+    socket.on('disconnect', (reason) => console.log('Socket disconnected:', reason));
+    socket.on('reconnect', (attempt) => console.log('Socket reconnected after attempt:', attempt));
   }
   return socket;
 }
