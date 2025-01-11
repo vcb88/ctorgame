@@ -71,7 +71,7 @@ describe('Redis Configuration', () => {
 
         it('should execute operation with lock', async () => {
             mockSet.mockResolvedValueOnce('OK' as 'OK');
-            const operation = jest.fn().mockResolvedValueOnce('result');
+            const operation = jest.fn<Promise<string>, []>().mockResolvedValueOnce('result');
             
             const result = await withLock('test-game', operation);
             
@@ -83,7 +83,7 @@ describe('Redis Configuration', () => {
 
         it('should release lock even if operation fails', async () => {
             mockSet.mockResolvedValueOnce('OK' as 'OK');
-            const operation = jest.fn().mockRejectedValueOnce(new Error('test error'));
+            const operation = jest.fn<Promise<never>, []>().mockRejectedValueOnce(new Error('test error'));
             
             await expect(withLock('test-game', operation)).rejects.toThrow('test error');
             
@@ -92,7 +92,7 @@ describe('Redis Configuration', () => {
 
         it('should throw if cannot acquire lock', async () => {
             mockSet.mockResolvedValueOnce(null as unknown as 'OK');
-            const operation = jest.fn();
+            const operation = jest.fn<Promise<unknown>, []>();
             
             await expect(withLock('test-game', operation)).rejects.toThrow('Could not acquire lock');
             

@@ -6,25 +6,26 @@ import { IGameState, IPlayer, Player, IScores, IGameEvent, GameEventType } from 
 
 // Мокаем Redis и GameLogicService
 jest.mock('../../config/redis', () => {
+    type RedisResult<T> = Promise<T>;
     const mockRedisClient = {
-        set: jest.fn().mockImplementation(() => Promise.resolve('OK' as 'OK')),
-        get: jest.fn().mockImplementation(() => Promise.resolve(null)),
-        setex: jest.fn().mockImplementation(() => Promise.resolve('OK' as 'OK')),
-        sadd: jest.fn().mockImplementation(() => Promise.resolve(1)),
-        srem: jest.fn().mockImplementation(() => Promise.resolve(1)),
-        smembers: jest.fn().mockImplementation(() => Promise.resolve([])),
-        del: jest.fn().mockImplementation(() => Promise.resolve(1)),
-        lrange: jest.fn().mockImplementation(() => Promise.resolve([])),
+        set: jest.fn<RedisResult<'OK'>, any>().mockImplementation(() => Promise.resolve('OK')),
+        get: jest.fn<RedisResult<string | null>, any>().mockImplementation(() => Promise.resolve(null)),
+        setex: jest.fn<RedisResult<'OK'>, any>().mockImplementation(() => Promise.resolve('OK')),
+        sadd: jest.fn<RedisResult<number>, any>().mockImplementation(() => Promise.resolve(1)),
+        srem: jest.fn<RedisResult<number>, any>().mockImplementation(() => Promise.resolve(1)),
+        smembers: jest.fn<RedisResult<string[]>, any>().mockImplementation(() => Promise.resolve([])),
+        del: jest.fn<RedisResult<number>, any>().mockImplementation(() => Promise.resolve(1)),
+        lrange: jest.fn<RedisResult<string[]>, any>().mockImplementation(() => Promise.resolve([])),
         multi: jest.fn().mockImplementation(() => ({
             set: jest.fn().mockReturnThis(),
             del: jest.fn().mockReturnThis(),
             lpush: jest.fn().mockReturnThis(),
             expire: jest.fn().mockReturnThis(),
-            exec: jest.fn().mockImplementation(() => Promise.resolve(['OK' as 'OK'])),
+            exec: jest.fn<RedisResult<('OK' | number)[]>, any>().mockImplementation(() => Promise.resolve(['OK'])),
             publish: jest.fn().mockReturnThis(),
             srem: jest.fn().mockReturnThis()
         })),
-        publish: jest.fn().mockImplementation(() => Promise.resolve(1))
+        publish: jest.fn<RedisResult<number>, any>().mockImplementation(() => Promise.resolve(1))
     };
 
     return {
@@ -40,7 +41,7 @@ jest.mock('../../config/redis', () => {
             GAME_STATE_UPDATED: 'game:state:updated',
             PLAYER_DISCONNECTED: 'player:disconnected'
         },
-        withLock: jest.fn().mockImplementation((_, fn) => Promise.resolve(fn()))
+        withLock: jest.fn().mockImplementation((_, fn: () => Promise<unknown>) => Promise.resolve(fn()))
     };
 });
 
