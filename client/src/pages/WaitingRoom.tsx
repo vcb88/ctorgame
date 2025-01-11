@@ -19,10 +19,25 @@ export const WaitingRoom: React.FC = () => {
   } = useMultiplayerGame();
 
   useEffect(() => {
+    logger.debug('WaitingRoom state update', {
+      component: 'WaitingRoom',
+      data: {
+        urlGameId,
+        gameId,
+        gameState,
+        playerNumber,
+        error
+      }
+    });
+
     if (gameState) {
-      navigate(`/game/${gameId}`);
+      logger.info('Game started, navigating to game board', {
+        component: 'WaitingRoom',
+        data: { gameId, playerNumber }
+      });
+      navigate(`/game/${urlGameId}`);
     }
-  }, [gameState]);
+  }, [gameState, gameId, playerNumber, urlGameId]);
 
   useEffect(() => {
     if (error) {

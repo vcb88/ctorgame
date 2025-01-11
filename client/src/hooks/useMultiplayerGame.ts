@@ -245,112 +245,116 @@ export const useMultiplayerGame = () => {
   useEffect(() => {
     if (!socket) return;
 
-    socket.on(WebSocketEvents.GameCreated, ({ gameId, eventId }: { gameId: string, eventId: string }) => {
-      logger.socketEvent(WebSocketEvents.GameCreated, { gameId, eventId }, 'in');
-      setGameId(gameId);
-      setPlayerNumber(Player.First);
-      lastEventId.current = eventId;
-      setError(null);
-      clearOperationTimeout('createGame');
-    });
+    const handlers = {
+      [WebSocketEvents.GameCreated]: ({ gameId, eventId }: { gameId: string, eventId: string }) => {
+        logger.socketEvent(WebSocketEvents.GameCreated, { gameId, eventId }, 'in');
+        setGameId(gameId);
+        setPlayerNumber(Player.First);
+        lastEventId.current = eventId;
+        setError(null);
+        clearOperationTimeout('createGame');
+      },
 
-    socket.on(WebSocketEvents.GameJoined, ({ gameId, eventId }: { gameId: string, eventId: string }) => {
-      logger.socketEvent(WebSocketEvents.GameJoined, { gameId, eventId }, 'in');
-      setGameId(gameId);
-      setPlayerNumber(Player.Second);
-      lastEventId.current = eventId;
-      setError(null);
-      clearOperationTimeout('joinGame');
-    });
+      [WebSocketEvents.GameJoined]: ({ gameId, eventId }: { gameId: string, eventId: string }) => {
+        logger.socketEvent(WebSocketEvents.GameJoined, { gameId, eventId }, 'in');
+        setGameId(gameId);
+        setPlayerNumber(Player.Second);
+        lastEventId.current = eventId;
+        setError(null);
+        clearOperationTimeout('joinGame');
+      },
 
-    socket.on(WebSocketEvents.GameStarted, ({ gameState, currentPlayer, eventId }: { gameState: IGameState; currentPlayer: Player, eventId: string }) => {
-      logger.socketEvent(WebSocketEvents.GameStarted, { gameState, currentPlayer, eventId }, 'in');
-      if (!validateGameState(gameState)) {
+      [WebSocketEvents.GameStarted]: ({ gameState, currentPlayer, eventId }: { gameState: IGameState; currentPlayer: Player, eventId: string }) => {
+        logger.socketEvent(WebSocketEvents.GameStarted, { gameState, currentPlayer, eventId }, 'in');
+        if (!validateGameState(gameState)) {
+          handleError({
+            code: WebSocketErrorCode.INVALID_STATE,
+            message: 'Invalid game state received',
+            details: { gameState }
+          });
+          return;
+        }
+        setGameState(gameState);
+        setCurrentPlayer(currentPlayer);
+        lastEventId.current = eventId;
+        setError(null);
+      },
+
+      [WebSocketEvents.GameStateUpdated]: ({ gameState, currentPlayer, eventId }: { gameState: IGameState; currentPlayer: Player, eventId: string }) => {
+        logger.socketEvent(WebSocketEvents.GameStateUpdated, { gameState, currentPlayer, eventId }, 'in');
+        if (!validateGameState(gameState)) {
+          handleError({
+            code: WebSocketErrorCode.INVALID_STATE,
+            message: 'Invalid game state received',
+            details: { gameState }
+          });
+          return;
+        }
+        setGameState(gameState);
+        setCurrentPlayer(currentPlayer);
+        lastEventId.current = eventId;
+        setError(null);
+        setAvailableReplaces([]);
+        clearOperationTimeout('makeMove');
+      },
+
+      [WebSocketEvents.AvailableReplaces]: ({ moves, eventId }: { moves: IGameMove[], eventId: string }) => {
+        logger.socketEvent(WebSocketEvents.AvailableReplaces, { moves, eventId }, 'in');
+        setAvailableReplaces(moves);
+        lastEventId.current = eventId;
+      },
+
+      [WebSocketEvents.GameOver]: ({ gameState, winner, eventId }: { gameState: IGameState; winner: Player | null, eventId: string }) => {
+        logger.socketEvent(WebSocketEvents.GameOver, { gameState, winner, eventId }, 'in');
+        if (!validateGameState(gameState)) {
+          handleError({
+            code: WebSocketErrorCode.INVALID_STATE,
+            message: 'Invalid game state received',
+            details: { gameState }
+          });
+          return;
+        }
+        setGameState(gameState);
+        lastEventId.current = eventId;
         handleError({
-          code: WebSocketErrorCode.INVALID_STATE,
-          message: 'Invalid game state received',
-          details: { gameState }
+          code: WebSocketErrorCode.GAME_ENDED,
+          message: winner === null ? 'Game ended in a draw!' : `${winner === Player.First ? 'First' : 'Second'} player won!`,
+          recoverable: false,
+          retryable: false,
+          details: { winner }
         });
-        return;
-      }
-      setGameState(gameState);
-      setCurrentPlayer(currentPlayer);
-      lastEventId.current = eventId;
-      setError(null);
-    });
+      },
 
-    socket.on(WebSocketEvents.GameStateUpdated, ({ gameState, currentPlayer, eventId }: { gameState: IGameState; currentPlayer: Player, eventId: string }) => {
-      logger.socketEvent(WebSocketEvents.GameStateUpdated, { gameState, currentPlayer, eventId }, 'in');
-      if (!validateGameState(gameState)) {
+      [WebSocketEvents.Error]: (errorResponse: ErrorResponse) => {
+        logger.socketEvent(WebSocketEvents.Error, { error: errorResponse }, 'in');
+        handleError(errorResponse);
+      },
+
+      [WebSocketEvents.PlayerDisconnected]: ({ player, eventId }: { player: Player, eventId: string }) => {
+        logger.socketEvent(WebSocketEvents.PlayerDisconnected, { player, eventId }, 'in');
+        lastEventId.current = eventId;
         handleError({
-          code: WebSocketErrorCode.INVALID_STATE,
-          message: 'Invalid game state received',
-          details: { gameState }
+          code: WebSocketErrorCode.CONNECTION_ERROR,
+          message: `Player ${player} disconnected`,
+          recoverable: true,
+          retryable: true,
+          details: { player }
         });
-        return;
       }
-      setGameState(gameState);
-      setCurrentPlayer(currentPlayer);
-      lastEventId.current = eventId;
-      setError(null);
-      setAvailableReplaces([]);
-      clearOperationTimeout('makeMove');
-    });
-
-    socket.on(WebSocketEvents.AvailableReplaces, ({ moves, eventId }: { moves: IGameMove[], eventId: string }) => {
-      logger.socketEvent(WebSocketEvents.AvailableReplaces, { moves, eventId }, 'in');
-      setAvailableReplaces(moves);
-      lastEventId.current = eventId;
-    });
-
-    socket.on(WebSocketEvents.GameOver, ({ gameState, winner, eventId }: { gameState: IGameState; winner: Player | null, eventId: string }) => {
-      logger.socketEvent(WebSocketEvents.GameOver, { gameState, winner, eventId }, 'in');
-      if (!validateGameState(gameState)) {
-        handleError({
-          code: WebSocketErrorCode.INVALID_STATE,
-          message: 'Invalid game state received',
-          details: { gameState }
-        });
-        return;
-      }
-      setGameState(gameState);
-      lastEventId.current = eventId;
-      handleError({
-        code: WebSocketErrorCode.GAME_ENDED,
-        message: winner === null ? 'Game ended in a draw!' : `${winner === Player.First ? 'First' : 'Second'} player won!`,
-        recoverable: false,
-        retryable: false,
-        details: { winner }
-      });
-    });
-
-    socket.on(WebSocketEvents.Error, (errorResponse: ErrorResponse) => {
-      logger.socketEvent(WebSocketEvents.Error, { error: errorResponse }, 'in');
-      handleError(errorResponse);
-    });
-
-    socket.on(WebSocketEvents.PlayerDisconnected, ({ player, eventId }: { player: Player, eventId: string }) => {
-      logger.socketEvent(WebSocketEvents.PlayerDisconnected, { player, eventId }, 'in');
-      lastEventId.current = eventId;
-      handleError({
-        code: WebSocketErrorCode.CONNECTION_ERROR,
-        message: `Player ${player} disconnected`,
-        recoverable: true,
-        retryable: true,
-        details: { player }
-      });
-    });
-
-    return () => {
-      socket.off(WebSocketEvents.GameCreated);
-      socket.off(WebSocketEvents.GameJoined);
-      socket.off(WebSocketEvents.GameStarted);
-      socket.off(WebSocketEvents.GameStateUpdated);
-      socket.off(WebSocketEvents.GameOver);
-      socket.off(WebSocketEvents.Error);
-      socket.off(WebSocketEvents.PlayerDisconnected);
     };
-  }, [socket]);
+
+    // Setup event handlers
+    Object.entries(handlers).forEach(([event, handler]) => {
+      socket.on(event, handler);
+    });
+
+    // Cleanup function
+    return () => {
+      Object.keys(handlers).forEach((event) => {
+        socket.off(event);
+      });
+    };
+  }, [socket, handleError, validateGameState, clearOperationTimeout]);
 
   const createGame = useCallback(() => {
     logger.info('createGame called', {

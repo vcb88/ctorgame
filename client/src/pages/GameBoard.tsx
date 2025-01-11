@@ -65,15 +65,30 @@ export const GameBoard: React.FC = () => {
   useEffect(() => {
     logger.debug('GameBoard mounted', { 
       component: 'GameBoard',
-      gameId: urlGameId 
+      data: {
+        urlGameId,
+        gameId,
+        playerNumber,
+        gameState: !!gameState
+      }
     });
+
+    // Если мы попали на страницу напрямую или потеряли состояние,
+    // пытаемся переподключиться к игре
+    if (urlGameId && (!gameState || gameId !== urlGameId)) {
+      logger.info('Attempting to reconnect to game', {
+        component: 'GameBoard',
+        data: { urlGameId, currentGameId: gameId }
+      });
+      navigate(`/waiting/${urlGameId}`);
+    }
 
     return () => {
       logger.debug('GameBoard unmounted', { 
         component: 'GameBoard' 
       });
     };
-  }, []);
+  }, [urlGameId, gameId, gameState, playerNumber]);
 
   useEffect(() => {
     if (error) {
