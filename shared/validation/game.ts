@@ -1,4 +1,4 @@
-import { IGameMove, IGameState, IPosition, IBoardSize, Player } from '../types/index.js';
+import { IGameMove, IGameState, IPosition, IBoardSize, Player, isLegacyScores, isEnumScores } from '../types/index.js';
 
 export function validatePosition(pos: IPosition, size: IBoardSize): boolean {
   return (
@@ -41,10 +41,7 @@ export function validateGameState(state: IGameState): boolean {
     typeof state.currentTurn.placeOperationsLeft === 'number' &&
     Array.isArray(state.currentTurn.moves) &&
     typeof state.scores === 'object' &&
-    ((typeof state.scores.player1 === 'number' && 
-      typeof state.scores.player2 === 'number') ||
-    (typeof state.scores[Player.First] === 'number' && 
-      typeof state.scores[Player.Second] === 'number')) &&
+    (isLegacyScores(state.scores) || isEnumScores(state.scores)) &&
     typeof state.isFirstTurn === 'boolean'
   );
 }
