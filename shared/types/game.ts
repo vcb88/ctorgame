@@ -74,26 +74,20 @@ export interface ITurnState {
 }
 
 /**
- * Legacy scores format
+ * Represents players' scores using Player enum
  */
-export interface ILegacyScores {
-    player1: number;
-    player2: number;
-}
-
-/**
- * Modern scores format using Player enum
- */
-export interface IEnumScores {
+export interface IScores {
     [Player.First]: number;
     [Player.Second]: number;
 }
 
 /**
- * Represents players' scores
- * Supports both legacy and modern formats during migration
+ * Legacy scores format (used only for backward compatibility)
  */
-export type IScores = ILegacyScores | IEnumScores;
+export interface ILegacyScores {
+    player1: number;
+    player2: number;
+}
 
 /**
  * Converts legacy scores format to enum format
@@ -106,9 +100,9 @@ export function legacyToEnumScores(scores: ILegacyScores): IEnumScores {
 }
 
 /**
- * Converts enum scores format to legacy format
+ * Converts scores to legacy format (for backward compatibility)
  */
-export function enumToLegacyScores(scores: IEnumScores): ILegacyScores {
+export function toHateousLegacyFormat(scores: IScores): ILegacyScores {
     return {
         player1: scores[Player.First],
         player2: scores[Player.Second]
@@ -116,17 +110,12 @@ export function enumToLegacyScores(scores: IEnumScores): ILegacyScores {
 }
 
 /**
- * Detects if scores are in legacy format
+ * Checks if the scores object matches the legacy format
  */
-export function isLegacyScores(scores: IScores): scores is ILegacyScores {
-    return 'player1' in scores && 'player2' in scores;
-}
-
-/**
- * Detects if scores are in enum format
- */
-export function isEnumScores(scores: IScores): scores is IEnumScores {
-    return Player.First in scores && Player.Second in scores;
+export function isLegacyScores(scores: any): scores is ILegacyScores {
+    return typeof scores === 'object' && scores !== null && 
+           'player1' in scores && 'player2' in scores &&
+           typeof scores.player1 === 'number' && typeof scores.player2 === 'number';
 }
 
 /**
