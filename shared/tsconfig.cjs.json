@@ -4,5 +4,10 @@
     "module": "CommonJS",
     "moduleResolution": "Node",
     "outDir": "./dist/cjs"
-  }
+  },
+  "ts-node": {
+    "files": true
+  },
+  "files": ["./index.ts"],
+  "compileOnSave": true
 }
