@@ -18,7 +18,8 @@ let socket: Socket | null = null;
 
 export function getSocket(): Socket {
   if (!socket) {
-    const wsUrl = (import.meta.env?.VITE_WS_URL as string) || window.location.origin;
+    // В режиме разработки используем текущий хост, так как Vite проксирует запросы
+    const wsUrl = window.location.origin;
     
     console.log('Creating socket connection to:', wsUrl);
     

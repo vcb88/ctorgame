@@ -33,10 +33,16 @@ export default defineConfig({
     host: '0.0.0.0',
     port: 5173,
     strictPort: true,
-    hmr: {
-      clientPort: 80,
-      host: 'localhost',
-      protocol: 'ws'
+    proxy: {
+      '/socket.io': {
+        target: 'http://server:3000',
+        ws: true,
+        changeOrigin: true
+      },
+      '/api': {
+        target: 'http://server:3000',
+        changeOrigin: true
+      }
     },
     watch: {
       usePolling: true,
@@ -44,8 +50,7 @@ export default defineConfig({
     fs: {
       strict: false,
       allow: ['.']
-    },
-    middlewareMode: false
+    }
   },
   preview: {
     port: 5173,

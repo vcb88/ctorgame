@@ -21,8 +21,18 @@ export default defineConfig({
   },
   server: {
     host: '0.0.0.0',  // Явно указываем слушать все интерфейсы
-
-    strictPort: false, // Разрешаем использовать другой порт если основной занят
+    strictPort: true, // Используем только указанный порт
     port: 5173, // Стандартный порт Vite
+    proxy: {
+      '/socket.io': {
+        target: 'http://server:3000',
+        ws: true,
+        changeOrigin: true
+      },
+      '/api': {
+        target: 'http://server:3000',
+        changeOrigin: true
+      }
+    }
   },
 });
