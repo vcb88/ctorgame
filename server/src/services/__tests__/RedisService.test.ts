@@ -9,10 +9,10 @@ jest.mock('../../config/redis', () => {
     const mockRedisClient = {
         set: jest.fn(() => Promise.resolve('OK')),
         get: jest.fn(() => Promise.resolve(null)),
-        setex: jest.fn(() => Promise.resolve('OK')),
+        setex: jest.fn(() => Promise.resolve('OK' as const)),
         sadd: jest.fn(() => Promise.resolve(1)),
         srem: jest.fn(() => Promise.resolve(1)),
-        smembers: jest.fn(() => Promise.resolve([])),
+        smembers: jest.fn(() => Promise.resolve(['game1', 'game2'])),
         del: jest.fn(() => Promise.resolve(1)),
         lrange: jest.fn(() => Promise.resolve([])),
         multi: jest.fn(() => ({
@@ -20,7 +20,7 @@ jest.mock('../../config/redis', () => {
             del: jest.fn().mockReturnThis(),
             lpush: jest.fn().mockReturnThis(),
             expire: jest.fn().mockReturnThis(),
-            exec: jest.fn(() => Promise.resolve(['OK'])),
+            exec: jest.fn(() => Promise.resolve(['OK' as const])),
             publish: jest.fn().mockReturnThis(),
             srem: jest.fn().mockReturnThis()
         })),
@@ -90,7 +90,7 @@ describe('RedisService', () => {
         });
 
         it('should get game state', async () => {
-            (redisClient.get as jest.Mock).mockResolvedValue(JSON.stringify(mockGameState));
+            jest.mocked(redisClient.get).mockResolvedValue(JSON.stringify(mockGameState));
 
             const state = await redisService.getGameState('test-game');
 
@@ -99,9 +99,9 @@ describe('RedisService', () => {
         });
 
         it('should update game state with move validation', async () => {
-            (GameLogicService.isValidMove as jest.Mock).mockReturnValue(true);
-            (GameLogicService.applyMove as jest.Mock).mockReturnValue(mockGameState);
-            (redisClient.get as jest.Mock).mockResolvedValue(JSON.stringify(mockGameState));
+            jest.mocked(GameLogicService.isValidMove).mockReturnValue(true);
+            jest.mocked(GameLogicService.applyMove).mockReturnValue(mockGameState);
+            jest.mocked(redisClient.get).mockResolvedValue(JSON.stringify(mockGameState));
 
             await redisService.updateGameState('test-game', Player.First, { x: 0, y: 0 });
 
@@ -111,6 +111,8 @@ describe('RedisService', () => {
     });
 
     describe('Player Session Management', () => {
+        const mockSession = { gameId: 'test-game', playerNumber: Player.First };
+
         it('should save player session', async () => {
             await redisService.setPlayerSession('test-socket', 'test-game', Player.First);
 
@@ -118,8 +120,7 @@ describe('RedisService', () => {
         });
 
         it('should get player session', async () => {
-            const mockSession = { gameId: 'test-game', playerNumber: Player.First };
-            (redisClient.get as jest.Mock).mockResolvedValue(JSON.stringify(mockSession));
+            jest.mocked(redisClient.get).mockResolvedValue(JSON.stringify(mockSession));
 
             const session = await redisService.getPlayerSession('test-socket');
 
@@ -128,8 +129,7 @@ describe('RedisService', () => {
         });
 
         it('should remove player session', async () => {
-            const mockSession = { gameId: 'test-game', playerNumber: Player.First };
-            (redisClient.get as jest.Mock).mockResolvedValue(JSON.stringify(mockSession));
+            jest.mocked(redisClient.get).mockResolvedValue(JSON.stringify(mockSession));
 
             await redisService.removePlayerSession('test-socket');
 
@@ -147,7 +147,7 @@ describe('RedisService', () => {
         });
 
         it('should get game room', async () => {
-            (redisClient.get as jest.Mock).mockResolvedValue(JSON.stringify([mockPlayer]));
+            jest.mocked(redisClient.get).mockResolvedValue(JSON.stringify([mockPlayer]));
 
             const room = await redisService.getGameRoom('test-game');
 
@@ -156,7 +156,7 @@ describe('RedisService', () => {
         });
 
         it('should add player to room', async () => {
-            (redisClient.get as jest.Mock).mockResolvedValue(JSON.stringify([mockPlayer]));
+            jest.mocked(redisClient.get).mockResolvedValue(JSON.stringify([mockPlayer]));
 
             await redisService.addPlayerToRoom('test-game', { ...mockPlayer, number: Player.Second });
 
@@ -164,7 +164,7 @@ describe('RedisService', () => {
         });
 
         it('should throw error when room is full', async () => {
-            (redisClient.get as jest.Mock).mockResolvedValue(
+            jest.mocked(redisClient.get).mockResolvedValue(
                 JSON.stringify([mockPlayer, { ...mockPlayer, number: Player.Second }])
             );
 
@@ -195,7 +195,7 @@ describe('RedisService', () => {
 
         it('should get active games', async () => {
             const mockGames = ['game1', 'game2'];
-            (redisClient.smembers as jest.Mock).mockResolvedValue(mockGames);
+            jest.mocked(redisClient.smembers).mockResolvedValue(mockGames);
 
             const games = await redisService.getActiveGames();
 
@@ -223,7 +223,7 @@ describe('RedisService', () => {
 
         it('should get game events', async () => {
             const mockEvents = ['event1', 'event2'].map(e => JSON.stringify(e));
-            (redisClient.lrange as jest.Mock).mockResolvedValue(mockEvents);
+            jest.mocked(redisClient.lrange).mockResolvedValue(mockEvents);
 
             const events = await redisService.getGameEvents('test-game', 2);
 
