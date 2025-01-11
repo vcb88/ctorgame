@@ -225,7 +225,7 @@ export class GameLogicService {
   private static determineWinner(scores: IScores): Player | null {
     if (scores[Player.First] > scores[Player.Second]) return Player.First;
     if (scores[Player.Second] > scores[Player.First]) return Player.Second;
-    return GameOutcome.Draw;
+    return null;
   }
 
   /**
