@@ -33,7 +33,7 @@ export function validateGameState(state: IGameState): boolean {
     board.every(row => 
       Array.isArray(row) && 
       row.length === width &&
-      row.every(cell => typeof cell === 'number' && (cell === Player.None || cell === Player.First || cell === Player.Second))
+      row.every(cell => cell === null || (typeof cell === 'number' && (cell === Player.None || cell === Player.First || cell === Player.Second)))
     ) &&
     typeof state.gameOver === 'boolean' &&
     (state.winner === null || typeof state.winner === 'number') &&

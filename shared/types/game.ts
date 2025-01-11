@@ -69,6 +69,8 @@ export interface IGameMove {
 export interface ITurnState {
     /** Number of remaining place operations in current turn */
     placeOperationsLeft: number;
+    /** Number of remaining replace operations in current turn */
+    replaceOperationsLeft: number;
     /** List of moves made in current turn */
     moves: IGameMove[];
 }
