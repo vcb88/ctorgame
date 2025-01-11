@@ -36,10 +36,12 @@ export const TurnTimer: React.FC<TurnTimerProps> = ({
         {/* Timer circle */}
         <circle
           className={cn(
+            "animate-piece-timer",
             "transition-all duration-300",
             {
               "text-cyan-500": isActive,
-              "text-red-500": !isActive
+              "text-red-500": !isActive,
+              "animate-none": !isActive
             }
           )}
           strokeWidth="4"
@@ -52,15 +54,6 @@ export const TurnTimer: React.FC<TurnTimerProps> = ({
           style={{
             '--timer-duration': `${duration}s`,
           } as React.CSSProperties}
-          className={cn(
-            "animate-piece-timer",
-            "transition-all duration-300",
-            {
-              "text-cyan-500": isActive,
-              "text-red-500": !isActive,
-              "animate-none": !isActive
-            }
-          )}
         />
       </svg>
       {/* Timer text */}
