@@ -3,11 +3,19 @@
   "compilerOptions": {
     "module": "CommonJS",
     "moduleResolution": "Node",
-    "outDir": "./dist/cjs"
+    "outDir": "./dist/cjs",
+    "target": "ES2020"
   },
-  "ts-node": {
-    "files": true
-  },
-  "files": ["./index.ts"],
-  "compileOnSave": true
+  "include": [
+    "index.ts",
+    "src/**/*",
+    "types/**/*",
+    "validation/**/*"
+  ],
+  "exclude": [
+    "node_modules",
+    "dist",
+    "**/*.test.ts",
+    "**/*.spec.ts"
+  ]
 }

@@ -15,7 +15,7 @@
   },
   "sideEffects": false,
   "scripts": {
-    "build": "rm -rf dist && tsc && tsc -p tsconfig.cjs.json && find dist/cjs -name \"*.js\" -exec bash -c 'mv \"$1\" \"${1%.js}.cjs\"' -- {} \\;",
+    "build": "rm -rf dist && tsc && tsc -p tsconfig.cjs.json && for f in dist/cjs/*.js; do mv \"$f\" \"${f%.js}.cjs\"; done",
     "type-check": "tsc --noEmit"
   },
   "devDependencies": {

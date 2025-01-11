@@ -1,2 +1,3 @@
 // Re-export everything from shared module
-export * from '@ctor-game/shared';
+import * as shared from '@ctor-game/shared';
+export = shared;
