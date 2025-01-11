@@ -1,11 +1,17 @@
+// Switch to admin database
+db = db.getSiblingDB('admin');
+
+// Create application user in admin database
 db.createUser({
     user: 'ctorgame',
     pwd: 'ctorgamepass',
     roles: [
-        { role: 'readWrite', db: 'ctorgame' }
+        { role: 'readWrite', db: 'ctorgame' },
+        { role: 'userAdmin', db: 'ctorgame' }
     ]
 });
 
+// Switch to application database
 db = db.getSiblingDB('ctorgame');
 
 db.createCollection('games');
