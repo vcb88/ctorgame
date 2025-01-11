@@ -451,8 +451,8 @@ export const useMultiplayerGame = () => {
       return;
     }
 
-    // Проверяем, наш ли сейчас ход
-    if (!isMyTurn) {
+      // Проверяем, наш ли сейчас ход
+    if (playerNumber !== currentPlayer) {
       handleError({
         code: WebSocketErrorCode.NOT_YOUR_TURN,
         message: 'Cannot make move - not your turn',
@@ -470,7 +470,7 @@ export const useMultiplayerGame = () => {
         details: { move }
       });
     });
-  }, [socket, gameId, gameState, connectionState, currentPlayer, playerNumber, isMyTurn, handleError, setOperationTimeout]);
+  }, [socket, gameId, gameState, connectionState, currentPlayer, playerNumber, handleError, setOperationTimeout]);
 
   const endTurn = useCallback(() => {
     if (!socket || !gameId) {
@@ -492,7 +492,7 @@ export const useMultiplayerGame = () => {
     }
 
     // Проверяем, наш ли сейчас ход
-    if (!isMyTurn) {
+    if (playerNumber !== currentPlayer) {
       handleError({
         code: WebSocketErrorCode.NOT_YOUR_TURN,
         message: 'Cannot end turn - not your turn',
@@ -510,7 +510,7 @@ export const useMultiplayerGame = () => {
         details: {}
       });
     });
-  }, [socket, gameId, connectionState, currentPlayer, playerNumber, isMyTurn, handleError, setOperationTimeout]);
+  }, [socket, gameId, connectionState, currentPlayer, playerNumber, handleError, setOperationTimeout]);
 
   const isMyTurn = playerNumber === currentPlayer;
 
