@@ -3,9 +3,9 @@ export * from './validation/game';
 
 export enum Player {
   Empty = 0,
+  None = 0, // синоним для Empty для обратной совместимости
   First = 1,
-  Second = 2,
-  None = -1
+  Second = 2
 }
 
 export enum GameOutcome {
