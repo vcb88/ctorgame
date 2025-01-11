@@ -53,6 +53,18 @@ The project is currently at version 0.1.0 (stable), focusing on establishing a s
 
 ## Known Issues
 
+### Shared Types Status
+
+The project currently maintains duplicate shared type definitions in client/src/shared.ts and server/src/shared.ts. This is a temporary solution during the MVP phase to allow rapid development. These files need to be manually synchronized when making changes to shared types.
+
+Key considerations:
+- All changes to shared types must be applied to both files
+- WebSocket event types must match exactly
+- Game state and player types must be identical
+- Error types and enums must be consistent
+
+Future plans include consolidating these files into a shared package, but during the MVP phase, manual synchronization is required to maintain type safety.
+
 ### Development Environment
 - ⚠️ Build optimization for production needs review
 - ⚠️ Development environment documentation needs update

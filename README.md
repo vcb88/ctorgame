@@ -156,13 +156,18 @@ ctorgame/
 │   ├── src/
 │   │   ├── components/    # React components
 │   │   ├── hooks/        # Custom React hooks
-│   │   └── types/        # TypeScript types
+│   │   ├── types/        # TypeScript types
+│   │   └── shared.ts     # Shared type definitions for client
 ├── server/                # Backend application
 │   ├── src/
 │   │   ├── websocket/    # WebSocket handlers
-│   │   └── types/        # Server-side types
-└── shared/                # Shared types and utilities
-    └── types/            # Common TypeScript interfaces
+│   │   ├── types/        # Server-side types
+│   │   └── shared.ts     # Shared type definitions for server
+└── shared/                # Shared utilities and constants
+
+> **Important Note**: Currently, the project uses duplicated shared type definitions in both client/src/shared.ts and server/src/shared.ts.
+> This is a temporary solution during the MVP phase. Both files must be kept in sync manually when making changes to shared types.
+> In future releases, these files will be unified into a shared package.
 ```
 
 ## Client-Server Communication
