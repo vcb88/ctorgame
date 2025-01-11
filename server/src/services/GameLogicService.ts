@@ -249,7 +249,7 @@ export class GameLogicService {
       scores: {
         [Player.First]: state.scores[Player.First],
         [Player.Second]: state.scores[Player.Second]
-      },
+      } as IScores,
       isFirstTurn: state.isFirstTurn
     };
   }

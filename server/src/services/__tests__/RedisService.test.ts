@@ -64,7 +64,7 @@ describe('RedisService', () => {
         scores: {
             [Player.First]: 0,
             [Player.Second]: 0
-        },
+        } as IScores,
         gameOver: false,
         winner: null,
         isFirstTurn: true,
