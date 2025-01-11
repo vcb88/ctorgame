@@ -119,10 +119,9 @@ httpServer.on('listening', () => {
   console.log('Server details:', addr);
 });
 
+// Логирование только критичных событий HTTP-соединений
 httpServer.on('connection', (socket) => {
-  console.log('New connection established');
   socket.on('error', (err) => console.error('Socket error:', err));
-  socket.on('close', () => console.log('Connection closed'));
 });
 
 console.log('Setting up static files...');

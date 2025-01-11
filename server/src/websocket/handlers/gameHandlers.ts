@@ -208,12 +208,16 @@ export function registerGameHandlers(
     // Присоединение к существующей игре
     socket.on(WebSocketEvents.JoinGame, async ({ gameId }) => {
         try {
+            // Нормализуем gameId к верхнему регистру
+            const normalizedGameId = gameId.toUpperCase();
+            
             logger.info('[1/4] JoinGame request received', {
                 component: 'GameHandlers',
                 event: WebSocketEvents.JoinGame,
                 context: {
                     socketId: socket.id,
-                    gameId,
+                    originalGameId: gameId,
+                    normalizedGameId,
                     timestamp: new Date().toISOString()
                 },
                 connection: {
@@ -224,24 +228,44 @@ export function registerGameHandlers(
             });
 
             // Получаем состояние игры из Redis
-            const game = await gameService.findGame(gameId);
+            const game = await gameService.findGame(normalizedGameId);
             if (!game) {
                 logger.error('Game not found during join attempt', {
                     component: 'GameHandlers',
                     event: WebSocketEvents.JoinGame,
                     context: {
                         socketId: socket.id,
-                        gameId,
-                        searchKey: gameId,
+                        originalGameId: gameId,
+                        normalizedGameId,
                         timestamp: new Date().toISOString()
                     },
                     error: {
                         type: 'GAME_NOT_FOUND',
                         details: {
-                            searchParams: { gameId }
+                            searchParams: { 
+                                originalGameId: gameId,
+                                normalizedGameId,
+                                searchKey: normalizedGameId
+                            }
                         }
                     }
                 });
+                
+                // Дополнительно проверим существование игры с другим регистром
+                const alternateGame = await gameService.findGame(gameId);
+                if (alternateGame) {
+                    logger.warn('Game found with different case', {
+                        component: 'GameHandlers',
+                        event: WebSocketEvents.JoinGame,
+                        context: {
+                            socketId: socket.id,
+                            originalGameId: gameId,
+                            normalizedGameId,
+                            foundGameId: alternateGame.gameId
+                        }
+                    });
+                }
+                
                 throw new Error('Game not found');
             }
             const state = game.currentState;
@@ -433,7 +457,10 @@ export function registerGameHandlers(
 
 // Генерация уникального кода игры
 function generateGameCode(): string {
-    return Math.random().toString(36).substring(2, 8).toUpperCase();
+    // Генерируем код в верхнем регистре
+    const code = Math.random().toString(36).substring(2, 8).toUpperCase();
+    console.log(`Generated game code: ${code}`);
+    return code;
 }
 
 // Генерация ID события
