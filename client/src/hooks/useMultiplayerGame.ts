@@ -444,6 +444,7 @@ export const useMultiplayerGame = () => {
         });
         resolve(false);
       });
+    }); // close Promise
   }, [socket, connectionState, handleError, setOperationTimeout]);
 
   const makeMove = useCallback((x: number, y: number, type: OperationType = OperationType.PLACE) => {
