@@ -1,5 +1,5 @@
 // Создаем пользователя для приложения
-db.auth(process.env.MONGO_INITDB_ROOT_USERNAME, process.env.MONGO_INITDB_ROOT_PASSWORD)
+db.auth(process.env.MONGO_ROOT_USER, process.env.MONGO_ROOT_PASSWORD)
 
 db = db.getSiblingDB('ctorgame')
 
