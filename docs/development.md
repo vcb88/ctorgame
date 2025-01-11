@@ -151,8 +151,27 @@ Server requires the following core dependencies:
 The following aspects need better documentation:
 
 1. Database Integration
-   - PostgreSQL setup and schema not implemented yet
-   - Redis integration for session management missing
+
+   **MongoDB Setup**
+   - MongoDB 6.0 is used for data persistence
+   - Authentication is enabled by default
+   - Default database name: 'ctorgame'
+   - Configuration via environment variables:
+     ```env
+     MONGO_ROOT_USER=admin
+     MONGO_ROOT_PASSWORD=adminpassword
+     MONGO_APP_USER=ctorgame
+     MONGO_APP_PASSWORD=ctorgamepass
+     MONGODB_URL=mongodb://ctorgame:ctorgamepass@mongodb:27017/ctorgame?authSource=ctorgame
+     ```
+   - Automatic initialization script (`init-mongo.js`) creates:
+     - Application database and user
+     - Required collections with indexes
+     - Sets feature compatibility version to 6.0
+
+   **Redis Integration**
+   - Redis used for session management and real-time features
+   - Configuration via REDIS_URL and REDIS_PREFIX environment variables
 
 2. Testing
    - No test configuration or examples provided

@@ -70,8 +70,22 @@ services:
     image: mongo:6-jammy
     ports:
       - "27017:27017"
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=${MONGO_ROOT_USER:-admin}
+      - MONGO_INITDB_ROOT_PASSWORD=${MONGO_ROOT_PASSWORD:-adminpassword}
+      # Отключаем huge pages внутри контейнера
+      - TRANSPARENT_HUGE_PAGES=never
     volumes:
       - mongodb_data:/data/db
+      - ./init-mongo.js:/docker-entrypoint-initdb.d/init-mongo.js:ro
+    # Настройки для улучшения производительности и безопасности
+    command: ["mongod", "--auth", "--wiredTigerCacheSizeGB", "1"]
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
 
 volumes:
   redis_data:
