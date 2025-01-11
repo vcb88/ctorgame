@@ -11,7 +11,8 @@ import {
   Player,
   validateGameMove,
   validateGameState,
-  isValidScores
+  isValidScores,
+  GameMetadata
 } from '../../shared';
 import { GameEventResponse } from '../../types/events';
 
@@ -129,7 +130,7 @@ export function registerGameHandlers(
                 const gameScores: IScores = updatedState.scores || { [Player.First]: 0, [Player.Second]: 0 };
                 await storageService.finishGame(
                     gameId, 
-                    updatedState.winner || -1, // В случае ничьей используем -1
+                    updatedState.winner || Player.None, // В случае ничьей используем Player.None
                     gameScores
                 );
 
