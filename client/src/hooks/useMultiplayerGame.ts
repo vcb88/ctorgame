@@ -11,8 +11,8 @@ import {
   ServerToClientEvents,
   Player,
   getOpponent
-} from '../../../shared/types/index.js';
-import { validateGameMove, validateGameState } from '../../../shared/validation/game.js';
+} from '../shared/types/index';
+import { validateGameMove, validateGameState } from '../shared/validation/game';
 import {
   ConnectionState,
   GameError,
