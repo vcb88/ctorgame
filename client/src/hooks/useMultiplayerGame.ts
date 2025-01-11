@@ -30,11 +30,36 @@ export const useMultiplayerGame = () => {
   const socket = getSocket();
   
   // Game state
-  const [gameId, setGameId] = useState<string | null>(null);
-  const [playerNumber, setPlayerNumber] = useState<Player | null>(null);
-  const [gameState, setGameState] = useState<IGameState | null>(null);
-  const [currentPlayer, setCurrentPlayer] = useState<Player>(Player.First);
+  // Initialize state from localStorage if available
+  const [gameId, setGameId] = useState<string | null>(() => {
+    const saved = localStorage.getItem('gameId');
+    return saved ? saved : null;
+  });
+  
+  const [playerNumber, setPlayerNumber] = useState<Player | null>(() => {
+    const saved = localStorage.getItem('playerNumber');
+    return saved ? Number(saved) as Player : null;
+  });
+  
+  const [gameState, setGameState] = useState<IGameState | null>(() => {
+    const saved = localStorage.getItem('gameState');
+    return saved ? JSON.parse(saved) : null;
+  });
+  
+  const [currentPlayer, setCurrentPlayer] = useState<Player>(() => {
+    const saved = localStorage.getItem('currentPlayer');
+    return saved ? Number(saved) as Player : Player.First;
+  });
+  
   const [availableReplaces, setAvailableReplaces] = useState<IGameMove[]>([]);
+
+  // Function to clear game state from localStorage
+  const clearGameState = useCallback(() => {
+    localStorage.removeItem('gameId');
+    localStorage.removeItem('playerNumber');
+    localStorage.removeItem('gameState');
+    localStorage.removeItem('currentPlayer');
+  }, []);
   
   // Reconnection state
   const reconnectionAttempts = useRef<number>(0);
@@ -135,6 +160,7 @@ export const useMultiplayerGame = () => {
         message: 'Max reconnection attempts reached',
         details: { attempts: reconnectionAttempts.current }
       });
+      clearGameState();
       return;
     }
 
@@ -163,6 +189,35 @@ export const useMultiplayerGame = () => {
     };
     socket.connect();
   }, [gameId, playerNumber, handleError]);
+
+  // Save state to localStorage when it changes
+  useEffect(() => {
+    if (gameId === null) {
+      localStorage.removeItem('gameId');
+    } else {
+      localStorage.setItem('gameId', gameId);
+    }
+  }, [gameId]);
+
+  useEffect(() => {
+    if (playerNumber === null) {
+      localStorage.removeItem('playerNumber');
+    } else {
+      localStorage.setItem('playerNumber', String(playerNumber));
+    }
+  }, [playerNumber]);
+
+  useEffect(() => {
+    if (gameState === null) {
+      localStorage.removeItem('gameState');
+    } else {
+      localStorage.setItem('gameState', JSON.stringify(gameState));
+    }
+  }, [gameState]);
+
+  useEffect(() => {
+    localStorage.setItem('currentPlayer', String(currentPlayer));
+  }, [currentPlayer]);
 
   // Initialize socket connection
   useEffect(() => {
@@ -328,6 +383,9 @@ export const useMultiplayerGame = () => {
       [WebSocketEvents.Error]: (errorResponse: ErrorResponse) => {
         logger.socketEvent(WebSocketEvents.Error, { error: errorResponse }, 'in');
         handleError(errorResponse);
+        if (!errorResponse.retryable) {
+          clearGameState();
+        }
       },
 
       [WebSocketEvents.PlayerDisconnected]: ({ player, eventId }: { player: Player, eventId: string }) => {
