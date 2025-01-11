@@ -76,6 +76,7 @@ module.exports = {
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
+        "beam": "beam 3s ease-in-out infinite",
         "scan": "scan 2s ease-in-out infinite",
         "glitch-1": "glitch-1 0.5s ease-in-out infinite",
         "glitch-2": "glitch-2 0.5s ease-in-out infinite",
@@ -99,6 +100,20 @@ module.exports = {
         "accordion-up": {
           from: { height: "var(--radix-accordion-content-height)" },
           to: { height: 0 },
+        },
+        "beam": {
+          "0%": { 
+            opacity: 0,
+            transform: "translateY(100%)"
+          },
+          "50%": {
+            opacity: 0.3,
+            transform: "translateY(-20%)"
+          },
+          "100%": {
+            opacity: 0,
+            transform: "translateY(-100%)"
+          }
         },
         "scan": {
           "0%, 100%": { backgroundPosition: "0% 0%" },
@@ -226,6 +241,7 @@ module.exports = {
       },
       backgroundImage: {
         'gradient-radial': 'radial-gradient(var(--tw-gradient-stops))',
+        'radial-gradient': 'radial-gradient(circle at center, rgba(6,182,212,0.1) 0%, rgba(59,130,246,0.05) 25%, transparent 100%)',
       },
     },
   },
