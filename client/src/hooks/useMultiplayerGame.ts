@@ -568,5 +568,5 @@ export const useMultiplayerGame = () => {
     isError: connectionState === ConnectionState.ERROR,
     canRetry: error?.retryable || false,
     canRecover: error?.recoverable || false
-  };
-};
+  }
+}
