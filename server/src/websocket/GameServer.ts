@@ -115,8 +115,13 @@ export class GameServer {
           
           // Сохраняем сессию игрока
           await redisService.setPlayerSession(socket.id, gameCode, Player.First);
+          console.log(`Player session saved for ${socket.id} in game ${gameCode}`);
 
-          socket.emit(WebSocketEvents.GameCreated, { gameId: gameCode });
+          socket.emit(WebSocketEvents.GameCreated, { 
+            gameId: gameCode,
+            eventId: Date.now().toString()
+          });
+          console.log(`Sent GameCreated event to player ${socket.id}`);
         } catch (err) {
           const error = err as Error;
           console.error('Error creating game:', error);
@@ -161,11 +166,23 @@ export class GameServer {
             return;
           }
 
+          console.log(`Player ${socket.id} successfully joined game ${gameId}`);
+
+          // Сначала отправляем подтверждение присоединения
+          socket.emit(WebSocketEvents.GameJoined, { 
+            gameId,
+            eventId: Date.now().toString() 
+          });
+          console.log(`Sent GameJoined event to player ${socket.id}`);
+
+          // Потом отправляем всем участникам информацию о начале игры
           const currentPlayer = redisService.getCurrentPlayer(gameState);
           this.io.to(gameId).emit(WebSocketEvents.GameStarted, {
             gameState,
-            currentPlayer
+            currentPlayer,
+            eventId: Date.now().toString()
           });
+          console.log(`Sent GameStarted event to all players in game ${gameId}`);
         } catch (err) {
           const error = err as Error;
           console.error('Error joining game:', error);
