@@ -11,15 +11,17 @@ import {
   ServerToClientEvents,
   validateGameMove,
   validateGameState,
+  Player,
+  getOpponent
+} from '../shared';
+import {
   ConnectionState,
   GameError,
   GameErrorType,
   WebSocketErrorCode,
   ErrorResponse,
-  ReconnectionData,
-  Player,
-  getOpponent
-} from '../shared';
+  ReconnectionData
+} from '../types/connection';
 
 const SOCKET_SERVER_URL = process.env.NODE_ENV === 'production' 
   ? window.location.origin 
