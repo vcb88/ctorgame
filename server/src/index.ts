@@ -69,8 +69,19 @@ app.get('/info', (req, res) => {
 
 // Simple test endpoint
 app.get('/test', (req, res) => {
-  console.log('Test endpoint called');
-  res.json({ message: 'Server is responding' });
+  console.log(`Test endpoint called. Server ready: ${isServerReady}`);
+  if (!isServerReady) {
+    console.log('Server not ready yet, returning 503');
+    res.status(503).json({ 
+      status: 'starting',
+      message: 'Server is starting...'
+    });
+    return;
+  }
+  res.json({ 
+    status: 'ok',
+    message: 'Server is responding'
+  });
 });
 
 // Health check endpoint
