@@ -3,7 +3,10 @@ import {
     IGameState, 
     IGameMove, 
     IPlayer,
-    GameMetadata
+    GameMetadata,
+    Player,
+    IScores,
+    enumToLegacyScores
 } from '../shared';
 import { GameLogicService } from './GameLogicService';
 
@@ -138,10 +141,7 @@ export class GameService {
         if (newState.gameOver) {
             updateData.endTime = now;
             updateData.winner = newState.winner || undefined;
-            updateData.finalScore = {
-                player1: newState.scores.player1,
-                player2: newState.scores.player2
-            };
+            updateData.finalScore = enumToLegacyScores(newState.scores);
             updateData.duration = (new Date(now).getTime() - new Date(game.startTime).getTime()) / 1000;
         }
 

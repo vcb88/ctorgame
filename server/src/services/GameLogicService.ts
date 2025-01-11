@@ -12,7 +12,8 @@ import {
   getOpponent,
   normalizePosition,
   getAdjacentPositions,
-  IReplaceValidation
+  IReplaceValidation,
+  IScores
 } from '../shared';
 
 export class GameLogicService {

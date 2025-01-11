@@ -1,4 +1,4 @@
-import { GameMetadata, GameMove, GameHistory, GameDetails, IScores } from '../shared';
+import { GameMetadata, GameMove, GameHistory, GameDetails, IScores, Player, enumToLegacyScores } from '../shared';
 import { mkdirSync, existsSync, readFileSync, writeFileSync } from 'fs';
 import { join } from 'path';
 import { MongoClient, Collection, WithId } from 'mongodb';
@@ -263,10 +263,7 @@ export class GameStorageService {
                     status: 'finished',
                     endTime: now.toISOString(),
                     winner,
-                    finalScore: {
-                        player1: scores.player1,
-                        player2: scores.player2
-                    },
+                    finalScore: enumToLegacyScores(scores),
                     lastActivityAt: now.toISOString()
                 }
             },
