@@ -25,7 +25,7 @@ export class GameLogicService {
   static createInitialState(): IGameState {
     return {
       board: {
-        cells: Array(BOARD_SIZE).fill(null).map(() => Array(BOARD_SIZE).fill(null)),
+        cells: Array(BOARD_SIZE).fill(Player.None).map(() => Array(BOARD_SIZE).fill(Player.None)),
         size: { width: BOARD_SIZE, height: BOARD_SIZE }
       },
       gameOver: false,
@@ -70,7 +70,7 @@ export class GameLogicService {
       // 3. На первом ходу можно сделать только одну операцию
       return (
         state.currentTurn.placeOperationsLeft > 0 &&
-        state.board.cells[y][x] === null &&
+        state.board.cells[y][x] === Player.None &&
         // Проверяем, что на первом ходу не пытаемся сделать больше одной операции
         (!state.isFirstTurn || state.currentTurn.moves.length < 1)
       );
@@ -216,7 +216,7 @@ export class GameLogicService {
    */
   private static checkGameOver(board: IBoard): boolean {
     // Игра заканчивается, когда все клетки заняты
-    return board.cells.every(row => row.every(cell => cell !== null));
+    return board.cells.every(row => row.every(cell => cell !== Player.None));
   }
 
   /**
