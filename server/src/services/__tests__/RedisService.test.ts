@@ -207,7 +207,7 @@ describe('RedisService', () => {
     describe('Game Events', () => {
         it('should add game event', async () => {
             const event: IGameEvent = {
-                type: GameEventType.MOVE,
+                type: GameEventType.Move,
                 gameId: 'test-game',
                 playerId: 'test-player',
                 data: {},

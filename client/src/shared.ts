@@ -69,10 +69,17 @@ export interface IScores {
   [Player.Second]: number;
 }
 
+export const createScores = (firstPlayer: number, secondPlayer: number): IScores => ({
+  player1: firstPlayer,
+  player2: secondPlayer,
+  [Player.First]: firstPlayer,
+  [Player.Second]: secondPlayer
+});
+
 export interface IGameState {
   board: IBoard;
   gameOver: boolean;
-  winner: number | null;
+  winner: Player | GameOutcome | null;
   currentTurn: ITurnState;
   currentPlayer: number;
   scores: IScores;
@@ -80,6 +87,7 @@ export interface IGameState {
 }
 
 export interface IReplaceValidation {
+  position: IPosition;
   isValid: boolean;
   adjacentCount: number;
   adjacentPositions: IPosition[];
@@ -236,12 +244,8 @@ export interface IGameEvent {
   timestamp: number;
 }
 
-export interface IRedisGameEvent {
-  type: GameEventType;
-  gameId: string;
-  playerId: string;
-  data: unknown;
-  timestamp: number;
+export interface IRedisGameEvent extends IGameEvent {
+  data: unknown; // В Redis версии data всегда должно быть определено
 }
 
 export interface ICacheConfig {
