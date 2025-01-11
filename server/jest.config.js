@@ -6,8 +6,8 @@ module.exports = {
     '^.+\\.tsx?$': 'ts-jest',
   },
   moduleNameMapper: {
-    '@ctor-game/shared': '<rootDir>/../shared',
-    '@ctor-game/shared/(.*)': '<rootDir>/../shared/$1'
+    '^@ctor-game/shared$': '<rootDir>/../shared',
+    '^@ctor-game/shared/(.*)$': '<rootDir>/../shared/$1'
   },
   moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx', 'json', 'node'],
 };
