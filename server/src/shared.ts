@@ -6,6 +6,22 @@ export * from './validation/game';
 export * from './types/connection';
 export { WebSocketErrorCode } from './types/errors';
 
+export type GamePhase = 'INITIAL' | 'CONNECTING' | 'WAITING' | 'PLAYING' | 'GAME_OVER';
+
+export interface GameManagerState {
+  phase: GamePhase;
+  gameId: string | null;
+  playerNumber: Player | null;
+  error: GameError | null;
+  connectionState: ConnectionState;
+}
+
+export interface GameStateUpdate {
+  gameState: IGameState;
+  eventId: string;
+  phase: GamePhase;
+}
+
 export enum Player {
   Empty = 0,
   None = 0, // синоним для Empty для обратной совместимости
