@@ -2,6 +2,7 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { CyberTorusBackground } from '@/components/backgrounds/CyberTorusBackground';
 import { logger } from '@/utils/logger';
+import { CyberButton } from '@/components/ui/cyber-button';
 
 export const LandingPage: React.FC = () => {
   const navigate = useNavigate();
@@ -39,54 +40,73 @@ export const LandingPage: React.FC = () => {
         
         <div className="flex flex-col items-center gap-6 w-full max-w-md relative">
           {/* Create Game Button */}
-          <button 
+          <CyberButton
             onClick={handleCreateGame}
-            className="w-full py-4 px-8 text-xl font-bold
-                     bg-gradient-to-r from-cyan-500 to-blue-500
-                     border border-cyan-400 rounded
-                     hover:from-cyan-400 hover:to-blue-400
-                     transition-all duration-300
-                     shadow-[0_0_15px_rgba(34,211,238,0.5)]
-                     hover:shadow-[0_0_30px_rgba(34,211,238,0.8)]"
+            variant="primary"
+            size="lg"
+            glowing
+            className="w-full font-bold"
           >
-            <span className="relative z-10">CREATE GAME</span>
-          </button>
+            CREATE GAME
+          </CyberButton>
 
           <div className="text-center my-2 text-cyan-500 font-mono">[OR]</div>
 
           {/* Join Game Button */}
-          <button
+          <CyberButton
             onClick={handleJoinGame}
-            className="w-full py-4 px-8 text-xl font-bold
-                     bg-transparent border-2 border-cyan-400 rounded
-                     hover:bg-cyan-900/30
-                     transition-all duration-300
-                     shadow-[0_0_15px_rgba(34,211,238,0.3)]
-                     hover:shadow-[0_0_30px_rgba(34,211,238,0.5)]"
+            variant="secondary"
+            size="lg"
+            glowing
+            className="w-full font-bold"
           >
-            <span className="relative z-10">JOIN GAME</span>
-          </button>
+            JOIN GAME
+          </CyberButton>
 
-          {/* Rules Link */}
-          <button 
-            onClick={() => {
-              logger.userAction('rulesClick');
-              navigate('/rules');
-            }}
-            className="mt-4 text-cyan-400 hover:text-cyan-300 
-                     transition-colors duration-300 
-                     font-mono tracking-wider
-                     flex items-center gap-2"
-          >
-            <span className="text-xs">&lt;</span>
-            GAME RULES
-            <span className="text-xs">/&gt;</span>
-          </button>
+          {/* Additional Navigation */}
+          <div className="flex flex-col items-center gap-4 mt-8">
+            <CyberButton
+              onClick={() => {
+                logger.userAction('rulesClick');
+                navigate('/rules');
+              }}
+              variant="ghost"
+              glowing
+              withTags
+            >
+              GAME RULES
+            </CyberButton>
+
+            <CyberButton
+              onClick={() => {
+                logger.userAction('historyClick');
+                navigate('/history');
+              }}
+              variant="ghost"
+              glowing
+              withTags
+            >
+              GAME HISTORY
+            </CyberButton>
+
+            <CyberButton
+              onClick={() => {
+                logger.userAction('settingsClick');
+                navigate('/settings');
+              }}
+              variant="ghost"
+              glowing
+              withTags
+            >
+              SETTINGS
+            </CyberButton>
+          </div>
         </div>
 
-        {/* Version number */}
-        <div className="absolute bottom-4 right-4 text-cyan-700 font-mono text-sm">
-          v0.1.0
+        {/* Version number and System Info */}
+        <div className="absolute bottom-4 right-4 text-right">
+          <div className="text-cyan-700 font-mono text-sm mb-1">v0.1.0</div>
+          <div className="text-cyan-900 font-mono text-xs">SYSTEM://LOADED</div>
         </div>
       </div>
     </div>

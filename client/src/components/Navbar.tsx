@@ -1,6 +1,8 @@
 import React from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { useLocation } from 'react-router-dom';
+import { logger } from '@/utils/logger';
 import { cn } from '@/lib/utils';
+import { CyberButton } from '@/components/ui/cyber-button';
 
 export const Navbar: React.FC = () => {
   const location = useLocation();
@@ -59,20 +61,21 @@ const NavLink: React.FC<NavLinkProps> = ({ to, children }) => {
   const isActive = location.pathname === to;
 
   return (
-    <Link
-      to={to}
-      className={cn(
-        "text-sm font-medium",
-        "transition-colors duration-300",
-        "hover:text-cyan-300",
-        {
-          "text-cyan-400": isActive,
-          "text-gray-400": !isActive
-        }
-      )}
+    <CyberButton
+      variant="ghost"
+      size="sm"
+      withTags={isActive}
+      className={cn({
+        "text-cyan-400": isActive,
+        "text-gray-400": !isActive
+      })}
+      onClick={() => {
+        logger.userAction(`navLink_${to.replace('/', '')}`);
+        window.location.href = to;
+      }}
     >
       {children}
-    </Link>
+    </CyberButton>
   );
 };
 
@@ -83,20 +86,19 @@ interface ActionButtonProps {
 }
 
 const ActionButton: React.FC<ActionButtonProps> = ({ to, variant, children }) => {
+  const NavigateAndLog: React.MouseEventHandler = (e) => {
+    e.preventDefault();
+    logger.userAction(`${variant}ActionButton_${to.replace('/', '')}`);
+    window.location.href = to;
+  };
+
   return (
-    <Link
-      to={to}
-      className={cn(
-        "px-4 py-2 rounded-md text-sm font-medium",
-        "transition-all duration-300",
-        "transform hover:-translate-y-0.5",
-        {
-          "bg-cyan-500 text-white hover:bg-cyan-400": variant === 'primary',
-          "border border-cyan-500/50 text-cyan-400 hover:bg-cyan-500/10": variant === 'secondary'
-        }
-      )}
+    <CyberButton
+      variant={variant === 'primary' ? 'primary' : 'secondary'}
+      size="sm"
+      onClick={NavigateAndLog}
     >
       {children}
-    </Link>
+    </CyberButton>
   );
 };
