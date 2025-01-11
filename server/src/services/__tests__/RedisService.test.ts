@@ -2,7 +2,8 @@ import { describe, it, expect, beforeEach, jest } from '@jest/globals';
 import { redisService } from '../RedisService';
 import { redisClient, REDIS_KEYS, REDIS_EVENTS } from '../../config/redis';
 import { GameLogicService } from '../GameLogicService';
-import { IGameState, IPlayer, IGameEvent, GameEventType } from '../../shared';
+import { IGameState, IPlayer, Player } from '../../shared';
+import { IGameEvent, GameEventType } from '../../shared/types/events';
 
 // Мокаем Redis и GameLogicService
 jest.mock('../../config/redis', () => ({
@@ -14,6 +15,7 @@ jest.mock('../../config/redis', () => ({
         srem: jest.fn(),
         smembers: jest.fn(),
         del: jest.fn(),
+        lrange: jest.fn(),
         multi: jest.fn(() => ({
             set: jest.fn().mockReturnThis(),
             del: jest.fn().mockReturnThis(),
@@ -55,8 +57,8 @@ describe('RedisService', () => {
             moves: []
         },
         scores: {
-            player1: 0,
-            player2: 0
+            [Player.First]: 0,
+            [Player.Second]: 0
         },
         gameOver: false,
         winner: null,
