@@ -29,11 +29,11 @@ export interface IBoard {
     /** 
      * Board cells array using [y][x] coordinates.
      * Values represent:
-     * - 0: Empty cell (Player.None)
+     * - null or 0: Empty cell (Player.None)
      * - 1: First player's piece (Player.First)
      * - 2: Second player's piece (Player.Second)
      */
-    cells: number[][];
+    cells: (number | null)[][];
     /** Board dimensions */
     size: IBoardSize;
 }
