@@ -25,6 +25,14 @@ import {
 import { getSocket } from '../services/socket';
 
 export const useMultiplayerGame = () => {
+  // Log hook initialization
+  logger.debug('useMultiplayerGame hook initialized', {
+    component: 'useMultiplayerGame',
+    data: {
+      timestamp: Date.now(),
+      existingSocket: !!getSocket()
+    }
+  });
   const [connectionState, setConnectionState] = useState<ConnectionState>(ConnectionState.CONNECTING);
   const [error, setError] = useState<GameError | null>(null);
   const socket = getSocket();
@@ -320,6 +328,17 @@ export const useMultiplayerGame = () => {
       },
 
       [WebSocketEvents.GameStarted]: ({ gameState, currentPlayer, eventId }: { gameState: IGameState; currentPlayer: Player, eventId: string }) => {
+        logger.debug('[GameStarted] Handler called', {
+          component: 'useMultiplayerGame',
+          data: { 
+            gameId,
+            playerNumber,
+            currentGameState: gameState,
+            newCurrentPlayer: currentPlayer,
+            eventId,
+            socketId: socket?.id
+          }
+        });
         logger.socketEvent(WebSocketEvents.GameStarted, { gameState, currentPlayer, eventId }, 'in');
         if (!validateGameState(gameState)) {
           handleError({
@@ -401,15 +420,53 @@ export const useMultiplayerGame = () => {
       }
     };
 
-    // Setup event handlers
-    Object.entries(handlers).forEach(([event, handler]) => {
-      socket.on(event, handler);
-    });
+    // Set up socket event handlers once
+    if (socket.listeners('GameStarted').length === 0) {
+      logger.debug('Setting up socket event handlers', {
+        component: 'useMultiplayerGame',
+        data: {
+          currentHandlers: socket.listeners('GameCreated').length,
+          events: Object.keys(handlers)
+        }
+      });
+      
+      Object.entries(handlers).forEach(([event, handler]) => {
+        logger.debug(`Registering handler for ${event}`, {
+          component: 'useMultiplayerGame',
+          data: {
+            event,
+            existingHandlers: socket.listeners(event).length
+          }
+        });
+        socket.on(event, handler);
+      });
+    }
 
-    // Cleanup function
+    // Cleanup on unmount only
     return () => {
+      logger.debug('Cleaning up socket event handlers', {
+        component: 'useMultiplayerGame',
+        data: {
+          events: Object.keys(handlers),
+          handlersBeforeCleanup: Object.keys(handlers).map(event => ({
+            event,
+            count: socket.listeners(event).length
+          }))
+        }
+      });
+
       Object.keys(handlers).forEach((event) => {
         socket.off(event);
+      });
+
+      logger.debug('Socket event handlers after cleanup', {
+        component: 'useMultiplayerGame',
+        data: {
+          handlersAfterCleanup: Object.keys(handlers).map(event => ({
+            event,
+            count: socket.listeners(event).length
+          }))
+        }
       });
     };
   }, [socket, handleError, validateGameState, clearOperationTimeout]);
@@ -487,11 +544,17 @@ export const useMultiplayerGame = () => {
 
       // Set up one-time listener for success
       socket.once(WebSocketEvents.GameJoined, () => {
+        logger.debug('[joinGame] GameJoined one-time handler called', {
+          component: 'useMultiplayerGame'
+        });
         resolve(true);
       });
 
       // Set up one-time listener for error
       socket.once(WebSocketEvents.Error, () => {
+        logger.debug('[joinGame] Error one-time handler called', {
+          component: 'useMultiplayerGame'
+        });
         resolve(false);
       });
 

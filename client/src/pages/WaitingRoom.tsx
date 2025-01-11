@@ -33,9 +33,24 @@ export const WaitingRoom: React.FC = () => {
     if (gameState) {
       logger.info('Game started, navigating to game board', {
         component: 'WaitingRoom',
-        data: { gameId, playerNumber }
+        data: { 
+          gameId, 
+          playerNumber,
+          gameState,
+          currentUrl: window.location.pathname
+        }
       });
       navigate(`/game/${urlGameId}`);
+    } else {
+      logger.debug('Waiting for game state', {
+        component: 'WaitingRoom',
+        data: { 
+          gameId, 
+          playerNumber,
+          currentUrl: window.location.pathname,
+          hasGameState: !!gameState
+        }
+      });
     }
   }, [gameState, gameId, playerNumber, urlGameId]);
 
