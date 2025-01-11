@@ -77,7 +77,7 @@ export function registerGameHandlers(
             try {
                 await Promise.all([
                     gameService.createGame(gameCode, { id: socket.id, number: Player.First }, initialState),
-                    storageService.createGame(socket.id)
+                    storageService.createGame(socket.id, gameCode)
                 ]);
 
                 logger.info('Game created successfully', {

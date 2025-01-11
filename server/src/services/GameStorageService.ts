@@ -135,7 +135,7 @@ export class GameStorageService {
         await this.mongoClient?.close();
     }
 
-    async createGame(playerId: string): Promise<GameMetadata> {
+    async createGame(playerId: string, gameId: string): Promise<GameMetadata> {
         // Check active games limit
         const activeCount = await this.gamesCollection.countDocuments({
             status: { $in: ['waiting', 'playing'] }
@@ -145,21 +145,20 @@ export class GameStorageService {
             throw new GameStorageError('Maximum number of concurrent games reached');
         }
 
-        // Generate unique game ID and connection code
-        let gameId: string;
+        // Generate unique connection code
         let code: string;
         let exists: GameMetadata | null;
 
         do {
-            gameId = uuid.v4();
             code = Math.floor(Math.random() * 10000).toString().padStart(4, '0');
-            exists = await this.gamesCollection.findOne({
-                $or: [
-                    { gameId },
-                    { code }
-                ]
-            });
+            exists = await this.gamesCollection.findOne({ code });
         } while (exists);
+
+        // Verify gameId is unique
+        exists = await this.gamesCollection.findOne({ gameId });
+        if (exists) {
+            throw new GameStorageError('Game ID already exists');
+        }
 
         const now = new Date();
         const game: GameMetadata = {
@@ -183,11 +182,12 @@ export class GameStorageService {
         return game;
     }
 
-    async joinGame(code: string, playerId: string): Promise<GameMetadata> {
+    async joinGame(gameIdOrCode: string, playerId: string): Promise<GameMetadata> {
         const now = new Date();
+        // Try to find game by either gameId or code
         const result = await this.gamesCollection.findOneAndUpdate(
             {
-                code,
+                $or: [{ gameId: gameIdOrCode }, { code: gameIdOrCode }],
                 status: 'waiting',
                 expiresAt: { $gt: now.toISOString() },
                 'players.second': null
@@ -205,9 +205,11 @@ export class GameStorageService {
 
         if (!result) {
             // Check why join failed
-            const game = await this.gamesCollection.findOne({ code });
+            const game = await this.gamesCollection.findOne({
+                $or: [{ gameId: gameIdOrCode }, { code: gameIdOrCode }]
+            });
             if (!game) {
-                throw new GameStorageError('Game not found');
+                throw new GameStorageError(`Game not found with ID/code: ${gameIdOrCode}`);
             } else if (game.status !== 'waiting') {
                 throw new GameStorageError('Game already started');
             } else if (game.expiresAt <= now.toISOString()) {
