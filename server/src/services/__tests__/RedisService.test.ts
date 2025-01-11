@@ -66,12 +66,12 @@ describe('RedisService', () => {
         gameOver: false,
         winner: null,
         isFirstTurn: true,
-        currentPlayer: 0
+        currentPlayer: Player.First
     };
 
     const mockPlayer: IPlayer = {
         id: 'test-socket',
-        number: 0
+        number: Player.First
     };
 
     beforeEach(() => {
@@ -101,7 +101,7 @@ describe('RedisService', () => {
             (GameLogicService.applyMove as jest.Mock).mockReturnValue(mockGameState);
             (redisClient.get as jest.Mock).mockResolvedValue(JSON.stringify(mockGameState));
 
-            await redisService.updateGameState('test-game', 0, { x: 0, y: 0 });
+            await redisService.updateGameState('test-game', Player.First, { x: 0, y: 0 });
 
             expect(GameLogicService.isValidMove).toHaveBeenCalled();
             expect(GameLogicService.applyMove).toHaveBeenCalled();
@@ -110,13 +110,13 @@ describe('RedisService', () => {
 
     describe('Player Session Management', () => {
         it('should save player session', async () => {
-            await redisService.setPlayerSession('test-socket', 'test-game', 0);
+            await redisService.setPlayerSession('test-socket', 'test-game', Player.First);
 
             expect(redisClient.setex).toHaveBeenCalled();
         });
 
         it('should get player session', async () => {
-            const mockSession = { gameId: 'test-game', playerNumber: 0 };
+            const mockSession = { gameId: 'test-game', playerNumber: Player.First };
             (redisClient.get as jest.Mock).mockResolvedValue(JSON.stringify(mockSession));
 
             const session = await redisService.getPlayerSession('test-socket');
@@ -126,7 +126,7 @@ describe('RedisService', () => {
         });
 
         it('should remove player session', async () => {
-            const mockSession = { gameId: 'test-game', playerNumber: 0 };
+            const mockSession = { gameId: 'test-game', playerNumber: Player.First };
             (redisClient.get as jest.Mock).mockResolvedValue(JSON.stringify(mockSession));
 
             await redisService.removePlayerSession('test-socket');
@@ -156,18 +156,18 @@ describe('RedisService', () => {
         it('should add player to room', async () => {
             (redisClient.get as jest.Mock).mockResolvedValue(JSON.stringify([mockPlayer]));
 
-            await redisService.addPlayerToRoom('test-game', { ...mockPlayer, number: 1 });
+            await redisService.addPlayerToRoom('test-game', { ...mockPlayer, number: Player.Second });
 
             expect(redisClient.setex).toHaveBeenCalled();
         });
 
         it('should throw error when room is full', async () => {
             (redisClient.get as jest.Mock).mockResolvedValue(
-                JSON.stringify([mockPlayer, { ...mockPlayer, number: 1 }])
+                JSON.stringify([mockPlayer, { ...mockPlayer, number: Player.Second }])
             );
 
             await expect(
-                redisService.addPlayerToRoom('test-game', { ...mockPlayer, number: 2 })
+                redisService.addPlayerToRoom('test-game', { ...mockPlayer, number: Player.None })
             ).rejects.toThrow('Room is full');
         });
     });

@@ -6,16 +6,16 @@ import { describe, it, expect, beforeEach, jest } from '@jest/globals';
 jest.mock('ioredis');
 
 describe('Redis Configuration', () => {
-    let mockSet: jest.Mock<Promise<'OK' | null>>;
-    let mockDel: jest.Mock<Promise<number>>;
+    let mockSet: jest.Mock;
+    let mockDel: jest.Mock;
 
     beforeEach(() => {
         // Очищаем моки перед каждым тестом
         jest.clearAllMocks();
         
         // Настраиваем моки для методов Redis
-        mockSet = jest.fn<Promise<'OK' | null>, any[]>(() => Promise.resolve('OK'));
-        mockDel = jest.fn<Promise<number>, any[]>(() => Promise.resolve(1));
+        mockSet = jest.fn().mockImplementation(() => Promise.resolve('OK'));
+        mockDel = jest.fn().mockImplementation(() => Promise.resolve(1));
         (Redis as jest.Mock).mockImplementation(() => ({
             set: mockSet,
             del: mockDel,

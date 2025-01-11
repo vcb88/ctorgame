@@ -140,7 +140,7 @@ export class GameService {
         if (newState.gameOver) {
             updateData.endTime = now;
             updateData.winner = newState.winner || undefined;
-            updateData.finalScore = enumToLegacyScores(newState.scores);
+            updateData.finalScore = newState.scores;
             updateData.duration = (new Date(now).getTime() - new Date(game.startTime).getTime()) / 1000;
         }
 
@@ -163,12 +163,17 @@ export class GameService {
         return game?.currentState || null;
     }
 
-    async getPlayer(gameCode: string, playerNumber: number): Promise<IPlayer | null> {
+    async getPlayer(gameCode: string, playerId: string): Promise<IPlayer | null> {
         await this.ensureInitialized();
         const game = await this.gamesCollection.findOne({ code: gameCode });
         if (!game) return null;
-        const playerId = playerNumber === 0 ? game.players.first : game.players.second;
-        return playerId ? { id: playerId, number: playerNumber } : null;
+        
+        if (game.players.first === playerId) {
+            return { id: playerId, number: Player.First };
+        } else if (game.players.second === playerId) {
+            return { id: playerId, number: Player.Second };
+        }
+        return null;
     }
 
     async getSavedGames(): Promise<GameMetadata[]> {
@@ -192,7 +197,7 @@ export class GameService {
         return game.currentState;
     }
 
-    async finishGame(gameCode: string, winner: number | null, scores: { player1: number; player2: number }): Promise<void> {
+    async finishGame(gameCode: string, winner: Player | null, scores: IScores): Promise<void> {
         await this.ensureInitialized();
         const now = new Date().toISOString();
         const game = await this.gamesCollection.findOne({ code: gameCode });
@@ -206,10 +211,7 @@ export class GameService {
                     endTime: now,
                     lastActivityAt: now,
                     winner: winner !== null ? winner : undefined,
-                    finalScore: {
-                        player1: scores.player1,
-                        player2: scores.player2
-                    },
+                    finalScore: scores,
                     duration: (new Date(now).getTime() - new Date(game.startTime).getTime()) / 1000
                 }
             }
