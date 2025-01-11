@@ -5,8 +5,7 @@ import {
     IPlayer,
     GameMetadata,
     Player,
-    IScores,
-    enumToLegacyScores
+    IScores
 } from '../shared';
 import { GameLogicService } from './GameLogicService';
 

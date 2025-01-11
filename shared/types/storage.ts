@@ -1,4 +1,4 @@
-import { IGameState } from './game';
+import { IGameState, IScores, Player } from './game';
 import { IPlayer } from './player';
 
 export interface GameMetadata {
@@ -14,11 +14,8 @@ export interface GameMetadata {
         first?: string;      // First player ID
         second?: string;     // Second player ID
     };
-    winner?: number;        // Player number (1 or 2)
-    finalScore?: {          // Final score
-        player1: number;    // First player score
-        player2: number;    // Second player score
-    };
+    winner?: Player;        // Winner (Player.First or Player.Second)
+    finalScore?: IScores;    // Final scores using Player enum
     totalTurns: number;     // Total number of turns
     boardSize: {            // Board dimensions
         width: number;
@@ -27,15 +24,12 @@ export interface GameMetadata {
     currentState?: IGameState;  // Current game state
     isCompleted?: boolean;      // Game completion flag
     gameOver?: boolean;         // Game over flag
-    scores?: {                  // Current scores
-        player1: number;        // First player score
-        player2: number;        // Second player score
-    };
-    currentPlayer?: number;     // Current player (1 or 2)
+    scores?: IScores;          // Current scores using Player enum
+    currentPlayer?: Player;     // Current player (First or Second)
 }
 
 export interface GameMove {
-    player: number;  // Player number (0 or 1)
+    player: Player;  // Player enum value
     x: number;
     y: number;
     timestamp: number;
@@ -48,10 +42,7 @@ export interface GameDetails {
         moveTimes: number[];
         avgMoveTime: number;
     };
-    territoryHistory: Array<{
-        player1: number;
-        player2: number;
-    }>;
+    territoryHistory: Array<IScores>;
 }
 
 export interface GameHistory {
