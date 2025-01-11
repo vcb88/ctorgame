@@ -53,30 +53,50 @@ const formatMessage = (level: LogLevel, message: string, options: LogOptions = {
 
   parts.push(message);
 
+  let result = parts.join(' ');
+
   if (options.data !== undefined) {
-    parts.push('\nData:', JSON.stringify(options.data, null, 2));
+    try {
+      // Попытка отформатировать данные как JSON с отступами
+      const formattedData = typeof options.data === 'string' 
+        ? options.data 
+        : JSON.stringify(options.data, null, 2);
+      result += '\nData: ' + formattedData;
+    } catch (e) {
+      // Если не удалось преобразовать в JSON, выводим как есть
+      result += '\nData: ' + String(options.data);
+    }
   }
 
-  return parts.join(' ');
+  // Добавляем разделитель для лучшей читаемости
+  result += '\n----------------------------------------\n';
+
+  return result;
+};
+
+// Функция для немедленного вывода в консоль
+const log = (level: LogLevel, message: string) => {
+  process.stdout.write(message);
+  process.stdout.write('\n');
 };
 
 export const logger = {
   debug: (message: string, options: LogOptions = {}) => {
     if (DEBUG) {
-      console.debug(formatMessage('debug', message, options));
+      log('debug', formatMessage('debug', message, options));
     }
   },
 
   info: (message: string, options: LogOptions = {}) => {
-    console.info(formatMessage('info', message, options));
+    log('info', formatMessage('info', message, options));
   },
 
   warn: (message: string, options: LogOptions = {}) => {
-    console.warn(formatMessage('warn', message, options));
+    log('warn', formatMessage('warn', message, options));
   },
 
   error: (message: string, options: LogOptions = {}) => {
-    console.error(formatMessage('error', message, options));
+    log('error', formatMessage('error', message, options));
   },
 
   gameState: (state: unknown, context: LogOptions['context']) => {
