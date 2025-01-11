@@ -336,7 +336,9 @@ export const useMultiplayerGame = () => {
             currentGameState: gameState,
             newCurrentPlayer: currentPlayer,
             eventId,
-            socketId: socket?.id
+            socketId: socket?.id,
+            listeners: socket.listeners(WebSocketEvents.GameStarted).length,
+            handlerRegistrationTime: Date.now()
           }
         });
         logger.socketEvent(WebSocketEvents.GameStarted, { gameState, currentPlayer, eventId }, 'in');
@@ -421,7 +423,20 @@ export const useMultiplayerGame = () => {
     };
 
     // Set up socket event handlers once
-    if (socket.listeners('GameStarted').length === 0) {
+    logger.debug('Current socket event listeners', {
+      component: 'useMultiplayerGame',
+      data: Object.keys(handlers).reduce((acc, event) => ({
+        ...acc,
+        [event]: socket.listeners(event).length
+      }), {})
+    });
+
+    // Remove any existing handlers first
+    Object.keys(handlers).forEach((event) => {
+      socket.removeAllListeners(event);
+    });
+
+    // Add new handlers
       logger.debug('Setting up socket event handlers', {
         component: 'useMultiplayerGame',
         data: {

@@ -61,13 +61,30 @@ export const WaitingRoom: React.FC = () => {
     }
   }, [error]);
 
-  useEffect(() => {
-    // Имитация таймаута ожидания
-    const interval = setInterval(() => {
-      setTimeoutProgress((prev) => Math.max(0, prev - 0.1));
-    }, 100);
+  // Use a ref for the animation frame to avoid re-renders
+  const animationFrameRef = React.useRef<number>();
+  const lastUpdateRef = React.useRef<number>(Date.now());
+  const progressRef = React.useRef<number>(100);
 
-    return () => clearInterval(interval);
+  useEffect(() => {
+    const updateProgress = () => {
+      const now = Date.now();
+      const delta = now - lastUpdateRef.current;
+      lastUpdateRef.current = now;
+
+      progressRef.current = Math.max(0, progressRef.current - (delta * 0.001));
+      setTimeoutProgress(Math.floor(progressRef.current));
+
+      animationFrameRef.current = requestAnimationFrame(updateProgress);
+    };
+
+    animationFrameRef.current = requestAnimationFrame(updateProgress);
+
+    return () => {
+      if (animationFrameRef.current) {
+        cancelAnimationFrame(animationFrameRef.current);
+      }
+    };
   }, []);
 
   const handleCopy = () => {
