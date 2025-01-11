@@ -4,8 +4,26 @@ export * from './validation/game';
 export enum Player {
   Empty = 0,
   First = 1,
-  Second = 2
+  Second = 2,
+  None = -1
 }
+
+export enum GameOutcome {
+  Win = 'win',
+  Loss = 'loss',
+  Draw = 'draw'
+}
+
+export const getOpponent = (player: Player): Player => {
+  switch (player) {
+    case Player.First:
+      return Player.Second;
+    case Player.Second:
+      return Player.First;
+    default:
+      return Player.Empty;
+  }
+};
 
 // Coordinates and Board types
 export interface IPosition {
@@ -47,6 +65,8 @@ export interface ITurnState {
 export interface IScores {
   player1: number;
   player2: number;
+  [Player.First]: number;
+  [Player.Second]: number;
 }
 
 export interface IGameState {
@@ -57,6 +77,12 @@ export interface IGameState {
   currentPlayer: number;
   scores: IScores;
   isFirstTurn: boolean;
+}
+
+export interface IReplaceValidation {
+  isValid: boolean;
+  adjacentCount: number;
+  adjacentPositions: IPosition[];
 }
 
 export interface ReplaceCandidate {
@@ -195,8 +221,23 @@ export interface IRedisGameRoom {
   lastUpdate: number;
 }
 
+export enum GameEventType {
+  Move = 'move',
+  Disconnect = 'disconnect',
+  Reconnect = 'reconnect',
+  EndTurn = 'end_turn'
+}
+
+export interface IGameEvent {
+  type: GameEventType;
+  gameId: string;
+  playerId: string;
+  data?: unknown;
+  timestamp: number;
+}
+
 export interface IRedisGameEvent {
-  type: 'move' | 'disconnect' | 'reconnect' | 'end_turn';
+  type: GameEventType;
   gameId: string;
   playerId: string;
   data: unknown;
@@ -338,6 +379,16 @@ export const DIRECTIONS = [
   [0, -1],          [0, 1],
   [1, -1],  [1, 0],  [1, 1]
 ] as const;
+
+export const isValidScores = (scores: unknown): scores is IScores => {
+  if (!scores || typeof scores !== 'object') return false;
+  
+  const s = scores as Record<string | number, unknown>;
+  return (
+    (typeof s.player1 === 'number' && typeof s.player2 === 'number') ||
+    (typeof s[Player.First] === 'number' && typeof s[Player.Second] === 'number')
+  );
+};
 
 export const getAdjacentPositions = (pos: IPosition, board: IBoard): IPosition[] => {
   return DIRECTIONS.map(([dx, dy]) => ({
