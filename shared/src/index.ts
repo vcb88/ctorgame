@@ -1,4 +1,5 @@
-// Re-export validation utilities
+// Re-export types and utilities
+export * from '../types/game.js';
 export * from '../validation/game.js';
 
 // Coordinates and Board types
@@ -39,8 +40,8 @@ export interface ITurnState {
 }
 
 export interface IScores {
-  player1: number;
-  player2: number;
+  [Player.First]: number;
+  [Player.Second]: number;
 }
 
 export interface IGameState {
@@ -220,10 +221,7 @@ export interface GameMetadata {
     second?: string;
   };
   winner?: number;
-  finalScore?: {
-    player1: number;
-    player2: number;
-  };
+  finalScore?: IScores;
   totalTurns: number;
   boardSize: {
     width: number;
@@ -232,10 +230,7 @@ export interface GameMetadata {
   currentState?: IGameState;
   isCompleted?: boolean;
   gameOver?: boolean;
-  scores?: {
-    player1: number;
-    player2: number;
-  };
+  scores?: IScores;
   currentPlayer?: number;
 }
 
@@ -253,10 +248,7 @@ export interface GameDetails {
     moveTimes: number[];
     avgMoveTime: number;
   };
-  territoryHistory: Array<{
-    player1: number;
-    player2: number;
-  }>;
+  territoryHistory: IScores[];
 }
 
 export interface GameHistory {
