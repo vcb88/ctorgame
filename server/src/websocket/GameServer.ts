@@ -16,9 +16,7 @@ import {
   Player,
   GameOutcome,
   getOpponent,
-  isLegacyScores,
-  isEnumScores,
-  legacyToEnumScores
+  isValidScores
 } from '../shared';
 import { validateGameMove, validateGameState } from '../validation/game';
 import { GameService } from '../services/GameService';
@@ -200,7 +198,7 @@ export class GameServer {
           if (updatedState.gameOver) {
             await Promise.all([
               redisService.cleanupGame(gameId),
-              this.gameService.finishGame(gameId, updatedState.winner, enumToLegacyScores(updatedState.scores))
+              this.gameService.finishGame(gameId, updatedState.winner, updatedState.scores)
             ]);
 
             this.io.to(gameId).emit(WebSocketEvents.GameOver, {
@@ -283,9 +281,9 @@ export class GameServer {
                   // Если игрок не переподключился - завершаем игру
                   await Promise.all([
                     // При дисконнекте противник побеждает, счет 0:0
-                    this.gameService.finishGame(session.gameId, getOpponent(session.playerNumber), { 
-                      player1: 0, 
-                      player2: 0 
+                    this.gameService.finishGame(session.gameId, getOpponent(session.playerNumber), {
+                      [Player.First]: 0,
+                      [Player.Second]: 0
                     }),
                     redisService.cleanupGame(session.gameId)
                   ]);

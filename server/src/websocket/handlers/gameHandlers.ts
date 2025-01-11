@@ -11,10 +11,7 @@ import {
   Player,
   validateGameMove,
   validateGameState,
-  isLegacyScores,
-  isEnumScores,
-  legacyToEnumScores,
-  enumToLegacyScores
+  isValidScores
 } from '../../shared';
 import { GameEventResponse } from '../../types/events';
 
@@ -48,7 +45,7 @@ export function registerGameHandlers(
 
             // Создаем игру в Redis и MongoDB
             await Promise.all([
-                gameService.createGame(gameCode, { id: socket.id, number: 0 }, initialState),
+                gameService.createGame(gameCode, { id: socket.id, number: Player.First }, initialState),
                 storageService.createGame(socket.id)
             ]);
 
@@ -75,7 +72,7 @@ export function registerGameHandlers(
             }
 
             // Присоединяем игрока
-            const player: IPlayer = { id: socket.id, number: 1 };
+            const player: IPlayer = { id: socket.id, number: Player.Second };
             await Promise.all([
                 gameService.joinGame(gameId, player),
                 storageService.joinGame(gameId, socket.id)
@@ -87,7 +84,7 @@ export function registerGameHandlers(
             socket.emit(WebSocketEvents.GameJoined, { gameId });
             socket.to(gameId).emit(WebSocketEvents.GameStarted, {
                 gameState: state,
-                currentPlayer: 0 // Первый ход всегда за первым игроком
+                currentPlayer: Player.First // Первый ход всегда за первым игроком
             });
         } catch (error) {
             socket.emit(WebSocketEvents.Error, { 
@@ -111,8 +108,8 @@ export function registerGameHandlers(
             }
 
             // Валидация хода
-            const player = await gameService.getPlayer(gameId, parseInt(socket.id, 10));
-            if (!player || player.number.toString() !== state.currentPlayer.toString()) {
+            const player = await gameService.getPlayer(gameId, socket.id);
+            if (!player || player.number !== state.currentPlayer) {
                 throw new Error('Not your turn');
             }
 
