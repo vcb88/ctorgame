@@ -1,19 +1,18 @@
 import { useEffect, useState, useCallback, useRef } from 'react';
 import { io, Socket } from 'socket.io-client';
 import { logger } from '../utils/logger';
-import { 
-  IGameState, 
-  IGameMove, 
+import {
+  IGameState,
+  IGameMove,
   OperationType,
   IPosition,
-  WebSocketEvents, 
-  ClientToServerEvents, 
+  WebSocketEvents,
+  ClientToServerEvents,
   ServerToClientEvents,
-  validateGameMove,
-  validateGameState,
   Player,
   getOpponent
-} from '../shared';
+} from '../../../shared/types/index.js';
+import { validateGameMove, validateGameState } from '../../../shared/validation/game.js';
 import {
   ConnectionState,
   GameError,
