@@ -92,7 +92,7 @@ export interface ILegacyScores {
 /**
  * Converts legacy scores format to enum format
  */
-export function legacyToEnumScores(scores: ILegacyScores): IEnumScores {
+export function legacyToEnumScores(scores: ILegacyScores): IScores {
     return {
         [Player.First]: scores.player1,
         [Player.Second]: scores.player2
