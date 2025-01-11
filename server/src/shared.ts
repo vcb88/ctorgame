@@ -1,6 +1,10 @@
-// Re-export validation utilities and types
+// Import WebSocket error types
+import { WebSocketErrorCode } from './types/errors';
+
+// Re-export validation utilities
 export * from './validation/game';
-export * from './types/errors';
+export * from './types/connection';
+export { WebSocketErrorCode } from './types/errors';
 
 export enum Player {
   Empty = 0,
