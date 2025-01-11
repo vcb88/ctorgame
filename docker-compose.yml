@@ -12,17 +12,8 @@ services:
       - ctorgame_network
     env_file:
       - .env
-    volumes:
-      - ./client:/app/client
-      - ./shared:/app/shared
-      - /app/client/node_modules
-      - /app/shared/node_modules
     command: >
-      sh -c "cd /app/shared && 
-             pnpm install && 
-             cd /app/client && 
-             pnpm install &&
-             pnpm dev --host"
+      sh -c "pnpm start"
 
   server:
     image: ${SERVER_TAG:-ctorgame-server:latest}
@@ -38,8 +29,6 @@ services:
       - .env
     volumes:
       - game_data:/data/games
-      - ./server/src:/app/server/src  # Монтируем исходники для разработки
-      - ./shared/src:/app/shared/src  # Монтируем shared исходники
     depends_on:
       mongodb:
         condition: service_healthy
@@ -47,15 +36,7 @@ services:
         condition: service_healthy
     restart: always
     command: >
-      sh -c "cd /app/shared && 
-             pnpm install && 
-             pnpm build && 
-             cd /app/server && 
-             pnpm install && 
-             rm -rf dist && 
-             pnpm build && 
-             ls -la dist && 
-             node dist/index.js"
+      sh -c "node dist/index.js"
     healthcheck:
       test: ["CMD-SHELL", "wget -q --spider http://localhost:3000/health || exit 1"]
       interval: 10s
