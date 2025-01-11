@@ -22,6 +22,12 @@ export function getSocket(): Socket {
     
     console.log('Creating socket connection to:', wsUrl);
     
+    console.log('Socket configuration:', {
+      url: wsUrl,
+      path: '/socket.io/',
+      transports: ['websocket', 'polling']
+    });
+
     socket = io(wsUrl, {
       transports: ['websocket', 'polling'],
       autoConnect: true,
@@ -29,9 +35,10 @@ export function getSocket(): Socket {
       reconnectionAttempts: 5,
       reconnectionDelay: 3000,
       reconnectionDelayMax: 6000,
-      timeout: 10000,
+      timeout: 20000, // Увеличим таймаут
       path: '/socket.io/',
       upgrade: true,
+      forceNew: true
     });
 
     // Логирование событий сокета
