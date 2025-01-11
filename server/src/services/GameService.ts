@@ -100,6 +100,17 @@ export class GameService {
         return game;
     }
 
+    async findGame(gameIdOrCode: string): Promise<GameMetadata | null> {
+        await this.ensureInitialized();
+        const result = await this.gamesCollection.findOne({ 
+            $or: [
+                { gameId: gameIdOrCode, status: 'waiting' },
+                { code: gameIdOrCode, status: 'waiting' }
+            ]
+        });
+        return result;
+    }
+
     async joinGame(gameIdOrCode: string, player: IPlayer): Promise<GameMetadata> {
         await this.ensureInitialized();
         const result = await this.gamesCollection.findOneAndUpdate(

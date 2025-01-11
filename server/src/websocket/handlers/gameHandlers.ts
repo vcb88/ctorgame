@@ -224,14 +224,15 @@ export function registerGameHandlers(
             });
 
             // Получаем состояние игры из Redis
-            const state = await gameService.getGameState(gameId);
-            if (!state) {
+            const game = await gameService.findGame(gameId);
+            if (!game) {
                 logger.error('Game not found during join attempt', {
                     component: 'GameHandlers',
                     event: WebSocketEvents.JoinGame,
                     context: {
                         socketId: socket.id,
                         gameId,
+                        searchKey: gameId,
                         timestamp: new Date().toISOString()
                     },
                     error: {
@@ -242,6 +243,10 @@ export function registerGameHandlers(
                     }
                 });
                 throw new Error('Game not found');
+            }
+            const state = game.currentState;
+            if (!state) {
+                throw new Error('Invalid game state - no current state found');
             }
 
             logger.info('[2/4] Game state validation', {
