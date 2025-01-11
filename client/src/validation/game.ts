@@ -33,10 +33,10 @@ export function validateGameState(state: IGameState): boolean {
     board.every(row => 
       Array.isArray(row) && 
       row.length === width &&
-      row.every(cell => cell === null || Object.values(Player).includes(cell))
+      row.every(cell => typeof cell === 'number' && (cell === 0 || cell === 1 || cell === 2))
     ) &&
     typeof state.gameOver === 'boolean' &&
-    (state.winner === null || Object.values(Player).includes(state.winner)) &&
+    (state.winner === null || typeof state.winner === 'number') &&
     state.currentTurn &&
     typeof state.currentTurn.placeOperationsLeft === 'number' &&
     Array.isArray(state.currentTurn.moves) &&

@@ -1,6 +1,12 @@
 // Re-export validation utilities
 export * from './validation/game';
 
+export enum Player {
+  Empty = 0,
+  First = 1,
+  Second = 2
+}
+
 // Coordinates and Board types
 export interface IPosition {
   x: number;
