@@ -1,4 +1,4 @@
-import { WebSocketErrorCode, ErrorResponse } from '../../../shared/types/events';
+import { WebSocketErrorCode, ErrorResponse } from './errors';
 
 export { WebSocketErrorCode, ErrorResponse };
 
