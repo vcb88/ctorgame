@@ -26,18 +26,24 @@ export function registerGameHandlers(
     // Создание новой игры
     socket.on(WebSocketEvents.CreateGame, async () => {
         try {
-            const gameCode = generateGameCode();
-            logger.info('CreateGame event received', {
+            const gameId = generateGameCode();
+            logger.info('[1/5] CreateGame event received', {
                 component: 'GameHandlers',
                 event: WebSocketEvents.CreateGame,
                 context: {
                     socketId: socket.id,
-                    gameId: gameCode
+                    gameId,
+                    timestamp: new Date().toISOString()
                 },
-                data: {
+                connection: {
                     transport: socket.conn.transport.name,
                     readyState: socket.conn.readyState,
-                    rooms: Array.from(socket.rooms)
+                    rooms: Array.from(socket.rooms),
+                    handshake: {
+                        address: socket.handshake.address,
+                        headers: socket.handshake.headers,
+                        time: socket.handshake.time
+                    }
                 }
             });
 
@@ -60,32 +66,70 @@ export function registerGameHandlers(
                 currentPlayer: Player.First
             };
 
-            logger.info('Creating game in storage', {
+            logger.info('[2/5] Initializing game state', {
                 component: 'GameHandlers',
                 event: WebSocketEvents.CreateGame,
                 context: {
                     socketId: socket.id,
-                    gameId: gameCode
+                    gameId,
+                    timestamp: new Date().toISOString()
                 },
-                data: {
+                gameState: {
                     initialState,
-                    player: { id: socket.id, number: Player.First }
+                    boardSize: BOARD_SIZE,
+                    firstPlayer: { id: socket.id, number: Player.First },
+                    initialScores: initialState.scores,
+                    turnConfig: { 
+                        placeOperationsLeft: initialState.currentTurn.placeOperationsLeft,
+                        isFirstTurn: initialState.isFirstTurn
+                    }
                 }
             });
 
-            // Создаем игру в Redis и MongoDB
+            logger.info('[3/5] Creating game in storage services', {
+                component: 'GameHandlers',
+                event: WebSocketEvents.CreateGame,
+                context: {
+                    socketId: socket.id,
+                    gameId,
+                    timestamp: new Date().toISOString()
+                },
+                storage: {
+                    services: ['GameService (Redis)', 'GameStorageService (MongoDB)'],
+                    operation: 'createGame',
+                    params: {
+                        gameId,
+                        playerId: socket.id,
+                        playerNumber: Player.First,
+                        initialStateSize: JSON.stringify(initialState).length
+                    }
+                }
+            });
+
             try {
-                await Promise.all([
-                    gameService.createGame(gameCode, { id: socket.id, number: Player.First }, initialState),
-                    storageService.createGame(socket.id, gameCode)
+                const [gameServiceResult, storageServiceResult] = await Promise.all([
+                    gameService.createGame(gameId, { id: socket.id, number: Player.First }, initialState),
+                    storageService.createGame(socket.id, gameId)
                 ]);
 
-                logger.info('Game created successfully', {
+                logger.info('[4/5] Game created successfully', {
                     component: 'GameHandlers',
                     event: WebSocketEvents.CreateGame,
                     context: {
                         socketId: socket.id,
-                        gameId: gameCode
+                        gameId
+                    },
+                    results: {
+                        gameService: {
+                            code: gameServiceResult.code,
+                            status: gameServiceResult.status,
+                            expiresAt: gameServiceResult.expiresAt
+                        },
+                        storageService: {
+                            gameId: storageServiceResult.gameId,
+                            code: storageServiceResult.code,
+                            status: storageServiceResult.status
+                        }
                     }
                 });
             } catch (storageError) {
@@ -103,22 +147,38 @@ export function registerGameHandlers(
                 throw storageError;
             }
 
-            logger.info('Joining room and emitting GameCreated event', {
+            const eventId = generateEventId();
+            logger.info('[5/5] Setting up game room and notifying player', {
                 component: 'GameHandlers',
                 event: WebSocketEvents.GameCreated,
                 context: {
                     socketId: socket.id,
-                    gameId: gameCode
+                    gameId,
+                    timestamp: new Date().toISOString()
                 },
-                data: {
-                    previousRooms: Array.from(socket.rooms)
+                room: {
+                    previousRooms: Array.from(socket.rooms),
+                    joiningRoom: gameId,
+                    eventId
+                },
+                notification: {
+                    event: WebSocketEvents.GameCreated,
+                    payload: {
+                        gameId,
+                        eventId
+                    }
+                },
+                waitingPhase: {
+                    status: 'waiting_for_player2',
+                    timeout: '30 minutes',
+                    reconnectionWindow: '5 minutes'
                 }
             });
 
-            socket.join(gameCode);
+            socket.join(gameId);
             socket.emit(WebSocketEvents.GameCreated, { 
-                gameId: gameCode,
-                eventId: generateEventId()
+                gameId,
+                eventId
             });
         } catch (error) {
             logger.error('Failed to create game', {
@@ -148,11 +208,58 @@ export function registerGameHandlers(
     // Присоединение к существующей игре
     socket.on(WebSocketEvents.JoinGame, async ({ gameId }) => {
         try {
+            logger.info('[1/4] JoinGame request received', {
+                component: 'GameHandlers',
+                event: WebSocketEvents.JoinGame,
+                context: {
+                    socketId: socket.id,
+                    gameId,
+                    timestamp: new Date().toISOString()
+                },
+                connection: {
+                    transport: socket.conn.transport.name,
+                    readyState: socket.conn.readyState,
+                    headers: socket.handshake.headers
+                }
+            });
+
             // Получаем состояние игры из Redis
             const state = await gameService.getGameState(gameId);
             if (!state) {
+                logger.error('Game not found during join attempt', {
+                    component: 'GameHandlers',
+                    event: WebSocketEvents.JoinGame,
+                    context: {
+                        socketId: socket.id,
+                        gameId,
+                        timestamp: new Date().toISOString()
+                    },
+                    error: {
+                        type: 'GAME_NOT_FOUND',
+                        details: {
+                            searchParams: { gameId }
+                        }
+                    }
+                });
                 throw new Error('Game not found');
             }
+
+            logger.info('[2/4] Game state validation', {
+                component: 'GameHandlers',
+                event: WebSocketEvents.JoinGame,
+                context: {
+                    socketId: socket.id,
+                    gameId,
+                    timestamp: new Date().toISOString()
+                },
+                gameState: {
+                    boardState: state.board.size,
+                    currentPlayer: state.currentPlayer,
+                    turnInfo: state.currentTurn,
+                    scores: state.scores,
+                    isValid: validateGameState(state)
+                }
+            });
 
             if (!validateGameState(state)) {
                 throw new Error('Invalid game state');
@@ -160,22 +267,90 @@ export function registerGameHandlers(
 
             // Присоединяем игрока
             const player: IPlayer = { id: socket.id, number: Player.Second };
-            await Promise.all([
+            logger.info('[3/4] Joining player to game', {
+                component: 'GameHandlers',
+                event: WebSocketEvents.JoinGame,
+                context: {
+                    socketId: socket.id,
+                    gameId,
+                    timestamp: new Date().toISOString()
+                },
+                player: {
+                    id: socket.id,
+                    number: Player.Second,
+                    joiningServices: ['GameService', 'GameStorageService']
+                }
+            });
+
+            const [gameJoinResult, storageJoinResult] = await Promise.all([
                 gameService.joinGame(gameId, player),
                 storageService.joinGame(gameId, socket.id)
             ]);
 
+            logger.info('[4/4] Player joined successfully', {
+                component: 'GameHandlers',
+                event: WebSocketEvents.JoinGame,
+                context: {
+                    socketId: socket.id,
+                    gameId,
+                    timestamp: new Date().toISOString()
+                },
+                results: {
+                    gameService: {
+                        status: gameJoinResult.status,
+                        code: gameJoinResult.code,
+                        players: gameJoinResult.players
+                    },
+                    storageService: {
+                        status: storageJoinResult.status,
+                        code: storageJoinResult.code
+                    }
+                },
+                notifications: {
+                    toJoiningPlayer: WebSocketEvents.GameJoined,
+                    toFirstPlayer: WebSocketEvents.GameStarted,
+                    gameState: {
+                        currentPlayer: Player.First,
+                        isFirstTurn: true
+                    }
+                }
+            });
+
             socket.join(gameId);
             
             // Отправляем обновленное состояние всем игрокам
-            socket.emit(WebSocketEvents.GameJoined, { gameId });
+            socket.emit(WebSocketEvents.GameJoined, { 
+                gameId,
+                eventId: generateEventId()
+            });
             socket.to(gameId).emit(WebSocketEvents.GameStarted, {
                 gameState: state,
-                currentPlayer: Player.First // Первый ход всегда за первым игроком
+                currentPlayer: Player.First, // Первый ход всегда за первым игроком
+                eventId: generateEventId()
             });
         } catch (error) {
+            logger.error('Failed to join game', {
+                component: 'GameHandlers',
+                event: WebSocketEvents.JoinGame,
+                context: {
+                    socketId: socket.id,
+                    gameId,
+                    timestamp: new Date().toISOString()
+                },
+                error: {
+                    message: error instanceof Error ? error.message : 'Unknown error',
+                    stack: error instanceof Error ? error.stack : undefined,
+                    type: error instanceof Error ? error.constructor.name : typeof error
+                }
+            });
+
             socket.emit(WebSocketEvents.Error, { 
-                message: error instanceof Error ? error.message : 'Failed to join game'
+                message: error instanceof Error ? error.message : 'Failed to join game',
+                code: WebSocketErrorCode.INVALID_GAME_ID,
+                details: {
+                    errorType: error instanceof Error ? error.constructor.name : typeof error,
+                    gameId
+                }
             });
         }
     });
