@@ -46,7 +46,7 @@ export function getBoardCell(board: IBoard, x: number, y: number): number {
     if (y < 0 || y >= board.size.height || x < 0 || x >= board.size.width) {
         throw new Error(`Invalid coordinates: x=${x}, y=${y}`);
     }
-    return board.cells[y][x];
+    return board.cells[y][x] ?? 0; // Return 0 (Player.None) for null values
 }
 
 /**
