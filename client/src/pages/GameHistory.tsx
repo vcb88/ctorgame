@@ -2,7 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getSocket } from '../services/socket';
 import { ReplayView } from '../components/Replay/ReplayView';
-import { Button } from '../components/ui/button';
+import { CyberButton } from '@/components/ui/cyber-button';
+import { NeonGridBackground } from '@/components/backgrounds/NeonGridBackground';
+import { cn } from '@/lib/utils';
 
 interface GameSummary {
     gameCode: string;
@@ -44,80 +46,129 @@ export function GameHistory() {
         };
     }, []);
 
-    if (loading) {
-        return <div>Loading saved games...</div>;
-    }
-
-    if (error) {
-        return (
-            <div className="p-6">
-                <div className="bg-destructive/10 text-destructive p-4 rounded-lg mb-4">
-                    {error}
+    const renderContent = () => {
+        if (loading) {
+            return (
+                <div className="flex items-center justify-center min-h-screen">
+                    <div className="text-cyan-400 font-mono text-lg animate-pulse">
+                        LOADING NEURAL ARCHIVES...
+                    </div>
                 </div>
-                <Button onClick={() => navigate('/')}>Back to Home</Button>
-            </div>
-        );
-    }
+            );
+        }
 
-    // Если выбрана игра для просмотра - показываем replay
-    if (selectedGame) {
-        return (
-            <ReplayView
-                gameCode={selectedGame}
-                socket={getSocket()}
-                onClose={() => setSelectedGame(null)}
-            />
-        );
-    }
+        if (error) {
+            return (
+                <div className="flex flex-col items-center justify-center min-h-screen p-6 text-center">
+                    <div className="bg-red-900/30 text-red-400 p-6 rounded-lg mb-6 border border-red-700/50 backdrop-blur-sm">
+                        <div className="text-lg font-mono mb-2">ERROR://</div>
+                        {error}
+                    </div>
+                    <CyberButton
+                        onClick={() => navigate('/')}
+                        variant="ghost"
+                        glowing
+                    >
+                        RETURN TO MAINFRAME
+                    </CyberButton>
+                </div>
+            );
+        }
+
+        // Если выбрана игра для просмотра - показываем replay
+        if (selectedGame) {
+            return (
+                <div className="min-h-screen bg-slate-900">
+                    <ReplayView
+                        gameCode={selectedGame}
+                        socket={getSocket()}
+                        onClose={() => setSelectedGame(null)}
+                    />
+                </div>
+            );
+        }
+    };
+
+    const content = renderContent();
+    if (content) return content;
 
     return (
-        <div className="p-6">
-            <div className="flex justify-between items-center mb-6">
-                <h1 className="text-3xl font-bold">Game History</h1>
-                <Button onClick={() => navigate('/')}>Back to Home</Button>
-            </div>
+        <div className="relative min-h-screen text-cyan-50 overflow-hidden">
+            <NeonGridBackground />
+            
+            {/* Основной контент */}
+            <div className="relative z-10 container mx-auto px-4 py-8">
+                <div className="flex justify-between items-center mb-8">
+                    <h1 className="text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-blue-500">
+                        Neural Archives
+                    </h1>
+                    <CyberButton
+                        onClick={() => navigate('/')}
+                        variant="ghost"
+                        glowing
+                    >
+                        RETURN TO MAINFRAME
+                    </CyberButton>
+                </div>
 
-            <div className="grid gap-4">
-                {games.length === 0 ? (
-                    <div className="text-center text-muted-foreground">
-                        No saved games found
-                    </div>
-                ) : (
-                    games.map((game) => (
-                        <div
-                            key={game.gameCode}
-                            className="p-4 bg-background rounded-lg shadow-md"
-                        >
-                            <div className="flex justify-between items-center">
-                                <div>
-                                    <h3 className="font-semibold">
-                                        Game #{game.gameCode}
-                                    </h3>
-                                    <p className="text-sm text-muted-foreground">
-                                        Played on:{' '}
-                                        {new Date(
-                                            game.createdAt
-                                        ).toLocaleDateString()}
-                                    </p>
-                                    {game.completedAt && (
-                                        <p className="text-sm">
-                                            {game.winner !== null
-                                                ? `Winner: Player ${
-                                                      game.winner + 1
-                                                  }`
-                                                : "Result: Draw"}
-                                        </p>
-                                    )}
-                                </div>
-                                <Button
-                                    onClick={() => setSelectedGame(game.gameCode)}
-                                >
-                                    Watch Replay
-                                </Button>
+                <div className="space-y-4">
+                    {games.length === 0 ? (
+                        <div className="text-center p-8 bg-black/30 backdrop-blur-sm border border-cyan-900/30 rounded-lg">
+                            <div className="text-cyan-600 font-mono">
+                                NO ARCHIVED GAMES FOUND IN DATABASE
                             </div>
                         </div>
-                    ))
-                )}
+                    ) : (
+                        games.map((game) => (
+                            <div
+                                key={game.gameCode}
+                                className={cn(
+                                    "relative p-6 rounded-lg border transition-all duration-300",
+                                    "bg-black/30 backdrop-blur-sm border-cyan-900/30",
+                                    "hover:border-cyan-500/50 hover:shadow-lg hover:shadow-cyan-500/20"
+                                )}
+                            >
+                                <div className="flex justify-between items-center">
+                                    <div className="space-y-2">
+                                        <h3 className="text-xl font-mono text-cyan-400">
+                                            INSTANCE://{game.gameCode}
+                                        </h3>
+                                        <p className="text-sm text-cyan-600 font-mono">
+                                            TIMESTAMP: {new Date(game.createdAt).toLocaleString()}
+                                        </p>
+                                        {game.completedAt && (
+                                            <p className="text-sm font-mono">
+                                                <span className="text-pink-500">STATUS: </span>
+                                                {game.winner !== null
+                                                    ? `VICTORY ACHIEVED - PLAYER ${game.winner + 1}`
+                                                    : "STALEMATE DETECTED"}
+                                            </p>
+                                        )}
+                                    </div>
+                                    <CyberButton
+                                        onClick={() => setSelectedGame(game.gameCode)}
+                                        variant="secondary"
+                                        glowing
+                                    >
+                                        ACCESS REPLAY
+                                    </CyberButton>
+                                </div>
+
+                                {/* Декоративные элементы */}
+                                <div className="absolute top-0 left-0 w-2 h-2 border-t-2 border-l-2 border-cyan-500/30" />
+                                <div className="absolute top-0 right-0 w-2 h-2 border-t-2 border-r-2 border-cyan-500/30" />
+                                <div className="absolute bottom-0 left-0 w-2 h-2 border-b-2 border-l-2 border-cyan-500/30" />
+                                <div className="absolute bottom-0 right-0 w-2 h-2 border-b-2 border-r-2 border-cyan-500/30" />
+                            </div>
+                        ))
+                    )}
+                </div>
+
+                {/* Декоративная информация */}
+                <div className="absolute bottom-4 right-4 font-mono text-xs text-cyan-700">
+                    <div>ARCHIVE://neural-cache/v1.0.1</div>
+                    <div>STATUS://connection-stable</div>
+                </div>
             </div>
         </div>
     );
