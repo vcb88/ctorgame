@@ -1,4 +1,5 @@
 // Re-export types and utilities
+import { Player } from '../types/game.js';
 export * from '../types/game.js';
 export * from '../validation/game.js';
 
@@ -40,8 +41,7 @@ export interface ITurnState {
 }
 
 export interface IScores {
-  [Player.First]: number;
-  [Player.Second]: number;
+  [key: number]: number;  // Using index signature instead of computed properties
 }
 
 export interface IGameState {

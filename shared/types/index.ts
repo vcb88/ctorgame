@@ -11,5 +11,4 @@ export * from './events.js';
 export * from './storage.js';
 export * from './ai.js';
 
-// Re-export validation utilities
-export * from '../validation/game.js';
+// Validation utilities are re-exported from src/index.ts
