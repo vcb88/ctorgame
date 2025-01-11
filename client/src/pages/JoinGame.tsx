@@ -106,7 +106,7 @@ export const JoinGame: React.FC = () => {
                 <div className="h-6">
                   {error && (
                     <div className="text-red-400 text-sm text-center animate-pulse">
-                      {error}
+                      {error?.message || String(error)}
                     </div>
                   )}
                 </div>

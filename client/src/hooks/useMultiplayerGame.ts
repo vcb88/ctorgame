@@ -402,34 +402,48 @@ export const useMultiplayerGame = () => {
     });
   }, [socket, connectionState, handleError, setOperationTimeout]);
 
-  const joinGame = useCallback((gameId: string) => {
-    if (!socket) {
-      handleError({
-        code: WebSocketErrorCode.CONNECTION_ERROR,
-        message: 'Cannot join game - socket not initialized',
-        details: { connectionState }
-      });
-      return;
-    }
+  const joinGame = useCallback((gameId: string): Promise<boolean> => {
+    return new Promise((resolve) => {
+      if (!socket) {
+        handleError({
+          code: WebSocketErrorCode.CONNECTION_ERROR,
+          message: 'Cannot join game - socket not initialized',
+          details: { connectionState }
+        });
+        resolve(false);
+        return;
+      }
 
-    if (connectionState !== ConnectionState.CONNECTED) {
-      handleError({
-        code: WebSocketErrorCode.CONNECTION_ERROR,
-        message: 'Cannot join game - not connected to server',
-        details: { connectionState }
-      });
-      return;
-    }
+      if (connectionState !== ConnectionState.CONNECTED) {
+        handleError({
+          code: WebSocketErrorCode.CONNECTION_ERROR,
+          message: 'Cannot join game - not connected to server',
+          details: { connectionState }
+        });
+        resolve(false);
+        return;
+      }
 
-    logger.socketEvent(WebSocketEvents.JoinGame, { gameId }, 'out');
-    socket.emit(WebSocketEvents.JoinGame, { gameId });
-    setOperationTimeout('joinGame', () => {
-      handleError({
-        code: WebSocketErrorCode.TIMEOUT,
-        message: 'Game joining timed out',
-        details: { gameId }
+      // Set up one-time listener for success
+      socket.once(WebSocketEvents.GameJoined, () => {
+        resolve(true);
       });
-    });
+
+      // Set up one-time listener for error
+      socket.once(WebSocketEvents.Error, () => {
+        resolve(false);
+      });
+
+      logger.socketEvent(WebSocketEvents.JoinGame, { gameId }, 'out');
+      socket.emit(WebSocketEvents.JoinGame, { gameId });
+      setOperationTimeout('joinGame', () => {
+        handleError({
+          code: WebSocketErrorCode.TIMEOUT,
+          message: 'Game joining timed out',
+          details: { gameId }
+        });
+        resolve(false);
+      });
   }, [socket, connectionState, handleError, setOperationTimeout]);
 
   const makeMove = useCallback((x: number, y: number, type: OperationType = OperationType.PLACE) => {
