@@ -16,11 +16,12 @@ export const GameRules: React.FC = () => {
   }, []);
 
   return (
-    <div className="relative min-h-screen text-cyan-50 overflow-auto">
+    <>
+      {/* Background */}
       <CyberRulesBackground />
       
-      {/* Content overlay */}
-      <div className="relative z-10 container mx-auto px-4 py-8 max-w-4xl">
+      {/* Content */}
+      <div className="container mx-auto px-4 py-8 max-w-4xl text-cyan-50">
         <button
           onClick={() => navigate('/')}
           className="mb-8 text-red-500 hover:text-red-400 
@@ -187,5 +188,6 @@ export const GameRules: React.FC = () => {
         </div>
       </div>
     </div>
+    </>
   );
 };
