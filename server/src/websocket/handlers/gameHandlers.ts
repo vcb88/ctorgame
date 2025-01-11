@@ -126,8 +126,11 @@ export function registerGameHandlers(
 
             // Проверяем завершение игры
             if (updatedState.gameOver) {
-                // Используем интерфейс IScores
-                const gameScores: IScores = updatedState.scores || { [Player.First]: 0, [Player.Second]: 0 } as IScores;
+                // Преобразуем scores в правильный формат
+                const gameScores: IScores = isValidScores(updatedState.scores) ? updatedState.scores : {
+                    [Player.First]: 0,
+                    [Player.Second]: 0
+                } as IScores;
                 await storageService.finishGame(
                     gameId, 
                     updatedState.winner || Player.None, // В случае ничьей используем Player.None
