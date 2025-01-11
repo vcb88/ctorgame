@@ -1,5 +1,5 @@
 // Re-export types and utilities
-import { Player } from '../types/game.js';
+import { Player, IScores, IEnumScores, ILegacyScores } from '../types/game.js';
 export * from '../types/game.js';
 export * from '../validation/game.js';
 
