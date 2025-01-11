@@ -110,7 +110,6 @@ app.get('/health', (req, res) => {
 let isServerReady = false;
 
 console.log('Creating HTTP server...');
-console.log('Creating HTTP server...');
 const httpServer = http.createServer(app);
 
 httpServer.on('listening', () => {

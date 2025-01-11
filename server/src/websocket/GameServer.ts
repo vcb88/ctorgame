@@ -35,19 +35,29 @@ export class GameServer {
   private storageService: GameStorageService;
 
   constructor(httpServer: HttpServer) {
+    // Очищаем предыдущие экземпляры Socket.IO
+    if ((global as any).io) {
+      console.log("Cleaning up previous Socket.IO instance");
+      (global as any).io.close();
+    }
+
     this.io = new Server(httpServer, {
       cors: {
         origin: "*",
         methods: ["GET", "POST"]
       },
       path: '/socket.io/',
-      transports: ['websocket', 'polling'],
+      // Используем только WebSocket для предотвращения двойных подключений
+      transports: ['websocket'],
       serveClient: false,
       pingTimeout: 10000,
       pingInterval: 5000,
       upgradeTimeout: 10000,
       maxHttpBufferSize: 1e6,
     });
+
+    // Сохраняем экземпляр для последующей очистки
+    (global as any).io = this.io;
 
     // Инициализируем сервисы
     this.initializeServices().catch(error => {
@@ -83,7 +93,13 @@ export class GameServer {
 
   private setupEventHandlers(): void {
     this.io.on('connection', (socket: Socket<ClientToServerEvents, ServerToClientEvents>) => {
-      console.log(`Client connected: ${socket.id}`);
+      // Добавляем расширенное логирование подключений
+      console.log('New client connection:', {
+        socketId: socket.id,
+        transport: socket.conn.transport.name,
+        remoteAddress: socket.handshake.address,
+        userAgent: socket.handshake.headers['user-agent']
+      });
 
       socket.on(WebSocketEvents.CreateGame, async () => {
         try {
