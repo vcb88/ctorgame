@@ -101,6 +101,41 @@ sequenceDiagram
 
 ## State Management
 
+### Planned Migration to Hybrid State Management
+
+The project is transitioning to a hybrid state management approach that combines centralized game state management with component-local UI state. This new architecture is detailed in [STATE_MANAGEMENT_MIGRATION.md](./STATE_MANAGEMENT_MIGRATION.md).
+
+```mermaid
+graph TD
+    A[GameStateManager] --> B[Socket Management]
+    A --> C[Game State]
+    A --> D[Player Management]
+    
+    E[React Components] --> F[useGame Hook]
+    F --> A
+    
+    G[Local UI State] --> E
+    
+    subgraph "Global State"
+        A
+        B
+        C
+        D
+    end
+    
+    subgraph "Component State"
+        E
+        G
+    end
+```
+
+Key aspects of the new architecture:
+- Centralized game state management through GameStateManager
+- Clear separation between game logic and UI concerns
+- Improved state predictability and debugging
+- Reduced component complexity
+- Better socket connection handling
+
 ### Game State Management
 
 #### Player Identification System

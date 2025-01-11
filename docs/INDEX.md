@@ -23,6 +23,14 @@
    - State recovery
    - Monitoring
 
+4. [State Management Migration](./STATE_MANAGEMENT_MIGRATION.md)
+   - Migration plan
+   - New architecture
+   - Implementation phases
+   - Testing strategy
+   - Success criteria
+   - Rollback plan
+
 4. [Testing Documentation](./testing.md)
    - Test overview
    - Test running guide
@@ -102,7 +110,8 @@
 
 | Document | Status | Last Updated |
 |----------|---------|--------------|
-| Architecture | Updated | 2025-01-06 |
+| Architecture | Updated | 2025-01-11 |
+| State Management Migration | New | 2025-01-11 |
 | Testing Strategy | Complete | 2024-12-23 |
 | Component Testing | Complete | 2024-12-23 |
 | Testing Setup | Complete | 2024-12-23 |
