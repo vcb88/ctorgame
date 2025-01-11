@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useMultiplayerGame } from '@/hooks/useMultiplayerGame';
 import { OperationType } from '@/shared';
@@ -7,7 +7,6 @@ import { TurnTimer } from '@/components/TurnTimer';
 import { DisconnectionOverlay } from '@/components/modals/DisconnectionOverlay';
 import { logger } from '@/utils/logger';
 import { cn } from '@/lib/utils';
-import { useEffect, useState, useCallback } from 'react';
 import { GameOverScreen } from '@/components/GameOverScreen';
 
 export const GameBoard: React.FC = () => {
