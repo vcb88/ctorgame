@@ -6,16 +6,16 @@ import { describe, it, expect, beforeEach, jest } from '@jest/globals';
 jest.mock('ioredis');
 
 describe('Redis Configuration', () => {
-    let mockSet: jest.Mock;
-    let mockDel: jest.Mock;
+    let mockSet: jest.MockedFunction<() => Promise<'OK'>>;
+    let mockDel: jest.MockedFunction<() => Promise<number>>;
 
     beforeEach(() => {
         // Очищаем моки перед каждым тестом
         jest.clearAllMocks();
         
         // Настраиваем моки для методов Redis
-        mockSet = jest.fn().mockImplementation(() => Promise.resolve('OK' as 'OK'));
-        mockDel = jest.fn().mockImplementation(() => Promise.resolve(1));
+        mockSet = jest.fn(() => Promise.resolve('OK'));
+        mockDel = jest.fn(() => Promise.resolve(1));
         (Redis as jest.Mock).mockImplementation(() => ({
             set: mockSet,
             del: mockDel,
@@ -71,7 +71,7 @@ describe('Redis Configuration', () => {
 
         it('should execute operation with lock', async () => {
             mockSet.mockResolvedValueOnce('OK' as 'OK');
-            const operation = jest.fn<Promise<string>, []>().mockResolvedValueOnce('result');
+            const operation = jest.fn(() => Promise.resolve('result'));
             
             const result = await withLock('test-game', operation);
             
@@ -83,7 +83,7 @@ describe('Redis Configuration', () => {
 
         it('should release lock even if operation fails', async () => {
             mockSet.mockResolvedValueOnce('OK' as 'OK');
-            const operation = jest.fn<Promise<never>, []>().mockRejectedValueOnce(new Error('test error'));
+            const operation = jest.fn(() => Promise.reject(new Error('test error')));
             
             await expect(withLock('test-game', operation)).rejects.toThrow('test error');
             
@@ -92,7 +92,7 @@ describe('Redis Configuration', () => {
 
         it('should throw if cannot acquire lock', async () => {
             mockSet.mockResolvedValueOnce(null as unknown as 'OK');
-            const operation = jest.fn<Promise<unknown>, []>();
+            const operation = jest.fn(() => Promise.resolve());
             
             await expect(withLock('test-game', operation)).rejects.toThrow('Could not acquire lock');
             
