@@ -12,8 +12,7 @@ services:
       - ctorgame_network
     env_file:
       - .env
-    command: >
-      sh -c "pnpm start"
+    command: ["pnpm", "dev", "--host"]
 
   server:
     image: ${SERVER_TAG:-ctorgame-server:latest}
