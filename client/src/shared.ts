@@ -175,13 +175,16 @@ export interface WebSocketPayloads {
   // Server to client payloads
   [WebSocketEvents.GameCreated]: {
     gameId: string;
+    eventId: string;
   };
   [WebSocketEvents.GameJoined]: {
     gameId: string;
+    eventId: string;
   };
   [WebSocketEvents.GameStarted]: {
     gameState: IGameState;
     currentPlayer: number;
+    eventId: string;
   };
   [WebSocketEvents.GameStateUpdated]: {
     gameState: IGameState;
