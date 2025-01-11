@@ -201,10 +201,12 @@ export interface WebSocketPayloads {
     gameState: IGameState;
     currentPlayer: number;
     eventId: string;
+    phase: GamePhase;
   };
   [WebSocketEvents.GameStateUpdated]: {
     gameState: IGameState;
     currentPlayer: number;
+    phase: GamePhase;
   };
   [WebSocketEvents.AvailableReplaces]: {
     moves: IGameMove[];
@@ -430,6 +432,23 @@ export const isValidScores = (scores: unknown): scores is IScores => {
   return (
     (typeof s.player1 === 'number' && typeof s.player2 === 'number') ||
     (typeof s[Player.First] === 'number' && typeof s[Player.Second] === 'number')
+  );
+};
+
+export const isValidGamePhase = (phase: unknown): phase is GamePhase => {
+  return typeof phase === 'string' && ['INITIAL', 'CONNECTING', 'WAITING', 'PLAYING', 'GAME_OVER'].includes(phase);
+};
+
+export const isValidGameManagerState = (state: unknown): state is GameManagerState => {
+  if (!state || typeof state !== 'object') return false;
+  
+  const s = state as Partial<GameManagerState>;
+  return (
+    isValidGamePhase(s.phase) &&
+    (s.gameId === null || typeof s.gameId === 'string') &&
+    (s.playerNumber === null || Object.values(Player).includes(s.playerNumber)) &&
+    (s.error === null || (typeof s.error === 'object' && s.error !== null)) &&
+    typeof s.connectionState === 'string'
   );
 };
 
