@@ -9,10 +9,6 @@ export interface ITurnState {
 
 export interface IGameStateWithTurn extends IGameState {
   currentTurn: ITurnState;
-  scores: {
-    [Player.First]: number;
-    [Player.Second]: number;
-  };
   isFirstTurn: boolean;
 }
 
