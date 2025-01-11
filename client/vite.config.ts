@@ -34,8 +34,9 @@ export default defineConfig({
     port: 5173,
     strictPort: true,
     hmr: {
-      clientPort: 5173,
-      host: 'localhost'
+      clientPort: 80,
+      host: 'localhost',
+      path: '/_vite'
     },
     watch: {
       usePolling: true,
