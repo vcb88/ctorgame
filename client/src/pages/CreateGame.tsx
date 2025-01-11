@@ -6,12 +6,12 @@ import { logger } from '@/utils/logger';
 
 export const CreateGame: React.FC = () => {
   const navigate = useNavigate();
-  const { gameId, createGame } = useMultiplayerGame();
+  const { gameId, createGame, connectionState } = useMultiplayerGame();
   const [progress, setProgress] = useState(0);
-  const [status, setStatus] = useState('Initializing neural network...');
+  const [status, setStatus] = useState('Connecting to server...');
 
   useEffect(() => {
-    if (!gameId) {
+    if (!gameId && connectionState === 'CONNECTED') {
       createGame();
       // Симуляция прогресса создания игры
       const stages = [
@@ -66,9 +66,9 @@ export const CreateGame: React.FC = () => {
               Creating Neural Game Instance
             </h2>
             
-            {/* Progress Status */}
+            {/* Connection Status */}
             <div className="font-mono text-sm text-cyan-400">
-              {status}
+              {connectionState !== 'CONNECTED' ? `Connecting to server (${connectionState})...` : status}
             </div>
             
             {/* Progress Bar */}
