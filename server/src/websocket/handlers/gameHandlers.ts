@@ -1,15 +1,17 @@
 import { Socket } from 'socket.io';
 import { GameService } from '../../services/GameService';
 import { GameStorageService } from '../../services/GameStorageService';
-import { 
-  IGameMove, 
-  IPlayer, 
+import {
+  IGameMove,
+  IPlayer,
   IGameState,
   WebSocketEvents,
   BOARD_SIZE,
-  IScores 
+  IScores,
+  Player,
+  validateGameMove,
+  validateGameState
 } from '../../shared';
-import { validateGameMove, validateGameState } from '../../../../shared/src/validation/game';
 import { GameEventResponse } from '../../types/events';
 
 export function registerGameHandlers(
@@ -23,18 +25,21 @@ export function registerGameHandlers(
             const gameCode = generateGameCode();
             const initialState: IGameState = {
                 board: {
-                    cells: Array(BOARD_SIZE).fill(0).map(() => Array(BOARD_SIZE).fill(0)),
+                    cells: Array(BOARD_SIZE).fill(null).map(() => Array(BOARD_SIZE).fill(null)),
                     size: { width: BOARD_SIZE, height: BOARD_SIZE }
                 },
                 currentTurn: { 
                     placeOperationsLeft: 1, // Первый ход - 1 операция
                     moves: []
                 },
-                scores: { player1: 0, player2: 0 },
+                scores: { 
+                    [Player.First]: 0,
+                    [Player.Second]: 0
+                },
                 gameOver: false,
                 winner: null,
                 isFirstTurn: true,
-                currentPlayer: 0
+                currentPlayer: Player.First
             };
 
             // Создаем игру в Redis и MongoDB
@@ -120,7 +125,7 @@ export function registerGameHandlers(
             // Проверяем завершение игры
             if (updatedState.gameOver) {
                 // Используем интерфейс IScores
-                const gameScores: IScores = updatedState.scores || { player1: 0, player2: 0 };
+                const gameScores: IScores = updatedState.scores || { [Player.First]: 0, [Player.Second]: 0 };
                 await storageService.finishGame(
                     gameId, 
                     updatedState.winner || -1, // В случае ничьей используем -1
