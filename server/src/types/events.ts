@@ -23,8 +23,10 @@ export interface GameEventHandlers {
   [WebSocketEvents.Reconnect]: (payload: { gameId: string }) => Promise<void>;
 }
 
-export interface GameEventResponse {
+export interface GameEventResponse<T = any> {
   success: boolean;
   error?: string;
-  data?: any;
+  data?: T;
+  eventId?: string;
+  message?: string;
 }

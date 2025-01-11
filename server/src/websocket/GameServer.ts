@@ -25,6 +25,7 @@ import { GameStorageService } from '../services/GameStorageService';
 import { redisService } from '../services/RedisService';
 import { redisClient, connectRedis } from '../config/redis';
 import { GameEventResponse } from '../types/events';
+import { WebSocketErrorCode, ErrorResponse } from '../types/connection';
 
 const PLAYER_RECONNECT_TIMEOUT = 5 * 60 * 1000; // 5 минут
 
@@ -101,10 +102,8 @@ export class GameServer {
           ]);
 
           // Проверяем успешность создания игры
-          const [gameRoom] = await Promise.all([
-            redisService.getGameRoom(gameCode),
-            new Promise(resolve => socket.join(gameCode, resolve))
-          ]);
+          await socket.join(gameCode);
+          const gameRoom = await redisService.getGameRoom(gameCode);
 
           if (!gameRoom) {
             throw new Error('Failed to create game room');
@@ -115,12 +114,7 @@ export class GameServer {
           // Сохраняем сессию игрока
           await redisService.setPlayerSession(socket.id, gameCode, Player.First);
 
-          const eventId = Date.now().toString();
-          socket.emit(WebSocketEvents.GameCreated, { 
-            gameId: gameCode,
-            eventId,
-            message: 'Game created successfully'
-          });
+          socket.emit(WebSocketEvents.GameCreated, { gameId: gameCode });
         } catch (error) {
           console.error('Error creating game:', error);
           socket.emit(WebSocketEvents.Error, { 
