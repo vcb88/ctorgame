@@ -71,11 +71,19 @@ export class GameService {
         }
     }
 
-    async createGame(gameCode: string, player: IPlayer, initialState: IGameState): Promise<GameMetadata> {
+    async createGame(gameId: string, player: IPlayer, initialState: IGameState): Promise<GameMetadata> {
         await this.ensureInitialized();
+        // Generate a unique 4-digit code
+        let code: string;
+        let exists: GameMetadata | null;
+        do {
+            code = Math.floor(Math.random() * 10000).toString().padStart(4, '0');
+            exists = await this.gamesCollection.findOne({ code });
+        } while (exists);
+
         const game: GameMetadata = {
-            gameId: gameCode,
-            code: gameCode,
+            gameId,
+            code,
             status: 'waiting',
             startTime: new Date().toISOString(),
             lastActivityAt: new Date().toISOString(),
@@ -92,10 +100,15 @@ export class GameService {
         return game;
     }
 
-    async joinGame(gameCode: string, player: IPlayer): Promise<GameMetadata> {
+    async joinGame(gameIdOrCode: string, player: IPlayer): Promise<GameMetadata> {
         await this.ensureInitialized();
         const result = await this.gamesCollection.findOneAndUpdate(
-            { code: gameCode, status: 'waiting' },
+            { 
+                $or: [
+                    { gameId: gameIdOrCode, status: 'waiting' },
+                    { code: gameIdOrCode, status: 'waiting' }
+                ]
+            },
             { 
                 $set: { 
                     'players.second': player.id,
@@ -113,9 +126,9 @@ export class GameService {
         return result;
     }
 
-    async makeMove(gameCode: string, playerNumber: number, move: IGameMove): Promise<GameMetadata> {
+    async makeMove(gameId: string, playerNumber: number, move: IGameMove): Promise<GameMetadata> {
         await this.ensureInitialized();
-        const game = await this.gamesCollection.findOne({ code: gameCode });
+        const game = await this.gamesCollection.findOne({ gameId });
         if (!game || !game.currentState) {
             throw new Error('Game not found or invalid state');
         }
@@ -157,15 +170,15 @@ export class GameService {
         return result;
     }
 
-    async getGameState(gameCode: string): Promise<IGameState | null> {
+    async getGameState(gameId: string): Promise<IGameState | null> {
         await this.ensureInitialized();
-        const game = await this.gamesCollection.findOne({ code: gameCode });
+        const game = await this.gamesCollection.findOne({ gameId });
         return game?.currentState || null;
     }
 
-    async getPlayer(gameCode: string, playerId: string): Promise<IPlayer | null> {
+    async getPlayer(gameId: string, playerId: string): Promise<IPlayer | null> {
         await this.ensureInitialized();
-        const game = await this.gamesCollection.findOne({ code: gameCode });
+        const game = await this.gamesCollection.findOne({ gameId });
         if (!game) return null;
         
         if (game.players.first === playerId) {
@@ -183,28 +196,28 @@ export class GameService {
         }).sort({ endTime: -1 }).limit(50).toArray();
     }
 
-    async getGameHistory(gameCode: string): Promise<number> {
+    async getGameHistory(gameId: string): Promise<number> {
         await this.ensureInitialized();
-        const game = await this.gamesCollection.findOne({ code: gameCode });
+        const game = await this.gamesCollection.findOne({ gameId });
         if (!game) return 0;
         return game.currentState?.currentTurn.moves.length || 0;
     }
 
-    async getGameStateAtMove(gameCode: string, moveNumber: number): Promise<IGameState | null> {
+    async getGameStateAtMove(gameId: string, moveNumber: number): Promise<IGameState | null> {
         await this.ensureInitialized();
-        const game = await this.gamesCollection.findOne({ code: gameCode });
+        const game = await this.gamesCollection.findOne({ gameId });
         if (!game || !game.currentState) return null;
         return game.currentState;
     }
 
-    async finishGame(gameCode: string, winner: Player | null, scores: IScores): Promise<void> {
+    async finishGame(gameId: string, winner: Player | null, scores: IScores): Promise<void> {
         await this.ensureInitialized();
         const now = new Date().toISOString();
-        const game = await this.gamesCollection.findOne({ code: gameCode });
+        const game = await this.gamesCollection.findOne({ gameId });
         if (!game) return;
 
         await this.gamesCollection.updateOne(
-            { code: gameCode },
+            { gameId },
             {
                 $set: {
                     status: 'finished',
