@@ -64,13 +64,9 @@ services:
       - "27017:27017"
     networks:
       - ctorgame_network
-    environment:
-      - MONGO_INITDB_ROOT_USERNAME=${MONGO_ROOT_USER:-admin}
-      - MONGO_INITDB_ROOT_PASSWORD=${MONGO_ROOT_PASSWORD:-adminpassword}
-    command: ["mongod", "--bind_ip_all", "--logpath", "/proc/1/fd/1", "--logappend"]
+    command: ["mongod", "--bind_ip_all", "--noauth"]
     volumes:
       - mongodb_data:/data/db
-      - ./init-mongo.js:/docker-entrypoint-initdb.d/init-mongo.js:ro
     healthcheck:
       test: mongosh --eval 'db.runCommand("ping").ok' localhost:27017/test --quiet
       interval: 5s

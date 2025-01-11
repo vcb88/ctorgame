@@ -4,6 +4,8 @@
 
 The project uses MongoDB for persistent data storage along with Redis for caching and real-time features. This guide focuses on the MongoDB configuration.
 
+> **MVP Note**: For rapid development during the MVP phase, authentication is currently disabled in MongoDB. This will be re-enabled with proper security measures before production deployment.
+
 ## MongoDB Configuration
 
 ### Basic Setup
@@ -52,18 +54,14 @@ db.players.createIndex({ lastActive: 1 }, { expireAfterSeconds: 3600 });  // TTL
 db.players.createIndex({ gameId: 1 });  // For player lookups by game
 ```
 
-### Connection Details
+### Connection Details (MVP)
 
 - **Database Name**: ctorgame
 - **Host**: mongodb:27017 (in Docker network)
-- **Authentication**:
-  - Root User: admin (configurable via MONGO_ROOT_USER)
-  - Root Password: adminpassword (configurable via MONGO_ROOT_PASSWORD)
-  - Application User: ctorgame
-  - Application Password: ctorgamepass
+- **Authentication**: Disabled for MVP phase
 - **Connection String**:
   ```
-  mongodb://ctorgame:ctorgamepass@mongodb:27017/ctorgame?authSource=admin
+  mongodb://mongodb:27017/ctorgame
   ```
 
 ### Environment Variables
