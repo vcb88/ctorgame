@@ -158,7 +158,7 @@ export class GameService {
         }
 
         const result = await this.gamesCollection.findOneAndUpdate(
-            { code: gameCode },
+            { gameId },
             { $set: updateData },
             { returnDocument: 'after' }
         );

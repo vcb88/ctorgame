@@ -10,7 +10,19 @@ interface LogOptions {
     gameId?: string;
     playerId?: string;
     socketId?: string;
+    timestamp?: string;
+    [key: string]: any;  // Allow additional context properties
   };
+  results?: unknown;     // For operation results
+  error?: unknown;       // For error details
+  gameState?: unknown;   // For game state information
+  connection?: unknown;  // For connection details
+  storage?: unknown;     // For storage operations
+  room?: unknown;        // For room operations
+  notification?: unknown; // For notification details
+  waitingPhase?: unknown; // For waiting phase information
+  player?: unknown;      // For player information
+  [key: string]: any;    // Allow additional top-level properties
 }
 
 const getTimestamp = () => new Date().toISOString();

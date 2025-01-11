@@ -138,7 +138,7 @@ export function registerGameHandlers(
                     event: WebSocketEvents.CreateGame,
                     context: {
                         socketId: socket.id,
-                        gameId: gameCode
+                        gameId
                     },
                     data: {
                         error: storageError instanceof Error ? storageError.message : 'Unknown error'
