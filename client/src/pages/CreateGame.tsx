@@ -34,7 +34,7 @@ export const CreateGame: React.FC = () => {
 
       return () => clearInterval(interval);
     }
-  }, []);
+  }, [gameId, connectionState, createGame]);
 
   useEffect(() => {
     if (gameId) {
