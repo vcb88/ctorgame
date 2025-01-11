@@ -1,10 +1,10 @@
 // Barrel file - только экспорты
-export * from './game';
-export * from './websocket';  // This already exports WebSocketEvents
-export * from './player';
-export * from './replay';
-export * from './redis';
-export * from './coordinates';
-export * from './events';
-export * from './storage';
-export * from './ai';
+export * from './coordinates.js';  // Export coordinates first to avoid conflicts
+export * from './game.js';
+export * from './websocket.js';
+export * from './player.js';
+export * from './replay.js';
+export * from './redis.js';
+export * from './events.js';
+export * from './storage.js';
+export * from './ai.js';

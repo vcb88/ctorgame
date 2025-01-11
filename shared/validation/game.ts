@@ -1,4 +1,4 @@
-import { IGameMove, IGameState, IPosition, IBoardSize } from '../types';
+import { IGameMove, IGameState, IPosition, IBoardSize } from '../types/index.js';
 
 export function validatePosition(pos: IPosition, size: IBoardSize): boolean {
   return (

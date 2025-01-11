@@ -1,5 +1,5 @@
 // Re-export validation utilities
-export * from '../validation/game';
+export * from '../validation/game.js';
 
 // Coordinates and Board types
 export interface IPosition {

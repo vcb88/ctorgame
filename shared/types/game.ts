@@ -1,5 +1,5 @@
-import { IPlayer } from './player';
-import { IPosition, IBoard } from './coordinates';
+import { IPlayer } from './player.js';
+import { IPosition, IBoard } from './coordinates.js';
 
 /**
  * Player identifiers in the game
@@ -120,24 +120,4 @@ export interface IReplaceValidation {
     adjacentPositions: IPosition[];
 }
 
-/**
- * Array of relative coordinates for checking adjacent cells
- */
-export const DIRECTIONS = [
-    [-1, -1], [-1, 0], [-1, 1],
-    [0, -1],          [0, 1],
-    [1, -1],  [1, 0],  [1, 1]
-] as const;
-
-/**
- * Gets all adjacent positions considering board's toroidal nature
- * @param pos Center position
- * @param board Game board
- * @returns Array of adjacent positions
- */
-export const getAdjacentPositions = (pos: IPosition, board: IBoard): IPosition[] => {
-    return DIRECTIONS.map(([dx, dy]) => ({
-        x: ((pos.x + dx + board.size.width) % board.size.width),
-        y: ((pos.y + dy + board.size.height) % board.size.height)
-    }));
-};
+// Board operations and directions are moved to coordinates.ts to avoid duplication
