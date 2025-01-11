@@ -232,7 +232,16 @@ stateDiagram-v2
 ### Components
 - WebSocket Server: Handles real-time communication
 - Redis: Manages distributed state and session data
-- Database: Stores persistent game data and history
+- MongoDB: Stores persistent game data and history
+
+### Game Identifiers Synchronization
+- Each game has two identifiers:
+  1. gameId: 6-character string (e.g., "BAZTKP") used as primary identifier in both Redis and MongoDB
+  2. code: 4-digit number (e.g., "1234") for easier game joining
+- Both identifiers are generated when creating a game
+- Both Redis and MongoDB use the same gameId for consistency
+- Players can join using either gameId or code
+- MongoDB maintains unique indexes on both fields
 
 ### System Limitations
 - Maximum concurrent games: 50
@@ -295,8 +304,8 @@ socket.emit(WebSocketEvents.CREATE_GAME);
 
 // Server -> Client
 interface GameCreatedPayload {
-  gameId: string;      // Internal game ID
-  code: string;        // 4-digit connection code
+  gameId: string;      // 6-character game identifier (e.g., "BAZTKP")
+  code: string;        // 4-digit connection code (e.g., "1234")
   playerNumber: 1 | 2; // 1 for first player, 2 for second
   expiresAt: number;   // Timestamp when game expires
 }
@@ -306,12 +315,14 @@ interface GameCreatedPayload {
 ```typescript
 // Client -> Server
 interface JoinGamePayload {
-  code: string;        // 4-digit connection code
+  gameId: string;      // Either gameId or code can be used
+  // or
+  code: string;        // 4-digit connection code for easier joining
 }
 
 // Server -> Client
 interface GameJoinedPayload {
-  gameId: string;
+  gameId: string;      // Same gameId used in both Redis and MongoDB
   playerNumber: 1 | 2;
   gameState: GameState;
   expiresAt: number;   // Timestamp when game expires

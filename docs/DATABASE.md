@@ -82,19 +82,33 @@ MONGODB_URL=mongodb://ctorgame:ctorgamepass@mongodb:27017/ctorgame?authSource=ad
 #### Games Collection
 ```typescript
 interface Game {
-    _id: ObjectId;            // Unique game identifier
-    createdAt: Date;          // Game creation timestamp
-    status: GameStatus;       // Current game status
-    players: string[];        // Array of player IDs
-    board: number[][];        // Current board state
-    moves: GameMove[];        // Array of moves made
-    winner: string | null;    // Winner ID or null for draw
+    _id: ObjectId;            // MongoDB's internal identifier
+    gameId: string;          // Game identifier (shared between MongoDB and Redis)
+    code: string;            // 4-digit connection code
+    createdAt: Date;         // Game creation timestamp
+    status: GameStatus;      // Current game status
+    players: {
+        first: string;       // First player's connection ID
+        second?: string;     // Second player's connection ID (optional)
+    };
+    expiresAt: Date;        // Game expiration timestamp
+    lastActivityAt: Date;    // Last activity timestamp
+    boardSize: {
+        width: number;
+        height: number;
+    };
+    totalTurns: number;     // Total number of turns made
+    winner?: Player;        // Winner (if game is finished)
+    finalScore?: {
+        [Player.First]: number;
+        [Player.Second]: number;
+    };
 }
 
 enum GameStatus {
-    WAITING = 'waiting',
-    IN_PROGRESS = 'in_progress',
-    FINISHED = 'finished'
+    WAITING = 'waiting',    // Waiting for second player
+    PLAYING = 'playing',    // Game in progress
+    FINISHED = 'finished'   // Game completed
 }
 ```
 
