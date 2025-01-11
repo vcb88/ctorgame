@@ -30,18 +30,20 @@ export default defineConfig({
     include: ['@ctor-game/shared']
   },
   server: {
-    host: '0.0.0.0',
+    host: true, // Доступ извне контейнера
     port: 5173,
     strictPort: true,
     proxy: {
       '/socket.io': {
         target: 'http://server:3000',
         ws: true,
-        changeOrigin: true
+        changeOrigin: true,
+        secure: false
       },
       '/api': {
         target: 'http://server:3000',
-        changeOrigin: true
+        changeOrigin: true,
+        secure: false
       }
     },
     watch: {

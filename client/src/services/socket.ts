@@ -21,26 +21,22 @@ export function getSocket(): Socket {
     // В режиме разработки используем текущий хост, так как Vite проксирует запросы
     const wsUrl = window.location.origin;
     
-    console.log('Creating socket connection to:', wsUrl);
-    
-    console.log('Socket configuration:', {
-      url: wsUrl,
-      path: '/socket.io/',
-      transports: ['websocket', 'polling']
-    });
-
-    socket = io(wsUrl, {
+    const socketConfig = {
       transports: ['websocket', 'polling'],
       autoConnect: true,
       reconnection: true,
       reconnectionAttempts: 5,
-      reconnectionDelay: 3000,
-      reconnectionDelayMax: 6000,
-      timeout: 20000, // Увеличим таймаут
+      reconnectionDelay: 1000,
+      reconnectionDelayMax: 5000,
+      timeout: 10000,
       path: '/socket.io/',
-      upgrade: true,
       forceNew: true
-    });
+    };
+
+    console.log('Creating socket connection to:', wsUrl);
+    console.log('Socket configuration:', socketConfig);
+
+    socket = io(wsUrl, socketConfig);
 
     // Логирование событий сокета
     socket.on('connect', () => console.log('Socket connected:', socket?.id));
