@@ -10,7 +10,11 @@ import {
   IScores,
   Player,
   validateGameMove,
-  validateGameState
+  validateGameState,
+  isLegacyScores,
+  isEnumScores,
+  legacyToEnumScores,
+  enumToLegacyScores
 } from '../../shared';
 import { GameEventResponse } from '../../types/events';
 

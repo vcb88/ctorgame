@@ -40,9 +40,7 @@ export interface ITurnState {
   moves: IGameMove[];
 }
 
-export interface IScores {
-  [key: number]: number;  // Using index signature instead of computed properties
-}
+// Scores interface is now defined in types/game.ts
 
 export interface IGameState {
   board: IBoard;

@@ -2,8 +2,7 @@ import { describe, it, expect, beforeEach, jest } from '@jest/globals';
 import { redisService } from '../RedisService';
 import { redisClient, REDIS_KEYS, REDIS_EVENTS } from '../../config/redis';
 import { GameLogicService } from '../GameLogicService';
-import { IGameState, IPlayer, Player } from '../../shared';
-import { IGameEvent, GameEventType } from '../../shared/types/events';
+import { IGameState, IPlayer, Player, IEnumScores } from '../../shared';
 
 // Мокаем Redis и GameLogicService
 jest.mock('../../config/redis', () => ({
@@ -57,8 +56,8 @@ describe('RedisService', () => {
             moves: []
         },
         scores: {
-            [Player.First]: 0,
-            [Player.Second]: 0
+            player1: 0,
+            player2: 0
         },
         gameOver: false,
         winner: null,

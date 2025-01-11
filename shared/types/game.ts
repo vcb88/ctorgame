@@ -74,13 +74,59 @@ export interface ITurnState {
 }
 
 /**
- * Represents players' scores
+ * Legacy scores format
  */
-export interface IScores {
-    /** First player's score */
+export interface ILegacyScores {
+    player1: number;
+    player2: number;
+}
+
+/**
+ * Modern scores format using Player enum
+ */
+export interface IEnumScores {
     [Player.First]: number;
-    /** Second player's score */
     [Player.Second]: number;
+}
+
+/**
+ * Represents players' scores
+ * Supports both legacy and modern formats during migration
+ */
+export type IScores = ILegacyScores | IEnumScores;
+
+/**
+ * Converts legacy scores format to enum format
+ */
+export function legacyToEnumScores(scores: ILegacyScores): IEnumScores {
+    return {
+        [Player.First]: scores.player1,
+        [Player.Second]: scores.player2
+    };
+}
+
+/**
+ * Converts enum scores format to legacy format
+ */
+export function enumToLegacyScores(scores: IEnumScores): ILegacyScores {
+    return {
+        player1: scores[Player.First],
+        player2: scores[Player.Second]
+    };
+}
+
+/**
+ * Detects if scores are in legacy format
+ */
+export function isLegacyScores(scores: IScores): scores is ILegacyScores {
+    return 'player1' in scores && 'player2' in scores;
+}
+
+/**
+ * Detects if scores are in enum format
+ */
+export function isEnumScores(scores: IScores): scores is IEnumScores {
+    return Player.First in scores && Player.Second in scores;
 }
 
 /**

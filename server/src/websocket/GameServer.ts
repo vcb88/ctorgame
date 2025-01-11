@@ -12,8 +12,13 @@ import {
   IBoard,
   BOARD_SIZE,
   MAX_PLACE_OPERATIONS,
+  IScores,
   Player,
-  GameOutcome
+  GameOutcome,
+  getOpponent,
+  isLegacyScores,
+  isEnumScores,
+  legacyToEnumScores
 } from '../shared';
 import { validateGameMove, validateGameState } from '../validation/game';
 import { GameService } from '../services/GameService';
