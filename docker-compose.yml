@@ -44,7 +44,8 @@ services:
       redis:
         condition: service_healthy
       mongodb:
-        condition: service_healthy
+        condition: service_started
+    restart: on-failure:3
     command: >
       sh -c "cd /app/shared && 
              pnpm install && 
@@ -106,14 +107,16 @@ services:
       bash -c '
         echo never > /sys/kernel/mm/transparent_hugepage/enabled;
         echo never > /sys/kernel/mm/transparent_hugepage/defrag;
-        sysctl -w vm.max_map_count=262144;
         chown -R mongodb:mongodb /data/configdb;
-        mongod --auth 
-               --bind_ip_all
-               --wiredTigerCacheSizeGB 1
-               --setParameter maxTransactionLockRequestTimeoutMillis=1500
-               --setParameter diagnosticDataCollectionEnabled=false
-               --setParameter enableLocalhostAuthBypass=false
+        mongod --dbpath /data/db 
+               --logpath /data/db/mongodb.log 
+               --auth 
+               --bind_ip_all 
+               --fork
+               --wiredTigerCacheSizeGB 1;
+        sleep 5;
+        mongosh admin --eval "db.adminCommand({ setParameter: 1, diagnosticDataCollectionEnabled: false })" --username "$${MONGO_INITDB_ROOT_USERNAME}" --password "$${MONGO_INITDB_ROOT_PASSWORD}";
+        tail -f /data/db/mongodb.log
       '
     healthcheck:
       test: ["CMD", "mongosh", "--username", "${MONGO_ROOT_USER:-admin}", "--password", "${MONGO_ROOT_PASSWORD:-adminpassword}", "--eval", "db.adminCommand('ping')"]

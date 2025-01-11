@@ -29,20 +29,18 @@ try {
 
     // Create application user
     print('Creating application user...');
+    db = db.getSiblingDB('admin');
     db.createUser({
         user: MONGO_APP_USER,
         pwd: MONGO_APP_PASSWORD,
         roles: [
             { role: 'readWrite', db: 'ctorgame' },
-            { role: 'dbAdmin', db: 'ctorgame' }
+            { role: 'dbAdmin', db: 'ctorgame' },
+            { role: 'userAdmin', db: 'ctorgame' }
         ]
     });
-
-    // Grant additional roles
-    print('Granting additional roles...');
-    db.grantRolesToUser(MONGO_APP_USER, [
-        { role: 'userAdmin', db: 'ctorgame' }
-    ]);
+    
+    db = db.getSiblingDB('ctorgame');
 
     // Create collections explicitly
     print('Creating collections...');
