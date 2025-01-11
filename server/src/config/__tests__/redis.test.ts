@@ -50,9 +50,8 @@ describe('Redis Configuration', () => {
             expect(mockSet).toHaveBeenCalledWith(
                 'game:test-game:lock',
                 expect.any(String),
-                'NX',
-                'PX',
-                5000
+                'EX',
+                5
             );
         });
 
