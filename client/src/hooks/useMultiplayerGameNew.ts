@@ -1,6 +1,7 @@
 import { useCallback } from 'react';
 import { useGame } from './useGame';
 import { OperationType, Player, IGameState, ConnectionState } from '../shared';
+import { GameStateManager } from '../services/GameStateManager';
 import { GameError } from '../types/connection';
 import { validateGameMove } from '../validation/game';
 import { logger } from '../utils/logger';
@@ -36,13 +37,24 @@ export const useMultiplayerGameNew = (): UseMultiplayerGameReturn => {
   const { state, createGame: createGameBase, joinGame: joinGameBase } = useGame();
 
   const makeMove = useCallback((x: number, y: number, type: OperationType = OperationType.PLACE) => {
-    // Implementation will be added in next iteration
-    logger.debug('makeMove called but not implemented yet', { x, y, type });
-  }, []);
+    const manager = GameStateManager.getInstance();
+    const move = { type, position: { x, y } };
+
+    // Базовая валидация перед отправкой
+    if (gameState && !validateGameMove(move, gameState.board.size)) {
+      logger.debug('Invalid move attempted', {
+        component: 'useMultiplayerGameNew',
+        data: { move, boardSize: gameState.board.size }
+      });
+      return;
+    }
+
+    manager.makeMove(move);
+  }, [gameState]);
 
   const endTurn = useCallback(() => {
-    // Implementation will be added in next iteration
-    logger.debug('endTurn called but not implemented yet');
+    const manager = GameStateManager.getInstance();
+    manager.endTurn();
   }, []);
 
   // Map new state to old interface
@@ -54,10 +66,12 @@ export const useMultiplayerGameNew = (): UseMultiplayerGameReturn => {
     phase
   } = state;
 
-  // TODO: These will be added in next iteration
-  const gameState = null;
-  const currentPlayer = Player.First;
-  const isMyTurn = false;
+  // Get extended state from GameStateManager
+  const manager = GameStateManager.getInstance();
+  const managerState = manager.getState() as any; // TODO: update types in next iteration
+  const gameState = managerState.gameState;
+  const currentPlayer = managerState.currentPlayer;
+  const isMyTurn = playerNumber === currentPlayer;
   const availableReplaces = [];
 
   return {

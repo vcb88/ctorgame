@@ -18,12 +18,17 @@ export class GameStateManager {
   private socket: Socket | null = null;
   private subscribers: Set<StateSubscriber> = new Set();
 
-  private state: GameManagerState = {
+  private state: GameManagerState & {
+    gameState: IGameState | null;
+    currentPlayer: Player;
+  } = {
     phase: 'INITIAL',
     gameId: null,
     playerNumber: null,
     error: null,
-    connectionState: 'disconnected'
+    connectionState: 'disconnected',
+    gameState: null,
+    currentPlayer: Player.First
   };
 
   private constructor() {
@@ -74,13 +79,17 @@ export class GameStateManager {
     this.socket.on(WebSocketEvents.GameStarted, (payload: WebSocketPayloads[WebSocketEvents.GameStarted]) => {
       this.updateState({
         phase: payload.phase,
-        playerNumber: payload.currentPlayer as Player
+        playerNumber: payload.currentPlayer as Player,
+        gameState: payload.gameState,
+        currentPlayer: payload.currentPlayer
       });
     });
 
     this.socket.on(WebSocketEvents.GameStateUpdated, (payload: WebSocketPayloads[WebSocketEvents.GameStateUpdated]) => {
       this.updateState({
-        phase: payload.phase
+        phase: payload.phase,
+        gameState: payload.gameState,
+        currentPlayer: payload.currentPlayer
       });
     });
 
@@ -141,5 +150,62 @@ export class GameStateManager {
   public disconnect(): void {
     if (!this.socket) return;
     this.socket.disconnect();
+  }
+
+  public makeMove(move: IGameMove): void {
+    if (!this.socket || !this.state.gameId) {
+      this.updateState({
+        error: {
+          code: WebSocketErrorCode.CONNECTION_ERROR,
+          message: 'Cannot make move - not in active game',
+          details: { socket: !!this.socket, gameId: this.state.gameId }
+        }
+      });
+      return;
+    }
+
+    if (this.state.connectionState !== 'connected') {
+      this.updateState({
+        error: {
+          code: WebSocketErrorCode.CONNECTION_ERROR,
+          message: 'Cannot make move - not connected to server',
+          details: { connectionState: this.state.connectionState }
+        }
+      });
+      return;
+    }
+
+    this.socket.emit(WebSocketEvents.MakeMove, {
+      gameId: this.state.gameId,
+      move
+    });
+  }
+
+  public endTurn(): void {
+    if (!this.socket || !this.state.gameId) {
+      this.updateState({
+        error: {
+          code: WebSocketErrorCode.CONNECTION_ERROR,
+          message: 'Cannot end turn - not in active game',
+          details: { socket: !!this.socket, gameId: this.state.gameId }
+        }
+      });
+      return;
+    }
+
+    if (this.state.connectionState !== 'connected') {
+      this.updateState({
+        error: {
+          code: WebSocketErrorCode.CONNECTION_ERROR,
+          message: 'Cannot end turn - not connected to server',
+          details: { connectionState: this.state.connectionState }
+        }
+      });
+      return;
+    }
+
+    this.socket.emit(WebSocketEvents.EndTurn, {
+      gameId: this.state.gameId
+    });
   }
 }
