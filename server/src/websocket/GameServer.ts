@@ -87,7 +87,8 @@ export class GameServer {
 
       socket.on(WebSocketEvents.CreateGame, async () => {
         try {
-          const gameCode = Math.random().toString(36).substring(7);
+          // Генерируем 6 символов в верхнем регистре
+          const gameCode = Math.random().toString(36).substring(2, 8).toUpperCase();
           const player: IPlayer = {
             id: socket.id,
             number: Player.First
