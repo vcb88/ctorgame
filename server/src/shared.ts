@@ -1,5 +1,6 @@
 // Re-export validation utilities
 export * from './validation/game';
+export * from './types/connection';
 
 export enum Player {
   Empty = 0,
@@ -197,7 +198,9 @@ export interface WebSocketPayloads {
     player: number;
   };
   [WebSocketEvents.Error]: {
+    code: WebSocketErrorCode;
     message: string;
+    details?: unknown;
   };
   [WebSocketEvents.Reconnect]: {
     gameId: string;

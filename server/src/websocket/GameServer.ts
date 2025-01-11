@@ -74,7 +74,8 @@ export class GameServer {
       // Настраиваем обработчики событий
       this.setupEventHandlers();
       console.log("WebSocket event handlers initialized");
-    } catch (error) {
+    } catch (err) {
+          const error = err as Error;
       console.error("Failed to initialize services:", error);
       throw error;
     }
@@ -115,7 +116,8 @@ export class GameServer {
           await redisService.setPlayerSession(socket.id, gameCode, Player.First);
 
           socket.emit(WebSocketEvents.GameCreated, { gameId: gameCode });
-        } catch (error) {
+        } catch (err) {
+          const error = err as Error;
           console.error('Error creating game:', error);
           socket.emit(WebSocketEvents.Error, { 
             code: WebSocketErrorCode.SERVER_ERROR,
@@ -129,12 +131,12 @@ export class GameServer {
         try {
           const room = await redisService.getGameRoom(gameId);
           if (!room) {
-            socket.emit(WebSocketEvents.Error, { message: 'Game not found' });
+            socket.emit(WebSocketEvents.Error, { code: WebSocketErrorCode.INVALID_GAME_ID, message: 'Game not found' });
             return;
           }
 
           if (room.players.length >= 2) {
-            socket.emit(WebSocketEvents.Error, { message: 'Game is full' });
+            socket.emit(WebSocketEvents.Error, { code: WebSocketErrorCode.SERVER_ERROR, message: 'Game is full' });
             return;
           }
 
@@ -154,7 +156,7 @@ export class GameServer {
           // Получаем актуальное состояние игры
           const gameState = await redisService.getGameState(gameId);
           if (!gameState) {
-            socket.emit(WebSocketEvents.Error, { message: 'Game state not found' });
+            socket.emit(WebSocketEvents.Error, { code: WebSocketErrorCode.INVALID_STATE, message: 'Game state not found' });
             return;
           }
 
@@ -163,9 +165,10 @@ export class GameServer {
             gameState,
             currentPlayer
           });
-        } catch (error) {
+        } catch (err) {
+          const error = err as Error;
           console.error('Error joining game:', error);
-          socket.emit(WebSocketEvents.Error, { message: 'Failed to join game' });
+          socket.emit(WebSocketEvents.Error, { code: WebSocketErrorCode.SERVER_ERROR, message: 'Failed to join game' });
         }
       });
 
@@ -177,30 +180,30 @@ export class GameServer {
           ]);
 
           if (!room || !state) {
-            socket.emit(WebSocketEvents.Error, { message: 'Game not found' });
+            socket.emit(WebSocketEvents.Error, { code: WebSocketErrorCode.INVALID_GAME_ID, message: 'Game not found' });
             return;
           }
 
           const player = room.players.find((p: IPlayer) => p.id === socket.id);
           if (!player) {
-            socket.emit(WebSocketEvents.Error, { message: 'Player not found in game' });
+            socket.emit(WebSocketEvents.Error, { code: WebSocketErrorCode.SERVER_ERROR, message: 'Player not found in game' });
             return;
           }
 
           const session = await redisService.getPlayerSession(socket.id);
           if (!session || session.gameId !== gameId) {
-            socket.emit(WebSocketEvents.Error, { message: 'Invalid player session' });
+            socket.emit(WebSocketEvents.Error, { code: WebSocketErrorCode.SERVER_ERROR, message: 'Invalid player session' });
             return;
           }
 
           const currentPlayer = redisService.getCurrentPlayer(state);
           if (player.number !== currentPlayer) {
-            socket.emit(WebSocketEvents.Error, { message: 'Not your turn' });
+            socket.emit(WebSocketEvents.Error, { code: WebSocketErrorCode.NOT_YOUR_TURN, message: 'Not your turn' });
             return;
           }
 
           if (state.gameOver) {
-            socket.emit(WebSocketEvents.Error, { message: 'Game is over' });
+            socket.emit(WebSocketEvents.Error, { code: WebSocketErrorCode.GAME_ENDED, message: 'Game is over' });
             return;
           }
 
@@ -247,9 +250,10 @@ export class GameServer {
               winner: updatedState.winner
             });
           }
-        } catch (error) {
+        } catch (err) {
+          const error = err as Error;
           console.error('Error making move:', error);
-          socket.emit(WebSocketEvents.Error, { message: 'Failed to make move' });
+          socket.emit(WebSocketEvents.Error, { code: WebSocketErrorCode.SERVER_ERROR, message: 'Failed to make move' });
         }
       });
 
@@ -261,19 +265,19 @@ export class GameServer {
           ]);
 
           if (!room || !state) {
-            socket.emit(WebSocketEvents.Error, { message: 'Game not found' });
+            socket.emit(WebSocketEvents.Error, { code: WebSocketErrorCode.INVALID_GAME_ID, message: 'Game not found' });
             return;
           }
 
           const player = room.players.find((p: IPlayer) => p.id === socket.id);
           if (!player) {
-            socket.emit(WebSocketEvents.Error, { message: 'Player not found in game' });
+            socket.emit(WebSocketEvents.Error, { code: WebSocketErrorCode.SERVER_ERROR, message: 'Player not found in game' });
             return;
           }
 
           const currentPlayer = redisService.getCurrentPlayer(state);
           if (player.number !== currentPlayer) {
-            socket.emit(WebSocketEvents.Error, { message: 'Not your turn' });
+            socket.emit(WebSocketEvents.Error, { code: WebSocketErrorCode.NOT_YOUR_TURN, message: 'Not your turn' });
             return;
           }
 
@@ -298,9 +302,10 @@ export class GameServer {
             gameState: updatedState,
             currentPlayer: nextPlayer
           });
-        } catch (error) {
+        } catch (err) {
+          const error = err as Error;
           console.error('Error ending turn:', error);
-          socket.emit(WebSocketEvents.Error, { message: 'Failed to end turn' });
+          socket.emit(WebSocketEvents.Error, { code: WebSocketErrorCode.SERVER_ERROR, message: 'Failed to end turn' });
         }
       });
 
@@ -335,12 +340,14 @@ export class GameServer {
                     reason: 'Player disconnection timeout'
                   });
                 }
-              } catch (error) {
+              } catch (err) {
+          const error = err as Error;
                 console.error('Error handling disconnection timeout:', error);
               }
             }, PLAYER_RECONNECT_TIMEOUT);
           }
-        } catch (error) {
+        } catch (err) {
+          const error = err as Error;
           console.error('Error handling disconnect:', error);
         }
       });
@@ -353,13 +360,19 @@ export class GameServer {
           ]);
 
           if (!room || !state) {
-            socket.emit(WebSocketEvents.Error, { message: 'Game not found or expired' });
+            socket.emit(WebSocketEvents.Error, { 
+              code: WebSocketErrorCode.INVALID_GAME_ID,
+              message: 'Game not found or expired' 
+            });
             return;
           }
 
           const player = room.players.find((p: IPlayer) => p.id === socket.id);
           if (!player) {
-            socket.emit(WebSocketEvents.Error, { message: 'Player not found in this game' });
+            socket.emit(WebSocketEvents.Error, {
+              code: WebSocketErrorCode.SERVER_ERROR,
+              message: 'Player not found in this game'
+            });
             return;
           }
 
@@ -383,9 +396,14 @@ export class GameServer {
             currentPlayer,
             playerNumber: player.number
           });
-        } catch (error) {
+        } catch (err) {
+          const error = err as Error;
           console.error('Error reconnecting:', error);
-          socket.emit(WebSocketEvents.Error, { message: 'Failed to reconnect' });
+          socket.emit(WebSocketEvents.Error, {
+            code: WebSocketErrorCode.CONNECTION_ERROR,
+            message: 'Failed to reconnect',
+            details: { error: error.message }
+          });
         }
       });
     });
