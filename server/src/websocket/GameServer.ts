@@ -284,7 +284,7 @@ export class GameServer {
                     this.gameService.finishGame(session.gameId, getOpponent(session.playerNumber), {
                       [Player.First]: 0,
                       [Player.Second]: 0
-                    }),
+                    } as IScores),
                     redisService.cleanupGame(session.gameId)
                   ]);
 

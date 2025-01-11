@@ -206,13 +206,13 @@ describe('RedisService', () => {
 
     describe('Game Events', () => {
         it('should add game event', async () => {
-            const event: IGameEvent = {
+            const event = {
                 type: GameEventType.Move,
                 gameId: 'test-game',
                 playerId: 'test-player',
                 data: {},
                 timestamp: Date.now()
-            };
+            } as const;
 
             await redisService.addGameEvent(event);
 
