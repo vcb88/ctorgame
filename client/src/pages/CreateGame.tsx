@@ -75,7 +75,7 @@ export const CreateGame: React.FC = () => {
             <div className="relative h-2 bg-black/50 rounded-full overflow-hidden">
               <div 
                 className="absolute top-0 left-0 h-full bg-gradient-to-r from-pink-500 to-cyan-500 transition-all duration-300"
-                style={{ width: \`\${progress}%\` }}
+                style={{ width: progress + '%' }}
               />
             </div>
             

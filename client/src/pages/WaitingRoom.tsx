@@ -171,7 +171,7 @@ export const WaitingRoom: React.FC = () => {
       <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-white/10">
         <motion.div
           className="h-full bg-gradient-to-r from-cyan-500 to-pink-500"
-          style={{ width: \`\${timeoutProgress}%\` }}
+          style={{ width: timeoutProgress + '%' }}
         />
       </div>
     </div>
