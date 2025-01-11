@@ -8,6 +8,8 @@ services:
       dockerfile: Dockerfile.client
     ports:
       - "5173:5173"
+    networks:
+      - ctorgame_network
     env_file:
       - .env
     volumes:
@@ -30,6 +32,8 @@ services:
       target: builder  # Используем этап сборки
     ports:
       - "3000:3000"
+    networks:
+      - ctorgame_network
     env_file:
       - .env
     volumes:
@@ -62,6 +66,8 @@ services:
     image: redis:7-alpine
     ports:
       - "6379:6379"
+    networks:
+      - ctorgame_network
     volumes:
       - redis_data:/data
 
@@ -69,6 +75,8 @@ services:
     image: mongo:6-jammy
     ports:
       - "27017:27017"
+    networks:
+      - ctorgame_network
     environment:
       - MONGO_INITDB_ROOT_USERNAME=${MONGO_ROOT_USER:-admin}
       - MONGO_INITDB_ROOT_PASSWORD=${MONGO_ROOT_PASSWORD:-adminpassword}
@@ -91,3 +99,7 @@ volumes:
   mongodb_data:
   client_dist:
   game_data:
+
+networks:
+  ctorgame_network:
+    driver: bridge
