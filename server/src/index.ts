@@ -9,6 +9,12 @@ console.log('Starting server initialization...');
 
 // Logger middleware
 const requestLogger = (req: express.Request, res: express.Response, next: express.NextFunction) => {
+  // Skip logging for health check requests
+  if (req.path === '/health') {
+    next();
+    return;
+  }
+
   const start = Date.now();
   console.log('=== Incoming Request ===');
   console.log(`Method: ${req.method}`);
@@ -84,12 +90,9 @@ app.get('/test', (req, res) => {
   });
 });
 
-// Health check endpoint
+// Health check endpoint - no logging to reduce noise
 app.get('/health', (req, res) => {
-  console.log(`Health check called. Server ready: ${isServerReady}`);
-  // Отправляем 503 пока сервер не готов принимать соединения
   if (!isServerReady) {
-    console.log('Server not ready yet, returning 503');
     res.status(503).json({ 
       status: 'starting',
       timestamp: new Date().toISOString(),
@@ -97,7 +100,6 @@ app.get('/health', (req, res) => {
     });
     return;
   }
-  console.log('Server ready, returning 200');
   res.json({ 
     status: 'ok',
     timestamp: new Date().toISOString(),
