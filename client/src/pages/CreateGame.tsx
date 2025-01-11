@@ -11,7 +11,16 @@ export const CreateGame: React.FC = () => {
   const [status, setStatus] = useState('Connecting to server...');
 
   useEffect(() => {
+    logger.info('CreateGame effect triggered', {
+      component: 'CreateGame',
+      data: { gameId, connectionState }
+    });
+    
     if (!gameId && connectionState === 'CONNECTED') {
+      logger.info('Initiating game creation', {
+        component: 'CreateGame',
+        data: { connectionState }
+      });
       createGame();
       // Симуляция прогресса создания игры
       const stages = [

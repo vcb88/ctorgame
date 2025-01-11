@@ -172,7 +172,15 @@ export const useMultiplayerGame = () => {
     socket.on('connect', () => {
       logger.info('Socket connected', { 
         component: 'useMultiplayerGame',
-        data: { socketId: socket.id }
+        data: { 
+          socketId: socket.id,
+          transport: socket.io.engine.transport.name,
+          protocol: socket.io.engine.protocol,
+          connected: socket.connected,
+          readyState: socket.io.engine.readyState,
+          upgrading: socket.io.engine.upgrading,
+          upgradeError: socket.io.engine.upgradeError,
+        }
       });
       setConnectionState(ConnectionState.CONNECTED);
       reconnectionAttempts.current = 0;
@@ -346,6 +354,16 @@ export const useMultiplayerGame = () => {
   }, [socket]);
 
   const createGame = useCallback(() => {
+    logger.info('createGame called', {
+      component: 'useMultiplayerGame',
+      data: { 
+        hasSocket: !!socket,
+        socketId: socket?.id,
+        connectionState,
+        currentGameId: gameId
+      }
+    });
+
     if (!socket) {
       handleError({
         code: WebSocketErrorCode.CONNECTION_ERROR,
@@ -363,6 +381,15 @@ export const useMultiplayerGame = () => {
       });
       return;
     }
+
+    logger.info('Emitting CreateGame event', {
+      component: 'useMultiplayerGame',
+      data: {
+        socketId: socket.id,
+        socketConnected: socket.connected,
+        transportType: socket.io.engine.transport.name
+      }
+    });
 
     logger.socketEvent(WebSocketEvents.CreateGame, undefined, 'out');
     socket.emit(WebSocketEvents.CreateGame);
