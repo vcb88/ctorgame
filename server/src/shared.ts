@@ -1,9 +1,9 @@
-// Import required types
-import { WebSocketErrorCode } from './types/connection';
+// Import shared types
+import { WebSocketErrorCode, ErrorResponse } from '../../shared/types/events';
 
-// Re-export validation utilities
+// Re-export validation utilities and types
 export * from './validation/game';
-export * from './types/connection';
+export { WebSocketErrorCode, ErrorResponse };
 
 export enum Player {
   Empty = 0,
