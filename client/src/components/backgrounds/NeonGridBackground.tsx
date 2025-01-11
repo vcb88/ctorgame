@@ -111,7 +111,7 @@ export const NeonGridBackground: React.FC = () => {
           ctx.shadowBlur = 20 * glowIntensity;
         }
 
-        ctx.font = \`\${Math.floor(30 * projected.scale * sign.scale)}px "Noto Sans JP"\`;
+        ctx.font = Math.floor(30 * projected.scale * sign.scale) + 'px "Noto Sans JP"';
         ctx.fillStyle = sign.color;
         ctx.textAlign = 'center';
         ctx.fillText(sign.text, projected.x, projected.y);
@@ -124,7 +124,7 @@ export const NeonGridBackground: React.FC = () => {
       ctx.font = '14px monospace';
       
       raindrops.forEach(drop => {
-        ctx.fillStyle = \`rgba(0, 255, 255, \${drop.opacity})\`;
+        ctx.fillStyle = 'rgba(0, 255, 255, ' + drop.opacity + ')';
         ctx.fillText(drop.char, drop.x, drop.y);
         
         drop.y += drop.speed;

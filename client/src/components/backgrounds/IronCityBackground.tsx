@@ -123,7 +123,7 @@ export const IronCityBackground: React.FC = () => {
 
       // Draw floating particles
       particles.forEach((particle, index) => {
-        ctx.fillStyle = \`rgba(255, 255, 255, \${particle.opacity})\`;
+        ctx.fillStyle = 'rgba(255, 255, 255, ' + particle.opacity + ')';
         ctx.beginPath();
         ctx.arc(particle.x, particle.y, particle.size, 0, Math.PI * 2);
         ctx.fill();
@@ -149,7 +149,7 @@ export const IronCityBackground: React.FC = () => {
         building.windows.forEach(window => {
           if (window.lit) {
             const flickerIntensity = Math.random() * 0.2 + 0.8;
-            ctx.fillStyle = \`rgba(255, 255, 200, \${flickerIntensity})\`;
+            ctx.fillStyle = 'rgba(255, 255, 200, ' + flickerIntensity + ')';
             ctx.fillRect(window.x, window.y, building.width * 0.08, building.width * 0.08);
           }
         });
@@ -167,7 +167,7 @@ export const IronCityBackground: React.FC = () => {
           // Neon glow
           ctx.shadowColor = line.color;
           ctx.shadowBlur = 15;
-          ctx.strokeStyle = \`rgba(\${line.color}, \${flickerIntensity})\`;
+          ctx.strokeStyle = 'rgba(' + line.color + ', ' + flickerIntensity + ')';
           ctx.lineWidth = 1;
           ctx.stroke();
           ctx.shadowBlur = 0;

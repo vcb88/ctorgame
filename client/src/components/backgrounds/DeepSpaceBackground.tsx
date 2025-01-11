@@ -49,7 +49,7 @@ export const DeepSpaceBackground: React.FC = () => {
       x: Math.random() * canvas.width,
       y: Math.random() * canvas.height,
       size: Math.random() * 200 + 100,
-      color: \`hsl(\${Math.random() * 60 + 240}, 70%, 50%)\`, // Blue to purple
+      color: 'hsl(' + (Math.random() * 60 + 240) + ', 70%, 50%)', // Blue to purple
       opacity: Math.random() * 0.5,
       speed: Math.random() * 0.2 + 0.1
     }));
@@ -83,7 +83,7 @@ export const DeepSpaceBackground: React.FC = () => {
         const opacity = map(star.z, 0, 2000, 1, 0);
 
         ctx.beginPath();
-        ctx.strokeStyle = \`rgba(255, 255, 255, \${opacity})\`;
+        ctx.strokeStyle = 'rgba(255, 255, 255, ' + opacity + ')';
         ctx.lineWidth = size;
         ctx.moveTo(px, py);
         ctx.lineTo(sx, sy);
@@ -101,8 +101,8 @@ export const DeepSpaceBackground: React.FC = () => {
         // Создаем пульсацию
         const pulseOpacity = Math.sin(time * 0.001 * cloud.speed) * 0.2 + 0.8;
         
-        gradient.addColorStop(0, \`\${cloud.color}\`);
-        gradient.addColorStop(0.4, \`\${cloud.color}88\`);
+        gradient.addColorStop(0, cloud.color);
+        gradient.addColorStop(0.4, cloud.color + '88');
         gradient.addColorStop(1, 'transparent');
 
         ctx.fillStyle = gradient;
