@@ -42,9 +42,9 @@ services:
       - ./shared/src:/app/shared/src  # Монтируем shared исходники
     depends_on:
       redis:
-        condition: service_started
+        condition: service_healthy
       mongodb:
-        condition: service_started
+        condition: service_healthy
     command: >
       sh -c "cd /app/shared && 
              pnpm install && 
@@ -70,6 +70,12 @@ services:
       - ctorgame_network
     volumes:
       - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+      start_period: 10s
 
   mongodb:
     image: mongo:6-jammy
@@ -84,15 +90,15 @@ services:
       - TRANSPARENT_HUGE_PAGES=never
     volumes:
       - mongodb_data:/data/db
-      - ./init-mongo.js:/docker-entrypoint-initdb.d/init-mongo.js:ro
+      - ./init-mongo.js:/docker-entrypoint-initdb.d/init-mongo.js:z
     # Настройки для улучшения производительности и безопасности
     command: ["mongod", "--auth", "--wiredTigerCacheSizeGB", "1"]
     healthcheck:
-      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      test: ["CMD", "mongosh", "admin", "--eval", '{"ok":1}.ok || process.exit(1)']
       interval: 10s
       timeout: 5s
-      retries: 3
-      start_period: 10s
+      retries: 5
+      start_period: 30s
 
 volumes:
   redis_data:
