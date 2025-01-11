@@ -14,6 +14,11 @@ export enum GameOutcome {
   Draw = 'draw'
 }
 
+export const getGameOutcome = (winner: Player | null, playerNumber: Player): GameOutcome => {
+  if (winner === null) return GameOutcome.Draw;
+  return winner === playerNumber ? GameOutcome.Win : GameOutcome.Loss;
+};
+
 export const getOpponent = (player: Player): Player => {
   switch (player) {
     case Player.First:
@@ -69,6 +74,15 @@ export interface IScores {
   [Player.Second]: number;
 }
 
+export type LegacyScores = { [Player.First]: number; [Player.Second]: number };
+
+export const legacyToScores = (legacy: LegacyScores): IScores => ({
+  player1: legacy[Player.First],
+  player2: legacy[Player.Second],
+  [Player.First]: legacy[Player.First],
+  [Player.Second]: legacy[Player.Second]
+});
+
 export const createScores = (firstPlayer: number, secondPlayer: number): IScores => ({
   player1: firstPlayer,
   player2: secondPlayer,
@@ -79,7 +93,7 @@ export const createScores = (firstPlayer: number, secondPlayer: number): IScores
 export interface IGameState {
   board: IBoard;
   gameOver: boolean;
-  winner: Player | GameOutcome | null;
+  winner: Player | null;
   currentTurn: ITurnState;
   currentPlayer: number;
   scores: IScores;
@@ -236,15 +250,18 @@ export enum GameEventType {
   EndTurn = 'end_turn'
 }
 
-export interface IGameEvent {
+export interface IBaseGameEvent {
   type: GameEventType;
   gameId: string;
   playerId: string;
-  data?: unknown;
   timestamp: number;
 }
 
-export interface IRedisGameEvent extends IGameEvent {
+export interface IGameEvent extends IBaseGameEvent {
+  data?: unknown;
+}
+
+export interface IRedisGameEvent extends IBaseGameEvent {
   data: unknown; // В Redis версии data всегда должно быть определено
 }
 
