@@ -5,38 +5,42 @@ import { GameLogicService } from '../GameLogicService';
 import { IGameState, IPlayer, Player, IScores, IGameEvent, GameEventType } from '../../shared';
 
 // Мокаем Redis и GameLogicService
-jest.mock('../../config/redis', () => ({
-    redisClient: {
-        set: jest.fn(),
-        get: jest.fn(),
-        setex: jest.fn(),
-        sadd: jest.fn(),
-        srem: jest.fn(),
-        smembers: jest.fn(),
-        del: jest.fn(),
-        lrange: jest.fn(),
-        multi: jest.fn(() => ({
+jest.mock('../../config/redis', () => {
+    const mockRedisClient = {
+        set: jest.fn().mockImplementation(() => Promise.resolve('OK')),
+        get: jest.fn().mockImplementation(() => Promise.resolve(null)),
+        setex: jest.fn().mockImplementation(() => Promise.resolve('OK')),
+        sadd: jest.fn().mockImplementation(() => Promise.resolve(1)),
+        srem: jest.fn().mockImplementation(() => Promise.resolve(1)),
+        smembers: jest.fn().mockImplementation(() => Promise.resolve([])),
+        del: jest.fn().mockImplementation(() => Promise.resolve(1)),
+        lrange: jest.fn().mockImplementation(() => Promise.resolve([])),
+        multi: jest.fn().mockImplementation(() => ({
             set: jest.fn().mockReturnThis(),
             del: jest.fn().mockReturnThis(),
             lpush: jest.fn().mockReturnThis(),
             expire: jest.fn().mockReturnThis(),
-            exec: jest.fn()
+            exec: jest.fn().mockImplementation(() => Promise.resolve([]))
         })),
-        publish: jest.fn()
-    },
-    REDIS_KEYS: {
-        GAME_STATE: (id: string) => `game:${id}:state`,
-        GAME_ROOM: (id: string) => `game:${id}:room`,
-        PLAYER_SESSION: (id: string) => `player:${id}:session`,
-        GAME_EVENTS: (id: string) => `game:${id}:events`,
-        ACTIVE_GAMES: 'games:active'
-    },
-    REDIS_EVENTS: {
-        GAME_STATE_UPDATED: 'game:state:updated',
-        PLAYER_DISCONNECTED: 'player:disconnected'
-    },
-    withLock: jest.fn((_, fn) => fn())
-}));
+        publish: jest.fn().mockImplementation(() => Promise.resolve(1))
+    };
+
+    return {
+        redisClient: mockRedisClient,
+        REDIS_KEYS: {
+            GAME_STATE: (id: string) => `game:${id}:state`,
+            GAME_ROOM: (id: string) => `game:${id}:room`,
+            PLAYER_SESSION: (id: string) => `player:${id}:session`,
+            GAME_EVENTS: (id: string) => `game:${id}:events`,
+            ACTIVE_GAMES: 'games:active'
+        },
+        REDIS_EVENTS: {
+            GAME_STATE_UPDATED: 'game:state:updated',
+            PLAYER_DISCONNECTED: 'player:disconnected'
+        },
+        withLock: jest.fn().mockImplementation((_, fn) => Promise.resolve(fn()))
+    };
+});
 
 jest.mock('../GameLogicService', () => ({
     GameLogicService: {
