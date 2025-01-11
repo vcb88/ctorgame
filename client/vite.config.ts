@@ -36,7 +36,7 @@ export default defineConfig({
     hmr: {
       clientPort: 80,
       host: 'localhost',
-      path: '/_vite'
+      protocol: 'ws'
     },
     watch: {
       usePolling: true,
