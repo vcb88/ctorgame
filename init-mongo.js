@@ -1,36 +1,97 @@
-// Создаем пользователя для приложения
-db = db.getSiblingDB('admin');
-db.auth(process.env.MONGO_INITDB_ROOT_USERNAME, process.env.MONGO_INITDB_ROOT_PASSWORD);
+print('Start MongoDB initialization...');
 
-db = db.getSiblingDB('ctorgame');
+// Get authentication credentials from environment variables
+const MONGO_ROOT_USER = process.env.MONGO_INITDB_ROOT_USERNAME || 'admin';
+const MONGO_ROOT_PASSWORD = process.env.MONGO_INITDB_ROOT_PASSWORD || 'adminpassword';
+const MONGO_APP_USER = process.env.MONGO_APP_USER || 'ctorgame';
+const MONGO_APP_PASSWORD = process.env.MONGO_APP_PASSWORD || 'ctorgamepass';
 
-// Создаем пользователя приложения в базе ctorgame
-db.createUser({
-    user: process.env.MONGO_APP_USER || 'ctorgame',
-    pwd: process.env.MONGO_APP_PASSWORD || 'ctorgamepass',
-    roles: [
+try {
+    // Switch to admin database
+    print('Switching to admin database...');
+    db = db.getSiblingDB('admin');
+
+    // Authenticate as root user
+    print('Authenticating as root user...');
+    db.auth(MONGO_ROOT_USER, MONGO_ROOT_PASSWORD);
+
+    // Switch to application database
+    print('Switching to application database...');
+    db = db.getSiblingDB('ctorgame');
+
+    // Drop existing user if exists
+    print('Removing existing application user if any...');
+    try {
+        db.dropUser(MONGO_APP_USER);
+    } catch (err) {
+        print('No existing user found or error dropping user:', err.message);
+    }
+
+    // Create application user
+    print('Creating application user...');
+    db.createUser({
+        user: MONGO_APP_USER,
+        pwd: MONGO_APP_PASSWORD,
+        roles: [
+            { role: 'readWrite', db: 'ctorgame' },
+            { role: 'dbAdmin', db: 'ctorgame' }
+        ]
+    });
+
+    // Grant additional roles
+    print('Granting additional roles...');
+    db.grantRolesToUser(MONGO_APP_USER, [
+        { role: 'userAdmin', db: 'ctorgame' }
+    ]);
+
+    // Create collections explicitly
+    print('Creating collections...');
+    db.createCollection('games');
+    db.createCollection('players');
+
+    // Create indexes
+    print('Creating indexes...');
+    db.games.createIndex(
+        { createdAt: 1 },
         {
-            role: 'readWrite',
-            db: 'ctorgame'
-        },
-        {
-            role: 'dbAdmin',
-            db: 'ctorgame'
+            expireAfterSeconds: 86400,
+            background: true,
+            name: 'ttl_games_cleanup'
         }
-    ]
-});
+    );
 
-// Даем права на аутентификацию из базы ctorgame
-db.grantRolesToUser(
-    process.env.MONGO_APP_USER || 'ctorgame',
-    [{ role: 'userAdmin', db: 'ctorgame' }]
-);
+    db.games.createIndex(
+        { status: 1 },
+        {
+            background: true,
+            name: 'games_status_lookup'
+        }
+    );
 
-// Создаем основные коллекции с индексами
-db.games.createIndex({ createdAt: 1 }, { expireAfterSeconds: 86400 }) // TTL index - удаляем игры старше 24 часов
-db.games.createIndex({ status: 1 }) // Индекс для поиска по статусу
-db.players.createIndex({ lastActive: 1 }, { expireAfterSeconds: 3600 }) // TTL index для неактивных игроков
-db.players.createIndex({ gameId: 1 }) // Индекс для поиска игроков по игре
+    db.players.createIndex(
+        { lastActive: 1 },
+        {
+            expireAfterSeconds: 3600,
+            background: true,
+            name: 'ttl_players_cleanup'
+        }
+    );
 
-// Устанавливаем совместимость версий
-db.adminCommand({ setFeatureCompatibilityVersion: '6.0' })
+    db.players.createIndex(
+        { gameId: 1 },
+        {
+            background: true,
+            name: 'players_game_lookup'
+        }
+    );
+
+    // Set feature compatibility version
+    print('Setting feature compatibility version...');
+    db.adminCommand({ setFeatureCompatibilityVersion: '6.0' });
+
+    print('MongoDB initialization completed successfully.');
+} catch (err) {
+    print('Error during MongoDB initialization:');
+    print(err);
+    throw err;
+}

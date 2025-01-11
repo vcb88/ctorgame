@@ -86,9 +86,15 @@ services:
     environment:
       - MONGO_INITDB_ROOT_USERNAME=${MONGO_ROOT_USER:-admin}
       - MONGO_INITDB_ROOT_PASSWORD=${MONGO_ROOT_PASSWORD:-adminpassword}
+      - MONGO_APP_USER=${MONGO_APP_USER:-ctorgame}
+      - MONGO_APP_PASSWORD=${MONGO_APP_PASSWORD:-ctorgamepass}
+      - MONGO_INITDB_DATABASE=ctorgame
     volumes:
       - mongodb_data:/data/db
-      - ./init-mongo.js:/docker-entrypoint-initdb.d/init-mongo.js:z
+      - mongodb_config:/data/configdb
+      - ./init-mongo.js:/docker-entrypoint-initdb.d/init-mongo.js:ro
+    tmpfs:
+      - /tmp
     ulimits:
       memlock: -1
       nproc: 64000
@@ -96,13 +102,19 @@ services:
         soft: 64000
         hard: 64000
     # Настройки для улучшения производительности и безопасности
-    command: [
-      "bash", "-c",
-      "echo never > /sys/kernel/mm/transparent_hugepage/enabled && 
-       echo never > /sys/kernel/mm/transparent_hugepage/defrag && 
-       sysctl -w vm.max_map_count=262144 && 
-       mongod --auth --wiredTigerCacheSizeGB 1"
-    ]
+    command: >
+      bash -c '
+        echo never > /sys/kernel/mm/transparent_hugepage/enabled;
+        echo never > /sys/kernel/mm/transparent_hugepage/defrag;
+        sysctl -w vm.max_map_count=262144;
+        chown -R mongodb:mongodb /data/configdb;
+        mongod --auth 
+               --bind_ip_all
+               --wiredTigerCacheSizeGB 1
+               --setParameter maxTransactionLockRequestTimeoutMillis=1500
+               --setParameter diagnosticDataCollectionEnabled=false
+               --setParameter enableLocalhostAuthBypass=false
+      '
     healthcheck:
       test: ["CMD", "mongosh", "--username", "${MONGO_ROOT_USER:-admin}", "--password", "${MONGO_ROOT_PASSWORD:-adminpassword}", "--eval", "db.adminCommand('ping')"]
       interval: 10s
@@ -113,6 +125,7 @@ services:
 volumes:
   redis_data:
   mongodb_data:
+  mongodb_config:
   client_dist:
   game_data:
 
