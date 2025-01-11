@@ -14,7 +14,7 @@ describe('Redis Configuration', () => {
         jest.clearAllMocks();
         
         // Настраиваем моки для методов Redis
-        mockSet = jest.fn().mockImplementation(() => Promise.resolve('OK'));
+        mockSet = jest.fn().mockImplementation(() => Promise.resolve('OK' as 'OK'));
         mockDel = jest.fn().mockImplementation(() => Promise.resolve(1));
         (Redis as jest.Mock).mockImplementation(() => ({
             set: mockSet,
@@ -42,7 +42,7 @@ describe('Redis Configuration', () => {
 
     describe('Lock Mechanism', () => {
         it('should acquire lock successfully', async () => {
-            mockSet.mockResolvedValueOnce('OK');
+            mockSet.mockResolvedValueOnce('OK' as 'OK');
             
             const result = await acquireLock('test-game');
             
@@ -56,7 +56,7 @@ describe('Redis Configuration', () => {
         });
 
         it('should fail to acquire lock when already locked', async () => {
-            mockSet.mockResolvedValueOnce(null);
+            mockSet.mockResolvedValueOnce(null as unknown as 'OK');
             
             const result = await acquireLock('test-game');
             
@@ -70,7 +70,7 @@ describe('Redis Configuration', () => {
         });
 
         it('should execute operation with lock', async () => {
-            mockSet.mockResolvedValueOnce('OK');
+            mockSet.mockResolvedValueOnce('OK' as 'OK');
             const operation = jest.fn().mockResolvedValueOnce('result');
             
             const result = await withLock('test-game', operation);
@@ -82,7 +82,7 @@ describe('Redis Configuration', () => {
         });
 
         it('should release lock even if operation fails', async () => {
-            mockSet.mockResolvedValueOnce('OK');
+            mockSet.mockResolvedValueOnce('OK' as 'OK');
             const operation = jest.fn().mockRejectedValueOnce(new Error('test error'));
             
             await expect(withLock('test-game', operation)).rejects.toThrow('test error');
@@ -91,7 +91,7 @@ describe('Redis Configuration', () => {
         });
 
         it('should throw if cannot acquire lock', async () => {
-            mockSet.mockResolvedValueOnce(null);
+            mockSet.mockResolvedValueOnce(null as unknown as 'OK');
             const operation = jest.fn();
             
             await expect(withLock('test-game', operation)).rejects.toThrow('Could not acquire lock');

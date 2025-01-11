@@ -7,9 +7,9 @@ import { IGameState, IPlayer, Player, IScores, IGameEvent, GameEventType } from 
 // Мокаем Redis и GameLogicService
 jest.mock('../../config/redis', () => {
     const mockRedisClient = {
-        set: jest.fn().mockImplementation(() => Promise.resolve('OK')),
+        set: jest.fn().mockImplementation(() => Promise.resolve('OK' as 'OK')),
         get: jest.fn().mockImplementation(() => Promise.resolve(null)),
-        setex: jest.fn().mockImplementation(() => Promise.resolve('OK')),
+        setex: jest.fn().mockImplementation(() => Promise.resolve('OK' as 'OK')),
         sadd: jest.fn().mockImplementation(() => Promise.resolve(1)),
         srem: jest.fn().mockImplementation(() => Promise.resolve(1)),
         smembers: jest.fn().mockImplementation(() => Promise.resolve([])),
@@ -20,7 +20,9 @@ jest.mock('../../config/redis', () => {
             del: jest.fn().mockReturnThis(),
             lpush: jest.fn().mockReturnThis(),
             expire: jest.fn().mockReturnThis(),
-            exec: jest.fn().mockImplementation(() => Promise.resolve([]))
+            exec: jest.fn().mockImplementation(() => Promise.resolve(['OK' as 'OK'])),
+            publish: jest.fn().mockReturnThis(),
+            srem: jest.fn().mockReturnThis()
         })),
         publish: jest.fn().mockImplementation(() => Promise.resolve(1))
     };
