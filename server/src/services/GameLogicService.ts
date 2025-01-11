@@ -38,7 +38,7 @@ export class GameLogicService {
       scores: {
         [Player.First]: 0,
         [Player.Second]: 0
-      },
+      } as IScores,
       isFirstTurn: true // Флаг первого хода (только 1 операция размещения)
     };
   }
