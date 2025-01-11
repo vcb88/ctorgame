@@ -187,7 +187,6 @@ export const GameRules: React.FC = () => {
           </div>
         </div>
       </div>
-    </div>
     </>
   );
 };
