@@ -111,7 +111,7 @@ export function validateStateTransition(
   if (update.phase) {
     const allowedTransitions: Record<GamePhase, GamePhase[]> = {
       'INITIAL': ['CONNECTING'],
-      'CONNECTING': ['WAITING', 'INITIAL'],
+      'CONNECTING': ['WAITING', 'INITIAL', 'PLAYING'],  // Allow direct transition to PLAYING for second player
       'WAITING': ['PLAYING', 'INITIAL', 'CONNECTING'],
       'PLAYING': ['GAME_OVER', 'ERROR'],
       'GAME_OVER': ['INITIAL'],
@@ -190,7 +190,19 @@ export function recoverFromValidationError(
 
   switch (error.code) {
     case 'INVALID_TRANSITION':
-      // При ошибке перехода возвращаемся в исходное состояние
+      // Если это ошибка перехода во время подключения к игре, 
+      // пробуем восстановить состояние подключения
+      if (currentState.phase === 'CONNECTING' && error.field === 'phase') {
+        return {
+          ...currentState,
+          phase: 'CONNECTING',
+          error: {
+            code: 'STATE_RECOVERY',
+            message: 'Maintaining connection state during join operation'
+          }
+        };
+      }
+      // Для других случаев возвращаемся в исходное состояние
       return {
         phase: 'INITIAL',
         gameId: null,
@@ -203,7 +215,19 @@ export function recoverFromValidationError(
 
     case 'INVALID_STATE':
     case 'INVALID_DATA':
-      // При ошибке данных пытаемся сохранить как можно больше валидного состояния
+      // При ошибке данных во время подключения сохраняем состояние подключения
+      if (currentState.phase === 'CONNECTING') {
+        return {
+          ...currentState,
+          phase: 'CONNECTING',
+          error: {
+            code: 'STATE_RECOVERY',
+            message: 'Maintaining connection state during data validation',
+            details: error.details
+          }
+        };
+      }
+      // Для других случаев пытаемся сохранить валидное состояние
       return {
         ...currentState,
         error: {
