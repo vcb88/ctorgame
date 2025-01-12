@@ -24,6 +24,8 @@ import {
 } from '../types/gameManager';
 import { StateStorage } from './StateStorage';
 import { StorageConfig } from '../../../shared/types/state_storage';
+import { ErrorRecoveryManager } from './ErrorRecoveryManager';
+import { ErrorCode, ErrorSeverity, GameError } from '../../../shared/types/errors';
 
 const DEFAULT_STORAGE_CONFIG: StorageConfig = {
   prefix: 'game_state',
@@ -36,6 +38,7 @@ export class GameStateManager {
   private socket: Socket | null = null;
   private subscribers: Set<StateSubscriber> = new Set();
   private storage: StateStorage;
+  private errorManager: ErrorRecoveryManager;
   private joinGamePromise: { 
     resolve: (value: JoinGameResult) => void;
     reject: (error: JoinGameError) => void;
@@ -55,6 +58,7 @@ export class GameStateManager {
 
   private constructor() {
     this.storage = new StateStorage(DEFAULT_STORAGE_CONFIG);
+    this.errorManager = ErrorRecoveryManager.getInstance();
     
     // Try to restore state from storage
     const savedState = this.storage.loadState<ExtendedGameManagerState>('current');
@@ -64,8 +68,14 @@ export class GameStateManager {
         validateExtendedGameManagerState(savedState);
         this.state = savedState;
       } catch (error) {
-        // If validation fails, remove invalid state
+        // If validation fails, remove invalid state and report error
         this.storage.removeState('current');
+        this.errorManager.handleError({
+          code: ErrorCode.STATE_VALIDATION_ERROR,
+          message: 'Failed to restore saved state',
+          severity: ErrorSeverity.MEDIUM,
+          details: { error }
+        });
       }
     }
 
@@ -90,12 +100,20 @@ export class GameStateManager {
     this.socket.on('disconnect', () => {
       this.updateState({ connectionState: 'disconnected' });
       
+      // Handle disconnect error
+      this.errorManager.handleError({
+        code: ErrorCode.CONNECTION_LOST,
+        message: 'Connection lost',
+        severity: ErrorSeverity.HIGH,
+        recoverable: true
+      });
+      
       // Reject pending join promise if exists
       if (this.joinGamePromise) {
         const { reject, timeout } = this.joinGamePromise;
         clearTimeout(timeout);
         reject({
-          code: 'CONNECTION_LOST',
+          code: ErrorCode.CONNECTION_LOST,
           message: 'Connection lost during join operation',
           operation: 'join',
           gameId: this.state.gameId || ''
@@ -105,10 +123,20 @@ export class GameStateManager {
     });
 
     this.socket.on('connect_error', (error) => {
+      const gameError: GameError = {
+        code: ErrorCode.CONNECTION_ERROR,
+        message: error.message,
+        severity: ErrorSeverity.HIGH,
+        recoverable: true,
+        details: { originalError: error }
+      };
+      
       this.updateState({
         connectionState: 'error',
-        error: { message: error.message } as GameError
+        error: gameError
       });
+      
+      this.errorManager.handleError(gameError);
     });
 
     // Clear stored state on connection error
@@ -174,20 +202,24 @@ export class GameStateManager {
     });
 
     this.socket.on(WebSocketEvents.Error, (payload: WebSocketPayloads[WebSocketEvents.Error]) => {
-      const error = {
-        code: payload.code,
+      const gameError: GameError = {
+        code: payload.code as ErrorCode,
         message: payload.message,
-        details: payload.details
+        severity: ErrorSeverity.MEDIUM,
+        details: payload.details,
+        recoverable: true,
+        timestamp: Date.now()
       };
       
-      this.updateState({ error });
+      this.updateState({ error: gameError });
+      this.errorManager.handleError(gameError);
 
       // Reject joinGame promise if exists and error is related to join operation
       if (this.joinGamePromise && this.state.phase === 'CONNECTING') {
         const { reject, timeout } = this.joinGamePromise;
         clearTimeout(timeout);
         reject({
-          ...error,
+          ...gameError,
           operation: 'join',
           gameId: this.state.gameId || ''
         });
@@ -220,17 +252,47 @@ export class GameStateManager {
       
       this.notifySubscribers();
     } catch (error) {
-      logger.error('State validation error', { error });
+      // Convert validation error to GameError
+      const gameError: GameError = {
+        code: ErrorCode.STATE_VALIDATION_ERROR,
+        message: error instanceof Error ? error.message : 'State validation failed',
+        severity: ErrorSeverity.HIGH,
+        details: { error },
+        timestamp: Date.now()
+      };
+
+      this.errorManager.handleError(gameError);
 
       if (error instanceof Error) {
         const validationError = error as StateValidationError;
         
-        // Пытаемся восстановить состояние
-        const recovery = recoverFromValidationError(this.state, validationError);
-        
-        // Применяем восстановленное состояние
-        this.state = { ...this.state, ...recovery };
-        this.notifySubscribers();
+        try {
+          // Пытаемся восстановить состояние
+          const recovery = recoverFromValidationError(this.state, validationError);
+          
+          // Применяем восстановленное состояние
+          this.state = { ...this.state, ...recovery };
+          this.notifySubscribers();
+          
+          // Сообщаем об успешном восстановлении
+          this.errorManager.handleError({
+            ...gameError,
+            message: 'State recovered after validation error',
+            severity: ErrorSeverity.LOW,
+            recoverable: true
+          });
+        } catch (recoveryError) {
+          // Если восстановление не удалось
+          this.errorManager.handleError({
+            code: ErrorCode.STATE_TRANSITION_ERROR,
+            message: 'Failed to recover from invalid state',
+            severity: ErrorSeverity.CRITICAL,
+            details: { 
+              originalError: error,
+              recoveryError
+            }
+          });
+        }
       }
     }
   }
