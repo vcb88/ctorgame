@@ -1,4 +1,4 @@
-import { Player, GameOutcome, IPosition, IBoard, IBoardSize } from '../../types/index.js';
+import { Player, GameOutcome } from '../../types/index.js';
 import { IScores, GamePhase, GameManagerState } from '../../types/game.js';
 
 // Game utility functions
@@ -16,35 +16,6 @@ export const getOpponent = (player: Player): Player => {
         default:
             return Player.Empty;
     }
-};
-
-export const DIRECTIONS = [
-    [-1, -1], [-1, 0], [-1, 1],
-    [0, -1],          [0, 1],
-    [1, -1],  [1, 0],  [1, 1]
-] as const;
-
-export const getAdjacentPositions = (pos: IPosition, board: IBoard): IPosition[] => {
-    return DIRECTIONS.map(([dx, dy]) => ({
-        x: ((pos.x + dx + board.size.width) % board.size.width),
-        y: ((pos.y + dy + board.size.height) % board.size.height)
-    }));
-};
-
-// Coordinate transformation utilities
-export const positionToRowCol = (pos: IPosition): { row: number; col: number } => {
-    return { row: pos.y, col: pos.x };
-};
-
-export const rowColToPosition = (row: number, col: number): IPosition => {
-    return { x: col, y: row };
-};
-
-export const normalizePosition = (pos: IPosition, size: IBoardSize): IPosition => {
-    return {
-        x: ((pos.x % size.width) + size.width) % size.width,
-        y: ((pos.y % size.height) + size.height) % size.height
-    };
 };
 
 // Score utilities
