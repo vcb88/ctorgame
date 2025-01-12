@@ -403,14 +403,16 @@ Each phase can be rolled back independently by:
 | Type System | Full typing coverage with proper interfaces |
 | State Management | Basic implementation with subscription system |
 | Available Replaces | Full handling with type support |
+| Promise Support | Fully implemented for joinGame with timeout and error handling |
+| Client Error Handling | Basic implementation for join operations |
 
 ### In Progress 🟡
 | Feature | Status | Next Steps |
 |---------|--------|------------|
-| Promise Support | Planning | Implement Promise-based joinGame |
+| WaitingRoom Migration | Planning | Implement with Promise-based joinGame |
 | Game State Validation | 30% | Add runtime validation |
-| Error Handling | 50% | Improve error recovery |
-| Component Migration | 20% | Continue with WaitingRoom |
+| Error Recovery | 60% | Add cleanup on component unmount |
+| Component Migration | 25% | Continue with WaitingRoom |
 
 ### Pending Tasks ⏳
 | Task | Priority | Dependencies |
@@ -429,11 +431,12 @@ Each phase can be rolled back independently by:
 | GameControls | ⏳ Pending | GameBoard Completion |
 
 ### Next Priority Tasks
-1. Promise Support for joinGame
-   - Add Promise return type to GameStateManager.joinGame
-   - Handle success/failure callbacks
-   - Add timeout handling
-   - Update useMultiplayerGameNew to use Promise
+1. WaitingRoom Component Migration
+   - Create new WaitingRoomNew component
+   - Implement error handling with new GameStateManager
+   - Add loading states for async operations
+   - Implement proper cleanup on unmount
+   - Add automatic retry logic for failed operations
 
 2. Game State Validation
    - Add runtime validation for state updates
@@ -441,11 +444,11 @@ Each phase can be rolled back independently by:
    - Add validation error handling
    - Create validation unit tests
 
-3. Component Migration - WaitingRoom
-   - Move to new state management
-   - Keep UI-specific state
-   - Add proper error handling
-   - Update to use Promise-based joinGame
+3. Component Migration - GameNew
+   - Update to use new state management
+   - Migrate game creation logic
+   - Add proper cleanup
+   - Update error handling
 
 ## Future Considerations
 1. State persistence improvements
