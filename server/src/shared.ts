@@ -1,5 +1,7 @@
 // Import WebSocket error types
 import { WebSocketErrorCode } from './types/errors';
+import { GameError } from '@ctor-game/shared/types/errors';
+import { ConnectionState } from '@ctor-game/shared/types/events';
 
 // Re-export validation utilities
 export * from './validation/game';

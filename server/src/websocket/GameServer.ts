@@ -16,7 +16,8 @@ import {
   Player,
   GameOutcome,
   getOpponent,
-  isValidScores
+  isValidScores,
+  GamePhase
 } from '../shared';
 import { validateGameMove, validateGameState } from '../validation/game';
 import { GameService } from '../services/GameService';
@@ -196,7 +197,8 @@ export class GameServer {
           this.io.to(gameId).emit(WebSocketEvents.GameStarted, {
             gameState,
             currentPlayer,
-            eventId: Date.now().toString()
+            eventId: Date.now().toString(),
+            phase: 'PLAYING'
           });
           console.log(`Sent GameStarted event to all players in game ${gameId}`);
         } catch (err) {
@@ -255,7 +257,8 @@ export class GameServer {
           // Отправляем обновленное состояние всем игрокам
           this.io.to(gameId).emit(WebSocketEvents.GameStateUpdated, {
             gameState: updatedState,
-            currentPlayer: nextPlayer
+            currentPlayer: nextPlayer,
+            phase: updatedState.gameOver ? 'FINISHED' : 'PLAYING'
           });
 
           // Проверяем доступные замены для операции размещения
@@ -334,7 +337,8 @@ export class GameServer {
           // Отправляем обновленное состояние всем игрокам
           this.io.to(gameId).emit(WebSocketEvents.GameStateUpdated, {
             gameState: updatedState,
-            currentPlayer: nextPlayer
+            currentPlayer: nextPlayer,
+            phase: 'PLAYING'
           });
         } catch (err) {
           const error = err as Error;
