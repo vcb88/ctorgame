@@ -4,135 +4,101 @@
 
 ```mermaid
 stateDiagram-v2
-    [*] --> GameInitialization: Create Game
-    GameInitialization --> WaitingForPlayers: Game Created
+    [*] --> INITIAL: Initialize
+    INITIAL --> CONNECTING: Create/Join Game
+    CONNECTING --> WAITING: Connection Established
+    CONNECTING --> INITIAL: Connection Failed
+    WAITING --> PLAYING: Opponent Joined
+    WAITING --> INITIAL: Timeout/Cancel
+    WAITING --> CONNECTING: Reconnect
+    PLAYING --> FINISHED: Game Over
+    FINISHED --> INITIAL: Reset
     
-    WaitingForPlayers --> PlayerJoining: First Player Connects
-    PlayerJoining --> WaitingForOpponent: Player 1 Ready
-    WaitingForOpponent --> PlayerJoining: Second Player Connects
-    PlayerJoining --> GameStarting: Player 2 Ready
-    
-    GameStarting --> InProgress: Both Players Ready
-    InProgress --> PlayerTurn: Game Started
-    
-    PlayerTurn --> ValidatingMove: Player Makes Move
-    ValidatingMove --> ProcessingMove: Move Valid
-    ValidatingMove --> PlayerTurn: Move Invalid
-    
-    ProcessingMove --> CalculatingCaptures: Update Board
-    CalculatingCaptures --> ScoringMove: Calculate Points
-    ScoringMove --> CheckingGameEnd: Update Score
-    
-    CheckingGameEnd --> PlayerTurn: Continue Game
-    CheckingGameEnd --> GameOver: End Conditions Met
-    
-    GameOver --> [*]: Cleanup Resources
-    
-    state NetworkIssues {
-        PlayerDisconnected --> WaitingForReconnect
-        WaitingForReconnect --> ReconnectionTimeout: No Reconnect
-        WaitingForReconnect --> RestoringState: Player Back
-        RestoringState --> PlayerTurn: State Restored
-        ReconnectionTimeout --> GameOver: Forfeit
+    state ERROR {
+        ERROR --> INITIAL: Reset
     }
-
-    InProgress --> PlayerDisconnected: Connection Lost
-    PlayerTurn --> PlayerDisconnected: Connection Lost
+    
+    PLAYING --> ERROR: Game Error
+    CONNECTING --> ERROR: Connection Error
+    WAITING --> ERROR: Room Error
+    
+    state NetworkHandling {
+        CONNECTING --> Disconnected: Connection Lost
+        Disconnected --> CONNECTING: Reconnect Attempt
+        Disconnected --> FINISHED: Timeout
+    }
 ```
 
 ## Detailed State Descriptions
 
-### 1. Game Setup Phase
-- **GameInitialization**
-  - Create game ID
-  - Initialize empty board
-  - Set up Redis game room
-  - Create MongoDB game record
-  
-- **WaitingForPlayers**
-  - Game room open
-  - Waiting for player connections
+### 1. Core Game States
+
+- **INITIAL**
+  - Default state before game creation
+  - No active game or connection
+  - System ready for new game
+
+- **CONNECTING**
+  - Attempting to establish connection
+  - Creating or joining a game
+  - Connection handshake in progress
+  - Initial game room setup
+
+- **WAITING**
+  - Connected to server
+  - Game room created
+  - Waiting for opponent
   - Share game code/link
 
-- **PlayerJoining**
-  - Validate player connection
-  - Assign player number
-  - Initialize player session
-  
-- **WaitingForOpponent**
-  - First player connected
-  - Room joinable
-  - Waiting for second player
-
-- **GameStarting**
+- **PLAYING**
+  - Active gameplay
   - Both players connected
-  - Initialize game state
-  - Send initial board state
-  - Determine first player
+  - Turn-based moves
+  - State synchronization active
 
-### 2. Game Active Phase
-- **InProgress**
-  - Game actively running
-  - Players taking turns
-  - State being synchronized
+- **FINISHED**
+  - Game completed
+  - Final score calculated
+  - Winner determined
+  - Ready for cleanup
 
-- **PlayerTurn**
-  - Current player active
-  - Awaiting move input
-  - Turn timer running
-  
-- **ValidatingMove**
-  - Check move validity
-  - Verify player turn
-  - Validate board position
-  
-- **ProcessingMove**
-  - Update board state
-  - Apply move rules
-  - Prepare capture calculation
-  
-- **CalculatingCaptures**
-  - Check adjacent cells
-  - Apply capture rules
-  - Calculate territory
-  
-- **ScoringMove**
-  - Update player scores
-  - Calculate point changes
-  - Apply scoring rules
-  
-- **CheckingGameEnd**
-  - Verify end conditions
-  - Check victory conditions
-  - Update game status
+### 2. Special States
 
-### 3. Network Handling Phase
-- **PlayerDisconnected**
-  - Detect disconnection
-  - Pause game state
-  - Start reconnection timer
-  
-- **WaitingForReconnect**
-  - Hold game state
-  - Keep room active
-  - Monitor reconnection attempts
-  
-- **RestoringState**
-  - Validate returning player
-  - Sync game state
-  - Resume game
-  
-- **ReconnectionTimeout**
-  - Forfeit handling
-  - Notify remaining player
-  - Prepare game termination
+- **ERROR**
+  - Error condition detected
+  - Game in inconsistent state
+  - Recovery action needed
+  - Error details available
 
-### 4. Game End Phase
-- **GameOver**
-  - Calculate final score
-  - Determine winner
-  - Update player stats
-  - Prepare cleanup
+### 3. Network Handling States
+
+- **Disconnected**
+  - Connection lost
+  - Attempting reconnection
+  - State preservation
+  - Timeout monitoring
+
+### 4. State Recovery Actions
+
+- **Connection Recovery**
+  - Automatic reconnection attempts
+  - Session validation
+  - State synchronization
+  - Game state restoration
+
+- **Error Recovery**
+  - Error analysis
+  - State validation
+  - Fallback mechanisms
+  - Recovery notifications
+
+### 5. State Validation
+
+Each state transition includes:
+- Validation of current state
+- Permission checks
+- State consistency verification
+- Error handling procedures
   
 ## Client-Server Interaction Flows
 
@@ -142,14 +108,13 @@ sequenceDiagram
     participant Client
     participant Server
     participant Redis
-    participant MongoDB
     
-    Client->>Server: CREATE_GAME
+    Client->>Server: createGame
     Server->>Redis: Create Game Room
-    Server->>MongoDB: Initialize Game Record
-    Server-->>Client: GAME_CREATED (gameId)
-    
-    Note over Client,Server: Game Ready for Players
+    Server-->>Client: gameCreated (gameId, eventId)
+    Note over Client: State: CONNECTING
+    Server-->>Client: gameJoined (gameId, phase=WAITING)
+    Note over Client: State: WAITING
 ```
 
 ### 2. Player Join Flow
@@ -158,18 +123,17 @@ sequenceDiagram
     participant P1 as Player 1
     participant Server
     participant P2 as Player 2
-    participant Redis
     
-    P1->>Server: JOIN_GAME (gameId)
-    Server->>Redis: Register Player 1
-    Server-->>P1: GAME_JOINED (playerNumber=1, connectionState=connected)
+    P1->>Server: createGame
+    Server-->>P1: gameCreated
+    Server-->>P1: gameJoined (phase=WAITING)
+    Note over P1: State: WAITING
     
-    P2->>Server: JOIN_GAME (gameId)
-    Server->>Redis: Register Player 2
-    Server-->>P2: GAME_JOINED (playerNumber=2, connectionState=connected)
-    Server-->>P1: OPPONENT_JOINED
-    Server-->>P1: GAME_STARTED
-    Server-->>P2: GAME_STARTED
+    P2->>Server: joinGame (gameId)
+    Server-->>P2: gameJoined (phase=CONNECTING)
+    Server-->>P1: gameStarted (phase=PLAYING)
+    Server-->>P2: gameStarted (phase=PLAYING)
+    Note over P1,P2: State: PLAYING
 ```
 
 ### 3. Game Move Flow
@@ -177,139 +141,142 @@ sequenceDiagram
 sequenceDiagram
     participant ActivePlayer
     participant Server
-    participant Redis
     participant OtherPlayer
     
-    ActivePlayer->>Server: MAKE_MOVE (position)
-    Server->>Redis: LOCK_GAME_STATE
+    Note over ActivePlayer,OtherPlayer: State: PLAYING
+    ActivePlayer->>Server: makeMove (gameId, move)
     
     alt Invalid Move
-        Server-->>ActivePlayer: INVALID_MOVE_ERROR
+        Server-->>ActivePlayer: error (INVALID_MOVE)
     else Valid Move
-        Server->>Redis: UPDATE_GAME_STATE
-        Server-->>ActivePlayer: MOVE_ACCEPTED
-        Server-->>OtherPlayer: GAME_UPDATED
+        Server-->>ActivePlayer: gameStateUpdated (phase=PLAYING)
+        Server-->>OtherPlayer: gameStateUpdated (phase=PLAYING)
         
-        alt Game Ending Move
-            Server-->>ActivePlayer: GAME_OVER
-            Server-->>OtherPlayer: GAME_OVER
-        else Continue Game
-            Server-->>OtherPlayer: YOUR_TURN
+        opt Available Replacements
+            Server-->>ActivePlayer: availableReplaces (moves)
+        end
+        
+        opt Game Over
+            Server-->>ActivePlayer: gameOver
+            Server-->>OtherPlayer: gameOver
+            Note over ActivePlayer,OtherPlayer: State: FINISHED
         end
     end
 ```
 
-### 4. Reconnection Flow
+### 4. Network Handling Flow
 ```mermaid
 sequenceDiagram
     participant DisconnectedPlayer
     participant Server
-    participant Redis
     participant ActivePlayer
     
-    DisconnectedPlayer->>Server: Connection Lost
-    Server->>Redis: Mark Player Disconnected
-    Server-->>ActivePlayer: OPPONENT_DISCONNECTED
+    DisconnectedPlayer--xServer: Connection Lost
+    Server-->>ActivePlayer: playerDisconnected
+    Note over DisconnectedPlayer: State: ERROR
     
-    DisconnectedPlayer->>Server: RECONNECT (gameId)
-    Server->>Redis: Validate Session
-    Server->>Redis: Get Current State
-    Server-->>DisconnectedPlayer: GAME_STATE_SYNC
-    Server-->>ActivePlayer: OPPONENT_RECONNECTED
+    DisconnectedPlayer->>Server: Reconnect
+    Server-->>DisconnectedPlayer: gameJoined (phase=CONNECTING)
+    Server-->>ActivePlayer: playerReconnected
+    Note over DisconnectedPlayer,ActivePlayer: State: PLAYING
+    
+    opt Reconnection Failed
+        Note over DisconnectedPlayer: State: ERROR
+        Server-->>ActivePlayer: gameOver
+        Note over ActivePlayer: State: FINISHED
+    end
 ```
 
 ## Error Handling Matrix
 
 | State | Error Type | Action | Recovery |
 |-------|------------|---------|-----------|
-| PlayerJoining | Connection Failed | Retry Join | Auto-retry 3 times |
-| InProgress | Invalid Move | Return Error | Stay in current state |
-| PlayerTurn | Timeout | Warning Event | Additional time once |
-| ProcessingMove | State Lock Failed | Rollback | Retry operation |
-| CalculatingCaptures | Calculation Error | Skip Capture | Continue game |
-| Network | Disconnection | Pause Game | Wait for reconnect |
-| GameOver | Save Failed | Cache Results | Retry save async |
+| INITIAL | Invalid Event | Ignore | N/A |
+| CONNECTING | Connection Failed | Retry | Return to INITIAL |
+| WAITING | Room Full | Error | Return to INITIAL |
+| PLAYING | Invalid Move | Error | Stay in PLAYING |
+| PLAYING | Connection Lost | Error | Try reconnect |
+| FINISHED | Save Failed | Cache | Retry async |
+| ERROR | Any | Log | Reset to INITIAL |
 
 ## State Synchronization Protocol
 
-### 1. Real-time State Update
+### 1. Game State Update
 ```typescript
 interface GameStateUpdate {
-    type: "STATE_UPDATE";
-    gameId: string;
-    sequence: number;    // Incremental sequence number
-    timestamp: number;   // Server timestamp
-    state: {
-        board: BoardState;
-        currentPlayer: number;
-        scores: PlayerScores;
-        lastMove?: Move;
-    }
+    gameState: IGameState;
+    currentPlayer: number;
+    phase: GamePhase;
 }
 ```
 
-### 2. State Verification
+### 2. Game Event Structure
 ```typescript
-interface StateVerification {
-    type: "STATE_VERIFY";
+interface WebSocketEvent<T> {
+    type: WebSocketEvents;
     gameId: string;
-    sequence: number;    // Client's last sequence
-    hash: string;       // State hash for verification
+    eventId: string;
+    phase?: GamePhase;
+    payload: T;
 }
 ```
 
-### 3. State Synchronization
+### 3. Connection States
 ```typescript
-interface StateSyncRequest {
-    type: "SYNC_REQUEST";
-    gameId: string;
-    lastSequence: number;  // Client's last known sequence
-    clientState: {
-        hash: string;     // Client state hash
-        timestamp: number; // Client state timestamp
-    }
+enum GamePhase {
+    INITIAL = 'INITIAL',
+    CONNECTING = 'CONNECTING',
+    WAITING = 'WAITING',
+    PLAYING = 'PLAYING',
+    FINISHED = 'FINISHED',
+    ERROR = 'ERROR'
 }
 ```
 
-## Game State Persistency
+## Game State Persistence
 
-### 1. Redis State (Volatile)
+### 1. Server State (Redis)
 ```typescript
 interface RedisGameState {
     gameId: string;
-    status: GameStatus;
-    board: BoardState;
-    currentPlayer: number;
-    sequence: number;
+    phase: GamePhase;
+    gameState: IGameState;
+    players: IPlayer[];
     lastUpdate: number;
-    players: {
-        [playerNumber: number]: {
-            connected: boolean;
-            lastSeen: number;
-        }
-    }
+    currentPlayer: number;
 }
 ```
 
-### 2. MongoDB State (Persistent)
+### 2. Client State (Storage)
 ```typescript
-interface MongoGameRecord {
-    gameId: string;
-    status: GameStatus;
-    startTime: Date;
-    endTime?: Date;
-    players: PlayerRecord[];
-    moves: Move[];
-    finalScore?: Score;
-    winner?: number;
+interface ClientGameState {
+    gameId: string | null;
+    phase: GamePhase;
+    playerNumber: number | null;
+    gameState: IGameState | null;
+    error: GameError | null;
+    connectionState: ConnectionState;
 }
 ```
 
-## Event Protocol Version Matrix
+## Event Protocol Summary
 
-| Version | Events | States | Backwards Compatible |
-|---------|---------|---------|---------------------|
-| 1.0 | Basic moves | Simple states | N/A |
-| 1.1 | Added captures | Capture states | Yes |
-| 1.2 | Reconnection | Network states | Yes |
-| 2.0 | Advanced moves | All current | No |
+### Core Events
+- **createGame**: Create new game room
+- **gameCreated**: Game room created
+- **joinGame**: Join existing game
+- **gameJoined**: Successfully joined game
+- **gameStarted**: Game begins
+- **gameStateUpdated**: State change
+- **gameOver**: Game finished
+
+### Error Events
+- **error**: General error
+- **playerDisconnected**: Connection lost
+- **playerReconnected**: Connection restored
+
+### State Events
+- Phase transitions
+- Player turns
+- Game updates
+- Connection status
