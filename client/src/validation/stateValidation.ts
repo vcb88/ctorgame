@@ -87,7 +87,9 @@ export function validateExtendedGameManagerState(state: unknown): state is Exten
     throw createValidationError('Invalid game state', 'INVALID_DATA', 'gameState');
   }
 
-  if (![Player.First, Player.Second].includes(extState.currentPlayer)) {
+  // Проверяем currentPlayer только если он определен и не null
+  if (extState.currentPlayer !== null && 
+      ![Player.First, Player.Second].includes(extState.currentPlayer)) {
     throw createValidationError('Invalid current player', 'INVALID_DATA', 'currentPlayer');
   }
 
@@ -165,7 +167,8 @@ export function validateStateUpdate(update: unknown): update is GameManagerState
   }
 
   if ('currentPlayer' in stateUpdate && 
-      ![Player.First, Player.Second].includes(stateUpdate.currentPlayer!)) {
+      stateUpdate.currentPlayer !== null &&
+      ![Player.First, Player.Second].includes(stateUpdate.currentPlayer)) {
     throw createValidationError('Invalid current player in update', 'INVALID_DATA', 'currentPlayer');
   }
 

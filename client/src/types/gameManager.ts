@@ -13,7 +13,7 @@ export interface ExtendedGameManagerState extends GameManagerState {
   /** Текущее состояние игры */
   gameState: IGameState | null;
   /** Текущий игрок */
-  currentPlayer: Player;
+  currentPlayer: Player | null;
   /** Доступные замены для текущего хода */
   availableReplaces: IGameMove[];
 }
