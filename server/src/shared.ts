@@ -450,7 +450,7 @@ export const isValidGameManagerState = (state: unknown): state is GameManagerSta
   return (
     isValidGamePhase(s.phase) &&
     (s.gameId === null || typeof s.gameId === 'string') &&
-    (s.playerNumber === null || Object.values(Player).includes(s.playerNumber)) &&
+    (s.playerNumber === null || typeof s.playerNumber === 'number') &&
     (s.error === null || (typeof s.error === 'object' && s.error !== null)) &&
     typeof s.connectionState === 'string'
   );

@@ -198,7 +198,7 @@ export class GameServer {
             gameState,
             currentPlayer,
             eventId: Date.now().toString(),
-            phase: 'PLAYING'
+            phase: GamePhase.PLAYING
           });
           console.log(`Sent GameStarted event to all players in game ${gameId}`);
         } catch (err) {
@@ -258,7 +258,7 @@ export class GameServer {
           this.io.to(gameId).emit(WebSocketEvents.GameStateUpdated, {
             gameState: updatedState,
             currentPlayer: nextPlayer,
-            phase: updatedState.gameOver ? 'FINISHED' : 'PLAYING'
+            phase: updatedState.gameOver ? GamePhase.FINISHED : GamePhase.PLAYING
           });
 
           // Проверяем доступные замены для операции размещения
@@ -338,7 +338,7 @@ export class GameServer {
           this.io.to(gameId).emit(WebSocketEvents.GameStateUpdated, {
             gameState: updatedState,
             currentPlayer: nextPlayer,
-            phase: 'PLAYING'
+            phase: GamePhase.PLAYING
           });
         } catch (err) {
           const error = err as Error;
