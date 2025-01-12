@@ -26,6 +26,8 @@ import { StateStorage } from './StateStorage';
 import { StorageConfig } from '../../../shared/types/state_storage';
 import { ErrorRecoveryManager } from './ErrorRecoveryManager';
 import { ErrorCode, ErrorSeverity, GameError } from '../../../shared/types/errors';
+import { ActionQueue } from './ActionQueue';
+import { GameActionType } from '../../../shared/types/actions';
 
 const DEFAULT_STORAGE_CONFIG: StorageConfig = {
   prefix: 'game_state',
@@ -39,6 +41,7 @@ export class GameStateManager {
   private subscribers: Set<StateSubscriber> = new Set();
   private storage: StateStorage;
   private errorManager: ErrorRecoveryManager;
+  private actionQueue: ActionQueue;
   private joinGamePromise: { 
     resolve: (value: JoinGameResult) => void;
     reject: (error: JoinGameError) => void;
@@ -59,6 +62,7 @@ export class GameStateManager {
   private constructor() {
     this.storage = new StateStorage(DEFAULT_STORAGE_CONFIG);
     this.errorManager = ErrorRecoveryManager.getInstance();
+    this.actionQueue = ActionQueue.getInstance();
     
     // Try to restore state from storage
     const savedState = this.storage.loadState<ExtendedGameManagerState>('current');
@@ -317,43 +321,65 @@ export class GameStateManager {
   }
 
   // Game actions
-  public createGame(): void {
-    if (!this.socket) return;
+  public async createGame(): Promise<void> {
+    if (!this.socket) {
+      throw {
+        code: ErrorCode.CONNECTION_ERROR,
+        message: 'Socket not initialized',
+        severity: ErrorSeverity.HIGH
+      } as GameError;
+    }
+
+    await this.actionQueue.enqueue({
+      type: GameActionType.CREATE_GAME,
+      timestamp: Date.now()
+    });
+
     this.updateState({ phase: 'CONNECTING' });
     this.socket.emit(WebSocketEvents.CreateGame);
   }
 
-  public joinGame(gameId: string): Promise<JoinGameResult> {
+  public async joinGame(gameId: string): Promise<JoinGameResult> {
     if (!this.socket) {
-      return Promise.reject({
-        code: 'CONNECTION_ERROR',
+      throw {
+        code: ErrorCode.CONNECTION_ERROR,
         message: 'Socket not initialized',
-        operation: 'join',
-        gameId
-      } as JoinGameError);
+        severity: ErrorSeverity.HIGH,
+        details: { operation: 'join', gameId }
+      } as GameError;
     }
 
     // Clear previous join promise if exists
     if (this.joinGamePromise) {
       clearTimeout(this.joinGamePromise.timeout);
       this.joinGamePromise.reject({
-        code: 'OPERATION_CANCELLED',
+        code: ErrorCode.OPERATION_CANCELLED,
         message: 'Previous join operation cancelled',
-        operation: 'join',
-        gameId
-      } as JoinGameError);
+        severity: ErrorSeverity.LOW,
+        details: { operation: 'join', gameId }
+      } as GameError);
     }
+
+    // Add join action to queue
+    await this.actionQueue.enqueue({
+      type: GameActionType.JOIN_GAME,
+      gameId,
+      timestamp: Date.now()
+    });
 
     return new Promise<JoinGameResult>((resolve, reject) => {
       // Setup timeout
       const timeout = setTimeout(() => {
         if (this.joinGamePromise) {
-          reject({
-            code: 'TIMEOUT',
+          const error = {
+            code: ErrorCode.OPERATION_TIMEOUT,
             message: 'Join game operation timed out',
-            operation: 'join',
-            gameId
-          } as JoinGameError);
+            severity: ErrorSeverity.MEDIUM,
+            details: { operation: 'join', gameId }
+          } as GameError;
+          
+          this.errorManager.handleError(error);
+          reject(error);
           this.joinGamePromise = null;
         }
       }, 10000); // 10 second timeout
@@ -370,33 +396,42 @@ export class GameStateManager {
   public disconnect(): void {
     if (!this.socket) return;
     
-    // Clear stored state when disconnecting
+    // Clear stored state and action queue when disconnecting
     this.storage.removeState('current');
+    this.actionQueue.clear();
     this.socket.disconnect();
   }
 
-  public makeMove(move: IGameMove): void {
+  public async makeMove(move: IGameMove): Promise<void> {
     if (!this.socket || !this.state.gameId) {
-      this.updateState({
-        error: {
-          code: WebSocketErrorCode.CONNECTION_ERROR,
-          message: 'Cannot make move - not in active game',
-          details: { socket: !!this.socket, gameId: this.state.gameId }
-        }
-      });
-      return;
+      const error = {
+        code: ErrorCode.CONNECTION_ERROR,
+        message: 'Cannot make move - not in active game',
+        severity: ErrorSeverity.HIGH,
+        details: { socket: !!this.socket, gameId: this.state.gameId }
+      } as GameError;
+      this.errorManager.handleError(error);
+      throw error;
     }
 
     if (this.state.connectionState !== 'connected') {
-      this.updateState({
-        error: {
-          code: WebSocketErrorCode.CONNECTION_ERROR,
-          message: 'Cannot make move - not connected to server',
-          details: { connectionState: this.state.connectionState }
-        }
-      });
-      return;
+      const error = {
+        code: ErrorCode.CONNECTION_ERROR,
+        message: 'Cannot make move - not connected to server',
+        severity: ErrorSeverity.HIGH,
+        details: { connectionState: this.state.connectionState }
+      } as GameError;
+      this.errorManager.handleError(error);
+      throw error;
     }
+
+    // Add move action to queue
+    await this.actionQueue.enqueue({
+      type: GameActionType.MAKE_MOVE,
+      move,
+      gameId: this.state.gameId,
+      timestamp: Date.now()
+    });
 
     this.socket.emit(WebSocketEvents.MakeMove, {
       gameId: this.state.gameId,
@@ -404,28 +439,35 @@ export class GameStateManager {
     });
   }
 
-  public endTurn(): void {
+  public async endTurn(): Promise<void> {
     if (!this.socket || !this.state.gameId) {
-      this.updateState({
-        error: {
-          code: WebSocketErrorCode.CONNECTION_ERROR,
-          message: 'Cannot end turn - not in active game',
-          details: { socket: !!this.socket, gameId: this.state.gameId }
-        }
-      });
-      return;
+      const error = {
+        code: ErrorCode.CONNECTION_ERROR,
+        message: 'Cannot end turn - not in active game',
+        severity: ErrorSeverity.HIGH,
+        details: { socket: !!this.socket, gameId: this.state.gameId }
+      } as GameError;
+      this.errorManager.handleError(error);
+      throw error;
     }
 
     if (this.state.connectionState !== 'connected') {
-      this.updateState({
-        error: {
-          code: WebSocketErrorCode.CONNECTION_ERROR,
-          message: 'Cannot end turn - not connected to server',
-          details: { connectionState: this.state.connectionState }
-        }
-      });
-      return;
+      const error = {
+        code: ErrorCode.CONNECTION_ERROR,
+        message: 'Cannot end turn - not connected to server',
+        severity: ErrorSeverity.HIGH,
+        details: { connectionState: this.state.connectionState }
+      } as GameError;
+      this.errorManager.handleError(error);
+      throw error;
     }
+
+    // Add end turn action to queue
+    await this.actionQueue.enqueue({
+      type: GameActionType.END_TURN,
+      gameId: this.state.gameId,
+      timestamp: Date.now()
+    });
 
     this.socket.emit(WebSocketEvents.EndTurn, {
       gameId: this.state.gameId
