@@ -27,6 +27,7 @@ import { redisService } from '../services/RedisService';
 import { redisClient, connectRedis } from '../config/redis';
 import { GameEventResponse } from '../types/events';
 import { WebSocketErrorCode, ErrorResponse } from '../types/connection';
+import { logger } from '../utils/logger';
 
 const PLAYER_RECONNECT_TIMEOUT = 5 * 60 * 1000; // 5 минут
 
@@ -40,13 +41,13 @@ export class GameServer {
   constructor(httpServer: HttpServer) {
     // Реализация паттерна Singleton
     if (GameServer.instance) {
-      console.log("Returning existing GameServer instance");
+      logger.info("Returning existing GameServer instance", { component: 'GameServer' });
       return GameServer.instance;
     }
 
     // Очищаем предыдущие экземпляры Socket.IO
     if ((global as any).io) {
-      console.log("Cleaning up previous Socket.IO instance");
+      logger.info("Cleaning up previous Socket.IO instance", { component: 'GameServer' });
       (global as any).io.close();
     }
 
@@ -71,18 +72,21 @@ export class GameServer {
 
     // Инициализируем сервисы
     this.initializeServices().catch(error => {
-      console.error("Critical initialization error:", error);
+      logger.error("Critical initialization error", {
+        component: 'GameServer',
+        error: error as ErrorWithStack
+      });
       process.exit(1);
     });
   }
 
   private async initializeServices(): Promise<void> {
     try {
-      console.log("Starting services initialization...");
+      logger.info("Starting services initialization...", { component: 'GameServer' });
       
       // Ждем подключения Redis
       await connectRedis();
-      console.log("Redis initialized");
+      logger.info("Redis initialized", { component: 'GameServer' });
 
       // Инициализируем сервисы
       this.gameService = new GameService();
@@ -93,10 +97,12 @@ export class GameServer {
 
       // Настраиваем обработчики событий
       this.setupEventHandlers();
-      console.log("WebSocket event handlers initialized");
-    } catch (err) {
-          const error = err as Error;
-      console.error("Failed to initialize services:", error);
+      logger.info("WebSocket event handlers initialized", { component: 'GameServer' });
+    } catch (error) {
+      logger.error("Failed to initialize services", {
+        component: 'GameServer',
+        error: error as ErrorWithStack
+      });
       throw error;
     }
   }
@@ -104,11 +110,14 @@ export class GameServer {
   private setupEventHandlers(): void {
     this.io.on('connection', (socket: Socket<ClientToServerEvents, ServerToClientEvents>) => {
       // Добавляем расширенное логирование подключений
-      console.log('New client connection:', {
-        socketId: socket.id,
-        transport: socket.conn.transport.name,
-        remoteAddress: socket.handshake.address,
-        userAgent: socket.handshake.headers['user-agent']
+      logger.info('New client connection', {
+        component: 'GameServer',
+        context: {
+          socketId: socket.id,
+          transport: socket.conn.transport.name,
+          remoteAddress: socket.handshake.address,
+          userAgent: socket.handshake.headers['user-agent']
+        }
       });
 
       socket.on(WebSocketEvents.CreateGame, async () => {
@@ -137,20 +146,42 @@ export class GameServer {
             throw new Error('Failed to create game room');
           }
 
-          console.log(`Game created: ${gameCode}, Player: ${socket.id}`);
+          logger.info('Game created', {
+            component: 'GameServer',
+            context: {
+              gameId: gameCode,
+              playerId: socket.id
+            }
+          });
           
           // Сохраняем сессию игрока
           await redisService.setPlayerSession(socket.id, gameCode, Player.First);
-          console.log(`Player session saved for ${socket.id} in game ${gameCode}`);
+          logger.info('Player session saved', {
+            component: 'GameServer',
+            context: {
+              playerId: socket.id,
+              gameId: gameCode
+            }
+          });
 
           socket.emit(WebSocketEvents.GameCreated, { 
             gameId: gameCode,
             eventId: Date.now().toString()
           });
-          console.log(`Sent GameCreated event to player ${socket.id}`);
+          logger.info('GameCreated event sent', {
+            component: 'GameServer',
+            context: {
+              playerId: socket.id,
+              gameId: gameCode
+            }
+          });
         } catch (err) {
           const error = err as Error;
-          console.error('Error creating game:', error);
+          logger.error('Error creating game', {
+            component: 'GameServer',
+            context: { playerId: socket.id },
+            error: error as ErrorWithStack
+          });
           socket.emit(WebSocketEvents.Error, { 
             code: WebSocketErrorCode.SERVER_ERROR,
             message: 'Failed to create game',
@@ -192,14 +223,26 @@ export class GameServer {
             return;
           }
 
-          console.log(`Player ${socket.id} successfully joined game ${gameId}`);
+          logger.info('Player joined game', {
+            component: 'GameServer',
+            context: {
+              playerId: socket.id,
+              gameId: gameId
+            }
+          });
 
           // Сначала отправляем подтверждение присоединения
           socket.emit(WebSocketEvents.GameJoined, { 
             gameId,
             eventId: Date.now().toString() 
           });
-          console.log(`Sent GameJoined event to player ${socket.id}`);
+          logger.info('GameJoined event sent', {
+            component: 'GameServer',
+            context: {
+              playerId: socket.id,
+              gameId: gameId
+            }
+          });
 
           // Потом отправляем всем участникам информацию о начале игры
           const currentPlayer = redisService.getCurrentPlayer(gameState);
@@ -209,10 +252,24 @@ export class GameServer {
             eventId: Date.now().toString(),
             phase: GamePhase.PLAYING
           });
-          console.log(`Sent GameStarted event to all players in game ${gameId}`);
+          logger.info('GameStarted event sent', {
+            component: 'GameServer',
+            context: {
+              gameId: gameId,
+              currentPlayer: currentPlayer,
+              phase: GamePhase.PLAYING
+            }
+          });
         } catch (err) {
           const error = err as Error;
-          console.error('Error joining game:', error);
+          logger.error('Error joining game', {
+            component: 'GameServer',
+            context: {
+              playerId: socket.id,
+              gameId: gameId
+            },
+            error: error as ErrorWithStack
+          });
           socket.emit(WebSocketEvents.Error, { code: WebSocketErrorCode.SERVER_ERROR, message: 'Failed to join game' });
         }
       });
@@ -298,7 +355,15 @@ export class GameServer {
           }
         } catch (err) {
           const error = err as Error;
-          console.error('Error making move:', error);
+          logger.error('Error making move', {
+            component: 'GameServer',
+            context: {
+              playerId: socket.id,
+              gameId: gameId,
+              move: move
+            },
+            error: error as ErrorWithStack
+          });
           socket.emit(WebSocketEvents.Error, { code: WebSocketErrorCode.SERVER_ERROR, message: 'Failed to make move' });
         }
       });
@@ -351,7 +416,14 @@ export class GameServer {
           });
         } catch (err) {
           const error = err as Error;
-          console.error('Error ending turn:', error);
+          logger.error('Error ending turn', {
+            component: 'GameServer',
+            context: {
+              playerId: socket.id,
+              gameId: gameId
+            },
+            error: error as ErrorWithStack
+          });
           socket.emit(WebSocketEvents.Error, { code: WebSocketErrorCode.SERVER_ERROR, message: 'Failed to end turn' });
         }
       });
@@ -389,13 +461,24 @@ export class GameServer {
                 }
               } catch (err) {
           const error = err as Error;
-                console.error('Error handling disconnection timeout:', error);
+                logger.error('Error handling disconnection timeout', {
+                  component: 'GameServer',
+                  context: {
+                    playerId: socket.id,
+                    gameId: session.gameId
+                  },
+                  error: error as ErrorWithStack
+                });
               }
             }, PLAYER_RECONNECT_TIMEOUT);
           }
         } catch (err) {
           const error = err as Error;
-          console.error('Error handling disconnect:', error);
+          logger.error('Error handling disconnect', {
+            component: 'GameServer',
+            context: { playerId: socket.id },
+            error: error as ErrorWithStack
+          });
         }
       });
 
@@ -445,7 +528,14 @@ export class GameServer {
           });
         } catch (err) {
           const error = err as Error;
-          console.error('Error reconnecting:', error);
+          logger.error('Error reconnecting', {
+            component: 'GameServer',
+            context: {
+              playerId: socket.id,
+              gameId: gameId
+            },
+            error: error as ErrorWithStack
+          });
           socket.emit(WebSocketEvents.Error, {
             code: WebSocketErrorCode.CONNECTION_ERROR,
             message: 'Failed to reconnect',

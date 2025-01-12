@@ -1,6 +1,7 @@
 import Redis from 'ioredis';
 import * as dotenv from 'dotenv';
 import { ICacheConfig } from '../shared';
+import { logger } from '../utils/logger';
 
 dotenv.config();
 
@@ -23,7 +24,10 @@ export const redisClient = new Redis({
     retryStrategy: (times: number) => {
         const maxRetryTime = 3000; // Максимальное время ожидания - 3 секунды
         const delay = Math.min(times * 500, maxRetryTime);
-        console.log(`Redis retry attempt ${times}, delay ${delay}ms`);
+        logger.debug(`Redis retry attempt`, {
+          component: 'Redis',
+          context: { attempt: times, delay }
+        });
         return delay;
     },
     maxRetriesPerRequest: 3,
@@ -34,11 +38,17 @@ export const redisClient = new Redis({
 // Функция для подключения к Redis
 export const connectRedis = async (): Promise<void> => {
     try {
-        console.log('Connecting to Redis at', process.env.REDIS_URL || 'redis://localhost:6379');
+        logger.info('Connecting to Redis', {
+            component: 'Redis',
+            context: { url: process.env.REDIS_URL || 'redis://localhost:6379' }
+        });
         await redisClient.ping();
-        console.log('Redis connected successfully');
+        logger.info('Redis connected successfully', { component: 'Redis' });
     } catch (error) {
-        console.error('Redis connection error:', error);
+        logger.error('Redis connection error', {
+            component: 'Redis',
+            error: error as ErrorWithStack
+        });
         throw error;
     }
 };
@@ -126,15 +136,18 @@ export const REDIS_EVENTS = {
 
 // Обработка ошибок Redis
 redisClient.on('error', (error) => {
-    console.error('Redis client error:', error);
+    logger.error('Redis client error', {
+        component: 'Redis',
+        error: error as ErrorWithStack
+    });
 });
 
 redisClient.on('connect', () => {
-    console.log('Redis client connected');
+    logger.info('Redis client connected', { component: 'Redis' });
 });
 
 redisClient.on('reconnecting', () => {
-    console.log('Redis client reconnecting');
+    logger.info('Redis client reconnecting', { component: 'Redis' });
 });
 
 export default redisClient;
