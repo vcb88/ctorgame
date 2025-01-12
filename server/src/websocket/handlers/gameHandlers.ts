@@ -239,16 +239,7 @@ export function registerGameHandlers(
                         normalizedGameId,
                         timestamp: new Date().toISOString()
                     },
-                    error: {
-                        type: 'GAME_NOT_FOUND',
-                        details: {
-                            searchParams: { 
-                                originalGameId: gameId,
-                                normalizedGameId,
-                                searchKey: normalizedGameId
-                            }
-                        }
-                    }
+                    error: new Error('Game not found')
                 });
                 
                 // Дополнительно проверим существование игры с другим регистром
@@ -366,11 +357,7 @@ export function registerGameHandlers(
                     gameId,
                     timestamp: new Date().toISOString()
                 },
-                error: {
-                    message: error instanceof Error ? error.message : 'Unknown error',
-                    stack: error instanceof Error ? error.stack : undefined,
-                    type: error instanceof Error ? error.constructor.name : typeof error
-                }
+                error: error instanceof Error ? error : new Error(String(error))
             });
 
             socket.emit(WebSocketEvents.Error, { 
