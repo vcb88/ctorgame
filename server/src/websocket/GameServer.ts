@@ -17,8 +17,9 @@ import {
   GameOutcome,
   getOpponent,
   isValidScores,
-  GamePhase
-} from '../shared';
+  GamePhase,
+  WebSocketPayloads
+} from '@ctor-game/shared';
 import { validateGameMove, validateGameState } from '../validation/game';
 import { GameService } from '../services/GameService';
 import { GameLogicService } from '../services/GameLogicService';
