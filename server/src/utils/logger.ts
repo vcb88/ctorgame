@@ -2,6 +2,39 @@ const DEBUG = true;
 
 type LogLevel = 'debug' | 'info' | 'warn' | 'error';
 
+interface GameLogger {
+  state: (action: string, state: unknown, context?: Record<string, unknown>) => void;
+  move: (action: string, move: unknown, context: Record<string, unknown>) => void;
+  validation: (result: boolean, reason: string, context: Record<string, unknown>) => void;
+  performance: (operation: string, duration: number, context?: Record<string, unknown>) => void;
+}
+
+interface StorageLogger {
+  operation: (action: string, data: unknown, context?: Record<string, unknown>) => void;
+  error: (error: unknown, context: Record<string, unknown>) => void;
+}
+
+interface NetworkLogger {
+  socketEvent: (event: string, data: unknown, direction: 'in' | 'out', context: LogOptions['context']) => void;
+  error: (error: unknown, context: Record<string, unknown>) => void;
+}
+
+interface DBLogger {
+  operation: (action: string, data: unknown, context?: Record<string, unknown>) => void;
+  error: (error: unknown, context: Record<string, unknown>) => void;
+}
+
+interface Logger {
+  debug: (message: string, options?: LogOptions) => void;
+  info: (message: string, options?: LogOptions) => void;
+  warn: (message: string, options?: LogOptions) => void;
+  error: (message: string, options?: LogOptions) => void;
+  game: GameLogger;
+  storage: StorageLogger;
+  network: NetworkLogger;
+  db: DBLogger;
+}
+
 interface LogOptions {
   component?: string;
   event?: string;
@@ -11,18 +44,27 @@ interface LogOptions {
     playerId?: string;
     socketId?: string;
     timestamp?: string;
-    [key: string]: any;  // Allow additional context properties
+    move?: unknown;
+    state?: unknown;
+    error?: unknown;
+    duration?: number;
+    [key: string]: any;
   };
-  results?: unknown;     // For operation results
-  error?: unknown;       // For error details
-  gameState?: unknown;   // For game state information
-  connection?: unknown;  // For connection details
-  storage?: unknown;     // For storage operations
-  room?: unknown;        // For room operations
-  notification?: unknown; // For notification details
-  waitingPhase?: unknown; // For waiting phase information
-  player?: unknown;      // For player information
-  [key: string]: any;    // Allow additional top-level properties
+  results?: unknown;
+  error?: unknown;
+  gameState?: unknown;
+  connection?: unknown;
+  storage?: unknown;
+  room?: unknown;
+  notification?: unknown;
+  waitingPhase?: unknown;
+  player?: unknown;
+  performance?: {
+    startTime?: number;
+    endTime?: number;
+    duration?: number;
+  };
+  [key: string]: any;
 }
 
 const getTimestamp = () => new Date().toISOString();
@@ -80,7 +122,7 @@ const log = (level: LogLevel, message: string) => {
   process.stdout.write('\n');
 };
 
-export const logger = {
+export const logger: Logger = {
   debug: (message: string, options: LogOptions = {}) => {
     if (DEBUG) {
       log('debug', formatMessage('debug', message, options));
@@ -96,46 +138,150 @@ export const logger = {
   },
 
   error: (message: string, options: LogOptions = {}) => {
-    log('error', formatMessage('error', message, options));
+    const errorData = {
+      ...options,
+      context: {
+        ...(options.context || {}),
+        stack: options.error?.stack || new Error().stack,
+        timestamp: new Date().toISOString()
+      }
+    };
+    log('error', formatMessage('error', message, errorData));
   },
 
-  gameState: (state: unknown, context: LogOptions['context']) => {
-    if (DEBUG) {
-      console.debug(formatMessage('debug', 'Game state update', {
-        component: 'GameState',
-        context,
-        data: state
+  game: {
+    state: (action: string, state: unknown, context?: Record<string, unknown>) => {
+      if (DEBUG) {
+        log('debug', formatMessage('debug', `Game state ${action}`, {
+          component: 'GameState',
+          context: {
+            ...context,
+            timestamp: new Date().toISOString()
+          },
+          data: state
+        }));
+      }
+    },
+
+    move: (action: string, move: unknown, context: Record<string, unknown>) => {
+      if (DEBUG) {
+        log('debug', formatMessage('debug', `Game move ${action}`, {
+          component: 'GameLogic',
+          context: {
+            ...context,
+            timestamp: new Date().toISOString()
+          },
+          data: { move }
+        }));
+      }
+    },
+
+    validation: (result: boolean, reason: string, context: Record<string, unknown>) => {
+      if (DEBUG) {
+        log('debug', formatMessage('debug', 'Move validation', {
+          component: 'GameLogic',
+          context: {
+            ...context,
+            timestamp: new Date().toISOString()
+          },
+          data: { valid: result, reason }
+        }));
+      }
+    },
+
+    performance: (operation: string, duration: number, context?: Record<string, unknown>) => {
+      if (DEBUG) {
+        log('debug', formatMessage('debug', 'Performance metric', {
+          component: 'Performance',
+          context: {
+            ...context,
+            operation,
+            duration,
+            timestamp: new Date().toISOString()
+          }
+        }));
+      }
+    }
+  },
+
+  storage: {
+    operation: (action: string, data: unknown, context?: Record<string, unknown>) => {
+      if (DEBUG) {
+        log('debug', formatMessage('debug', `Storage ${action}`, {
+          component: 'Storage',
+          context: {
+            ...context,
+            timestamp: new Date().toISOString()
+          },
+          data
+        }));
+      }
+    },
+
+    error: (error: unknown, context: Record<string, unknown>) => {
+      log('error', formatMessage('error', 'Storage error', {
+        component: 'Storage',
+        context: {
+          ...context,
+          stack: error?.stack,
+          timestamp: new Date().toISOString()
+        },
+        error
       }));
     }
   },
 
-  socketEvent: (event: string, data: unknown, direction: 'in' | 'out', context: LogOptions['context']) => {
-    if (DEBUG) {
-      console.debug(formatMessage('debug', `Socket ${direction === 'in' ? 'received' : 'sending'} event`, {
-        component: 'WebSocket',
-        event,
-        context,
-        data
+  network: {
+    socketEvent: (event: string, data: unknown, direction: 'in' | 'out', context: LogOptions['context']) => {
+      if (DEBUG) {
+        log('debug', formatMessage('debug', `Socket ${direction === 'in' ? 'received' : 'sending'} event`, {
+          component: 'WebSocket',
+          event,
+          context: {
+            ...context,
+            timestamp: new Date().toISOString()
+          },
+          data
+        }));
+      }
+    },
+
+    error: (error: unknown, context: Record<string, unknown>) => {
+      log('error', formatMessage('error', 'Network error', {
+        component: 'Network',
+        context: {
+          ...context,
+          stack: error?.stack,
+          timestamp: new Date().toISOString()
+        },
+        error
       }));
     }
   },
 
-  move: (data: unknown, context: LogOptions['context']) => {
-    if (DEBUG) {
-      console.debug(formatMessage('debug', 'Processing move', {
-        component: 'GameLogic',
-        context,
-        data
-      }));
-    }
-  },
+  db: {
+    operation: (action: string, data: unknown, context?: Record<string, unknown>) => {
+      if (DEBUG) {
+        log('debug', formatMessage('debug', `Database ${action}`, {
+          component: 'Database',
+          context: {
+            ...context,
+            timestamp: new Date().toISOString()
+          },
+          data
+        }));
+      }
+    },
 
-  db: (operation: string, data: unknown, context?: LogOptions['context']) => {
-    if (DEBUG) {
-      console.debug(formatMessage('debug', `Database operation: ${operation}`, {
+    error: (error: unknown, context: Record<string, unknown>) => {
+      log('error', formatMessage('error', 'Database error', {
         component: 'Database',
-        context,
-        data
+        context: {
+          ...context,
+          stack: error?.stack,
+          timestamp: new Date().toISOString()
+        },
+        error
       }));
     }
   }
