@@ -17,13 +17,14 @@ import {
 import { GameEventResponse } from '../../types/events';
 import { WebSocketErrorCode } from '../../types/errors';
 import { logger } from '../../utils/logger';
+import { toErrorWithStack } from '../../types/error';
 
 export function registerGameHandlers(
   socket: Socket, 
   gameService: GameService,
   storageService: GameStorageService
 ) {
-    // Создание новой игры
+    // Create a new game
     socket.on(WebSocketEvents.CreateGame, async () => {
         try {
             const gameId = generateGameCode();
@@ -53,7 +54,7 @@ export function registerGameHandlers(
                     size: { width: BOARD_SIZE, height: BOARD_SIZE }
                 },
                 currentTurn: { 
-                    placeOperationsLeft: 1, // Первый ход - 1 операция
+                    placeOperationsLeft: 1,
                     moves: []
                 },
                 scores: { 
@@ -140,9 +141,7 @@ export function registerGameHandlers(
                         socketId: socket.id,
                         gameId
                     },
-                    data: {
-                        error: storageError instanceof Error ? storageError.message : 'Unknown error'
-                    }
+                    error: toErrorWithStack(storageError)
                 });
                 throw storageError;
             }
@@ -187,12 +186,7 @@ export function registerGameHandlers(
                 context: {
                     socketId: socket.id
                 },
-                data: {
-                    error: error instanceof Error ? {
-                        message: error.message,
-                        stack: error.stack
-                    } : error
-                }
+                error: toErrorWithStack(error)
             });
 
             socket.emit(WebSocketEvents.Error, { 
@@ -205,10 +199,9 @@ export function registerGameHandlers(
         }
     });
 
-    // Присоединение к существующей игре
+    // Join an existing game
     socket.on(WebSocketEvents.JoinGame, async ({ gameId }) => {
         try {
-            // Нормализуем gameId к верхнему регистру
             const normalizedGameId = gameId.toUpperCase();
             
             logger.info('[1/4] JoinGame request received', {
@@ -227,9 +220,9 @@ export function registerGameHandlers(
                 }
             });
 
-            // Получаем состояние игры из Redis
             const game = await gameService.findGame(normalizedGameId);
             if (!game) {
+                const error = toErrorWithStack(new Error('Game not found'));
                 logger.error('Game not found during join attempt', {
                     component: 'GameHandlers',
                     event: WebSocketEvents.JoinGame,
@@ -239,10 +232,9 @@ export function registerGameHandlers(
                         normalizedGameId,
                         timestamp: new Date().toISOString()
                     },
-                    error: new Error('Game not found')
+                    error
                 });
                 
-                // Дополнительно проверим существование игры с другим регистром
                 const alternateGame = await gameService.findGame(gameId);
                 if (alternateGame) {
                     logger.warn('Game found with different case', {
@@ -257,11 +249,11 @@ export function registerGameHandlers(
                     });
                 }
                 
-                throw new Error('Game not found');
+                throw error;
             }
             const state = game.currentState;
             if (!state) {
-                throw new Error('Invalid game state - no current state found');
+                throw toErrorWithStack(new Error('Invalid game state - no current state found'));
             }
 
             logger.info('[2/4] Game state validation', {
@@ -282,10 +274,9 @@ export function registerGameHandlers(
             });
 
             if (!validateGameState(state)) {
-                throw new Error('Invalid game state');
+                throw toErrorWithStack(new Error('Invalid game state'));
             }
 
-            // Присоединяем игрока
             const player: IPlayer = { id: socket.id, number: Player.Second };
             logger.info('[3/4] Joining player to game', {
                 component: 'GameHandlers',
@@ -338,14 +329,13 @@ export function registerGameHandlers(
 
             socket.join(gameId);
             
-            // Отправляем обновленное состояние всем игрокам
             socket.emit(WebSocketEvents.GameJoined, { 
                 gameId,
                 eventId: generateEventId()
             });
             socket.to(gameId).emit(WebSocketEvents.GameStarted, {
                 gameState: state,
-                currentPlayer: Player.First, // Первый ход всегда за первым игроком
+                currentPlayer: Player.First,
                 eventId: generateEventId()
             });
         } catch (error) {
@@ -357,7 +347,7 @@ export function registerGameHandlers(
                     gameId,
                     timestamp: new Date().toISOString()
                 },
-                error: error instanceof Error ? error : new Error(String(error))
+                error: toErrorWithStack(error)
             });
 
             socket.emit(WebSocketEvents.Error, { 
@@ -371,86 +361,95 @@ export function registerGameHandlers(
         }
     });
 
-    // Выполнение хода
+    // Make a move
     socket.on(WebSocketEvents.MakeMove, async ({ gameId, move }) => {
         try {
-            // Валидация хода
             if (!validateGameMove(move, { width: BOARD_SIZE, height: BOARD_SIZE })) {
-                throw new Error('Invalid move format');
+                throw toErrorWithStack(new Error('Invalid move format'));
             }
 
-            // Получаем текущее состояние
             const state = await gameService.getGameState(gameId);
             if (!state || !validateGameState(state)) {
-                throw new Error('Invalid game state');
+                throw toErrorWithStack(new Error('Invalid game state'));
             }
 
-            // Валидация хода
             const player = await gameService.getPlayer(gameId, socket.id);
             if (!player || player.number !== state.currentPlayer) {
-                throw new Error('Not your turn');
+                throw toErrorWithStack(new Error('Not your turn'));
             }
 
-            // Применяем ход
             const updatedState = await gameService.makeMove(gameId, player.number, move);
 
-            // Сохраняем в долгосрочное хранилище
             await storageService.recordMove(gameId, {
                 ...move,
                 playerNumber: player.number,
                 timestamp: Date.now()
             });
 
-            // Проверяем завершение игры
             if (updatedState.gameOver) {
-                // Преобразуем scores в правильный формат
                 const gameScores: IScores = isValidScores(updatedState.scores) ? updatedState.scores : {
                     [Player.First]: 0,
                     [Player.Second]: 0
                 } as IScores;
                 await storageService.finishGame(
                     gameId, 
-                    updatedState.winner || Player.None, // В случае ничьей используем Player.None
+                    updatedState.winner || Player.None,
                     gameScores
                 );
 
-                // Уведомляем игроков
                 socket.to(gameId).emit(WebSocketEvents.GameOver, {
                     gameState: updatedState,
-                    winner: updatedState.winner
+                    winner: updatedState.winner,
+                    eventId: generateEventId()
                 });
+
                 socket.emit(WebSocketEvents.GameOver, {
                     gameState: updatedState,
-                    winner: updatedState.winner
+                    winner: updatedState.winner,
+                    eventId: generateEventId()
                 });
             } else {
-                // Уведомляем об обновлении состояния
-                socket.to(gameId).emit(WebSocketEvents.GameStateUpdated, {
+                socket.to(gameId).emit(WebSocketEvents.StateUpdated, {
                     gameState: updatedState,
-                    currentPlayer: updatedState.currentPlayer
+                    lastMove: move,
+                    eventId: generateEventId()
                 });
-                socket.emit(WebSocketEvents.GameStateUpdated, {
+
+                socket.emit(WebSocketEvents.StateUpdated, {
                     gameState: updatedState,
-                    currentPlayer: updatedState.currentPlayer
+                    lastMove: move,
+                    eventId: generateEventId()
                 });
             }
         } catch (error) {
-            socket.emit(WebSocketEvents.Error, { 
-                message: error instanceof Error ? error.message : 'Failed to make move'
+            logger.error('Failed to process move', {
+                component: 'GameHandlers',
+                event: WebSocketEvents.MakeMove,
+                context: {
+                    socketId: socket.id,
+                    gameId,
+                    move
+                },
+                error: toErrorWithStack(error)
+            });
+
+            socket.emit(WebSocketEvents.Error, {
+                message: error instanceof Error ? error.message : 'Failed to process move',
+                code: WebSocketErrorCode.INVALID_MOVE,
+                details: {
+                    errorType: error instanceof Error ? error.constructor.name : typeof error,
+                    gameId,
+                    move
+                }
             });
         }
     });
 }
 
-// Генерация уникального кода игры
 function generateGameCode(): string {
-    // Генерируем код в верхнем регистре
-    const code = Math.random().toString(36).substring(2, 8).toUpperCase();
-    console.log(`Generated game code: ${code}`);
-    return code;
+    return Math.random().toString(36).substring(2, 8).toUpperCase();
 }
 
-// Генерация ID события
 function generateEventId(): string {
-    return `${Date.now()}-${Math.random().toString(36).substring(2, 15)}`;
+    return `evt_${Math.random().toString(36).substring(2)}`;
 }

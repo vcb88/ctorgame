@@ -9,6 +9,7 @@ import {
 } from '../shared';
 import { GameLogicService } from './GameLogicService';
 import { logger } from '../utils/logger';
+import { toErrorWithStack } from '../types/error';
 
 export class GameService {
     private gamesCollection: Collection<GameMetadata>;
@@ -86,7 +87,7 @@ export class GameService {
                 });
                 return; // Success - exit the retry loop
             } catch (error) {
-                const dbError = error instanceof Error ? error : new Error(String(error));
+                const dbError = toErrorWithStack(error);
                 logger.error('MongoDB connection failed', {
                     component: 'Database',
                     context: {
@@ -199,7 +200,7 @@ export class GameService {
         );
 
         if (!result) {
-            throw new Error('Game not found or already completed');
+            throw toErrorWithStack(new Error('Game not found or already completed'));
         }
 
         return result;
@@ -217,7 +218,7 @@ export class GameService {
 
         const game = await this.gamesCollection.findOne({ gameId });
         if (!game || !game.currentState) {
-            const error = new Error('Game not found or invalid state');
+            const error = toErrorWithStack(new Error('Game not found or invalid state'));
             logger.game.validation(false, 'game_not_found', {
                 gameId,
                 exists: !!game,
@@ -227,7 +228,7 @@ export class GameService {
         }
 
         if (game.status === 'finished') {
-            const error = new Error('Game is already completed');
+            const error = toErrorWithStack(new Error('Game is already completed'));
             logger.game.validation(false, 'game_finished', {
                 gameId,
                 status: game.status
@@ -262,16 +263,16 @@ export class GameService {
         );
 
         if (!result) {
-            const error = new Error('Failed to update game state');
+            const error = toErrorWithStack(new Error('Failed to update game state'));
             logger.error('State update failed', {
                 component: 'GameService',
                 context: {
                     gameId,
                     move
                 },
-                error: error instanceof Error ? error : new Error(String(error))
+                error
             });
-            throw error instanceof Error ? error : new Error(String(error));
+            throw error;
         }
 
         const duration = Date.now() - startTime;

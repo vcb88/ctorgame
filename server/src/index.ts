@@ -142,13 +142,13 @@ httpServer.on('listening', () => {
   });
 });
 
-// Логирование только критичных событий HTTP-соединений
+// Log only critical HTTP connection events
 httpServer.on('connection', (socket) => {
   socket.on('error', (err) => {
     logger.error('Socket error', {
       component: 'Server',
       context: { socketId: socket.remoteAddress },
-      error: err
+      error: toErrorWithStack(err)
     });
   });
 });
@@ -171,14 +171,14 @@ logger.info('Server configuration', {
 process.on('unhandledRejection', (error: Error) => {
   logger.error('Unhandled Promise Rejection', {
     component: 'Process',
-    error
+    error: toErrorWithStack(error)
   });
 });
 
 process.on('uncaughtException', (error: Error) => {
   logger.error('Uncaught Exception', {
     component: 'Process',
-    error
+    error: toErrorWithStack(error)
   });
 });
 
@@ -186,7 +186,7 @@ process.on('uncaughtException', (error: Error) => {
 httpServer.on('error', (error: Error) => {
   logger.error('HTTP Server Error', {
     component: 'Server',
-    error
+    error: toErrorWithStack(error)
   });
 });
 
@@ -198,7 +198,7 @@ app.use((err: Error, req: express.Request, res: express.Response, next: express.
       method: req.method,
       url: req.originalUrl
     },
-    error: err
+    error: toErrorWithStack(err)
   });
   res.status(500).json({ error: 'Internal Server Error', message: err.message });
 });
