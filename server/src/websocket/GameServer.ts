@@ -40,13 +40,10 @@ export class GameServer {
   private static instance: GameServer | null = null;
 
   constructor(httpServer: HttpServer) {
-    // Реализация паттерна Singleton
+    // Проверяем существование инстанса перед созданием нового
     if (GameServer.instance) {
       logger.info("Returning existing GameServer instance", { component: 'GameServer' });
-      // Возвращаем существующий экземпляр и точно прерываем создание нового
-      const instance = GameServer.instance;
-      Object.assign(this, instance);
-      return;
+      return GameServer.instance;
     }
 
     // Очищаем предыдущие экземпляры Socket.IO
