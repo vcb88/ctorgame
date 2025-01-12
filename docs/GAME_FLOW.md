@@ -162,11 +162,11 @@ sequenceDiagram
     
     P1->>Server: JOIN_GAME (gameId)
     Server->>Redis: Register Player 1
-    Server-->>P1: GAME_JOINED (playerNumber=1)
+    Server-->>P1: GAME_JOINED (playerNumber=1, connectionState=connected)
     
     P2->>Server: JOIN_GAME (gameId)
     Server->>Redis: Register Player 2
-    Server-->>P2: GAME_JOINED (playerNumber=2)
+    Server-->>P2: GAME_JOINED (playerNumber=2, connectionState=connected)
     Server-->>P1: OPPONENT_JOINED
     Server-->>P1: GAME_STARTED
     Server-->>P2: GAME_STARTED

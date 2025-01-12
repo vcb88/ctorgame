@@ -115,6 +115,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Module system conflicts
 - TypeScript configuration
 - Development setup issues
+- Connection state handling in GameJoined event
 - Replaced deprecated `vi.any()` with `expect.any()` in hook tests for better compatibility with Vitest
 - Improved socket testing utilities with better event handling and typing
 - Fixed React 18 compatibility issues in tests
