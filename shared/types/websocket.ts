@@ -1,4 +1,5 @@
 import { IGameState, IGameMove, GamePhase } from './game';
+import { WebSocketErrorCode } from './events';
 
 // WebSocket события
 export enum WebSocketEvents {
