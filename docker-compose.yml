@@ -34,8 +34,7 @@ services:
       redis:
         condition: service_healthy
     restart: always
-    command: >
-      sh -c "node dist/index.js | tee /proc/1/fd/1"
+    command: ["node", "dist/index.js"]
     healthcheck:
       test: ["CMD-SHELL", "wget -q --spider http://localhost:3000/health || exit 1"]
       interval: 10s

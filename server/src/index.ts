@@ -1,3 +1,6 @@
+// Debug log to track module loading
+console.log('Loading index.ts module at:', new Date().toISOString(), '| Module path:', __filename);
+
 import 'reflect-metadata';
 import express from 'express';
 import http from 'http';
