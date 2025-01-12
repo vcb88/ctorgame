@@ -121,7 +121,19 @@ const formatMessage = (level: LogLevel, message: string, options: LogOptions = {
 
 // Функция для немедленного вывода в консоль
 const log = (level: LogLevel, message: string) => {
-  process.stdout.write(`${message}\n`);
+  // Добавляем цвета для разных уровней логирования
+  const colors = {
+    debug: '\x1b[36m', // Cyan
+    info: '\x1b[32m',  // Green
+    warn: '\x1b[33m',  // Yellow
+    error: '\x1b[31m'  // Red
+  };
+  const reset = '\x1b[0m';
+  
+  // Форсируем немедленный вывод в консоль
+  console.log(`${colors[level]}${message}${reset}`);
+  // Убеждаемся, что вывод попадает в stdout
+  process.stdout.write(`${colors[level]}${message}${reset}\n`);
 };
 
 export const logger: Logger = {
