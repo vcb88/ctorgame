@@ -1,7 +1,7 @@
 import { Server } from 'socket.io';
 import { Server as HttpServer } from 'http';
 import { Socket } from 'socket.io';
-import { 
+import {
   IPlayer,
   IGameMove,
   OperationType,
@@ -19,7 +19,7 @@ import {
   isValidScores,
   GamePhase,
   WebSocketPayloads
-} from '@ctor-game/shared';
+} from '../shared';
 import { validateGameMove, validateGameState } from '../validation/game';
 import { GameService } from '../services/GameService';
 import { GameLogicService } from '../services/GameLogicService';
