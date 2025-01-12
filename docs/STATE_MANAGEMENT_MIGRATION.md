@@ -399,7 +399,10 @@ Each phase can be rolled back independently by:
 | GameStateManager | ✅ Done | Basic implementation complete |
 | Socket Handling | ✅ Done | Basic socket events implemented |
 | useGame Hook | ✅ Done | Basic state subscription and actions |
-| useMultiplayerGameNew | 🟡 In Progress | Basic implementation done, needs availableReplaces handling |
+| State Types | ✅ Done | Full typing coverage added |
+| Game State Types | ✅ Done | Extended types for game state added |
+| useMultiplayerGameNew | ✅ Done | Full implementation with types |
+| Available Replaces | ✅ Done | Handling implemented |
 | GameNew Component | 🟡 In Progress | Basic implementation done, needs full game state support |
 | Game State Updates | 🟡 In Progress | Basic updates done, needs proper validation |
 | WaitingRoom | Pending | |
