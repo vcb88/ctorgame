@@ -27,6 +27,117 @@ Before committing any changes:
 3. Verify type consistency across all three locations
 4. In case of conflicts, use the most recently updated version
 
+## Shared Types Organization
+
+The project uses a specific approach for managing shared TypeScript types between client and server:
+
+### Structure
+
+1. **Source Package** (`@ctor-game/shared`):
+   - Located in `/shared` directory
+   - Contains all shared types split across multiple files
+   - Built and packaged as a workspace dependency
+   - Source of truth for all shared types
+
+2. **Server Types** (`server/src/shared.ts`):
+   ```typescript
+   // Re-export all shared types
+   export * from '@ctor-game/shared';
+
+   // Additional server-specific types and exports
+   export * from './validation/game';
+   export * from './types/connection';
+
+   // Server-only type extensions
+   export interface ServerSpecificType {
+     // ...
+   }
+   ```
+
+3. **Client Types** (`client/src/shared.ts`):
+   ```typescript
+   // Re-export all shared types
+   export * from '@ctor-game/shared';
+
+   // Additional client-specific types
+   export interface ClientSpecificType {
+     // ...
+   }
+   ```
+
+### Key Principles
+
+1. **Single Source of Truth**:
+   - All shared types are defined in `@ctor-game/shared` package
+   - Never duplicate shared type definitions in client or server
+   - Always import shared types from `@ctor-game/shared`
+
+2. **Clean Dependencies**:
+   - No direct imports between client and server
+   - No circular dependencies
+   - Clear separation of concerns
+
+3. **Type Extension**:
+   - Client and server can extend shared types
+   - Extensions should be kept in respective shared.ts files
+   - Extensions should not modify shared type behavior
+
+### Making Changes
+
+When modifying shared types:
+
+1. Update `@ctor-game/shared` package first
+2. Build the shared package:
+   ```bash
+   cd shared && pnpm build
+   ```
+3. Update imports in client/server if needed
+4. Verify type consistency across the project
+5. Run type checks:
+   ```bash
+   pnpm type-check      # Root project
+   cd client && pnpm type-check
+   cd server && pnpm type-check
+   ```
+
+### Common Pitfalls
+
+1. **Avoid Direct Module Imports**:
+   ```typescript
+   // WRONG: Importing directly from shared module
+   import { SomeType } from '../../../shared/types/something';
+
+   // CORRECT: Import from package
+   import { SomeType } from '@ctor-game/shared';
+   ```
+
+2. **Prevent Circular Dependencies**:
+   ```typescript
+   // WRONG: Circular dependency
+   // server/src/types/game.ts
+   import { SharedType } from '../shared';
+   export class ServerType extends SharedType {}
+
+   // server/src/shared.ts
+   import { ServerType } from './types/game';
+
+   // CORRECT: Keep all types in shared.ts
+   // server/src/shared.ts
+   import { SharedType } from '@ctor-game/shared';
+   export class ServerType extends SharedType {}
+   ```
+
+3. **Type Synchronization**:
+   ```typescript
+   // WRONG: Duplicating shared types
+   // server/src/types/game.ts
+   export interface GameState { ... } // Duplicate of shared type
+
+   // CORRECT: Re-export from shared package
+   // server/src/shared.ts
+   export { GameState } from '@ctor-game/shared';
+   ```
+
 ## Development Setup
 
 1. Fork and clone the repository
