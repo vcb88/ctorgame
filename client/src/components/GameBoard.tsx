@@ -1,9 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { GameCell } from './GameCell';
 import { IPosition, Player, OperationType } from '../shared';
 import { GameError } from '../types/connection';
 import { GameActionType } from '../types/actions';
 import { logger } from '../utils/logger';
+import { AnimationType, CellAnimationState } from '../types/animations';
 
 interface GameBoardProps {
   board: (Player | null)[][];
@@ -32,8 +33,40 @@ export function GameBoard({
   highlightedCells = [],
   lastMove
 }: GameBoardProps) {
-  const [previousBoard, setPreviousBoard] = useState<(Player | null)[][]>([]);
-  const [capturedCells, setCapturedCells] = useState<{ [key: string]: boolean }>({});
+  const [animationStates, setAnimationStates] = useState<Record<string, CellAnimationState>>({});
+  const previousBoardRef = useRef<(Player | null)[][]>([]);
+  const animationTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Clear completed animations
+  const clearAnimations = useCallback((positions?: IPosition[]) => {
+    if (animationTimeoutRef.current) {
+      clearTimeout(animationTimeoutRef.current);
+    }
+
+    setAnimationStates(prevStates => {
+      if (!positions) {
+        return {};
+      }
+
+      const newStates = { ...prevStates };
+      positions.forEach(pos => {
+        delete newStates[`${pos.y}-${pos.x}`];
+      });
+      return newStates;
+    });
+  }, []);
+
+  // Handle animation timeouts
+  const scheduleAnimationCleanup = useCallback((positions: IPosition[], duration: number) => {
+    if (animationTimeoutRef.current) {
+      clearTimeout(animationTimeoutRef.current);
+    }
+
+    animationTimeoutRef.current = setTimeout(() => {
+      clearAnimations(positions);
+      animationTimeoutRef.current = null;
+    }, duration);
+  }, [clearAnimations]);
 
   // Log component state changes
   useEffect(() => {
@@ -58,27 +91,111 @@ export function GameBoard({
     }
   }, [capturedCells, previousBoard, board]);
 
-  // Track cell captures by comparing previous and current board states
+  // Track board changes and manage animations
   useEffect(() => {
-    const captures: { [key: string]: boolean } = {};
+    const capturedPositions: IPosition[] = [];
+    const placedPositions: IPosition[] = [];
+    
     board.forEach((row, rowIndex) => {
       row.forEach((cell, colIndex) => {
-        const prevValue = previousBoard[rowIndex]?.[colIndex];
-        if (prevValue !== undefined && prevValue !== null && cell !== prevValue) {
-          captures[`${rowIndex}-${colIndex}`] = true;
+        const prevValue = previousBoardRef.current[rowIndex]?.[colIndex];
+        
+        // Skip if previous state isn't initialized
+        if (prevValue === undefined) continue;
+        
+        // Detect changes
+        if (cell !== prevValue) {
+          const pos = { x: colIndex, y: rowIndex };
+          
+          if (prevValue !== null && cell !== null) {
+            // Capture animation
+            capturedPositions.push(pos);
+          } else if (prevValue === null && cell !== null) {
+            // Place animation
+            placedPositions.push(pos);
+          }
         }
       });
     });
-    
-    setCapturedCells(captures);
-    setPreviousBoard(board);
-  }, [board]);
 
-  const handleCellClick = (rowIndex: number, colIndex: number) => {
+    // Clear existing animations if we have new changes
+    if (capturedPositions.length > 0 || placedPositions.length > 0) {
+      clearAnimations();
+      
+      // Set new animation states
+      setAnimationStates(prevStates => {
+        const newStates: Record<string, CellAnimationState> = { ...prevStates };
+        
+        const now = Date.now();
+        
+        capturedPositions.forEach(pos => {
+          newStates[`${pos.y}-${pos.x}`] = {
+            isAnimating: true,
+            type: AnimationType.CAPTURE,
+            startTime: now,
+            data: {
+              previousValue: previousBoardRef.current[pos.y]?.[pos.x],
+              newValue: board[pos.y][pos.x]
+            }
+          };
+        });
+        
+        placedPositions.forEach(pos => {
+          newStates[`${pos.y}-${pos.x}`] = {
+            isAnimating: true,
+            type: AnimationType.PLACE,
+            startTime: now,
+            data: {
+              newValue: board[pos.y][pos.x]
+            }
+          };
+        });
+        
+        return newStates;
+      });
+
+      // Schedule cleanup
+      const positions = [...capturedPositions, ...placedPositions];
+      if (positions.length > 0) {
+        scheduleAnimationCleanup(positions, 500); // 500ms animation duration
+      }
+
+      // Log animation events
+      logger.animation('board_change', {
+        captures: capturedPositions,
+        placements: placedPositions,
+        previousBoard: previousBoardRef.current,
+        currentBoard: board
+      }, 'GameBoard');
+    }
+
+    // Update previous board reference
+    previousBoardRef.current = board;
+  }, [board, clearAnimations, scheduleAnimationCleanup]);
+
+  const handleCellClick = useCallback((rowIndex: number, colIndex: number) => {
     if (!onCellClick) return;
 
+    const position = { x: colIndex, y: rowIndex };
+    const cellKey = `${rowIndex}-${colIndex}`;
+    const isAnimating = animationStates[cellKey]?.isAnimating;
+
     // Log cell click attempt
-    logger.userAction('cellClick', { row: rowIndex, col: colIndex });
+    logger.userAction('cellClick', { 
+      row: rowIndex, 
+      col: colIndex,
+      isAnimating,
+      currentAnimation: animationStates[cellKey]?.type
+    });
+
+    // Don't allow clicks during animations
+    if (isAnimating) {
+      logger.validation('GameBoard',
+        { valid: false, reason: 'Cell is animating' },
+        { position, animationType: animationStates[cellKey]?.type }
+      );
+      return;
+    }
 
     // Check if the move is valid
     const moveValid = isValidMove ? isValidMove(rowIndex, colIndex) : (!disabled && board[rowIndex][colIndex] === null);
@@ -89,7 +206,7 @@ export function GameBoard({
 
     logger.validation('GameBoard', 
       { valid: moveValid, reason: validationReason },
-      { row: rowIndex, col: colIndex, currentPlayer }
+      { position, currentPlayer }
     );
 
     if (!moveValid) {
@@ -99,15 +216,16 @@ export function GameBoard({
     if (loading && operationInProgress === GameActionType.MAKE_MOVE) {
       logger.operation('MAKE_MOVE', 'error', {
         reason: 'Operation already in progress',
-        row: rowIndex,
-        col: colIndex,
+        position,
         operationInProgress
       });
       return;
     }
 
+    // Clear any existing animations before making a move
+    clearAnimations();
     onCellClick(rowIndex, colIndex);
-  };
+  }, [onCellClick, isValidMove, disabled, board, loading, operationInProgress, currentPlayer, animationStates, clearAnimations]);
 
   // Special styling for cells based on their state
   const getCellHighlightState = (rowIndex: number, colIndex: number) => {
@@ -147,11 +265,10 @@ export function GameBoard({
               row={rowIndex}
               col={colIndex}
               value={cell}
-              disabled={disabled || loading}
+              disabled={disabled || loading || animationStates[`${rowIndex}-${colIndex}`]?.isAnimating}
               onClick={() => handleCellClick(rowIndex, colIndex)}
               isValidMove={isValidMoveCell}
-              isBeingCaptured={capturedCells[`${rowIndex}-${colIndex}`]}
-              previousValue={previousBoard[rowIndex]?.[colIndex]}
+              animationState={animationStates[`${rowIndex}-${colIndex}`]}
               isHighlighted={isHighlighted}
               isLastMove={isLastMove}
               currentPlayer={currentPlayer}

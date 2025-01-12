@@ -1,5 +1,6 @@
 import { cn } from '@/lib/utils';
 import { BOARD_SIZE, Player } from '../shared';
+import { CellAnimationState, AnimationType } from '../types/animations';
 
 interface GameCellProps {
   row: number;
@@ -8,11 +9,10 @@ interface GameCellProps {
   disabled: boolean;
   onClick?: () => void;
   isValidMove?: boolean;
-  isBeingCaptured?: boolean;
-  previousValue?: Player | null;
   isHighlighted?: boolean;
   isLastMove?: boolean;
   currentPlayer?: Player;
+  animationState?: CellAnimationState;
 }
 
 export const GameCell: React.FC<GameCellProps> = ({
@@ -22,13 +22,14 @@ export const GameCell: React.FC<GameCellProps> = ({
   disabled,
   onClick,
   isValidMove = false,
-  isBeingCaptured = false,
-  previousValue = null,
   isHighlighted = false,
   isLastMove = false,
-  currentPlayer
+  currentPlayer,
+  animationState
 }) => {
-  const shouldShowCaptureAnimation = isBeingCaptured && previousValue !== value;
+  const isAnimating = animationState?.isAnimating;
+  const animationType = animationState?.type;
+  const previousValue = animationState?.data?.previousValue;
   return (
     <div
       onClick={onClick}
@@ -40,8 +41,8 @@ export const GameCell: React.FC<GameCellProps> = ({
         "before:transition-opacity before:duration-300",
         {
           // Base piece effects
-          "animate-piece-placed": value !== null && !shouldShowCaptureAnimation,
-          "animate-piece-capture": shouldShowCaptureAnimation,
+          "animate-piece-placed": value !== null && animationType === AnimationType.PLACE,
+          "animate-piece-capture": animationType === AnimationType.CAPTURE,
           "shadow-[0_0_15px_rgba(6,182,212,0.5)]": value === Player.First,
           "shadow-[0_0_15px_rgba(239,68,68,0.5)]": value === Player.Second,
           
@@ -55,11 +56,16 @@ export const GameCell: React.FC<GameCellProps> = ({
           "ring-2 ring-yellow-400/50": isHighlighted,
           "ring-4 ring-green-400/50": isLastMove,
           
+          // Animation effects
+          "opacity-75": isAnimating,
+          "scale-95": isAnimating && animationType === AnimationType.CAPTURE,
+          "scale-105": isAnimating && animationType === AnimationType.PLACE,
+          
           // Hover effects
-          "hover:before:opacity-100": !disabled,
-          "hover:border-cyan-400/50": !disabled && (!currentPlayer || currentPlayer === Player.First),
-          "hover:border-red-400/50": (disabled && isValidMove) || (!disabled && currentPlayer === Player.Second),
-          "cursor-not-allowed": disabled
+          "hover:before:opacity-100": !disabled && !isAnimating,
+          "hover:border-cyan-400/50": !disabled && !isAnimating && (!currentPlayer || currentPlayer === Player.First),
+          "hover:border-red-400/50": (disabled && isValidMove) || (!disabled && !isAnimating && currentPlayer === Player.Second),
+          "cursor-not-allowed": disabled || isAnimating
         }
       )}
     >
@@ -67,8 +73,11 @@ export const GameCell: React.FC<GameCellProps> = ({
       {value !== null && (
         <div className={cn(
           "absolute inset-0 flex items-center justify-center",
-          "transition-all duration-300 animate-piece-glow",
+          "transition-all duration-300",
           {
+            "animate-piece-glow": !isAnimating,
+            "animate-piece-fade": isAnimating && animationType === AnimationType.CAPTURE,
+            "animate-piece-appear": isAnimating && animationType === AnimationType.PLACE,
             "bg-cyan-500/20 text-cyan-400": value === Player.First,
             "bg-red-500/20 text-red-400": value === Player.Second,
           }
@@ -79,8 +88,21 @@ export const GameCell: React.FC<GameCellProps> = ({
             {
               "bg-cyan-500 shadow-[0_0_10px_rgba(6,182,212,0.8)]": value === Player.First,
               "bg-red-500 shadow-[0_0_10px_rgba(239,68,68,0.8)]": value === Player.Second,
+              "scale-0 opacity-0": isAnimating && animationType === AnimationType.CAPTURE,
+              "scale-110": isAnimating && animationType === AnimationType.PLACE
             }
           )}></div>
+          {/* Show previous piece during capture animation */}
+          {isAnimating && animationType === AnimationType.CAPTURE && previousValue && (
+            <div className={cn(
+              "absolute w-8 h-8 rounded-full",
+              "transition-all duration-300 animate-piece-capture",
+              {
+                "bg-cyan-500/50": previousValue === Player.First,
+                "bg-red-500/50": previousValue === Player.Second
+              }
+            )}></div>
+          )}
         </div>
       )}
 

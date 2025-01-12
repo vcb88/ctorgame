@@ -82,7 +82,9 @@ module.exports = {
         "glitch-2": "glitch-2 0.5s ease-in-out infinite",
         "piece-placed": "piece-placed 0.5s ease-out forwards",
         "piece-glow": "piece-glow 2s ease-in-out infinite",
-        "piece-capture": "piece-capture 0.7s ease-in-out forwards",
+        "piece-capture": "piece-capture 0.5s ease-in-out forwards",
+        "piece-fade": "piece-fade 0.3s ease-in-out forwards",
+        "piece-appear": "piece-appear 0.3s ease-in-out forwards",
         "piece-timer": "piece-timer var(--timer-duration) linear forwards",
         "fade-in": "fade-in 0.5s ease-out forwards",
         "content-appear": "content-appear 0.7s ease-out forwards",
@@ -147,18 +149,40 @@ module.exports = {
             filter: "brightness(1.2) drop-shadow(0 0 12px currentColor)"
           }
         },
+        "piece-fade": {
+          "0%": {
+            transform: "scale(1) rotate(0deg)",
+            opacity: "1"
+          },
+          "100%": {
+            transform: "scale(0) rotate(-180deg)",
+            opacity: "0"
+          }
+        },
+        "piece-appear": {
+          "0%": {
+            transform: "scale(0) rotate(180deg)",
+            opacity: "0"
+          },
+          "100%": {
+            transform: "scale(1) rotate(0deg)",
+            opacity: "1"
+          }
+        },
         "piece-capture": {
           "0%": { 
-            transform: "scale(1)",
+            transform: "scale(1) rotate(0deg)",
             opacity: "1"
           },
           "50%": {
             transform: "scale(1.3) rotate(180deg)",
-            opacity: "0.5"
+            opacity: "0.5",
+            filter: "blur(4px)"
           },
           "100%": {
-            transform: "scale(1) rotate(360deg)",
-            opacity: "1"
+            transform: "scale(0) rotate(360deg)",
+            opacity: "0",
+            filter: "blur(8px)"
           }
         },
         "piece-timer": {
