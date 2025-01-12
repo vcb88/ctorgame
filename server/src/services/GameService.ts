@@ -8,6 +8,7 @@ import {
     IScores
 } from '../shared';
 import { GameLogicService } from './GameLogicService';
+import { logger } from '../utils/logger';
 
 export class GameService {
     private gamesCollection: Collection<GameMetadata>;
@@ -24,9 +25,20 @@ export class GameService {
 
     private async ensureInitialized() {
         if (this.initialized) return;
+
+        logger.debug('Initializing GameService', {
+            component: 'GameService',
+            context: {
+                mongoUrl: this.mongoUrl
+            }
+        });
+
         if (!this.initializationPromise) {
             this.initializationPromise = this.initializeDatabase().then(() => {
                 this.initialized = true;
+                logger.info('GameService initialized successfully', {
+                    component: 'GameService'
+                });
             });
         }
         await this.initializationPromise;
@@ -38,14 +50,24 @@ export class GameService {
         
         for (let i = 0; i < maxRetries; i++) {
             try {
-                console.log(`Attempting to connect to MongoDB at ${this.mongoUrl} (attempt ${i + 1}/${maxRetries})`);
+                logger.info(`Initializing MongoDB connection`, {
+                    component: 'Database',
+                    context: {
+                        attempt: i + 1,
+                        maxRetries,
+                        mongoUrl: this.mongoUrl
+                    }
+                });
+
                 this.mongoClient = new MongoClient(this.mongoUrl, {
                     serverSelectionTimeoutMS: 5000,
                     connectTimeoutMS: 10000,
                 });
                 
                 await this.mongoClient.connect();
-                console.log('Successfully connected to MongoDB');
+                logger.info('MongoDB connection established', {
+                    component: 'Database'
+                });
                 
                 this.gamesCollection = this.mongoClient.db('ctorgame').collection<GameMetadata>('games');
                 
@@ -56,15 +78,38 @@ export class GameService {
                 await this.gamesCollection.createIndex({ lastActivityAt: 1 });
                 await this.gamesCollection.createIndex({ gameId: 1 });
                 
-                console.log('MongoDB indexes created successfully');
+                logger.info('MongoDB indexes created', {
+                    component: 'Database',
+                    context: {
+                        indexes: ['code', 'status', 'startTime', 'lastActivityAt', 'gameId']
+                    }
+                });
                 return; // Success - exit the retry loop
             } catch (error) {
-                console.error(`Failed to connect to MongoDB (attempt ${i + 1}/${maxRetries}):`, error);
+                logger.error('MongoDB connection failed', {
+                    component: 'Database',
+                    context: {
+                        attempt: i + 1,
+                        maxRetries,
+                        retryDelay
+                    },
+                    error
+                });
+
                 if (i < maxRetries - 1) {
-                    console.log(`Retrying in ${retryDelay/1000} seconds...`);
+                    logger.info(`Scheduling retry`, {
+                        component: 'Database',
+                        context: {
+                            nextAttempt: i + 2,
+                            delaySeconds: retryDelay/1000
+                        }
+                    });
                     await new Promise(resolve => setTimeout(resolve, retryDelay));
                 } else {
-                    console.error('Max retries reached. Failed to initialize MongoDB connection.');
+                    logger.error('Max MongoDB connection retries reached', {
+                        component: 'Database',
+                        error
+                    });
                     throw error;
                 }
             }
@@ -72,16 +117,33 @@ export class GameService {
     }
 
     async createGame(gameId: string, player: IPlayer, initialState: IGameState): Promise<GameMetadata> {
+        const startTime = Date.now();
         await this.ensureInitialized();
-        // Нормализуем gameId к верхнему регистру
-        const normalizedGameId = gameId.toUpperCase();
         
-        // Generate a unique 4-digit code
+        logger.game.state('creating', initialState, {
+            gameId,
+            playerId: player.id
+        });
+
+        const normalizedGameId = gameId.toUpperCase();
         let code: string;
         let exists: GameMetadata | null;
+        let attempts = 0;
+        
         do {
             code = Math.floor(Math.random() * 10000).toString().padStart(4, '0');
             exists = await this.gamesCollection.findOne({ code });
+            attempts++;
+            
+            logger.debug('Generated game code', {
+                component: 'GameService',
+                context: {
+                    gameId,
+                    code,
+                    attempt: attempts,
+                    exists: !!exists
+                }
+            });
         } while (exists);
 
         const game: GameMetadata = {
@@ -143,14 +205,33 @@ export class GameService {
     }
 
     async makeMove(gameId: string, playerNumber: number, move: IGameMove): Promise<GameMetadata> {
+        const startTime = Date.now();
         await this.ensureInitialized();
+        
+        logger.game.move('processing', move, {
+            gameId,
+            playerNumber,
+            timestamp: new Date().toISOString()
+        });
+
         const game = await this.gamesCollection.findOne({ gameId });
         if (!game || !game.currentState) {
-            throw new Error('Game not found or invalid state');
+            const error = new Error('Game not found or invalid state');
+            logger.game.validation(false, 'game_not_found', {
+                gameId,
+                exists: !!game,
+                hasState: !!game?.currentState
+            });
+            throw error;
         }
 
         if (game.status === 'finished') {
-            throw new Error('Game is already completed');
+            const error = new Error('Game is already completed');
+            logger.game.validation(false, 'game_finished', {
+                gameId,
+                status: game.status
+            });
+            throw error;
         }
 
         // Применяем ход и получаем новое состояние
@@ -180,8 +261,31 @@ export class GameService {
         );
 
         if (!result) {
-            throw new Error('Failed to update game state');
+            const error = new Error('Failed to update game state');
+            logger.error('State update failed', {
+                component: 'GameService',
+                context: {
+                    gameId,
+                    move
+                },
+                error
+            });
+            throw error;
         }
+
+        const duration = Date.now() - startTime;
+        logger.game.performance('make_move', duration, {
+            gameId,
+            move,
+            success: true
+        });
+
+        logger.game.state('updated', result.currentState, {
+            gameId,
+            playerNumber,
+            move,
+            duration
+        });
 
         return result;
     }

@@ -4,8 +4,16 @@ import http from 'http';
 import { GameServer } from './websocket/GameServer';
 import cors from 'cors';
 import path from 'path';
+import { logger } from './utils/logger';
 
-console.log('Starting server initialization...');
+logger.info('Starting server initialization', {
+  component: 'Server',
+  context: {
+    nodeVersion: process.version,
+    platform: process.platform,
+    arch: process.arch
+  }
+});
 
 // Logger middleware
 const requestLogger = (req: express.Request, res: express.Response, next: express.NextFunction) => {
@@ -16,20 +24,28 @@ const requestLogger = (req: express.Request, res: express.Response, next: expres
   }
 
   const start = Date.now();
-  console.log('=== Incoming Request ===');
-  console.log(`Method: ${req.method}`);
-  console.log(`URL: ${req.originalUrl}`);
-  console.log(`Headers:`, req.headers);
-  console.log(`Body:`, req.body);
-  console.log(`Query:`, req.query);
-  console.log('======================');
+  logger.debug('Incoming request', {
+    component: 'HTTP',
+    context: {
+      method: req.method,
+      url: req.originalUrl,
+      headers: req.headers,
+      body: req.body,
+      query: req.query
+    }
+  });
 
   res.on('finish', () => {
     const duration = Date.now() - start;
-    console.log('=== Response Sent ===');
-    console.log(`Status: ${res.statusCode}`);
-    console.log(`Duration: ${duration}ms`);
-    console.log('===================');
+    logger.debug('Response sent', {
+      component: 'HTTP',
+      context: {
+        method: req.method,
+        url: req.originalUrl,
+        status: res.statusCode,
+        duration
+      }
+    });
   });
 
   // Add CORS headers
@@ -46,23 +62,23 @@ const requestLogger = (req: express.Request, res: express.Response, next: expres
   next();
 };
 
-console.log('Creating Express application...');
+logger.info('Creating Express application', { component: 'Server' });
 const app = express();
-console.log('Adding middleware...');
+logger.info('Adding middleware', { component: 'Server' });
 app.use(cors());
 app.use(express.json());
 app.use(requestLogger);
 
 // Simple ping endpoint
 app.get('/ping', (req, res) => {
-  console.log('Ping endpoint called');
+  logger.debug('Ping endpoint called', { component: 'HTTP' });
   res.json({ message: 'pong', timestamp: new Date().toISOString() });
 });
 
 // Info endpoint
 app.get('/info', (req, res) => {
-  console.log('Info endpoint called');
-  res.json({
+  logger.debug('Info endpoint called', { component: 'HTTP' });
+  const info = {
     nodeVersion: process.version,
     platform: process.platform,
     arch: process.arch,
@@ -70,14 +86,19 @@ app.get('/info', (req, res) => {
     uptime: process.uptime(),
     memory: process.memoryUsage(),
     env: process.env.NODE_ENV
-  });
+  };
+  logger.debug('Server info', { component: 'HTTP', data: info });
+  res.json(info);
 });
 
 // Simple test endpoint
 app.get('/test', (req, res) => {
-  console.log(`Test endpoint called. Server ready: ${isServerReady}`);
+  logger.debug('Test endpoint called', {
+    component: 'HTTP',
+    context: { serverReady: isServerReady }
+  });
   if (!isServerReady) {
-    console.log('Server not ready yet, returning 503');
+    logger.warn('Server not ready, returning 503', { component: 'HTTP' });
     res.status(503).json({ 
       status: 'starting',
       message: 'Server is starting...'
@@ -109,79 +130,122 @@ app.get('/health', (req, res) => {
 
 let isServerReady = false;
 
-console.log('Creating HTTP server...');
+logger.info('Creating HTTP server', { component: 'Server' });
 const httpServer = http.createServer(app);
 
 httpServer.on('listening', () => {
-  console.log('HTTP server is now listening');
   const addr = httpServer.address();
-  console.log('Server details:', addr);
+  logger.info('HTTP server is now listening', {
+    component: 'Server',
+    context: { serverDetails: addr }
+  });
 });
 
 // Логирование только критичных событий HTTP-соединений
 httpServer.on('connection', (socket) => {
-  socket.on('error', (err) => console.error('Socket error:', err));
+  socket.on('error', (err) => {
+    logger.error('Socket error', {
+      component: 'Server',
+      context: { socketId: socket.remoteAddress },
+      error: err
+    });
+  });
 });
 
-console.log('Setting up static files...');
+logger.info('Setting up static files', { component: 'Server' });
 // Serve static files from the client build directory
 app.use(express.static(path.join(__dirname, '../../client/dist')));
 
-console.log('Initializing WebSocket server...');
+logger.info('Initializing WebSocket server', { component: 'Server' });
 // Create WebSocket game server and store the instance
 const gameServer = new GameServer(httpServer);
 
 const PORT = process.env.PORT || 3000;
-console.log(`Will listen on port ${PORT}`);
+logger.info('Server configuration', {
+  component: 'Server',
+  context: { port: PORT }
+});
 
 // Log any uncaught errors
 process.on('unhandledRejection', (error: Error) => {
-  console.error('Unhandled Promise Rejection:', error);
-  console.error(error.stack);
+  logger.error('Unhandled Promise Rejection', {
+    component: 'Process',
+    error
+  });
 });
 
 process.on('uncaughtException', (error: Error) => {
-  console.error('Uncaught Exception:', error);
-  console.error(error.stack);
+  logger.error('Uncaught Exception', {
+    component: 'Process',
+    error
+  });
 });
 
 // Add error handler for the http server
 httpServer.on('error', (error: Error) => {
-  console.error('HTTP Server Error:', error);
-  console.error(error.stack);
+  logger.error('HTTP Server Error', {
+    component: 'Server',
+    error
+  });
 });
 
 // Register basic error handlers
 app.use((err: Error, req: express.Request, res: express.Response, next: express.NextFunction) => {
-  console.error('Error handling request:', err);
+  logger.error('Request error', {
+    component: 'HTTP',
+    context: {
+      method: req.method,
+      url: req.originalUrl
+    },
+    error: err
+  });
   res.status(500).json({ error: 'Internal Server Error', message: err.message });
 });
 
 // Register 404 handler
 app.use((req: express.Request, res: express.Response) => {
-  console.log('404 Not Found:', req.originalUrl);
+  logger.warn('404 Not Found', {
+    component: 'HTTP',
+    context: {
+      method: req.method,
+      url: req.originalUrl
+    }
+  });
   res.status(404).json({ error: 'Not Found', message: `Cannot ${req.method} ${req.originalUrl}` });
 });
 
 try {
-  console.log('Starting HTTP server...');
-  console.log('Node version:', process.version);
-  console.log('Platform:', process.platform);
-  console.log('Architecture:', process.arch);
-  console.log('Process ID:', process.pid);
-  console.log('Current directory:', process.cwd());
+  logger.info('Starting HTTP server', {
+    component: 'Server',
+    context: {
+      nodeVersion: process.version,
+      platform: process.platform,
+      arch: process.arch,
+      pid: process.pid,
+      cwd: process.cwd()
+    }
+  });
   
   httpServer.listen(Number(PORT), () => {
-    console.log(`Environment: ${process.env.NODE_ENV}`);
-    console.log(`Process running as: ${process.getuid?.()}`);
-    console.log('Server network interfaces:');
     isServerReady = true;  // Set server as ready after successful start
-    console.log(`🚀 Server is running at http://0.0.0.0:${PORT}`);
-    console.log('Available endpoints:');
-    console.log(`- GET http://localhost:${PORT}/test (test endpoint)`);
-    console.log(`- GET http://localhost:${PORT}/health (health check)`);
+    
+    logger.info('Server started successfully', {
+      component: 'Server',
+      context: {
+        environment: process.env.NODE_ENV,
+        uid: process.getuid?.(),
+        url: `http://0.0.0.0:${PORT}`,
+        endpoints: [
+          `GET http://localhost:${PORT}/test (test endpoint)`,
+          `GET http://localhost:${PORT}/health (health check)`
+        ]
+      }
+    });
   });
 } catch (error) {
-  console.error('Failed to start server:', error);
+  logger.error('Failed to start server', {
+    component: 'Server',
+    error
+  });
   process.exit(1);
 }
