@@ -49,7 +49,28 @@ export const logger = {
   },
 
   error: (message: string, options: LogOptions = {}) => {
-    console.error(formatMessage('error', message, options));
+    const errorData = {
+      ...options,
+      data: {
+        ...(options.data || {}),
+        stack: options.data?.stack || new Error().stack
+      }
+    };
+    console.error(formatMessage('error', message, errorData));
+  },
+
+  errorWithContext: (error: any, context: string, additionalData?: unknown) => {
+    const errorData = {
+      component: context,
+      data: {
+        message: error.message || error,
+        code: error.code,
+        type: error.constructor.name,
+        stack: error.stack,
+        additional: additionalData
+      }
+    };
+    console.error(formatMessage('error', 'Error occurred', errorData));
   },
 
   gameState: (state: unknown, component: string) => {
@@ -122,5 +143,111 @@ export const logger = {
         data
       }));
     }
+  },
+
+  // Enhanced state logging
+  stateManager: {
+    update: (component: string, prevState: unknown, nextState: unknown, action?: string) => {
+      if (DEBUG) {
+        console.debug(formatMessage('debug', 'State update', {
+          component,
+          event: action || 'update',
+          data: {
+            prev: prevState,
+            next: nextState,
+            changes: getStateChanges(prevState, nextState)
+          }
+        }));
+      }
+    },
+
+    transition: (from: string, to: string, trigger: string, context?: unknown) => {
+      if (DEBUG) {
+        console.debug(formatMessage('debug', 'State transition', {
+          component: 'GameStateManager',
+          event: 'transition',
+          data: {
+            from,
+            to,
+            trigger,
+            context
+          }
+        }));
+      }
+    },
+
+    error: (error: unknown, state: unknown, context: string) => {
+      logger.errorWithContext(error, 'GameStateManager', {
+        currentState: state,
+        context
+      });
+    }
+  },
+
+  // Enhanced network logging
+  network: {
+    send: (event: string, data: unknown, meta?: unknown) => {
+      if (DEBUG) {
+        console.debug(formatMessage('debug', 'Network message sent', {
+          component: 'NetworkManager',
+          event,
+          data: {
+            payload: data,
+            meta,
+            timestamp: Date.now()
+          }
+        }));
+      }
+    },
+
+    receive: (event: string, data: unknown, meta?: unknown) => {
+      if (DEBUG) {
+        console.debug(formatMessage('debug', 'Network message received', {
+          component: 'NetworkManager',
+          event,
+          data: {
+            payload: data,
+            meta,
+            timestamp: Date.now()
+          }
+        }));
+      }
+    },
+
+    error: (error: unknown, context: { event?: string; data?: unknown }) => {
+      logger.errorWithContext(error, 'NetworkManager', context);
+    },
+
+    latency: (duration: number, event?: string) => {
+      if (DEBUG) {
+        console.debug(formatMessage('debug', 'Network latency', {
+          component: 'NetworkManager',
+          event: event || 'latency',
+          data: { duration }
+        }));
+      }
+    }
   }
 };
+
+// Utility function to compute state changes
+function getStateChanges(prev: any, next: any): Record<string, { from: any; to: any }> {
+  const changes: Record<string, { from: any; to: any }> = {};
+  
+  if (typeof prev !== 'object' || typeof next !== 'object') {
+    return changes;
+  }
+
+  const allKeys = new Set([...Object.keys(prev), ...Object.keys(next)]);
+  
+  for (const key of allKeys) {
+    if (prev[key] !== next[key]) {
+      changes[key] = {
+        from: prev[key],
+        to: next[key]
+      };
+    }
+  }
+  
+  return changes;
+}

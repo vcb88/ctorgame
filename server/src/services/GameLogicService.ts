@@ -1,3 +1,4 @@
+import { logger } from '../utils/logger';
 import {
   IGameState,
   IGameMove,
@@ -95,23 +96,47 @@ export class GameLogicService {
     position: IPosition,
     playerNumber: Player
   ): IReplaceValidation {
+    const startTime = Date.now();
     const adjacentPositions = getAdjacentPositions(position, board);
     const playerPieces = adjacentPositions.filter(pos => 
       board.cells[pos.y][pos.x] === playerNumber
     );
     
-    return {
+    const validation = {
       position,
       isValid: playerPieces.length >= MIN_ADJACENT_FOR_REPLACE,
       adjacentCount: playerPieces.length,
       adjacentPositions: playerPieces
     };
+
+    logger.game.validation(validation.isValid, 
+      validation.isValid ? 'valid_replace' : 'invalid_replace', 
+      {
+        position,
+        playerNumber,
+        adjacentCount: playerPieces.length,
+        required: MIN_ADJACENT_FOR_REPLACE,
+        duration: Date.now() - startTime
+      }
+    );
+
+    return validation;
   }
 
   /**
    * Применяет ход к текущему состоянию игры
    */
   static applyMove(state: IGameState, move: IGameMove, playerNumber: Player): IGameState {
+    const startTime = Date.now();
+    logger.game.move('applying', move, {
+      playerNumber,
+      state: {
+        currentPlayer: state.currentPlayer,
+        operationsLeft: state.currentTurn.placeOperationsLeft,
+        isFirstTurn: state.isFirstTurn
+      }
+    });
+
     const newState = this.cloneGameState(state);
     const { type, position } = move;
     const { x, y } = position;
@@ -141,6 +166,11 @@ export class GameLogicService {
         
         if (availableReplaces.length > 0) {
           replacementsFound = true;
+          logger.game.move('auto_replace', availableReplaces, {
+            playerNumber,
+            count: availableReplaces.length
+          });
+          
           for (const replaceMove of availableReplaces) {
             const { x: replaceX, y: replaceY } = replaceMove.position;
             newState.board.cells[replaceY][replaceX] = playerNumber;
@@ -161,6 +191,16 @@ export class GameLogicService {
       newState.gameOver = true;
       newState.winner = this.determineWinner(newState.scores);
     }
+
+    const duration = Date.now() - startTime;
+    logger.game.performance('apply_move', duration, {
+      move,
+      playerNumber,
+      replacements: newState.currentTurn.moves.length - state.currentTurn.moves.length - 1,
+      gameOver: newState.gameOver,
+      winner: newState.winner,
+      duration
+    });
 
     return newState;
   }
