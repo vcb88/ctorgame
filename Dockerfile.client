@@ -5,13 +5,18 @@ WORKDIR /app
 # Install pnpm
 RUN npm install -g pnpm@9.15.3
 
-# Copy client files
+# Copy workspace configuration and package files
+COPY pnpm-workspace.yaml ./
+COPY shared/package.json ./shared/
 COPY client/package.json ./client/
+
+# Copy shared module source (needed for workspace dependencies)
+COPY shared/ ./shared/
 
 # Install dependencies
 RUN cd client && pnpm install
 
-# Copy source code
+# Copy client source code
 COPY client/ ./client/
 
 # Set environment
