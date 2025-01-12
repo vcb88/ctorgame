@@ -2,7 +2,8 @@ import {
   GameManagerState,
   IGameState,
   Player,
-  IGameMove
+  IGameMove,
+  GameError
 } from '../shared';
 
 /**
@@ -26,3 +27,23 @@ export type GameManagerStateUpdate = Partial<ExtendedGameManagerState>;
  * Тип для подписчика на изменения состояния
  */
 export type StateSubscriber = (state: ExtendedGameManagerState) => void;
+
+/**
+ * Результат операции присоединения к игре
+ */
+export interface JoinGameResult {
+  /** ID игры */
+  gameId: string;
+  /** Номер игрока */
+  playerNumber: Player;
+}
+
+/**
+ * Ошибка операции присоединения к игре
+ */
+export interface JoinGameError extends GameError {
+  /** Тип операции */
+  operation: 'join';
+  /** ID игры */
+  gameId: string;
+}

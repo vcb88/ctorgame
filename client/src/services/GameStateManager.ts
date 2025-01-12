@@ -20,6 +20,11 @@ export class GameStateManager {
   private static instance: GameStateManager;
   private socket: Socket | null = null;
   private subscribers: Set<StateSubscriber> = new Set();
+  private joinGamePromise: { 
+    resolve: (value: JoinGameResult) => void;
+    reject: (error: JoinGameError) => void;
+    timeout: NodeJS.Timeout;
+  } | null = null;
 
   private state: ExtendedGameManagerState = {
     phase: 'INITIAL',
@@ -53,6 +58,19 @@ export class GameStateManager {
 
     this.socket.on('disconnect', () => {
       this.updateState({ connectionState: 'disconnected' });
+      
+      // Reject pending join promise if exists
+      if (this.joinGamePromise) {
+        const { reject, timeout } = this.joinGamePromise;
+        clearTimeout(timeout);
+        reject({
+          code: 'CONNECTION_LOST',
+          message: 'Connection lost during join operation',
+          operation: 'join',
+          gameId: this.state.gameId || ''
+        } as JoinGameError);
+        this.joinGamePromise = null;
+      }
     });
 
     this.socket.on('connect_error', (error) => {
@@ -73,8 +91,20 @@ export class GameStateManager {
     this.socket.on(WebSocketEvents.GameJoined, (payload: WebSocketPayloads[WebSocketEvents.GameJoined]) => {
       this.updateState({
         gameId: payload.gameId,
-        phase: 'WAITING'
+        phase: 'WAITING',
+        playerNumber: payload.playerNumber
       });
+
+      // Resolve joinGame promise if exists
+      if (this.joinGamePromise) {
+        const { resolve, timeout } = this.joinGamePromise;
+        clearTimeout(timeout);
+        resolve({
+          gameId: payload.gameId,
+          playerNumber: payload.playerNumber
+        });
+        this.joinGamePromise = null;
+      }
     });
 
     this.socket.on(WebSocketEvents.GameStarted, (payload: WebSocketPayloads[WebSocketEvents.GameStarted]) => {
@@ -108,13 +138,25 @@ export class GameStateManager {
     });
 
     this.socket.on(WebSocketEvents.Error, (payload: WebSocketPayloads[WebSocketEvents.Error]) => {
-      this.updateState({
-        error: {
-          code: payload.code,
-          message: payload.message,
-          details: payload.details
-        }
-      });
+      const error = {
+        code: payload.code,
+        message: payload.message,
+        details: payload.details
+      };
+      
+      this.updateState({ error });
+
+      // Reject joinGame promise if exists and error is related to join operation
+      if (this.joinGamePromise && this.state.phase === 'CONNECTING') {
+        const { reject, timeout } = this.joinGamePromise;
+        clearTimeout(timeout);
+        reject({
+          ...error,
+          operation: 'join',
+          gameId: this.state.gameId || ''
+        });
+        this.joinGamePromise = null;
+      }
     });
   }
 
@@ -149,10 +191,48 @@ export class GameStateManager {
     this.socket.emit(WebSocketEvents.CreateGame);
   }
 
-  public joinGame(gameId: string): void {
-    if (!this.socket) return;
-    this.updateState({ phase: 'CONNECTING' });
-    this.socket.emit(WebSocketEvents.JoinGame, { gameId });
+  public joinGame(gameId: string): Promise<JoinGameResult> {
+    if (!this.socket) {
+      return Promise.reject({
+        code: 'CONNECTION_ERROR',
+        message: 'Socket not initialized',
+        operation: 'join',
+        gameId
+      } as JoinGameError);
+    }
+
+    // Clear previous join promise if exists
+    if (this.joinGamePromise) {
+      clearTimeout(this.joinGamePromise.timeout);
+      this.joinGamePromise.reject({
+        code: 'OPERATION_CANCELLED',
+        message: 'Previous join operation cancelled',
+        operation: 'join',
+        gameId
+      } as JoinGameError);
+    }
+
+    return new Promise<JoinGameResult>((resolve, reject) => {
+      // Setup timeout
+      const timeout = setTimeout(() => {
+        if (this.joinGamePromise) {
+          reject({
+            code: 'TIMEOUT',
+            message: 'Join game operation timed out',
+            operation: 'join',
+            gameId
+          } as JoinGameError);
+          this.joinGamePromise = null;
+        }
+      }, 10000); // 10 second timeout
+
+      // Store promise handlers
+      this.joinGamePromise = { resolve, reject, timeout };
+
+      // Update state and emit join event
+      this.updateState({ phase: 'CONNECTING', gameId });
+      this.socket.emit(WebSocketEvents.JoinGame, { gameId });
+    });
   }
 
   public disconnect(): void {
