@@ -21,6 +21,7 @@ export class GameStateManager {
   private state: GameManagerState & {
     gameState: IGameState | null;
     currentPlayer: Player;
+    availableReplaces: IGameMove[];
   } = {
     phase: 'INITIAL',
     gameId: null,
@@ -28,7 +29,8 @@ export class GameStateManager {
     error: null,
     connectionState: 'disconnected',
     gameState: null,
-    currentPlayer: Player.First
+    currentPlayer: Player.First,
+    availableReplaces: []
   };
 
   private constructor() {
@@ -89,7 +91,14 @@ export class GameStateManager {
       this.updateState({
         phase: payload.phase,
         gameState: payload.gameState,
-        currentPlayer: payload.currentPlayer
+        currentPlayer: payload.currentPlayer,
+        availableReplaces: [] // Сбрасываем доступные замены при обновлении состояния
+      });
+    });
+
+    this.socket.on(WebSocketEvents.AvailableReplaces, (payload: WebSocketPayloads[WebSocketEvents.AvailableReplaces]) => {
+      this.updateState({
+        availableReplaces: payload.moves
       });
     });
 

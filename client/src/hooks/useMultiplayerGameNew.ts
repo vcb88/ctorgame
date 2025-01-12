@@ -72,7 +72,7 @@ export const useMultiplayerGameNew = (): UseMultiplayerGameReturn => {
   const gameState = managerState.gameState;
   const currentPlayer = managerState.currentPlayer;
   const isMyTurn = playerNumber === currentPlayer;
-  const availableReplaces = [];
+  const availableReplaces = managerState.availableReplaces;
 
   return {
     // Game state

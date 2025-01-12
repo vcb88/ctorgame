@@ -394,8 +394,14 @@ Each phase can be rolled back independently by:
    ```
 
 ## Migration Status Tracking
-| Component | Status | Notes |
+| Component/Feature | Status | Notes |
 |-----------|--------|-------|
+| GameStateManager | ✅ Done | Basic implementation complete |
+| Socket Handling | ✅ Done | Basic socket events implemented |
+| useGame Hook | ✅ Done | Basic state subscription and actions |
+| useMultiplayerGameNew | 🟡 In Progress | Basic implementation done, needs availableReplaces handling |
+| GameNew Component | 🟡 In Progress | Basic implementation done, needs full game state support |
+| Game State Updates | 🟡 In Progress | Basic updates done, needs proper validation |
 | WaitingRoom | Pending | |
 | GameBoard | Pending | |
 | GameControls | Pending | |
