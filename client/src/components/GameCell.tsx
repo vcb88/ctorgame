@@ -10,6 +10,9 @@ interface GameCellProps {
   isValidMove?: boolean;
   isBeingCaptured?: boolean;
   previousValue?: Player | null;
+  isHighlighted?: boolean;
+  isLastMove?: boolean;
+  currentPlayer?: Player;
 }
 
 export const GameCell: React.FC<GameCellProps> = ({
@@ -20,7 +23,10 @@ export const GameCell: React.FC<GameCellProps> = ({
   onClick,
   isValidMove = false,
   isBeingCaptured = false,
-  previousValue = null
+  previousValue = null,
+  isHighlighted = false,
+  isLastMove = false,
+  currentPlayer
 }) => {
   const shouldShowCaptureAnimation = isBeingCaptured && previousValue !== value;
   return (
@@ -41,14 +47,19 @@ export const GameCell: React.FC<GameCellProps> = ({
           
           // Valid move indicator
           "after:absolute after:inset-0 after:border-2 after:border-dashed": isValidMove,
-          "after:border-cyan-400/50": isValidMove && !disabled,
-          "after:border-red-400/50": isValidMove && disabled,
+          "after:border-cyan-400/50": isValidMove && !disabled && (!currentPlayer || currentPlayer === Player.First),
+          "after:border-red-400/50": (isValidMove && disabled) || (isValidMove && currentPlayer === Player.Second),
           "after:animate-pulse": isValidMove,
           
+          // Highlight effects
+          "ring-2 ring-yellow-400/50": isHighlighted,
+          "ring-4 ring-green-400/50": isLastMove,
+          
           // Hover effects
-          "hover:before:opacity-100 hover:border-cyan-400/50": !disabled,
-          "cursor-not-allowed": disabled,
-          "hover:border-red-400/50": disabled && isValidMove
+          "hover:before:opacity-100": !disabled,
+          "hover:border-cyan-400/50": !disabled && (!currentPlayer || currentPlayer === Player.First),
+          "hover:border-red-400/50": (disabled && isValidMove) || (!disabled && currentPlayer === Player.Second),
+          "cursor-not-allowed": disabled
         }
       )}
     >
