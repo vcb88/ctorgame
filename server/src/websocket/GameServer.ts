@@ -132,15 +132,14 @@ export class GameServer {
 
       // Оборачиваем emit для логирования
       const originalEmit = socket.emit;
-      const wrappedEmit = function<Ev extends WebSocketEvents>(
+      const wrappedEmit = function(
         this: typeof socket,
-        event: Ev,
-        ...args: Parameters<ServerToClientEvents[Ev]>
-      ): ReturnType<ServerToClientEvents[Ev]> {
-        const [payload] = args;
-        logger.websocket.message('out', event, payload, socket.id);
-        return originalEmit.call(this, event, ...args);
-      } as typeof socket.emit;
+        ev: WebSocketEvents,
+        ...args: any[]
+      ): boolean {
+        logger.websocket.message('out', ev, args[0], socket.id);
+        return originalEmit.apply(this, [ev, ...args]);
+      };
       socket.emit = wrappedEmit;
 
       // Оборачиваем room emit для логирования
@@ -148,15 +147,14 @@ export class GameServer {
       this.io.to = (room: string) => {
         const result = originalTo.call(this.io, room);
         const originalRoomEmit = result.emit;
-        result.emit = function<Ev extends WebSocketEvents>(
+        result.emit = function(
           this: typeof result,
-          event: Ev,
-          ...args: Parameters<ServerToClientEvents[Ev]>
-        ): ReturnType<ServerToClientEvents[Ev]> {
-          const [payload] = args;
-          logger.websocket.message('out', event, payload, `room:${room}`);
-          return originalRoomEmit.call(this, event, ...args);
-        } as typeof result.emit;
+          ev: WebSocketEvents,
+          ...args: any[]
+        ): boolean {
+          logger.websocket.message('out', ev, args[0], `room:${room}`);
+          return originalRoomEmit.apply(this, [ev, ...args]);
+        };
         return result;
       };
 
