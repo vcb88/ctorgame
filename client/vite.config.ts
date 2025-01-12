@@ -23,7 +23,7 @@ export default defineConfig({
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),
-      '@ctor-game/shared': path.resolve(__dirname, '../shared/src')
+      '@ctor-game/shared': path.resolve(__dirname, '../shared')
     }
   },
   optimizeDeps: {
