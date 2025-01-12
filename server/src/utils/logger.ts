@@ -1,3 +1,5 @@
+import { ErrorWithStack } from '../types/error';
+
 const DEBUG = true;
 
 type LogLevel = 'debug' | 'info' | 'warn' | 'error';
