@@ -28,7 +28,7 @@ import { redisClient, connectRedis } from '../config/redis';
 import { GameEventResponse } from '../types/events';
 import { WebSocketErrorCode, ErrorResponse } from '../types/connection';
 import { logger } from '../utils/logger';
-import { ErrorWithStack } from '../types/error';
+import { ErrorWithStack, toErrorWithStack } from '../types/error';
 
 const PLAYER_RECONNECT_TIMEOUT = 5 * 60 * 1000; // 5 минут
 
@@ -75,7 +75,7 @@ export class GameServer {
     this.initializeServices().catch(error => {
       logger.error("Critical initialization error", {
         component: 'GameServer',
-        error: error as ErrorWithStack
+        error: toErrorWithStack(error)
       });
       process.exit(1);
     });
@@ -102,7 +102,7 @@ export class GameServer {
     } catch (error) {
       logger.error("Failed to initialize services", {
         component: 'GameServer',
-        error: error as ErrorWithStack
+        error: toErrorWithStack(error)
       });
       throw error;
     }
@@ -181,7 +181,7 @@ export class GameServer {
           logger.error('Error creating game', {
             component: 'GameServer',
             context: { playerId: socket.id },
-            error: error as ErrorWithStack
+            error: toErrorWithStack(error)
           });
           socket.emit(WebSocketEvents.Error, { 
             code: WebSocketErrorCode.SERVER_ERROR,
@@ -269,7 +269,7 @@ export class GameServer {
               playerId: socket.id,
               gameId: gameId
             },
-            error: error as ErrorWithStack
+            error: toErrorWithStack(error)
           });
           socket.emit(WebSocketEvents.Error, { code: WebSocketErrorCode.SERVER_ERROR, message: 'Failed to join game' });
         }
@@ -363,7 +363,7 @@ export class GameServer {
               gameId: gameId,
               move: move
             },
-            error: error as ErrorWithStack
+            error: toErrorWithStack(error)
           });
           socket.emit(WebSocketEvents.Error, { code: WebSocketErrorCode.SERVER_ERROR, message: 'Failed to make move' });
         }
@@ -423,7 +423,7 @@ export class GameServer {
               playerId: socket.id,
               gameId: gameId
             },
-            error: error as ErrorWithStack
+            error: toErrorWithStack(error)
           });
           socket.emit(WebSocketEvents.Error, { code: WebSocketErrorCode.SERVER_ERROR, message: 'Failed to end turn' });
         }
@@ -468,7 +468,7 @@ export class GameServer {
                     playerId: socket.id,
                     gameId: session.gameId
                   },
-                  error: error as ErrorWithStack
+                  error: toErrorWithStack(error)
                 });
               }
             }, PLAYER_RECONNECT_TIMEOUT);
@@ -478,7 +478,7 @@ export class GameServer {
           logger.error('Error handling disconnect', {
             component: 'GameServer',
             context: { playerId: socket.id },
-            error: error as ErrorWithStack
+            error: toErrorWithStack(error)
           });
         }
       });
@@ -535,7 +535,7 @@ export class GameServer {
               playerId: socket.id,
               gameId: gameId
             },
-            error: error as ErrorWithStack
+            error: toErrorWithStack(error)
           });
           socket.emit(WebSocketEvents.Error, {
             code: WebSocketErrorCode.CONNECTION_ERROR,

@@ -2,7 +2,7 @@ import Redis from 'ioredis';
 import * as dotenv from 'dotenv';
 import { ICacheConfig } from '../shared';
 import { logger } from '../utils/logger';
-import { ErrorWithStack } from '../types/error';
+import { ErrorWithStack, toErrorWithStack } from '../types/error';
 
 dotenv.config();
 
@@ -48,7 +48,7 @@ export const connectRedis = async (): Promise<void> => {
     } catch (error) {
         logger.error('Redis connection error', {
             component: 'Redis',
-            error: error as ErrorWithStack
+            error: toErrorWithStack(error)
         });
         throw error;
     }
