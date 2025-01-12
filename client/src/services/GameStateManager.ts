@@ -159,7 +159,7 @@ export class GameStateManager {
     this.socket.on(WebSocketEvents.GameJoined, (payload: WebSocketPayloads[WebSocketEvents.GameJoined]) => {
       this.updateState({
         gameId: payload.gameId,
-        phase: 'WAITING',
+        phase: payload.phase,
         playerNumber: payload.playerNumber,
         connectionState: 'connected'
       });
