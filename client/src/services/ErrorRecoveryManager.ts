@@ -4,7 +4,7 @@ import {
   ErrorSeverity, 
   RecoveryStrategy,
   ErrorRecoveryConfig 
-} from '../../../shared/types/errors';
+} from '@ctor-game/shared/types/errors';
 
 /**
  * Default recovery configurations for different error types

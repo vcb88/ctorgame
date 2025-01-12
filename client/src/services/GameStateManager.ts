@@ -23,11 +23,11 @@ import {
   StateSubscriber
 } from '../types/gameManager';
 import { StateStorage } from './StateStorage';
-import { StorageConfig } from '../../../shared/types/state_storage';
+import { StorageConfig } from '@ctor-game/shared/types/state_storage';
 import { ErrorRecoveryManager } from './ErrorRecoveryManager';
-import { ErrorCode, ErrorSeverity, GameError } from '../../../shared/types/errors';
+import { ErrorCode, ErrorSeverity, GameError } from '@ctor-game/shared/types/errors';
 import { ActionQueue } from './ActionQueue';
-import { GameActionType } from '../../../shared/types/actions';
+import { GameActionType } from '@ctor-game/shared/types/actions';
 
 const DEFAULT_STORAGE_CONFIG: StorageConfig = {
   prefix: 'game_state',
