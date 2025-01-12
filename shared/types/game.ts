@@ -2,6 +2,22 @@ import { IPlayer } from './player.js';
 import { IPosition, IBoard } from './coordinates.js';
 
 /**
+ * Game phase states
+ */
+export enum GamePhase {
+    /** Initial state before game starts */
+    INITIAL = 'INITIAL',
+    /** Waiting for other player */
+    WAITING = 'WAITING',
+    /** Game in progress */
+    PLAYING = 'PLAYING',
+    /** Game finished */
+    FINISHED = 'FINISHED',
+    /** Error state */
+    ERROR = 'ERROR'
+}
+
+/**
  * Player identifiers in the game
  */
 export enum Player {

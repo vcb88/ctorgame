@@ -22,7 +22,7 @@ export enum GameErrorType {
     SERVER = 'SERVER'
 }
 
-export interface GameError {
+export type GameEventError = {
     type: GameErrorType;
     message: string;
     recoverable: boolean;
