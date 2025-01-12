@@ -1,14 +1,12 @@
-// Import WebSocket error types
+// Import types
 import { WebSocketErrorCode } from './types/errors';
-import { GameError } from '@ctor-game/shared/types/errors';
-import { ConnectionState } from '@ctor-game/shared/types/events';
+import { GameError, ConnectionState, GamePhase } from './types/state';
 
 // Re-export validation utilities
 export * from './validation/game';
 export * from './types/connection';
 export { WebSocketErrorCode } from './types/errors';
-
-export type GamePhase = 'INITIAL' | 'CONNECTING' | 'WAITING' | 'PLAYING' | 'GAME_OVER';
+export { GamePhase, ConnectionState, GameError } from './types/state';
 
 export interface GameManagerState {
   phase: GamePhase;
