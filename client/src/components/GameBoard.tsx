@@ -101,7 +101,7 @@ export function GameBoard({
         const prevValue = previousBoardRef.current[rowIndex]?.[colIndex];
         
         // Skip if previous state isn't initialized
-        if (prevValue === undefined) continue;
+        if (prevValue === undefined) return;
         
         // Detect changes
         if (cell !== prevValue) {

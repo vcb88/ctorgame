@@ -455,7 +455,6 @@ export const useMultiplayerGame = () => {
         });
         socket.on(event, handler);
       });
-    }
 
     // Cleanup on unmount only
     return () => {
