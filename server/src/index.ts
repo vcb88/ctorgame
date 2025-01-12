@@ -128,19 +128,11 @@ console.log('Setting up static files...');
 app.use(express.static(path.join(__dirname, '../../client/dist')));
 
 console.log('Initializing WebSocket server...');
-// Create WebSocket game server
-new GameServer(httpServer);
+// Create WebSocket game server and store the instance
+const gameServer = new GameServer(httpServer);
 
 const PORT = process.env.PORT || 3000;
 console.log(`Will listen on port ${PORT}`);
-
-process.on('uncaughtException', (err) => {
-  console.error('Uncaught Exception:', err);
-});
-
-process.on('unhandledRejection', (reason, promise) => {
-  console.error('Unhandled Rejection at:', promise, 'reason:', reason);
-});
 
 // Log any uncaught errors
 process.on('unhandledRejection', (error: Error) => {

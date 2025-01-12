@@ -35,7 +35,15 @@ export class GameServer {
   private gameService: GameService;
   private storageService: GameStorageService;
 
+  private static instance: GameServer | null = null;
+
   constructor(httpServer: HttpServer) {
+    // Реализация паттерна Singleton
+    if (GameServer.instance) {
+      console.log("Returning existing GameServer instance");
+      return GameServer.instance;
+    }
+
     // Очищаем предыдущие экземпляры Socket.IO
     if ((global as any).io) {
       console.log("Cleaning up previous Socket.IO instance");
@@ -57,8 +65,9 @@ export class GameServer {
       maxHttpBufferSize: 1e6,
     });
 
-    // Сохраняем экземпляр для последующей очистки
+    // Сохраняем экземпляры для последующего использования
     (global as any).io = this.io;
+    GameServer.instance = this;
 
     // Инициализируем сервисы
     this.initializeServices().catch(error => {
