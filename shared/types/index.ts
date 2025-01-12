@@ -9,6 +9,7 @@ export * from './replay.js';
 export * from './redis.js';
 export * from './events.js';
 export * from './storage.js';
+export * from './state_storage.js';
 export * from './ai.js';
 
 // Validation utilities are re-exported from src/index.ts
