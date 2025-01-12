@@ -12,10 +12,10 @@
     "emitDecoratorMetadata": true,
     "strictPropertyInitialization": false,
     "composite": true,
+    "isolatedModules": true,
     "baseUrl": ".",
     "paths": {
-      "@ctor-game/shared": ["../shared/src"],
-      "@ctor-game/shared/*": ["../shared/src/*"]
+      "@ctor-game/shared": ["../shared"]
     }
   },
   "include": ["src/**/*"],
@@ -25,5 +25,4 @@
       "path": "../shared"
     }
   ]
-}
 }
