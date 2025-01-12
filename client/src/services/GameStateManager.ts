@@ -9,6 +9,13 @@ import {
   WebSocketPayloads,
   IGameMove
 } from '../shared';
+import {
+  validateStateUpdate,
+  validateStateTransition,
+  validateExtendedGameManagerState,
+  recoverFromValidationError,
+  StateValidationError
+} from '../validation/stateValidation';
 import { createSocket, socketConfig } from './socket';
 import {
   ExtendedGameManagerState,
@@ -161,8 +168,36 @@ export class GameStateManager {
   }
 
   private updateState(partialState: GameManagerStateUpdate): void {
-    this.state = { ...this.state, ...partialState };
-    this.notifySubscribers();
+    try {
+      // Валидация обновления
+      validateStateUpdate(partialState);
+
+      // Проверка перехода состояния
+      validateStateTransition(this.state, partialState);
+
+      // Применяем обновление
+      const newState = { ...this.state, ...partialState };
+
+      // Валидация результирующего состояния
+      validateExtendedGameManagerState(newState);
+
+      // Если все проверки пройдены, обновляем состояние
+      this.state = newState;
+      this.notifySubscribers();
+    } catch (error) {
+      logger.error('State validation error', { error });
+
+      if (error instanceof Error) {
+        const validationError = error as StateValidationError;
+        
+        // Пытаемся восстановить состояние
+        const recovery = recoverFromValidationError(this.state, validationError);
+        
+        // Применяем восстановленное состояние
+        this.state = { ...this.state, ...recovery };
+        this.notifySubscribers();
+      }
+    }
   }
 
   private notifySubscribers(): void {
