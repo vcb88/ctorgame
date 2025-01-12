@@ -135,11 +135,11 @@ export class GameServer {
       const wrappedEmit = function<Ev extends WebSocketEvents>(
         this: typeof socket,
         event: Ev,
-        payload: WebSocketPayloads[Ev],
-        ...args: any[]
-      ): boolean {
+        ...args: Parameters<ServerToClientEvents[Ev]>
+      ): ReturnType<ServerToClientEvents[Ev]> {
+        const [payload] = args;
         logger.websocket.message('out', event, payload, socket.id);
-        return originalEmit.apply(this, [event, payload, ...args]);
+        return originalEmit.call(this, event, ...args);
       } as typeof socket.emit;
       socket.emit = wrappedEmit;
 
@@ -151,11 +151,11 @@ export class GameServer {
         result.emit = function<Ev extends WebSocketEvents>(
           this: typeof result,
           event: Ev,
-          payload: WebSocketPayloads[Ev],
-          ...args: any[]
-        ): boolean {
+          ...args: Parameters<ServerToClientEvents[Ev]>
+        ): ReturnType<ServerToClientEvents[Ev]> {
+          const [payload] = args;
           logger.websocket.message('out', event, payload, `room:${room}`);
-          return originalRoomEmit.apply(this, [event, payload, ...args]);
+          return originalRoomEmit.call(this, event, ...args);
         } as typeof result.emit;
         return result;
       };
