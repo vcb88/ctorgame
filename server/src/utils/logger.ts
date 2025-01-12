@@ -11,17 +11,17 @@ interface GameLogger {
 
 interface StorageLogger {
   operation: (action: string, data: unknown, context?: Record<string, unknown>) => void;
-  error: (error: unknown, context: Record<string, unknown>) => void;
+  error: (error: ErrorWithStack, context: Record<string, unknown>) => void;
 }
 
 interface NetworkLogger {
   socketEvent: (event: string, data: unknown, direction: 'in' | 'out', context: LogOptions['context']) => void;
-  error: (error: unknown, context: Record<string, unknown>) => void;
+  error: (error: ErrorWithStack, context: Record<string, unknown>) => void;
 }
 
 interface DBLogger {
   operation: (action: string, data: unknown, context?: Record<string, unknown>) => void;
-  error: (error: unknown, context: Record<string, unknown>) => void;
+  error: (error: ErrorWithStack, context: Record<string, unknown>) => void;
 }
 
 interface Logger {
@@ -35,6 +35,8 @@ interface Logger {
   db: DBLogger;
 }
 
+type ErrorWithStack = Error | { stack?: string; message?: string; };
+
 interface LogOptions {
   component?: string;
   event?: string;
@@ -46,12 +48,12 @@ interface LogOptions {
     timestamp?: string;
     move?: unknown;
     state?: unknown;
-    error?: unknown;
+    error?: ErrorWithStack;
     duration?: number;
     [key: string]: any;
   };
   results?: unknown;
-  error?: unknown;
+  error?: ErrorWithStack;
   gameState?: unknown;
   connection?: unknown;
   storage?: unknown;
