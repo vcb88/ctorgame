@@ -1,19 +1,10 @@
-// Re-export all types
+// First export types to establish type definitions
 export * from '../types/index.js';
-
-// Re-export utilities
+// Then export utilities that might use these types
 export * from './utils/index.js';
 
 // Export local interfaces
-export interface ReplaceCandidate {
-    /** Position of the cell to be replaced */
-    position: IPosition;
-    /** Whether the replacement is valid */
-    isValid: boolean;
-    /** Number of adjacent pieces that make this replacement possible */
-    adjacentCount: number;
-    /** List of positions that contribute to this replacement */
-    adjacentPositions: IPosition[];
+export interface ReplaceCandidate extends IReplaceValidation {
     /** Calculated priority for this replacement (higher means more important) */
     priority: number;
 }

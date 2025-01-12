@@ -32,25 +32,32 @@ export enum Player {
 }
 
 /**
- * Gets the opponent player
- * @param player Current player
- * @returns Opponent player (First -> Second, Second -> First)
- * @throws If player is None
+ * Possible game outcomes
  */
-export function getOpponent(player: Player): Player {
-    if (player === Player.None) {
-        throw new Error('Cannot get opponent for Player.None');
-    }
-    return player === Player.First ? Player.Second : Player.First;
+export enum GameOutcome {
+    /** Player won the game */
+    Win = 'WIN',
+    /** Player lost the game */
+    Loss = 'LOSS',
+    /** Game ended in a draw */
+    Draw = 'DRAW'
 }
 
 /**
- * Game outcome constants
+ * Represents the game manager state
  */
-export const GameOutcome = {
-    /** Represents a draw (no winner) */
-    Draw: null,
-} as const;
+export interface GameManagerState {
+    /** Current game phase */
+    phase: GamePhase;
+    /** Current game ID or null if not in game */
+    gameId: string | null;
+    /** Player's number in current game or null if not assigned */
+    playerNumber: Player | null;
+    /** Last error if any */
+    error: Error | null;
+    /** Connection state */
+    connectionState: string;
+}
 
 /**
  * Game configuration constants
@@ -94,21 +101,20 @@ export interface ITurnState {
 }
 
 /**
- * Represents players' scores using Player enum
+ * Represents players' scores using both legacy and enum-based fields
  */
 export interface IScores {
+    /** Legacy field for first player score */
+    player1: number;
+    /** Legacy field for second player score */
+    player2: number;
+    /** First player score using enum */
     [Player.First]: number;
+    /** Second player score using enum */
     [Player.Second]: number;
 }
 
-/**
- * Validates if an object matches the IScores interface
- */
-export function isValidScores(scores: any): scores is IScores {
-    return typeof scores === 'object' && scores !== null &&
-           Player.First in scores && Player.Second in scores &&
-           typeof scores[Player.First] === 'number' && typeof scores[Player.Second] === 'number';
-}
+
 
 /**
  * Represents complete game state
