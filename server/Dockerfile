@@ -6,24 +6,19 @@ RUN corepack enable && corepack prepare pnpm@latest --activate
 
 WORKDIR /app
 
-# Copy workspace config
+# Copy workspace configuration files first
 COPY pnpm-workspace.yaml ./
-
-# Copy all package.json and pnpm-lock.yaml files
 COPY package.json pnpm-lock.yaml ./
-COPY shared/package.json ./shared/
-COPY server/package.json ./server/
+COPY tsconfig.base.json ./
 
-# Install dependencies
-RUN pnpm install
-
-# Copy source files
+# Copy shared module
 COPY shared/ ./shared/
+
+# Copy server package files
 COPY server/ ./server/
 
-# Build shared package first
-WORKDIR /app/shared
-RUN pnpm build
+# Install all dependencies
+RUN pnpm install
 
 # Build server
 WORKDIR /app/server
@@ -43,11 +38,13 @@ RUN corepack enable && corepack prepare pnpm@latest --activate
 # Copy workspace config and package files
 COPY --from=builder /app/pnpm-workspace.yaml ./
 COPY --from=builder /app/package.json /app/pnpm-lock.yaml ./
-COPY --from=builder /app/shared/package.json ./shared/
-COPY --from=builder /app/server/package.json ./server/
+COPY --from=builder /app/tsconfig.base.json ./
 
-# Copy built files
-COPY --from=builder /app/shared/dist ./shared/dist
+# Copy shared module (needed for types)
+COPY --from=builder /app/shared ./shared
+
+# Copy server package and built files
+COPY --from=builder /app/server/package.json ./server/
 COPY --from=builder /app/server/dist ./server/dist
 
 # Install production dependencies only
