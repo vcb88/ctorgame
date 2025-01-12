@@ -132,22 +132,29 @@ export class GameServer {
 
       // Логируем все исходящие сообщения через перехват emit
       const originalEmit = socket.emit;
-      socket.emit = function(this: Socket<ClientToServerEvents, ServerToClientEvents>, ev: WebSocketEvents, ...args: any[]) {
+      socket.emit = function<Ev extends WebSocketEvents>(
+        this: Socket<ClientToServerEvents, ServerToClientEvents>,
+        ev: Ev,
+        ...args: Parameters<ServerToClientEvents[Ev]>
+      ) {
         logger.websocket.message('out', ev, args[0], socket.id);
         return originalEmit.apply(this, [ev, ...args]);
-      } as typeof socket.emit;
+      } as any;
 
       // Также перехватываем сообщения для всей комнаты
       const originalRoomEmit = this.io.to;
-      this.io.to = function(this: typeof this.io, room: string) {
+      this.io.to = function(room: string) {
         const result = originalRoomEmit.apply(this, [room]);
         const originalEmit = result.emit;
-        result.emit = function(this: typeof result, ev: WebSocketEvents, ...args: any[]) {
+        result.emit = function<Ev extends WebSocketEvents>(
+          ev: Ev,
+          ...args: Parameters<ServerToClientEvents[Ev]>
+        ) {
           logger.websocket.message('out', ev, args[0], `room:${room}`);
           return originalEmit.apply(this, [ev, ...args]);
-        };
+        } as any;
         return result;
-      } as typeof this.io.to;
+      };
 
       // Добавляем расширенное логирование подключений
       logger.info('New client connection', {
