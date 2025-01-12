@@ -35,7 +35,13 @@ interface Logger {
   db: DBLogger;
 }
 
-type ErrorWithStack = Error | { stack?: string; message?: string; };
+type ErrorWithStack = Error | { 
+  stack?: string; 
+  message?: string; 
+  type?: string;
+  code?: string | number;
+  [key: string]: unknown; 
+};
 
 interface LogOptions {
   component?: string;
@@ -221,14 +227,15 @@ export const logger: Logger = {
     },
 
     error: (error: unknown, context: Record<string, unknown>) => {
+      const errorWithStack = error as ErrorWithStack;
       log('error', formatMessage('error', 'Storage error', {
         component: 'Storage',
         context: {
           ...context,
-          stack: error?.stack,
+          stack: errorWithStack?.stack || 'No stack trace available',
           timestamp: new Date().toISOString()
         },
-        error
+        error: errorWithStack
       }));
     }
   },
@@ -249,14 +256,15 @@ export const logger: Logger = {
     },
 
     error: (error: unknown, context: Record<string, unknown>) => {
+      const errorWithStack = error as ErrorWithStack;
       log('error', formatMessage('error', 'Network error', {
         component: 'Network',
         context: {
           ...context,
-          stack: error?.stack,
+          stack: errorWithStack?.stack || 'No stack trace available',
           timestamp: new Date().toISOString()
         },
-        error
+        error: errorWithStack
       }));
     }
   },
@@ -276,14 +284,15 @@ export const logger: Logger = {
     },
 
     error: (error: unknown, context: Record<string, unknown>) => {
+      const errorWithStack = error as ErrorWithStack;
       log('error', formatMessage('error', 'Database error', {
         component: 'Database',
         context: {
           ...context,
-          stack: error?.stack,
+          stack: errorWithStack?.stack || 'No stack trace available',
           timestamp: new Date().toISOString()
         },
-        error
+        error: errorWithStack
       }));
     }
   }
