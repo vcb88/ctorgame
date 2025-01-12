@@ -113,8 +113,8 @@ export function validateStateTransition(
       'INITIAL': ['CONNECTING'],
       'CONNECTING': ['WAITING', 'INITIAL'],
       'WAITING': ['PLAYING', 'INITIAL', 'CONNECTING'],
-      'PLAYING': ['FINISHED', 'ERROR'],
-      'FINISHED': ['INITIAL'],
+      'PLAYING': ['GAME_OVER', 'ERROR'],
+      'GAME_OVER': ['INITIAL'],
       'ERROR': ['INITIAL']
     };
 
