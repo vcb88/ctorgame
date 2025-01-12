@@ -130,29 +130,33 @@ export class GameServer {
         logger.websocket.message('in', eventName, args[0], socket.id);
       });
 
-      // Логируем все исходящие сообщения через перехват emit
+      // Оборачиваем emit для логирования
       const originalEmit = socket.emit;
-      socket.emit = function<Ev extends WebSocketEvents>(
-        this: Socket<ClientToServerEvents, ServerToClientEvents>,
-        ev: Ev,
-        ...args: Parameters<ServerToClientEvents[Ev]>
+      const wrappedEmit = function(
+        this: typeof socket,
+        event: string,
+        payload: any,
+        ...args: any[]
       ) {
-        logger.websocket.message('out', ev, args[0], socket.id);
-        return originalEmit.apply(this, [ev, ...args]);
-      } as any;
+        logger.websocket.message('out', event, payload, socket.id);
+        return originalEmit.apply(this, [event, payload, ...args]);
+      };
+      socket.emit = wrappedEmit;
 
-      // Также перехватываем сообщения для всей комнаты
-      const originalRoomEmit = this.io.to;
-      this.io.to = function(room: string) {
-        const result = originalRoomEmit.apply(this, [room]);
-        const originalEmit = result.emit;
-        result.emit = function<Ev extends WebSocketEvents>(
-          ev: Ev,
-          ...args: Parameters<ServerToClientEvents[Ev]>
+      // Оборачиваем room emit для логирования
+      const originalTo = this.io.to;
+      this.io.to = (room: string) => {
+        const result = originalTo.call(this.io, room);
+        const originalRoomEmit = result.emit;
+        result.emit = function(
+          this: typeof result,
+          event: string,
+          payload: any,
+          ...args: any[]
         ) {
-          logger.websocket.message('out', ev, args[0], `room:${room}`);
-          return originalEmit.apply(this, [ev, ...args]);
-        } as any;
+          logger.websocket.message('out', event, payload, `room:${room}`);
+          return originalRoomEmit.apply(this, [event, payload, ...args]);
+        };
         return result;
       };
 
