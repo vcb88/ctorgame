@@ -16,27 +16,27 @@ declare global {
 
 let socket: Socket | null = null;
 
-export function getSocket(): Socket {
+export const socketConfig = {
+  transports: ['websocket', 'polling'],
+  autoConnect: true,
+  reconnection: true,
+  reconnectionAttempts: 5,
+  reconnectionDelay: 1000,
+  reconnectionDelayMax: 5000,
+  timeout: 10000,
+  path: '/socket.io/',
+  forceNew: true
+};
+
+export function createSocket(config = socketConfig): Socket {
   if (!socket) {
     // В режиме разработки используем текущий хост, так как Vite проксирует запросы
     const wsUrl = window.location.origin;
     
-    const socketConfig = {
-      transports: ['websocket', 'polling'],
-      autoConnect: true,
-      reconnection: true,
-      reconnectionAttempts: 5,
-      reconnectionDelay: 1000,
-      reconnectionDelayMax: 5000,
-      timeout: 10000,
-      path: '/socket.io/',
-      forceNew: true
-    };
-
     console.log('Creating socket connection to:', wsUrl);
-    console.log('Socket configuration:', socketConfig);
+    console.log('Socket configuration:', config);
 
-    socket = io(wsUrl, socketConfig);
+    socket = io(wsUrl, config);
 
     // Логирование событий сокета
     socket.on('connect', () => console.log('Socket connected:', socket?.id));
@@ -45,6 +45,11 @@ export function getSocket(): Socket {
     socket.on('reconnect', (attempt) => console.log('Socket reconnected after attempt:', attempt));
   }
   return socket;
+}
+
+// Экспортируем getSocket для обратной совместимости
+export function getSocket(): Socket {
+  return createSocket();
 }
 
 // Экспортируем socket для использования в тестах
