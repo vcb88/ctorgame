@@ -409,13 +409,13 @@ export function registerGameHandlers(
                     eventId: generateEventId()
                 });
             } else {
-                socket.to(gameId).emit(WebSocketEvents.StateUpdated, {
+                socket.to(gameId).emit(WebSocketEvents.GameStateUpdated, {
                     gameState: updatedState,
                     lastMove: move,
                     eventId: generateEventId()
                 });
 
-                socket.emit(WebSocketEvents.StateUpdated, {
+                socket.emit(WebSocketEvents.GameStateUpdated, {
                     gameState: updatedState,
                     lastMove: move,
                     eventId: generateEventId()
