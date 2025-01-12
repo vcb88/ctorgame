@@ -409,84 +409,71 @@ Each phase can be rolled back independently by:
 | State Transitions | Validation and error handling |
 | State Recovery | Automatic recovery from validation errors |
 | WaitingRoom Migration | Complete with Promise support and error handling |
+| Storage Layer | Complete with localStorage implementation |
+| Auto-Save | Implemented for meaningful game states |
+| Cleanup | Implemented for disconnects and errors |
+| Recovery | Basic recovery from storage implemented |
 
 ### In Progress 🟡
 | Feature | Status | Next Steps |
 |---------|--------|------------|
-| Local Storage | 15% | Implement state persistence layer |
 | Error Recovery | 85% | Add global error handler |
 | Component Migration | 40% | Start GameNew migration |
-| State Persistence | 10% | Design storage structure |
+| Error Handling | 70% | Add error recovery strategies |
 
 ### Pending Tasks ⏳
 | Task | Priority | Dependencies |
 |------|----------|--------------|
-| Race Condition Handling | Medium | Local Storage |
+| Race Condition Handling | Medium | Error Recovery |
 | Server Integration | Low | Client Migration |
-| Component Tests | High | Component Migration |
+| Component Tests | Low | MVP Completion |
 | Performance Optimization | Low | Core Features |
 
 ### Component Migration Status
 | Component | Status | Blocking Issues |
 |-----------|--------|----------------|
 | WaitingRoom | ✅ Done | None |
-| GameNew | 🟡 In Progress | Local Storage Integration |
+| GameNew | 🟡 In Progress | Error Handling |
 | GameBoard | ⏳ Pending | GameNew Completion |
 | GameControls | ⏳ Pending | GameBoard Completion |
 
-### State Persistence Plan
-| Feature | Priority | Status |
-|---------|----------|---------|
-| Storage Layer | High | Planning |
-| Version Control | High | Planning |
-| Migration System | Medium | Not Started |
-| Auto-Save | High | Not Started |
-| Cleanup | Low | Not Started |
-| Recovery | High | Not Started |
+### State Management Next Steps
+| Feature | Priority | Status | Notes |
+|---------|----------|---------|-------|
+| Error Recovery Strategies | High | Planning | Need more robust error handling |
+| Race Condition Prevention | Medium | Planning | Add operation queueing |
+| Component Error States | High | Planning | Handle component-level errors |
 
 ### Next Priority Tasks
-1. Local Storage Implementation
-   - Add state persistence layer:
-     ```typescript
-     interface StorageConfig {
-       prefix: string;
-       ttl: number;
-       version: string;
-     }
+1. Error Recovery Improvements
+   - Add global error handler for critical errors
+   - Improve error logging and reporting
+   - Add automatic retry mechanism for recoverable errors
+   - Handle component-level errors
+   ```typescript
+   class ErrorRecoveryManager {
+     handleError(error: GameError): void;
+     shouldRetry(error: GameError): boolean;
+     getRecoveryStrategy(error: GameError): RecoveryStrategy;
+   }
+   ```
 
-     class StateStorage {
-       saveState(key: string, state: any): void;
-       loadState<T>(key: string): T | null;
-       cleanupExpired(): void;
-     }
-     ```
-   - Implement state versioning:
-     ```typescript
-     interface StoredState<T> {
-       version: string;
-       timestamp: number;
-       data: T;
-     }
-     ```
-   - Add migration strategies for старых версий:
-     ```typescript
-     type MigrationStrategy = (oldState: any) => ExtendedGameManagerState;
-     ```
-   - Добавить механизм очистки устаревших данных
-   - Реализовать автоматическое сохранение при изменениях
-   - Добавить восстановление состояния при инициализации
-   - Создать тесты для хранилища
+2. Race Condition Prevention
+   - Add operation queueing for game actions:
+   ```typescript
+   class ActionQueue {
+     queue: GameAction[];
+     pending: boolean;
+     enqueue(action: GameAction): void;
+     processQueue(): Promise<void>;
+   }
+   ```
 
-2. GameNew Component Migration
-   - Обновить для использования GameStateManager
-   - Добавить восстановление состояния
-   - Улучшить обработку ошибок
-   - Добавить индикаторы загрузки
-
-3. Error Recovery Improvements
-   - Добавить глобальный обработчик ошибок
-   - Улучшить логирование
-   - Добавить механизм автоматических повторных попыток
+3. GameNew Component Migration
+   - Update to use GameStateManager
+   - Add error states handling
+   - Add loading indicators
+   - Handle state transitions
 
 ## Future Considerations
 1. State persistence improvements
