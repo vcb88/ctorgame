@@ -132,15 +132,15 @@ export class GameServer {
 
       // Оборачиваем emit для логирования
       const originalEmit = socket.emit;
-      const wrappedEmit = function(
+      const wrappedEmit = function<Ev extends WebSocketEvents>(
         this: typeof socket,
-        event: string,
-        payload: any,
+        event: Ev,
+        payload: WebSocketPayloads[Ev],
         ...args: any[]
-      ) {
+      ): boolean {
         logger.websocket.message('out', event, payload, socket.id);
         return originalEmit.apply(this, [event, payload, ...args]);
-      };
+      } as typeof socket.emit;
       socket.emit = wrappedEmit;
 
       // Оборачиваем room emit для логирования
@@ -148,15 +148,15 @@ export class GameServer {
       this.io.to = (room: string) => {
         const result = originalTo.call(this.io, room);
         const originalRoomEmit = result.emit;
-        result.emit = function(
+        result.emit = function<Ev extends WebSocketEvents>(
           this: typeof result,
-          event: string,
-          payload: any,
+          event: Ev,
+          payload: WebSocketPayloads[Ev],
           ...args: any[]
-        ) {
+        ): boolean {
           logger.websocket.message('out', event, payload, `room:${room}`);
           return originalRoomEmit.apply(this, [event, payload, ...args]);
-        };
+        } as typeof result.emit;
         return result;
       };
 
