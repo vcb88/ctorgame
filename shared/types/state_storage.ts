@@ -1,4 +1,4 @@
-import { GamePhase } from './game';
+import { GamePhase } from './base.js';
 
 /**
  * Configuration for state storage system

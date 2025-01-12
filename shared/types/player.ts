@@ -1,4 +1,5 @@
-import { IGameState, Player } from './game';
+import { Player } from './base.js';
+import type { IGameState } from './game.js';
 
 export interface IPlayer {
     id: string;

@@ -1,4 +1,5 @@
-import { IGameState, IGameMove, GamePhase } from './game';
+import { GamePhase } from './base.js';
+import type { IGameState, IGameMove } from './game.js';
 import { WebSocketErrorCode } from './events';
 
 // WebSocket события

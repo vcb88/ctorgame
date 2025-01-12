@@ -1,19 +1,27 @@
-// Re-export base types
+// Re-export base types and enums
 export {
     Player,
     GamePhase,
     GameOutcome,
-    IPosition,
-    IBoardSize,
-    IBoard,
     BOARD_SIZE,
     MIN_ADJACENT_FOR_REPLACE,
     MAX_PLACE_OPERATIONS
 } from './base.js';
 
-// Re-export game types
+// Re-export base interfaces
+export type {
+    IPosition,
+    IBoardSize,
+    IBoard
+} from './base.js';
+
+// Re-export game enum
 export {
-    OperationType,
+    OperationType
+} from './game.js';
+
+// Re-export game interfaces
+export type {
     IGameMove,
     IReplaceValidation,
     GameManagerState,
@@ -22,8 +30,8 @@ export {
     IGameState
 } from './game.js';
 
-// Re-export player types
-export {
+// Re-export player interfaces
+export type {
     IPlayer,
     IGameRoom
 } from './player.js';
