@@ -1,4 +1,4 @@
-import { IGameState, IGameMove } from './game';
+import { IGameState, IGameMove, GamePhase } from './game';
 
 // WebSocket события
 export enum WebSocketEvents {
@@ -47,15 +47,18 @@ export interface WebSocketPayloads {
     [WebSocketEvents.GameJoined]: {
         gameId: string;
         eventId: string;
+        phase: GamePhase;
     };
     [WebSocketEvents.GameStarted]: {
         gameState: IGameState;
         currentPlayer: number;
         eventId: string;
+        phase: GamePhase;
     };
     [WebSocketEvents.GameStateUpdated]: {
         gameState: IGameState;
         currentPlayer: number;
+        phase: GamePhase;
     };
     [WebSocketEvents.AvailableReplaces]: {
         moves: IGameMove[];
