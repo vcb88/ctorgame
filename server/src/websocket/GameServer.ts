@@ -28,6 +28,7 @@ import { redisClient, connectRedis } from '../config/redis';
 import { GameEventResponse } from '../types/events';
 import { WebSocketErrorCode, ErrorResponse } from '../types/connection';
 import { logger } from '../utils/logger';
+import { ErrorWithStack } from '../types/error';
 
 const PLAYER_RECONNECT_TIMEOUT = 5 * 60 * 1000; // 5 минут
 
