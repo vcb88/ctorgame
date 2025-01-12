@@ -68,7 +68,7 @@ export const useMultiplayerGameNew = (): UseMultiplayerGameReturn => {
 
   // Get extended state from GameStateManager
   const manager = GameStateManager.getInstance();
-  const managerState = manager.getState() as any; // TODO: update types in next iteration
+  const managerState = manager.getState();
   const gameState = managerState.gameState;
   const currentPlayer = managerState.currentPlayer;
   const isMyTurn = playerNumber === currentPlayer;

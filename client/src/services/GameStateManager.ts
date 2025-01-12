@@ -1,28 +1,27 @@
 import { Socket } from 'socket.io-client';
 import {
-  GameManagerState,
   GamePhase,
   Player,
   ConnectionState,
   GameError,
   WebSocketEvents,
   IGameState,
-  WebSocketPayloads
+  WebSocketPayloads,
+  IGameMove
 } from '../shared';
 import { createSocket, socketConfig } from './socket';
-
-type StateSubscriber = (state: GameManagerState) => void;
+import {
+  ExtendedGameManagerState,
+  GameManagerStateUpdate,
+  StateSubscriber
+} from '../types/gameManager';
 
 export class GameStateManager {
   private static instance: GameStateManager;
   private socket: Socket | null = null;
   private subscribers: Set<StateSubscriber> = new Set();
 
-  private state: GameManagerState & {
-    gameState: IGameState | null;
-    currentPlayer: Player;
-    availableReplaces: IGameMove[];
-  } = {
+  private state: ExtendedGameManagerState = {
     phase: 'INITIAL',
     gameId: null,
     playerNumber: null,
@@ -119,7 +118,7 @@ export class GameStateManager {
     });
   }
 
-  private updateState(partialState: Partial<GameManagerState>): void {
+  private updateState(partialState: GameManagerStateUpdate): void {
     this.state = { ...this.state, ...partialState };
     this.notifySubscribers();
   }
@@ -139,7 +138,7 @@ export class GameStateManager {
     };
   }
 
-  public getState(): GameManagerState {
+  public getState(): ExtendedGameManagerState {
     return this.state;
   }
 
