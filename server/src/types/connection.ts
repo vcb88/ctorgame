@@ -1,4 +1,4 @@
-import { WebSocketErrorCode, ErrorResponse } from './errors';
+import { WebSocketErrorCode, ErrorResponse } from '../shared';
 
 export { WebSocketErrorCode, ErrorResponse };
 

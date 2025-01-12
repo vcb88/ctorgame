@@ -1,12 +1,10 @@
-// Import types
-import { WebSocketErrorCode } from './types/errors';
-import { GameError, ConnectionState, GamePhase } from './types/state';
+// Re-export all shared types
 
 // Re-export validation utilities
 export * from './validation/game';
 export * from './types/connection';
-export { WebSocketErrorCode } from './types/errors';
-export { GamePhase, ConnectionState, GameError } from './types/state';
+// Re-export types from @ctor-game/shared
+export * from '@ctor-game/shared';
 
 export interface GameManagerState {
   phase: GamePhase;
