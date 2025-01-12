@@ -1,8 +1,16 @@
-import { useCallback } from 'react';
+import { useCallback, useState } from 'react';
 import { useGame } from './useGame';
-import { OperationType, Player, IGameState, ConnectionState } from '../shared';
+import { 
+  OperationType, 
+  Player, 
+  IGameState, 
+  ConnectionState,
+  GameActionType,
+  ErrorCode,
+  ErrorSeverity,
+  GameError
+} from '../shared';
 import { GameStateManager } from '../services/GameStateManager';
-import { GameError } from '../types/connection';
 import { validateGameMove } from '../validation/game';
 import { logger } from '../utils/logger';
 
@@ -13,17 +21,21 @@ export interface UseMultiplayerGameReturn {
   gameState: IGameState | null;
   currentPlayer: Player;
   isMyTurn: boolean;
-  availableReplaces: [];  // TODO: implement in next iteration
-  
+  availableReplaces: [];
+
   // Connection state
   connectionState: ConnectionState;
   error: GameError | null;
-  
+
+  // Operation state
+  loading: boolean;
+  operationInProgress: GameActionType | null;
+
   // Actions
-  createGame: () => void;
-  joinGame: (gameId: string) => Promise<boolean>;
-  makeMove: (x: number, y: number, type?: OperationType) => void;
-  endTurn: () => void;
+  createGame: () => Promise<void>;
+  joinGame: (gameId: string) => Promise<void>;
+  makeMove: (x: number, y: number, type?: OperationType) => Promise<void>;
+  endTurn: () => Promise<void>;
   
   // Computed
   isConnected: boolean;
@@ -34,36 +46,80 @@ export interface UseMultiplayerGameReturn {
 }
 
 export const useMultiplayerGameNew = (): UseMultiplayerGameReturn => {
-  const { state, createGame: createGameBase, joinGame: joinGameBase } = useGame();
+  const { state } = useGame();
+  const [loading, setLoading] = useState(false);
+  const [operationInProgress, setOperationInProgress] = useState<GameActionType | null>(null);
 
-  const makeMove = useCallback((x: number, y: number, type: OperationType = OperationType.PLACE) => {
+  const handleOperation = async <T extends any>(
+    operation: () => Promise<T>,
+    actionType: GameActionType
+  ): Promise<T> => {
+    try {
+      setLoading(true);
+      setOperationInProgress(actionType);
+      const result = await operation();
+      return result;
+    } finally {
+      setLoading(false);
+      setOperationInProgress(null);
+    }
+  };
+
+  const createGame = useCallback(async () => {
+    const manager = GameStateManager.getInstance();
+    await handleOperation(
+      () => manager.createGame(),
+      GameActionType.CREATE_GAME
+    );
+  }, []);
+
+  const joinGame = useCallback(async (gameId: string) => {
+    const manager = GameStateManager.getInstance();
+    await handleOperation(
+      () => manager.joinGame(gameId),
+      GameActionType.JOIN_GAME
+    );
+  }, []);
+
+  const makeMove = useCallback(async (x: number, y: number, type: OperationType = OperationType.PLACE) => {
     const manager = GameStateManager.getInstance();
     const move = { type, position: { x, y } };
 
     // Базовая валидация перед отправкой
-    if (gameState && !validateGameMove(move, gameState.board.size)) {
+    if (!managerState.gameState || !validateGameMove(move, managerState.gameState.board.size)) {
       logger.debug('Invalid move attempted', {
         component: 'useMultiplayerGameNew',
-        data: { move, boardSize: gameState.board.size }
+        data: { move, boardSize: managerState.gameState?.board.size }
       });
-      return;
+
+      throw {
+        code: ErrorCode.INVALID_MOVE,
+        message: 'Invalid move',
+        severity: ErrorSeverity.MEDIUM,
+        details: { move }
+      } as GameError;
     }
 
-    manager.makeMove(move);
-  }, [gameState]);
+    await handleOperation(
+      () => manager.makeMove(move),
+      GameActionType.MAKE_MOVE
+    );
+  }, [managerState.gameState]);
 
-  const endTurn = useCallback(() => {
+  const endTurn = useCallback(async () => {
     const manager = GameStateManager.getInstance();
-    manager.endTurn();
+    await handleOperation(
+      () => manager.endTurn(),
+      GameActionType.END_TURN
+    );
   }, []);
 
-  // Map new state to old interface
+  // Map state
   const {
     gameId,
     playerNumber,
     connectionState,
     error,
-    phase
   } = state;
 
   // Get extended state from GameStateManager
@@ -73,6 +129,17 @@ export const useMultiplayerGameNew = (): UseMultiplayerGameReturn => {
   const currentPlayer = managerState.currentPlayer;
   const isMyTurn = playerNumber === currentPlayer;
   const availableReplaces = managerState.availableReplaces;
+
+  const isRetryable = error && [
+    ErrorCode.CONNECTION_ERROR,
+    ErrorCode.CONNECTION_TIMEOUT,
+    ErrorCode.OPERATION_TIMEOUT
+  ].includes(error.code);
+
+  const isRecoverable = error && [
+    ErrorCode.CONNECTION_LOST,
+    ErrorCode.STATE_VALIDATION_ERROR
+  ].includes(error.code);
 
   return {
     // Game state
@@ -87,12 +154,13 @@ export const useMultiplayerGameNew = (): UseMultiplayerGameReturn => {
     connectionState,
     error,
     
+    // Operation state
+    loading,
+    operationInProgress,
+
     // Actions
-    createGame: createGameBase,
-    joinGame: (id: string) => {
-      joinGameBase(id);
-      return Promise.resolve(true); // TODO: implement proper promise in next iteration
-    },
+    createGame,
+    joinGame,
     makeMove,
     endTurn,
     
@@ -100,7 +168,7 @@ export const useMultiplayerGameNew = (): UseMultiplayerGameReturn => {
     isConnected: connectionState === 'connected',
     isConnecting: connectionState === 'connecting',
     isError: connectionState === 'error',
-    canRetry: error?.retryable || false,
-    canRecover: error?.recoverable || false
+    canRetry: isRetryable,
+    canRecover: isRecoverable
   };
 };
