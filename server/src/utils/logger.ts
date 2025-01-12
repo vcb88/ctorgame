@@ -37,13 +37,6 @@ interface Logger {
   db: DBLogger;
 }
 
-type ErrorWithStack = Error | { 
-  stack?: string; 
-  message?: string; 
-  type?: string;
-  code?: string | number;
-  [key: string]: unknown; 
-};
 
 interface LogOptions {
   component?: string;
