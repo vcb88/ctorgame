@@ -6,7 +6,7 @@ import { Navbar } from './components/Navbar';
 import { LandingPage } from './pages/LandingPage';
 import { CreateGame } from './pages/CreateGame';
 import { JoinGame } from './pages/JoinGame';
-import { WaitingRoom } from './pages/WaitingRoom';
+import { WaitingRoomNew as WaitingRoom } from './pages/WaitingRoomNew';
 import { GameBoard } from './pages/GameBoard';
 import { GameHistory } from './pages/GameHistory';
 import { GameRules } from './pages/GameRules';
