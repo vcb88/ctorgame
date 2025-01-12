@@ -160,7 +160,8 @@ export class GameStateManager {
       this.updateState({
         gameId: payload.gameId,
         phase: 'WAITING',
-        playerNumber: payload.playerNumber
+        playerNumber: payload.playerNumber,
+        connectionState: 'connected'
       });
 
       // Resolve joinGame promise if exists
