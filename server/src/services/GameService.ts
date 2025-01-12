@@ -6,7 +6,7 @@ import {
     GameMetadata,
     Player,
     IScores
-} from '../shared';
+} from '@ctor-game/shared';
 import { GameLogicService } from './GameLogicService';
 import { logger } from '../utils/logger';
 import { toErrorWithStack } from '../types/error';

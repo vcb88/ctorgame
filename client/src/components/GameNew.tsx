@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useMultiplayerGameNew } from '../hooks/useMultiplayerGameNew.v2';
-import { OperationType, Player, GameActionType, ErrorCode } from '../shared';
+import { OperationType, Player, GameActionType, ErrorCode } from '@ctor-game/shared';
 import { cn } from '@/lib/utils';
 import { GameCell } from './GameCell';
 import { logger } from '../utils/logger';

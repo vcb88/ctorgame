@@ -9,7 +9,7 @@ import {
   ErrorCode,
   ErrorSeverity,
   GameError
-} from '../shared';
+} from '@ctor-game/shared';
 import { GameStateManager } from '../services/GameStateManager';
 import { validateGameMove } from '../validation/game';
 import { logger } from '../utils/logger';

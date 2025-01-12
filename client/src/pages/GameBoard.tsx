@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useMultiplayerGame } from '@/hooks/useMultiplayerGame';
-import { OperationType } from '@/shared';
+import { OperationType } from '@ctor-game/shared';
 import { GameCell } from '@/components/GameCell';
 import { TurnTimer } from '@/components/TurnTimer';
 import { DisconnectionOverlay } from '@/components/modals/DisconnectionOverlay';

@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { GameCell } from './GameCell';
-import { IPosition, Player, OperationType } from '../shared';
+import { IPosition, Player, OperationType } from '@ctor-game/shared';
 import { GameError } from '../types/connection';
 import { GameActionType } from '../types/actions';
 import { logger } from '../utils/logger';

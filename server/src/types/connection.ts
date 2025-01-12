@@ -1,4 +1,4 @@
-import { WebSocketErrorCode, ErrorResponse } from '../shared';
+import { WebSocketErrorCode, ErrorResponse } from '@ctor-game/shared';
 
 export { WebSocketErrorCode, ErrorResponse };
 

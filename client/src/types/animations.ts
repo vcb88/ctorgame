@@ -1,4 +1,4 @@
-import { IPosition, Player } from '../shared';
+import { IPosition, Player } from '@ctor-game/shared';
 
 export interface AnimationState {
   type: AnimationType;

@@ -8,7 +8,7 @@ import {
   IGameState,
   WebSocketPayloads,
   IGameMove
-} from '../shared';
+} from '@ctor-game/shared';
 import {
   validateStateUpdate,
   validateStateTransition,
@@ -23,11 +23,11 @@ import {
   StateSubscriber
 } from '../types/gameManager';
 import { StateStorage } from './StateStorage';
-import { StorageConfig } from '../shared';
+import { StorageConfig } from '@ctor-game/shared';
 import { ErrorRecoveryManager } from './ErrorRecoveryManager';
 import { ErrorCode, ErrorSeverity, GameError } from '../types/errors';
 import { ActionQueue } from './ActionQueue';
-import { GameActionType } from '../shared';
+import { GameActionType } from '@ctor-game/shared';
 
 const DEFAULT_STORAGE_CONFIG: StorageConfig = {
   prefix: 'game_state',

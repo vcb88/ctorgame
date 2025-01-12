@@ -11,8 +11,8 @@ import {
   ServerToClientEvents,
   Player,
   getOpponent
-} from '../shared';
-import { validateGameMove, validateGameState } from '../shared';
+} from '@ctor-game/shared';
+import { validateGameMove, validateGameState } from '@ctor-game/shared';
 import {
   ConnectionState,
   GameError,

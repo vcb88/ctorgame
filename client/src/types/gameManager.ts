@@ -4,7 +4,7 @@ import {
   Player,
   IGameMove,
   GameError
-} from '../shared';
+} from '@ctor-game/shared';
 
 /**
  * Расширенное состояние GameStateManager, включающее игровые данные

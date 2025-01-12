@@ -15,7 +15,7 @@ import {
   getAdjacentPositions,
   IReplaceValidation,
   IScores
-} from '../shared';
+} from '@ctor-game/shared';
 
 export class GameLogicService {
   /**

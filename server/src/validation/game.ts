@@ -1,4 +1,4 @@
-import { IGameMove, IGameState, IPosition, IBoardSize, Player } from '../shared';
+import { IGameMove, IGameState, IPosition, IBoardSize, Player } from '@ctor-game/shared';
 
 export function validatePosition(pos: IPosition, size: IBoardSize): boolean {
   return (

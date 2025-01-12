@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { Player } from '@/shared';
+import { Player } from '@ctor-game/shared';
 import {
   validateGameState,
   validateExtendedGameManagerState,

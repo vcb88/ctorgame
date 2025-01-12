@@ -6,7 +6,7 @@ import {
   isValidGamePhase,
   isValidGameManagerState,
   isValidScores
-} from '../shared';
+} from '@ctor-game/shared';
 import { ExtendedGameManagerState, GameManagerStateUpdate } from '../types/gameManager';
 import { logger } from '@/utils/logger';
 

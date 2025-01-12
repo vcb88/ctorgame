@@ -13,7 +13,7 @@ import {
   validateGameState,
   isValidScores,
   GameMetadata
-} from '../../shared';
+} from '@ctor-game/shared';
 import { GameEventResponse } from '../../types/events';
 import { WebSocketErrorCode } from '../../types/errors';
 import { logger } from '../../utils/logger';

@@ -1,4 +1,4 @@
-import { IGameState, IGameMove, WebSocketEvents } from '../shared';
+import { IGameState, IGameMove, WebSocketEvents } from '@ctor-game/shared';
 
 export enum GameEventType {
     MOVE = 'move',

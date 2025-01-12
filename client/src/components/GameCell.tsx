@@ -1,5 +1,5 @@
 import { cn } from '@/lib/utils';
-import { BOARD_SIZE, Player } from '../shared';
+import { BOARD_SIZE, Player } from '@ctor-game/shared';
 import { CellAnimationState, AnimationType } from '../types/animations';
 
 interface GameCellProps {

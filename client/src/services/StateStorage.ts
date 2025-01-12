@@ -1,4 +1,4 @@
-import { StorageConfig, StoredState, IStateStorage } from '../../../shared/types/state_storage';
+import { StorageConfig, StoredState, IStateStorage } from '@ctor-game/shared';
 
 /**
  * Implementation of state storage using localStorage

@@ -1,6 +1,6 @@
 import React from 'react';
 import { cn } from '@/lib/utils';
-import { Player, GameOutcome } from '../shared';
+import { Player, GameOutcome } from '@ctor-game/shared';
 
 interface GameOverScreenProps {
   winner: Player | null;
