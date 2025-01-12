@@ -113,13 +113,12 @@ const formatMessage = (level: LogLevel, message: string, options: LogOptions = {
     }
   }
 
-    return result;
+    return `${result}\n----------------------------------------`;
 };
 
 // Функция для немедленного вывода в консоль
 const log = (level: LogLevel, message: string) => {
-  process.stdout.write(`${message}\n----------------------------------------\n`);
-};
+  process.stdout.write(`${message}\n`);
 
 export const logger: Logger = {
   debug: (message: string, options: LogOptions = {}) => {
