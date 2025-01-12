@@ -1,10 +1,10 @@
 import { 
   GameError, 
   ErrorCode, 
-  ErrorSeverity, 
+  ErrorSeverity,
   RecoveryStrategy,
   ErrorRecoveryConfig 
-} from '@ctor-game/shared/types/errors';
+} from '../types/connection';
 
 /**
  * Default recovery configurations for different error types

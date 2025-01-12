@@ -22,12 +22,8 @@ export default defineConfig({
   plugins: [react(), loggerPlugin()],
   resolve: {
     alias: {
-      '@': path.resolve(__dirname, './src'),
-      '@ctor-game/shared': path.resolve(__dirname, '../shared')
+      '@': path.resolve(__dirname, './src')
     }
-  },
-  optimizeDeps: {
-    include: ['@ctor-game/shared']
   },
   server: {
     host: true, // Доступ извне контейнера
