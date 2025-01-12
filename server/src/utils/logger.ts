@@ -113,16 +113,12 @@ const formatMessage = (level: LogLevel, message: string, options: LogOptions = {
     }
   }
 
-  // Добавляем разделитель для лучшей читаемости
-  result += '\n----------------------------------------\n';
-
-  return result;
+    return result;
 };
 
 // Функция для немедленного вывода в консоль
 const log = (level: LogLevel, message: string) => {
-  process.stdout.write(message);
-  process.stdout.write('\n');
+  process.stdout.write(`${message}\n----------------------------------------\n`);
 };
 
 export const logger: Logger = {
