@@ -35,6 +35,9 @@ interface Logger {
   storage: StorageLogger;
   network: NetworkLogger;
   db: DBLogger;
+  websocket: {
+    message: (direction: 'in' | 'out', event: string, data: unknown, socketId: string) => void;
+  };
 }
 
 
@@ -284,6 +287,19 @@ export const logger: Logger = {
           timestamp: new Date().toISOString()
         },
         error: errorWithStack
+      }));
+    }
+  },
+
+  websocket: {
+    message: (direction: 'in' | 'out', event: string, data: unknown, socketId: string) => {
+      log('info', formatMessage('info', `WebSocket ${direction === 'in' ? '→' : '←'} ${event}`, {
+        component: 'WebSocket',
+        context: {
+          socketId,
+          timestamp: new Date().toISOString()
+        },
+        data
       }));
     }
   }

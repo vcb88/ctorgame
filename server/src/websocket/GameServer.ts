@@ -116,7 +116,39 @@ export class GameServer {
   }
 
   private setupEventHandlers(): void {
+    // Добавляем общий обработчик для всех исходящих сообщений
+    this.io.engine.on("connection_error", (err) => {
+      logger.error("Connection error", {
+        component: 'GameServer',
+        context: { error: toErrorWithStack(err) }
+      });
+    });
+
     this.io.on('connection', (socket: Socket<ClientToServerEvents, ServerToClientEvents>) => {
+      // Логируем все входящие сообщения
+      socket.onAny((eventName, ...args) => {
+        logger.websocket.message('in', eventName, args[0], socket.id);
+      });
+
+      // Логируем все исходящие сообщения через перехват emit
+      const originalEmit = socket.emit;
+      socket.emit = function(ev, ...args) {
+        logger.websocket.message('out', ev, args[0], socket.id);
+        return originalEmit.apply(this, [ev, ...args]);
+      };
+
+      // Также перехватываем сообщения для всей комнаты
+      const originalRoomEmit = this.io.to;
+      this.io.to = (...args) => {
+        const result = originalRoomEmit.apply(this.io, args);
+        const originalEmit = result.emit;
+        result.emit = (ev: string, ...emitArgs: any[]) => {
+          logger.websocket.message('out', ev, emitArgs[0], `room:${args[0]}`);
+          return originalEmit.apply(result, [ev, ...emitArgs]);
+        };
+        return result;
+      };
+
       // Добавляем расширенное логирование подключений
       logger.info('New client connection', {
         component: 'GameServer',
