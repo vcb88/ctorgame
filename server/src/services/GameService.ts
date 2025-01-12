@@ -86,6 +86,7 @@ export class GameService {
                 });
                 return; // Success - exit the retry loop
             } catch (error) {
+                const dbError = error instanceof Error ? error : new Error(String(error));
                 logger.error('MongoDB connection failed', {
                     component: 'Database',
                     context: {
@@ -93,7 +94,7 @@ export class GameService {
                         maxRetries,
                         retryDelay
                     },
-                    error
+                    error: dbError
                 });
 
                 if (i < maxRetries - 1) {
@@ -108,7 +109,7 @@ export class GameService {
                 } else {
                     logger.error('Max MongoDB connection retries reached', {
                         component: 'Database',
-                        error
+                        error: dbError
                     });
                     throw error;
                 }
@@ -268,9 +269,9 @@ export class GameService {
                     gameId,
                     move
                 },
-                error
+                error: error instanceof Error ? error : new Error(String(error))
             });
-            throw error;
+            throw error instanceof Error ? error : new Error(String(error));
         }
 
         const duration = Date.now() - startTime;
