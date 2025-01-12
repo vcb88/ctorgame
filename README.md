@@ -2,6 +2,34 @@
 
 A multiplayer online version of the classic tic-tac-toe game, supporting real-time gameplay between two players.
 
+## ⚠️ Important Note About Shared Types
+
+This project maintains shared TypeScript type definitions in three locations:
+
+1. **Source of Truth**: `/shared` directory
+   - Contains complete type definitions split across multiple files
+   - Used as the reference for all shared types
+   - Updated first when making changes to shared types
+
+2. **Client Copy**: `/client/src/shared.ts`
+   - Single file containing all shared types needed by the client
+   - Must be kept in sync with `/shared` manually
+   - Used directly by client code for type safety
+
+3. **Server Copy**: `/server/src/shared.ts`
+   - Single file containing all shared types needed by the server
+   - Must be kept in sync with `/shared` manually
+   - Used directly by server code for type safety
+
+### Type Synchronization Rules
+
+When making changes to shared types:
+1. Always update the source in `/shared` first
+2. Copy the relevant types to both client and server shared.ts files
+3. Verify that all three locations have consistent type definitions
+4. When there's a discrepancy, the most recently updated version should be considered correct
+5. Check and maintain type synchronization before every commit
+
 ## Project Overview
 
 CTORGame transforms the original hotseat tic-tac-toe implementation into a full-fledged online multiplayer game using client-server architecture. Players can create game rooms, share room codes with opponents, and play in real-time over the internet.

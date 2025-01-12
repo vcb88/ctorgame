@@ -2,6 +2,31 @@
 
 Thank you for your interest in contributing to CTORGame! This document provides guidelines and instructions for contributing to the project.
 
+## ⚠️ Shared Types Synchronization
+
+This project uses a special approach for handling shared TypeScript types:
+
+1. **Main Source** (`/shared/`):
+   - Contains the original, split type definitions
+   - Should be updated first when changing shared types
+   - Serves as the source of truth
+
+2. **Client Copy** (`/client/src/shared.ts`):
+   - Aggregated types for client usage
+   - Must be manually synchronized
+
+3. **Server Copy** (`/server/src/shared.ts`):
+   - Aggregated types for server usage
+   - Must be manually synchronized
+
+### Required Steps When Modifying Types
+
+Before committing any changes:
+1. Update `/shared/` directory first
+2. Synchronize both client and server shared.ts files
+3. Verify type consistency across all three locations
+4. In case of conflicts, use the most recently updated version
+
 ## Development Setup
 
 1. Fork and clone the repository
