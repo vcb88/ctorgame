@@ -1,4 +1,7 @@
-// Export base types and interfaces first
+// Import types first
+import type { IPosition } from '../types/index.js';
+
+// Export all types
 export * from '../types/index.js';
 
 // Export utilities that use these types
