@@ -37,18 +37,26 @@ export function GameBoard({
 
   // Log component state changes
   useEffect(() => {
-    logger.debug('GameBoard state updated', {
-      component: 'GameBoard',
-      data: {
-        loading,
-        operationInProgress,
-        error,
-        currentPlayer,
-        lastMove,
-        highlightedCellsCount: highlightedCells.length
-      }
+    logger.componentState('GameBoard', {
+      loading,
+      operationInProgress,
+      error,
+      currentPlayer,
+      lastMove,
+      highlightedCellsCount: highlightedCells.length
     });
   }, [loading, operationInProgress, error, currentPlayer, lastMove, highlightedCells]);
+
+  // Log animation states
+  useEffect(() => {
+    if (Object.keys(capturedCells).length > 0) {
+      logger.animation('capture', {
+        cells: Object.keys(capturedCells),
+        previousBoard,
+        currentBoard: board
+      }, 'GameBoard');
+    }
+  }, [capturedCells, previousBoard, board]);
 
   // Track cell captures by comparing previous and current board states
   useEffect(() => {
@@ -74,27 +82,26 @@ export function GameBoard({
 
     // Check if the move is valid
     const moveValid = isValidMove ? isValidMove(rowIndex, colIndex) : (!disabled && board[rowIndex][colIndex] === null);
+    const validationReason = !moveValid ? 
+      (disabled ? 'Board is disabled' : 
+       board[rowIndex][colIndex] !== null ? 'Cell is not empty' : 
+       'Move validation failed') : undefined;
+
+    logger.validation('GameBoard', 
+      { valid: moveValid, reason: validationReason },
+      { row: rowIndex, col: colIndex, currentPlayer }
+    );
 
     if (!moveValid) {
-      logger.debug('Invalid move attempt', {
-        component: 'GameBoard',
-        data: {
-          row: rowIndex,
-          col: colIndex,
-          reason: 'Move validation failed'
-        }
-      });
       return;
     }
 
     if (loading && operationInProgress === GameActionType.MAKE_MOVE) {
-      logger.debug('Move ignored - operation in progress', {
-        component: 'GameBoard',
-        data: {
-          row: rowIndex,
-          col: colIndex,
-          operationInProgress
-        }
+      logger.operation('MAKE_MOVE', 'error', {
+        reason: 'Operation already in progress',
+        row: rowIndex,
+        col: colIndex,
+        operationInProgress
       });
       return;
     }

@@ -30,25 +30,67 @@ export const GameControls: React.FC<GameControlsProps> = ({
   currentPlayer,
   isFirstTurn = false
 }) => {
-  const handleEndTurn = async () => {
-    if (!onEndTurn || loading || !canEndTurn) return;
+  // Log component state changes
+  useEffect(() => {
+    logger.componentState('GameControls', {
+      loading,
+      operationInProgress,
+      error,
+      currentPlayer,
+      canEndTurn,
+      canUndoMove,
+      moveCount: currentTurn.moves.length,
+      operationsLeft: currentTurn.placeOperationsLeft
+    });
+  }, [loading, operationInProgress, error, currentPlayer, canEndTurn, canUndoMove, currentTurn]);
 
-    logger.userAction('endTurn');
+  const handleEndTurn = async () => {
+    if (!onEndTurn || loading || !canEndTurn) {
+      if (!canEndTurn) {
+        logger.validation('GameControls', 
+          { valid: false, reason: 'Cannot end turn' },
+          { currentPlayer, moves: currentTurn.moves, operationsLeft: currentTurn.placeOperationsLeft }
+        );
+      }
+      return;
+    }
+
+    logger.operation('END_TURN', 'start', {
+      currentPlayer,
+      moves: currentTurn.moves,
+      operationsLeft: currentTurn.placeOperationsLeft
+    });
+
     try {
       await onEndTurn();
+      logger.operation('END_TURN', 'complete');
     } catch (err) {
-      logger.error('End turn failed', { error: err });
+      logger.operation('END_TURN', 'error', { error: err });
     }
   };
 
   const handleUndoMove = async () => {
-    if (!onUndoLastMove || loading || !canUndoMove) return;
+    if (!onUndoLastMove || loading || !canUndoMove) {
+      if (!canUndoMove) {
+        logger.validation('GameControls', 
+          { valid: false, reason: 'Cannot undo move' },
+          { currentPlayer, moves: currentTurn.moves }
+        );
+      }
+      return;
+    }
 
-    logger.userAction('undoMove');
+    logger.operation('UNDO_MOVE', 'start', {
+      currentPlayer,
+      moves: currentTurn.moves,
+      lastMove: currentTurn.moves[currentTurn.moves.length - 1]
+    });
+
     try {
       await onUndoLastMove();
+      logger.operation('UNDO_MOVE', 'complete');
     } catch (err) {
-      logger.error('Undo move failed', { error: err });
+      logger.operation('UNDO_MOVE', 'error', { error: err });
     }
   };
 

@@ -79,5 +79,48 @@ export const logger = {
         data
       }));
     }
+  },
+
+  // New logging methods
+  animation: (type: string, data: unknown, component: string) => {
+    if (DEBUG) {
+      console.debug(formatMessage('debug', `Animation event: ${type}`, {
+        component,
+        event: 'animation',
+        data
+      }));
+    }
+  },
+
+  componentState: (component: string, changes: Record<string, unknown>) => {
+    if (DEBUG) {
+      console.debug(formatMessage('debug', 'Component state changed', {
+        component,
+        data: changes
+      }));
+    }
+  },
+
+  validation: (component: string, result: { valid: boolean; reason?: string }, data?: unknown) => {
+    if (DEBUG) {
+      console.debug(formatMessage('debug', 'Validation check', {
+        component,
+        event: result.valid ? 'validation_success' : 'validation_failure',
+        data: {
+          reason: result.reason,
+          details: data
+        }
+      }));
+    }
+  },
+
+  operation: (type: string, status: 'start' | 'complete' | 'error', data?: unknown) => {
+    if (DEBUG) {
+      console.debug(formatMessage('debug', `Operation ${status}`, {
+        component: 'GameOperation',
+        event: type,
+        data
+      }));
+    }
   }
 };
