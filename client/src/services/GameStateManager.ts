@@ -22,11 +22,20 @@ import {
   GameManagerStateUpdate,
   StateSubscriber
 } from '../types/gameManager';
+import { StateStorage } from './StateStorage';
+import { StorageConfig } from '../../../shared/types/state_storage';
+
+const DEFAULT_STORAGE_CONFIG: StorageConfig = {
+  prefix: 'game_state',
+  ttl: 24 * 60 * 60 * 1000, // 24 hours
+  version: '0.1.0'
+};
 
 export class GameStateManager {
   private static instance: GameStateManager;
   private socket: Socket | null = null;
   private subscribers: Set<StateSubscriber> = new Set();
+  private storage: StateStorage;
   private joinGamePromise: { 
     resolve: (value: JoinGameResult) => void;
     reject: (error: JoinGameError) => void;
@@ -45,6 +54,21 @@ export class GameStateManager {
   };
 
   private constructor() {
+    this.storage = new StateStorage(DEFAULT_STORAGE_CONFIG);
+    
+    // Try to restore state from storage
+    const savedState = this.storage.loadState<ExtendedGameManagerState>('current');
+    if (savedState) {
+      try {
+        // Validate restored state
+        validateExtendedGameManagerState(savedState);
+        this.state = savedState;
+      } catch (error) {
+        // If validation fails, remove invalid state
+        this.storage.removeState('current');
+      }
+    }
+
     this.setupSocket();
   }
 
@@ -85,6 +109,11 @@ export class GameStateManager {
         connectionState: 'error',
         error: { message: error.message } as GameError
       });
+    });
+
+    // Clear stored state on connection error
+    this.socket.on('error', () => {
+      this.storage.removeState('current');
     });
 
     // Game events
@@ -183,6 +212,12 @@ export class GameStateManager {
 
       // Если все проверки пройдены, обновляем состояние
       this.state = newState;
+      
+      // Save state if we're in a meaningful phase (не сохраняем INITIAL и ошибки)
+      if (newState.phase !== 'INITIAL' && !newState.error) {
+        this.storage.saveState('current', newState);
+      }
+      
       this.notifySubscribers();
     } catch (error) {
       logger.error('State validation error', { error });
@@ -272,6 +307,9 @@ export class GameStateManager {
 
   public disconnect(): void {
     if (!this.socket) return;
+    
+    // Clear stored state when disconnecting
+    this.storage.removeState('current');
     this.socket.disconnect();
   }
 
