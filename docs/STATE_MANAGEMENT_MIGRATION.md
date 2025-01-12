@@ -394,20 +394,58 @@ Each phase can be rolled back independently by:
    ```
 
 ## Migration Status Tracking
-| Component/Feature | Status | Notes |
-|-----------|--------|-------|
-| GameStateManager | ✅ Done | Basic implementation complete |
-| Socket Handling | ✅ Done | Basic socket events implemented |
-| useGame Hook | ✅ Done | Basic state subscription and actions |
-| State Types | ✅ Done | Full typing coverage added |
-| Game State Types | ✅ Done | Extended types for game state added |
-| useMultiplayerGameNew | ✅ Done | Full implementation with types |
-| Available Replaces | ✅ Done | Handling implemented |
-| GameNew Component | 🟡 In Progress | Basic implementation done, needs full game state support |
-| Game State Updates | 🟡 In Progress | Basic updates done, needs proper validation |
-| WaitingRoom | Pending | |
-| GameBoard | Pending | |
-| GameControls | Pending | |
+
+### Completed Features ✅
+| Feature | Notes |
+|---------|-------|
+| Phase 1 - Infrastructure | Base GameStateManager, Socket handling, useGame hook |
+| Shared Types | GamePhase, GameManagerState, GameStateUpdate |
+| Type System | Full typing coverage with proper interfaces |
+| State Management | Basic implementation with subscription system |
+| Available Replaces | Full handling with type support |
+
+### In Progress 🟡
+| Feature | Status | Next Steps |
+|---------|--------|------------|
+| Promise Support | Planning | Implement Promise-based joinGame |
+| Game State Validation | 30% | Add runtime validation |
+| Error Handling | 50% | Improve error recovery |
+| Component Migration | 20% | Continue with WaitingRoom |
+
+### Pending Tasks ⏳
+| Task | Priority | Dependencies |
+|------|----------|--------------|
+| Race Condition Handling | High | Promise Support |
+| Local Storage Integration | Medium | State Validation |
+| Server Integration | Low | Client Migration |
+| Component Tests | High | Component Migration |
+
+### Component Migration Status
+| Component | Status | Blocking Issues |
+|-----------|--------|----------------|
+| WaitingRoom | 🟡 In Progress | Promise Support |
+| GameNew | 🟡 In Progress | State Validation |
+| GameBoard | ⏳ Pending | WaitingRoom Completion |
+| GameControls | ⏳ Pending | GameBoard Completion |
+
+### Next Priority Tasks
+1. Promise Support for joinGame
+   - Add Promise return type to GameStateManager.joinGame
+   - Handle success/failure callbacks
+   - Add timeout handling
+   - Update useMultiplayerGameNew to use Promise
+
+2. Game State Validation
+   - Add runtime validation for state updates
+   - Implement validation in GameStateManager
+   - Add validation error handling
+   - Create validation unit tests
+
+3. Component Migration - WaitingRoom
+   - Move to new state management
+   - Keep UI-specific state
+   - Add proper error handling
+   - Update to use Promise-based joinGame
 
 ## Future Considerations
 1. State persistence improvements
