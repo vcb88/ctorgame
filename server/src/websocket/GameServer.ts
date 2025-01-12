@@ -43,7 +43,10 @@ export class GameServer {
     // Реализация паттерна Singleton
     if (GameServer.instance) {
       logger.info("Returning existing GameServer instance", { component: 'GameServer' });
-      return GameServer.instance;
+      // Возвращаем существующий экземпляр и точно прерываем создание нового
+      const instance = GameServer.instance;
+      Object.assign(this, instance);
+      return;
     }
 
     // Очищаем предыдущие экземпляры Socket.IO
