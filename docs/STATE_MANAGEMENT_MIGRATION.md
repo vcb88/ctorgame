@@ -408,50 +408,85 @@ Each phase can be rolled back independently by:
 | Game State Validation | Full runtime validation with recovery |
 | State Transitions | Validation and error handling |
 | State Recovery | Automatic recovery from validation errors |
+| WaitingRoom Migration | Complete with Promise support and error handling |
 
 ### In Progress 🟡
 | Feature | Status | Next Steps |
 |---------|--------|------------|
-| WaitingRoom Migration | Planning | Implement with Promise-based joinGame |
-| Error Recovery | 80% | Add cleanup on component unmount |
-| Component Migration | 35% | Continue with WaitingRoom |
-| Local Storage | 10% | Add state persistence |
+| Local Storage | 15% | Implement state persistence layer |
+| Error Recovery | 85% | Add global error handler |
+| Component Migration | 40% | Start GameNew migration |
+| State Persistence | 10% | Design storage structure |
 
 ### Pending Tasks ⏳
 | Task | Priority | Dependencies |
 |------|----------|--------------|
-| Race Condition Handling | High | Promise Support |
-| Local Storage Integration | Medium | State Validation |
+| Race Condition Handling | Medium | Local Storage |
 | Server Integration | Low | Client Migration |
 | Component Tests | High | Component Migration |
+| Performance Optimization | Low | Core Features |
 
 ### Component Migration Status
 | Component | Status | Blocking Issues |
 |-----------|--------|----------------|
-| WaitingRoom | 🟡 In Progress | Promise Support |
-| GameNew | 🟡 In Progress | State Validation |
-| GameBoard | ⏳ Pending | WaitingRoom Completion |
+| WaitingRoom | ✅ Done | None |
+| GameNew | 🟡 In Progress | Local Storage Integration |
+| GameBoard | ⏳ Pending | GameNew Completion |
 | GameControls | ⏳ Pending | GameBoard Completion |
 
+### State Persistence Plan
+| Feature | Priority | Status |
+|---------|----------|---------|
+| Storage Layer | High | Planning |
+| Version Control | High | Planning |
+| Migration System | Medium | Not Started |
+| Auto-Save | High | Not Started |
+| Cleanup | Low | Not Started |
+| Recovery | High | Not Started |
+
 ### Next Priority Tasks
-1. WaitingRoom Component Migration
-   - Create new WaitingRoomNew component
-   - Implement error handling with new GameStateManager
-   - Add loading states for async operations
-   - Implement proper cleanup on unmount
-   - Add automatic retry logic for failed operations
+1. Local Storage Implementation
+   - Add state persistence layer:
+     ```typescript
+     interface StorageConfig {
+       prefix: string;
+       ttl: number;
+       version: string;
+     }
 
-2. Game State Validation
-   - Add runtime validation for state updates
-   - Implement validation in GameStateManager
-   - Add validation error handling
-   - Create validation unit tests
+     class StateStorage {
+       saveState(key: string, state: any): void;
+       loadState<T>(key: string): T | null;
+       cleanupExpired(): void;
+     }
+     ```
+   - Implement state versioning:
+     ```typescript
+     interface StoredState<T> {
+       version: string;
+       timestamp: number;
+       data: T;
+     }
+     ```
+   - Add migration strategies for старых версий:
+     ```typescript
+     type MigrationStrategy = (oldState: any) => ExtendedGameManagerState;
+     ```
+   - Добавить механизм очистки устаревших данных
+   - Реализовать автоматическое сохранение при изменениях
+   - Добавить восстановление состояния при инициализации
+   - Создать тесты для хранилища
 
-3. Component Migration - GameNew
-   - Update to use new state management
-   - Migrate game creation logic
-   - Add proper cleanup
-   - Update error handling
+2. GameNew Component Migration
+   - Обновить для использования GameStateManager
+   - Добавить восстановление состояния
+   - Улучшить обработку ошибок
+   - Добавить индикаторы загрузки
+
+3. Error Recovery Improvements
+   - Добавить глобальный обработчик ошибок
+   - Улучшить логирование
+   - Добавить механизм автоматических повторных попыток
 
 ## Future Considerations
 1. State persistence improvements
