@@ -110,9 +110,10 @@ export function validateStateTransition(
     const allowedTransitions: Record<GamePhase, GamePhase[]> = {
       'INITIAL': ['CONNECTING'],
       'CONNECTING': ['WAITING', 'INITIAL'],
-      'WAITING': ['PLAYING', 'INITIAL'],
-      'PLAYING': ['GAME_OVER'],
-      'GAME_OVER': ['INITIAL']
+      'WAITING': ['PLAYING', 'INITIAL', 'CONNECTING'],
+      'PLAYING': ['FINISHED', 'ERROR'],
+      'FINISHED': ['INITIAL'],
+      'ERROR': ['INITIAL']
     };
 
     if (!allowedTransitions[currentState.phase].includes(update.phase)) {

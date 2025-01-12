@@ -7,6 +7,8 @@ import { IPosition, IBoard } from './coordinates.js';
 export enum GamePhase {
     /** Initial state before game starts */
     INITIAL = 'INITIAL',
+    /** Connecting to game */
+    CONNECTING = 'CONNECTING',
     /** Waiting for other player */
     WAITING = 'WAITING',
     /** Game in progress */
