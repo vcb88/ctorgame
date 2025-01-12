@@ -71,7 +71,9 @@ export interface WebSocketPayloads {
         player: number;
     };
     [WebSocketEvents.Error]: {
+        code: WebSocketErrorCode;
         message: string;
+        details?: unknown;
     };
     [WebSocketEvents.Reconnect]: {
         gameId: string;
