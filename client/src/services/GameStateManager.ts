@@ -25,7 +25,7 @@ import {
 import { StateStorage } from './StateStorage';
 import { StorageConfig } from '../shared';
 import { ErrorRecoveryManager } from './ErrorRecoveryManager';
-import { ErrorCode, ErrorSeverity, GameError } from '../types/connection';
+import { ErrorCode, ErrorSeverity, GameError } from '../types/errors';
 import { ActionQueue } from './ActionQueue';
 import { GameActionType } from '../shared';
 

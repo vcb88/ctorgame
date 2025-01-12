@@ -1,6 +1,6 @@
 import { ErrorRecoveryManager } from './ErrorRecoveryManager';
 import { GameActionType } from '../shared';
-import { ErrorCode, ErrorSeverity, GameError, GameActionUnion } from '../types/connection';
+import { ErrorCode, ErrorSeverity, GameError, GameActionUnion } from '../types/errors';
 
 interface QueuedAction {
   action: GameActionUnion;

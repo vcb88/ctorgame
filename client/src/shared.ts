@@ -151,6 +151,13 @@ export interface IGameRoom {
 }
 
 // WebSocket types
+export enum GameActionType {
+  CREATE_GAME = 'CREATE_GAME',
+  JOIN_GAME = 'JOIN_GAME',
+  MAKE_MOVE = 'MAKE_MOVE',
+  END_TURN = 'END_TURN'
+}
+
 export enum WebSocketEvents {
   // Client to server events
   CreateGame = 'createGame',

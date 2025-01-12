@@ -4,7 +4,7 @@ import {
   ErrorSeverity,
   RecoveryStrategy,
   ErrorRecoveryConfig 
-} from '../types/connection';
+} from '../types/errors';
 
 /**
  * Default recovery configurations for different error types
