@@ -1,42 +1,111 @@
-// Re-export base types and enums
-export {
-    Player,
-    GamePhase,
-    GameOutcome,
-    BOARD_SIZE,
-    MIN_ADJACENT_FOR_REPLACE,
-    MAX_PLACE_OPERATIONS
-} from './base.js';
+// Basic enums
+export enum Player {
+    None = 0,
+    First = 1,
+    Second = 2
+}
 
-// Re-export base interfaces
-export type {
-    IPosition,
-    IBoardSize,
-    IBoard
-} from './base.js';
+export enum GamePhase {
+    INITIAL = 'INITIAL',
+    CONNECTING = 'CONNECTING',
+    WAITING = 'WAITING',
+    PLAYING = 'PLAYING',
+    GAME_OVER = 'GAME_OVER',
+    ERROR = 'ERROR'
+}
 
-// Re-export game enum
-export {
-    OperationType
-} from './game.js';
+export enum GameOutcome {
+    Win = 'WIN',
+    Loss = 'LOSS',
+    Draw = 'DRAW'
+}
 
-// Re-export game interfaces
-export type {
-    IGameMove,
-    IReplaceValidation,
-    GameManagerState,
-    ITurnState,
-    IScores,
-    IGameState
-} from './game.js';
+export enum OperationType {
+    PLACE = 'place',
+    REPLACE = 'replace',
+    END_TURN = 'end_turn'
+}
 
-// Re-export player interfaces
-export type {
-    IPlayer,
-    IGameRoom
-} from './player.js';
+// Game constants
+export const BOARD_SIZE = 10;
+export const MIN_ADJACENT_FOR_REPLACE = 5;
+export const MAX_PLACE_OPERATIONS = 2;
 
-// Re-export domain-specific types
+// Basic interfaces
+export interface IPosition {
+    x: number;
+    y: number;
+}
+
+export interface IBoardSize {
+    width: number;
+    height: number;
+}
+
+export interface IBoard {
+    cells: (number | null)[][];
+    size: IBoardSize;
+}
+
+// Game interfaces
+export interface IGameMove {
+    type: OperationType;
+    position: IPosition;
+}
+
+export interface IReplaceValidation {
+    position: IPosition;
+    isValid: boolean;
+    adjacentCount: number;
+    adjacentPositions: IPosition[];
+}
+
+export interface ITurnState {
+    placeOperationsLeft: number;
+    replaceOperationsLeft: number;
+    moves: IGameMove[];
+}
+
+export interface IScores {
+    player1: number;
+    player2: number;
+    [Player.First]: number;
+    [Player.Second]: number;
+}
+
+export interface IGameState {
+    board: IBoard;
+    gameOver: boolean;
+    winner: Player | null;
+    currentTurn: ITurnState;
+    currentPlayer: Player;
+    scores: IScores;
+    isFirstTurn: boolean;
+}
+
+// Player interfaces
+export interface IPlayer {
+    id: string;
+    number: Player;
+}
+
+export interface IGameRoom {
+    gameId: string;
+    players: IPlayer[];
+    currentState: IGameState;
+    currentPlayer: Player;
+}
+
+// Manager interfaces
+export interface GameManagerState {
+    phase: GamePhase;
+    gameId: string | null;
+    playerNumber: Player | null;
+    error: Error | null;
+    connectionState: string;
+}
+
+// Re-export domain-specific types that don't have circular dependencies
 export * from './errors.js';
 export * from './actions.js';
 export * from './websocket.js';
