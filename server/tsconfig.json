@@ -1,8 +1,8 @@
 {
   "compilerOptions": {
     "target": "ES2020",
-    "module": "CommonJS",
-    "moduleResolution": "node",
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
     "esModuleInterop": true,
     "strict": true,
     "outDir": "./dist",
@@ -11,12 +11,19 @@
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true,
     "strictPropertyInitialization": false,
+    "composite": true,
     "baseUrl": ".",
     "paths": {
-      "@ctor-game/shared": ["../shared"],
-      "@ctor-game/shared/*": ["../shared/*"]
+      "@ctor-game/shared": ["../shared/src"],
+      "@ctor-game/shared/*": ["../shared/src/*"]
     }
   },
   "include": ["src/**/*"],
-  "exclude": ["node_modules"]
+  "exclude": ["node_modules"],
+  "references": [
+    {
+      "path": "../shared"
+    }
+  ]
+}
 }
