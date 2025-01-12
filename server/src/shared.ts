@@ -200,6 +200,7 @@ export interface WebSocketPayloads {
   [WebSocketEvents.GameJoined]: {
     gameId: string;
     eventId: string;
+    phase: GamePhase;
   };
   [WebSocketEvents.GameStarted]: {
     gameState: IGameState;
