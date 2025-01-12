@@ -5,6 +5,7 @@ import { GameServer } from './websocket/GameServer';
 import cors from 'cors';
 import path from 'path';
 import { logger } from './utils/logger';
+import type { ErrorWithStack } from './types/error';
 
 logger.info('Starting server initialization', {
   component: 'Server',
@@ -245,7 +246,7 @@ try {
 } catch (error) {
   logger.error('Failed to start server', {
     component: 'Server',
-    error
+    error: error as ErrorWithStack
   });
   process.exit(1);
 }
