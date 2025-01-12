@@ -93,7 +93,13 @@ export const WaitingRoomNew: React.FC = () => {
   useEffect(() => {
     if (error) {
       logger.error('WaitingRoom error', { error });
-      navigate('/');
+      
+      // Add delay before navigation to show error message
+      const timer = setTimeout(() => {
+        navigate('/');
+      }, 3000); // Wait 3 seconds before redirecting
+      
+      return () => clearTimeout(timer);
     }
   }, [error]);
 
@@ -232,9 +238,9 @@ export const WaitingRoomNew: React.FC = () => {
           </div>
 
           {/* Error Display */}
-          {joinError && (
+          {(joinError || error?.message) && (
             <div className="bg-red-500/20 text-red-400 px-4 py-2 rounded text-sm text-center">
-              {joinError}
+              {joinError || error?.message}
             </div>
           )}
 
