@@ -158,8 +158,8 @@ logger.info('Setting up static files', { component: 'Server' });
 app.use(express.static(path.join(__dirname, '../../client/dist')));
 
 logger.info('Initializing WebSocket server', { component: 'Server' });
-// Create WebSocket game server and store the instance
-const gameServer = new GameServer(httpServer);
+// Create WebSocket game server using singleton pattern
+const gameServer = GameServer.getInstance(httpServer);
 
 const PORT = process.env.PORT || 3000;
 logger.info('Server configuration', {

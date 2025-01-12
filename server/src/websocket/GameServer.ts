@@ -39,13 +39,19 @@ export class GameServer {
 
   private static instance: GameServer | null = null;
 
-  constructor(httpServer: HttpServer) {
-    // Проверяем существование инстанса перед созданием нового
-    if (GameServer.instance) {
+  // Статический метод для получения экземпляра
+  public static getInstance(httpServer: HttpServer): GameServer {
+    if (!GameServer.instance) {
+      logger.info("Creating new GameServer instance", { component: 'GameServer' });
+      GameServer.instance = new GameServer(httpServer);
+    } else {
       logger.info("Returning existing GameServer instance", { component: 'GameServer' });
-      return GameServer.instance;
     }
+    return GameServer.instance;
+  }
 
+  // Приватный конструктор, чтобы предотвратить создание экземпляров через new
+  private constructor(httpServer: HttpServer) {
     // Очищаем предыдущие экземпляры Socket.IO
     if ((global as any).io) {
       logger.info("Cleaning up previous Socket.IO instance", { component: 'GameServer' });
