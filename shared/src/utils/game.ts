@@ -1,5 +1,5 @@
-import { Player, GameOutcome } from '../../types/index.js';
-import { IScores, GamePhase, GameManagerState } from '../../types/game.js';
+import { Player, GameOutcome, GamePhase } from '../../types/base.js';
+import type { IScores, GameManagerState } from '../../types/game.js';
 
 // Game utility functions
 export const getGameOutcome = (winner: Player | null, playerNumber: Player): GameOutcome => {
@@ -14,7 +14,7 @@ export const getOpponent = (player: Player): Player => {
         case Player.Second:
             return Player.First;
         default:
-            return Player.Empty;
+            return Player.None;
     }
 };
 
