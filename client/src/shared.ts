@@ -1,8 +1,152 @@
+// Game phase states
+export enum GamePhase {
+    INITIAL = 'INITIAL',
+    CONNECTING = 'CONNECTING',
+    WAITING = 'WAITING',
+    PLAYING = 'PLAYING',
+    GAME_OVER = 'GAME_OVER'
+}
+
+// Player identifiers
+export enum Player {
+    Empty = 0,
+    None = 0,
+    First = 1,
+    Second = 2
+}
+
+// Game outcome
+export enum GameOutcome {
+    Win = 'win',
+    Loss = 'loss',
+    Draw = 'draw'
+}
+
+// Error types
+export enum ErrorCode {
+    // Connection errors
+    CONNECTION_ERROR = 'CONNECTION_ERROR',
+    CONNECTION_TIMEOUT = 'CONNECTION_TIMEOUT',
+    CONNECTION_LOST = 'CONNECTION_LOST',
+    
+    // Operation errors
+    OPERATION_FAILED = 'OPERATION_FAILED',
+    OPERATION_TIMEOUT = 'OPERATION_TIMEOUT',
+    OPERATION_CANCELLED = 'OPERATION_CANCELLED',
+    
+    // Game errors
+    INVALID_MOVE = 'INVALID_MOVE',
+    INVALID_STATE = 'INVALID_STATE',
+    GAME_NOT_FOUND = 'GAME_NOT_FOUND',
+    GAME_FULL = 'GAME_FULL',
+    
+    // State errors
+    STATE_VALIDATION_ERROR = 'STATE_VALIDATION_ERROR',
+    STATE_TRANSITION_ERROR = 'STATE_TRANSITION_ERROR',
+    
+    // Storage errors
+    STORAGE_ERROR = 'STORAGE_ERROR',
+    
+    // Unknown error
+    UNKNOWN_ERROR = 'UNKNOWN_ERROR'
+}
+
+export type ConnectionState = 'connected' | 'disconnected' | 'connecting';
+
+export interface GameError {
+    code: ErrorCode;
+    message: string;
+    details?: unknown;
+}
+
+// Board and coordinate types
+export interface IPosition {
+    x: number;
+    y: number;
+}
+
+export interface IBoardSize {
+    width: number;
+    height: number;
+}
+
+export interface IBoard {
+    cells: number[][];
+    size: IBoardSize;
+}
+
+// Game constants
+export const BOARD_SIZE = 10;
+export const MIN_ADJACENT_FOR_REPLACE = 5;
+export const MAX_PLACE_OPERATIONS = 2;
+
+// Game operation types
+export enum OperationType {
+    PLACE = 'place',
+    REPLACE = 'replace',
+    END_TURN = 'end_turn'
+}
+
+export interface IGameMove {
+    type: OperationType;
+    position: IPosition;
+}
+
+export interface ITurnState {
+    placeOperationsLeft: number;
+    moves: IGameMove[];
+}
+
+export interface IScores {
+    player1: number;
+    player2: number;
+    [Player.First]: number;
+    [Player.Second]: number;
+}
+
+export interface IGameState {
+    board: IBoard;
+    gameOver: boolean;
+    winner: Player | null;
+    currentTurn: ITurnState;
+    currentPlayer: number;
+    scores: IScores;
+    isFirstTurn: boolean;
+}
+
+// Helper functions
+export const getGameOutcome = (winner: Player | null, playerNumber: Player): GameOutcome => {
+    if (winner === null) return GameOutcome.Draw;
+    return winner === playerNumber ? GameOutcome.Win : GameOutcome.Loss;
+};
+
+export const getOpponent = (player: Player): Player => {
+    switch (player) {
+        case Player.First:
+            return Player.Second;
+        case Player.Second:
+            return Player.First;
+        default:
+            return Player.Empty;
+    }
+};
+
+export const DIRECTIONS = [
+    [-1, -1], [-1, 0], [-1, 1],
+    [0, -1],          [0, 1],
+    [1, -1],  [1, 0],  [1, 1]
+] as const;
+
+export const getAdjacentPositions = (pos: IPosition, board: IBoard): IPosition[] => {
+    return DIRECTIONS.map(([dx, dy]) => ({
+        x: ((pos.x + dx + board.size.width) % board.size.width),
+        y: ((pos.y + dy + board.size.height) % board.size.height)
+    }));
+};
+
 // Re-export validation utilities
 export * from './validation/game';
 export * from './types/connection';
-
-export type GamePhase = 'INITIAL' | 'CONNECTING' | 'WAITING' | 'PLAYING' | 'GAME_OVER';
 
 export interface GameManagerState {
   phase: GamePhase;
