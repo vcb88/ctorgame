@@ -241,7 +241,8 @@ export class GameServer {
           // Сначала отправляем подтверждение присоединения
           socket.emit(WebSocketEvents.GameJoined, { 
             gameId,
-            eventId: Date.now().toString() 
+            eventId: Date.now().toString(),
+            phase: GamePhase.CONNECTING
           });
           logger.info('GameJoined event sent', {
             component: 'GameServer',
