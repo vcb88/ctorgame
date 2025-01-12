@@ -3,6 +3,7 @@ export * from './coordinates.js';  // Export coordinates first to avoid conflict
 export * from './game.js';
 export * from './player.js';
 export * from './errors.js';
+export * from './actions.js';
 
 // Re-export domain-specific types
 export * from './websocket.js';
