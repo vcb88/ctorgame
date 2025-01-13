@@ -34,7 +34,10 @@ import {
 // Game utils
 import {
   getOpponent,
-  getTurnScore
+  getTurnScore,
+  createEmptyScores,
+  createScores,
+  updateScores
 } from '@ctor-game/shared/utils';
 
 export class GameLogicService {
@@ -54,13 +57,11 @@ export class GameLogicService {
       currentTurn: {
         placeOperationsLeft: 1, // Первый ход - только одна операция
         replaceOperationsLeft: 0, // В первый ход нет операций замены
-        moves: []
+        moves: [],
+        count: 0
       },
       currentPlayer: Player.First,
-      scores: {
-        [Player.First]: 0,
-        [Player.Second]: 0
-      } as IScores,
+      scores: createEmptyScores(),
       isFirstTurn: true // Флаг первого хода (только 1 операция размещения)
     };
   }
@@ -272,8 +273,7 @@ export class GameLogicService {
       }
     }
 
-    state.scores[Player.First] = firstPlayerCount;
-    state.scores[Player.Second] = secondPlayerCount;
+    state.scores = createScores(firstPlayerCount, secondPlayerCount);
   }
 
   /**
