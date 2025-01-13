@@ -1,4 +1,4 @@
-import { Player, GameStatus } from './base';
+import { Player, GameStatus, IBoardSize } from './base';
 import { IGameState } from './state';
 import { GameMove } from './moves';
 
