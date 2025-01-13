@@ -1,7 +1,7 @@
-import { Player } from './basic-types';
-import { WebSocketErrorCode, GamePhase } from './base';
-import { GameMove } from './moves';
-import { IGameState } from './state';
+import { Player } from '../base/enums';
+import { WebSocketErrorCode, GamePhase } from '../base/enums';
+import { GameMove } from '../game/moves';
+import { IGameState } from '../game/state';
 
 export enum WebSocketEvents {
     // Client -> Server events

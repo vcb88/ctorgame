@@ -1,5 +1,5 @@
-import { WebSocketErrorCode } from './base';
-import { WebSocketEvents, WebSocketPayloads } from './web-socket-types';
+import { WebSocketErrorCode } from '../base/enums';
+import { WebSocketEvents, WebSocketPayloads } from './websocket';
 
 export interface ServerToClientEvents {
     [WebSocketEvents.GameCreated]: (payload: WebSocketPayloads[WebSocketEvents.GameCreated]) => void;
@@ -43,5 +43,3 @@ export interface ReconnectionData {
     lastEventId?: string;
     timestamp: number;
 }
-
-// WebSocket types are exported directly from web-socket-types.ts

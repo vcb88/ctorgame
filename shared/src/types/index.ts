@@ -2,10 +2,9 @@
 export * from './base';
 export * from './game';
 export * from './storage';
+export * from './network';
 
 // TODO: Move these to appropriate modules
-export * from './events';
-export * from './web-socket-types';
 export * from './replay';
 export * from './redis';
 export * from './validation-types';
