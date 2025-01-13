@@ -1,0 +1,82 @@
+// All enums in one place to avoid circular dependencies
+export enum GamePhase {
+    INITIAL = 'INITIAL',
+    CONNECTING = 'CONNECTING',
+    WAITING = 'WAITING',
+    PLAYING = 'PLAYING',
+    GAME_OVER = 'GAME_OVER',
+    FINISHED = 'FINISHED',
+    ERROR = 'ERROR'
+}
+
+export enum GameOutcome {
+    WIN = 'WIN',
+    LOSS = 'LOSS',
+    DRAW = 'DRAW',
+    FORFEIT = 'FORFEIT',
+    TIMEOUT = 'TIMEOUT'
+}
+
+export enum OperationType {
+    PLACE = 'place',
+    REPLACE = 'replace',
+    END_TURN = 'end_turn'
+}
+
+export enum ErrorCode {
+    // Connection errors
+    CONNECTION_ERROR = 'CONNECTION_ERROR',
+    CONNECTION_TIMEOUT = 'CONNECTION_TIMEOUT',
+    CONNECTION_LOST = 'CONNECTION_LOST',
+    
+    // Operation errors
+    OPERATION_FAILED = 'OPERATION_FAILED',
+    OPERATION_TIMEOUT = 'OPERATION_TIMEOUT',
+    OPERATION_CANCELLED = 'OPERATION_CANCELLED',
+    
+    // Game errors
+    INVALID_MOVE = 'INVALID_MOVE',
+    INVALID_STATE = 'INVALID_STATE',
+    GAME_NOT_FOUND = 'GAME_NOT_FOUND',
+    GAME_FULL = 'GAME_FULL',
+    
+    // State errors
+    STATE_VALIDATION_ERROR = 'STATE_VALIDATION_ERROR',
+    STATE_TRANSITION_ERROR = 'STATE_TRANSITION_ERROR',
+    
+    // Storage errors
+    STORAGE_ERROR = 'STORAGE_ERROR',
+    
+    // Unknown error
+    UNKNOWN_ERROR = 'UNKNOWN_ERROR'
+}
+
+export enum ErrorSeverity {
+    LOW = 'LOW',
+    MEDIUM = 'MEDIUM',
+    HIGH = 'HIGH',
+    CRITICAL = 'CRITICAL'
+}
+
+export enum ConnectionState {
+    CONNECTING = 'CONNECTING',
+    CONNECTED = 'CONNECTED',
+    DISCONNECTED = 'DISCONNECTED',
+    RECONNECTING = 'RECONNECTING',
+    ERROR = 'ERROR'
+}
+
+export enum WebSocketErrorCode {
+    INVALID_GAME_ID = 'INVALID_GAME_ID',
+    GAME_FULL = 'GAME_FULL',
+    GAME_NOT_FOUND = 'GAME_NOT_FOUND',
+    GAME_ALREADY_STARTED = 'GAME_ALREADY_STARTED',
+    INVALID_MOVE = 'INVALID_MOVE',
+    NOT_YOUR_TURN = 'NOT_YOUR_TURN',
+    GAME_OVER = 'GAME_OVER',
+    GAME_ENDED = 'GAME_ENDED',
+    INVALID_STATE = 'INVALID_STATE',
+    INTERNAL_ERROR = 'INTERNAL_ERROR',
+    SERVER_ERROR = 'SERVER_ERROR',
+    CONNECTION_ERROR = 'CONNECTION_ERROR'
+}

@@ -1,36 +1,53 @@
-// Re-export basic types
-export { Player } from './basic-types';
-export type { 
+// Re-export primitive types
+export type {
+    Coordinate,
+    Size,
+    Timestamp,
+    Version,
+    UUID,
+    PlayerNumber,
     IPosition,
     IBoardSize,
     GameStatus
-} from './basic-types';
+} from './primitives';
 
-// Re-export base types
-export { 
+export { Player } from './primitives';
+
+// Re-export enums
+export {
     GamePhase,
     GameOutcome,
     OperationType,
-    BOARD_SIZE,
-    MIN_ADJACENT_FOR_REPLACE,
-    MAX_PLACE_OPERATIONS,
     ErrorCode,
     ErrorSeverity,
+    ConnectionState,
     WebSocketErrorCode
-} from './base';
-export type {
-    GameError,
-    RecoveryStrategy,
-    ConnectionState
-} from './base';
+} from './enums';
+
+// Re-export constants
+export {
+    BOARD_SIZE,
+    MIN_ADJACENT_FOR_REPLACE,
+    MAX_PLACE_OPERATIONS
+} from './constants';
 
 // Re-export move types
 export type {
+    IMoveBase,
+    IPositionedMoveBase,
     IBasicMove,
     IServerMove,
     GameMove,
     IReplaceValidationBase
 } from './moves';
+
+// Re-export game types
+export type {
+    IGameRoom,
+    GameDetails,
+    IPlayer,
+    GameMetadata
+} from './game';
 
 // Re-export state types
 export type {
@@ -42,14 +59,6 @@ export type {
     StoredState,
     IStateStorage
 } from './state';
-
-// Re-export game types
-export type {
-    IPlayer,
-    IGameRoom,
-    GameDetails,
-    GameMetadata
-} from './game';
 
 // Re-export event types
 export type {
@@ -83,11 +92,5 @@ export type {
     ICacheConfig
 } from './redis';
 
-// Re-export payload types
-export type {
-    BasicPosition,
-    BasicMove
-} from './payloads';
-
-// Re-export validation types
+// Re-export core validation types
 export type * from './validation-types';
