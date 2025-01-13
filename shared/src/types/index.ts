@@ -3,11 +3,11 @@ export * from './base';
 export * from './game';
 export * from './storage';
 export * from './network';
+export * from './validation';
 
 // TODO: Move these to appropriate modules
 export * from './replay';
 export * from './redis';
-export * from './validation-types';
 
 // Re-export constants
 export {
