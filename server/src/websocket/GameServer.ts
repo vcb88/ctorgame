@@ -3,7 +3,7 @@ import { Server as HttpServer } from 'http';
 import { Socket } from 'socket.io';
 import {
   IPlayer,
-  IGameMove,
+  GameMove,
   OperationType,
   WebSocketEvents,
   ServerToClientEvents,
@@ -386,7 +386,8 @@ export class GameServer {
 
             if (availableReplaces.length > 0) {
               socket.emit(WebSocketEvents.AvailableReplaces, {
-                moves: availableReplaces
+                moves: availableReplaces,
+                replacements: availableReplaces.map(move => [move.position.x, move.position.y])
               });
             }
           }
