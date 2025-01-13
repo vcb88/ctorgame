@@ -4,6 +4,7 @@
 
 ```mermaid
 graph TD
+    websocket[web-socket-types.ts]
     coordinates[coordinates.ts]
     basics[basic-types.ts]
     base[base.ts]
@@ -28,17 +29,23 @@ graph TD
     base --> payloads
     base --> events
     base --> redis
+    base --> websocket
     moves --> state
     moves --> game
     moves --> payloads
     moves --> replay
+    moves --> websocket
     state --> game
     state --> payloads
     state --> redis
     state --> events
+    state --> websocket
     game --> redis
     game --> replay
     game --> events
+    payloads --> websocket
+    payloads --> events
+    websocket --> events
 ```
 
 ## Module Organization
@@ -73,19 +80,25 @@ graph TD
    - Handles game metadata and details
    - Connects players with game state
 
-6. **payloads.ts - Communication Types**
-   - Imports from multiple modules
-   - Contains WebSocket message types
-   - Defines client-server communication structure
-   - Used by events module
+6. **payloads.ts - Basic Payload Types**
+   - Contains fundamental payload structures
+   - Provides basic position and move types
+   - Used by WebSocket and event modules
+   - Foundation for client-server communication
 
 7. **events.ts - Event Types**
-   - Top-level module for WebSocket events
-   - Imports from base.ts, state.ts, and moves.ts
-   - Defines event handlers and callbacks
-   - Handles WebSocket communication types
+   - Websocket event handlers and listeners
+   - Imports from base.ts and web-socket-types.ts
+   - Defines event interfaces and callbacks
+   - Core WebSocket communication layer
 
-8. **coordinates.ts - Coordinate System Types**
+8. **web-socket-types.ts - WebSocket Protocol Types**
+   - Central WebSocket protocol definitions
+   - Imports from multiple core modules
+   - Contains event types and payloads
+   - Handles type safety for WebSocket communication
+
+9. **coordinates.ts - Coordinate System Types**
    - No external dependencies (foundational module)
    - Contains core types for board representation (IPosition, IBoardSize, IBoard)
    - Used extensively throughout the application
