@@ -1,13 +1,11 @@
 import { MongoClient, Collection } from 'mongodb';
-// Game state and moves
+// Game types
 import { 
     IGameState,
     GameMove,
-    Player
+    Player,
+    IPlayer
 } from '@ctor-game/shared/game';
-
-// Player types
-import { IPlayer } from '@ctor-game/shared/game';
 
 // Game metadata and scores
 import { 
@@ -126,7 +124,6 @@ export class GameService {
     }
 
     async createGame(gameId: string, player: IPlayer, initialState: IGameState): Promise<GameMetadata> {
-        const startTime = Date.now();
         await this.ensureInitialized();
         
         logger.game.state('creating', initialState, {
@@ -332,10 +329,11 @@ export class GameService {
         return game.currentState?.currentTurn.moves.length || 0;
     }
 
-    async getGameStateAtMove(gameId: string, moveNumber: number): Promise<IGameState | null> {
+    async getGameStateAtMove(gameId: string, _moveNumber: number): Promise<IGameState | null> {
         await this.ensureInitialized();
         const game = await this.gamesCollection.findOne({ gameId });
         if (!game || !game.currentState) return null;
+        // TODO: Implement getting state at specific move number
         return game.currentState;
     }
 
