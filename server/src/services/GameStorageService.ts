@@ -15,15 +15,17 @@ export class GameStorageError extends Error {
 }
 
 export class GameStorageService {
-    private gamesCollection: Collection<GameMetadata>;
-    private mongoClient: MongoClient;
+    private gamesCollection!: Collection<GameMetadata>;
+    private mongoClient!: MongoClient;
     private storagePath: string;
+    private redisClient: Redis | null = null;
 
     constructor(
         private readonly mongoUrl: string = process.env.MONGODB_URL || 'mongodb://localhost:27017',
-        private readonly redisClient: Redis,
+        redisClient?: Redis,
         storagePath?: string
     ) {
+        this.redisClient = redisClient || null;
         this.storagePath = storagePath || process.env.STORAGE_PATH || 'storage/games';
         this.initializeStorage();
     }
