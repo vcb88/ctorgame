@@ -1,19 +1,19 @@
 import React, { useState, useEffect } from 'react';
-import { useMultiplayerGame } from '../hooks/useMultiplayerGame';
+import { useMultiplayerGame } from '@/hooks/useMultiplayerGame';
 // Game types
 import { 
   Player,
   IBoard 
-} from '@ctor-game/shared/game';
+} from '@ctor-game/shared/types/game';
 
 // Operations
 import { 
   OperationType,
   GameOutcome 
-} from '@ctor-game/shared/base';
+} from '@ctor-game/shared/types/base/enums';
 import { cn } from '@/lib/utils';
-import { GameCell } from './GameCell';
-import { logger } from '../utils/logger';
+import { GameCell } from '@/components/GameCell';
+import { logger } from '@/utils/logger';
 
 export const Game: React.FC = () => {
   const {
