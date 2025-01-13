@@ -50,8 +50,6 @@ export {
 
 // Re-export event types
 export {
-    WebSocketEvents,
-    WebSocketPayloads,
     IGameEvent,
     ReconnectionData,
     ServerToClientEvents,
@@ -59,7 +57,15 @@ export {
     ErrorResponse
 } from './events';
 
-// Re-export WebSocketErrorCode from base instead of events
+// Re-export WebSocket types
+export {
+    WebSocketEvents,
+    WebSocketPayloads,
+    ServerToClientEventType,
+    ClientToServerEventType
+} from './web-socket-types';
+
+// Re-export WebSocketErrorCode from base
 export { WebSocketErrorCode } from './base';
 
 // Re-export replay types
@@ -82,14 +88,6 @@ export {
     BasicPosition,
     BasicMove
 } from './payloads';
-
-// Re-export WebSocket types
-export {
-    WebSocketEvents,
-    WebSocketPayloads,
-    ServerToClientEventType,
-    ClientToServerEventType
-} from './web-socket-types';
 
 // Re-export validation functions
 export { validateGameMove, validateGameState } from '../validation/game';
