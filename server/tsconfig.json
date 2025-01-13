@@ -1,8 +1,8 @@
 {
   "compilerOptions": {
     "target": "ES2020",
-    "module": "ESNext",
-    "moduleResolution": "bundler",
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
     "isolatedModules": true,
     "noEmit": false,
     "declaration": true,
@@ -23,8 +23,8 @@
     "noImplicitReturns": true,
     "noFallthroughCasesInSwitch": true,
     "paths": {
-      "@ctor-game/shared": ["../shared/src"],
-      "@ctor-game/shared/*": ["../shared/src/*"]
+      "@ctor-game/shared": ["../shared/dist"],
+      "@ctor-game/shared/*": ["../shared/dist/*"]
     }
   },
   "include": ["src/**/*"],

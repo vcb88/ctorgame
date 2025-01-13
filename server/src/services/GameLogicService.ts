@@ -9,7 +9,7 @@ import {
 } from '@ctor-game/shared/game';
 
 // Base types
-import type { OperationType, GameOutcome, GamePhase } from '@ctor-game/shared/types/base/enums';
+import { OperationType, GameOutcome, GamePhase } from '@ctor-game/shared/types/base/enums';
 import type { IPosition, IBoardSize } from '@ctor-game/shared/types/base/primitives';
 
 // Constants
