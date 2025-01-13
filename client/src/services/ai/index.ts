@@ -1,12 +1,8 @@
-import {
-    IGameAI,
-    IAIConfig,
-    IMoveEvaluation,
-    IPositionStrength,
-    IGameState,
-    IBoard,
-    IPosition
-} from '@ctor-game/shared';
+import type { IGameAI, IAIConfig } from '@ctor-game/shared/types/ai';
+import type { IMoveEvaluation, IPositionStrength } from '@ctor-game/shared/types/ai';
+import type { IGameState } from '@ctor-game/shared/types/game';
+import type { IBoard } from '@ctor-game/shared/types/board';
+import type { IPosition } from '@ctor-game/shared/types/base/primitives';
 
 /**
  * Default AI configuration

@@ -1,5 +1,5 @@
 import { ErrorRecoveryManager } from './ErrorRecoveryManager';
-import { GameActionType } from '@ctor-game/shared';
+import type { GameActionType } from '@ctor-game/shared/types/game';
 import { ErrorCode, ErrorSeverity, GameError, GameActionUnion } from '../types/errors';
 
 interface QueuedAction {
