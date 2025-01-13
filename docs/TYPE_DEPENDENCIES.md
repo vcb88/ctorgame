@@ -4,6 +4,7 @@
 
 ```mermaid
 graph TD
+    basics[basic-types.ts]
     base[base.ts]
     moves[moves.ts]
     state[state.ts]
@@ -11,26 +12,113 @@ graph TD
     events[events.ts]
     payloads[payloads.ts]
 
-    base --> moves
+    basics --> base
+    basics --> moves
+    basics --> state
+    basics --> game
+    basics --> payloads
     base --> state
     base --> payloads
-    moves --> state
-    moves --> payloads
-    state --> payloads
-    base --> game
-    moves --> game
-    state --> game
     base --> events
+    moves --> state
+    moves --> game
+    moves --> payloads
+    state --> game
+    state --> payloads
     payloads --> events
 ```
 
+## Module Organization
+
+1. **basic-types.ts - Core Types**
+   - Contains the most fundamental types with no dependencies
+   - Includes Player enum, IPosition, IBoardSize, and GameStatus
+   - Used throughout the application
+   - Never imports from other type files
+
+2. **base.ts - Common Types**
+   - Imports basic types from basic-types.ts
+   - Contains game phases, error types, and constants
+   - Provides common types used across the application
+   - Only depends on basic-types.ts
+
+3. **moves.ts - Move Types**
+   - Imports only from basic-types.ts
+   - Defines basic move structure
+   - Contains move validation types
+   - Used by game and state modules
+
+4. **state.ts - State Types**
+   - Imports from basic-types.ts, base.ts, and moves.ts
+   - Contains game state interfaces
+   - Manages board and score types
+   - Central to game state management
+
+5. **game.ts - Game Entity Types**
+   - Imports from basic-types.ts, state.ts, and moves.ts
+   - Defines game room and player structures
+   - Handles game metadata and details
+   - Connects players with game state
+
+6. **payloads.ts - Communication Types**
+   - Imports from multiple modules
+   - Contains WebSocket message types
+   - Defines client-server communication structure
+   - Used by events module
+
+7. **events.ts - Event Types**
+   - Top-level module for WebSocket events
+   - Uses types from payloads.ts
+   - Defines event handlers and callbacks
+   - Final consumer in type hierarchy
+
+## Type Dependency Guidelines
+
+1. **Dependency Direction**
+   - Types should flow from basic-types.ts outward
+   - Each module should only import from modules "below" it in hierarchy
+   - No circular dependencies allowed
+   - Events module should be the final consumer
+
+2. **Import Organization**
+   - Import from basic-types.ts first
+   - Group imports by source module
+   - Use explicit imports
+   - Avoid deep imports from nested structures
+
+3. **Type Placement**
+   - Place new types in the most appropriate module
+   - Consider dependencies when choosing module
+   - Keep related types together
+   - Avoid creating new dependencies
+
+4. **Breaking Changes**
+   - Changes to basic-types.ts affect all modules
+   - Consider impact on dependent modules
+   - Update all affected modules
+   - Maintain backward compatibility where possible
+
 ## Detailed Type Dependencies
 
-### base.ts - Foundation Types
+### Basic Types (basic-types.ts)
 ```mermaid
 graph TD
-    subgraph Base Types
+    subgraph Basic Types
         Player[Player enum]
+        IPosition[IPosition]
+        IBoardSize[IBoardSize]
+        GameStatus[GameStatus type]
+        style Player fill:#f9f,stroke:#333
+        style IPosition fill:#f9f,stroke:#333
+        style IBoardSize fill:#f9f,stroke:#333
+        style GameStatus fill:#f9f,stroke:#333
+    end
+```
+
+### Common Types (base.ts)
+```mermaid
+graph TD
+    subgraph Common Types
         GamePhase[GamePhase enum]
         GameOutcome[GameOutcome enum]
         OperationType[OperationType enum]
@@ -38,14 +126,8 @@ graph TD
         ErrorSeverity[ErrorSeverity enum]
         ConnectionState[ConnectionState enum]
         RecoveryStrategy[RecoveryStrategy enum]
-    end
-
-    subgraph Basic Interfaces
-        IPosition[IPosition]
-        IBoardSize[IBoardSize]
         GameError[GameError]
-        style IPosition fill:#f9f,stroke:#333
-        style IBoardSize fill:#f9f,stroke:#333
+        style GamePhase fill:#f9f,stroke:#333
         style GameError fill:#f9f,stroke:#333
     end
 
