@@ -3,73 +3,73 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "main": "./src/index.ts",
-  "types": "./src/index.ts",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
   "exports": {
     ".": {
-      "types": "./src/index.ts",
-      "import": "./src/index.ts",
-      "default": "./src/index.ts"
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "default": "./dist/index.js"
     },
     "./types/base": {
-      "types": "./src/types/base/index.ts",
-      "import": "./src/types/base/index.ts",
-      "default": "./src/types/base/index.ts"
+      "types": "./dist/types/base/index.d.ts",
+      "import": "./dist/types/base/index.js",
+      "default": "./dist/types/base/index.js"
     },
     "./types/base/*": {
-      "types": "./src/types/base/*.ts",
-      "import": "./src/types/base/*.ts",
-      "default": "./src/types/base/*.ts"
+      "types": "./dist/types/base/*.d.ts",
+      "import": "./dist/types/base/*.js",
+      "default": "./dist/types/base/*.js"
     },
     "./types/game": {
-      "types": "./src/types/game/index.ts",
-      "import": "./src/types/game/index.ts",
-      "default": "./src/types/game/index.ts"
+      "types": "./dist/types/game/index.d.ts",
+      "import": "./dist/types/game/index.js",
+      "default": "./dist/types/game/index.js"
     },
     "./types/game/*": {
-      "types": "./src/types/game/*.ts",
-      "import": "./src/types/game/*.ts",
-      "default": "./src/types/game/*.ts"
+      "types": "./dist/types/game/*.d.ts",
+      "import": "./dist/types/game/*.js",
+      "default": "./dist/types/game/*.js"
     },
     "./types/network": {
-      "types": "./src/types/network/index.ts",
-      "import": "./src/types/network/index.ts",
-      "default": "./src/types/network/index.ts"
+      "types": "./dist/types/network/index.d.ts",
+      "import": "./dist/types/network/index.js",
+      "default": "./dist/types/network/index.js"
     },
     "./types/storage": {
-      "types": "./src/types/storage/index.ts",
-      "import": "./src/types/storage/index.ts",
-      "default": "./src/types/storage/index.ts"
+      "types": "./dist/types/storage/index.d.ts",
+      "import": "./dist/types/storage/index.js",
+      "default": "./dist/types/storage/index.js"
     },
     "./types/replay": {
-      "types": "./src/types/replay/index.ts",
-      "import": "./src/types/replay/index.ts",
-      "default": "./src/types/replay/index.ts"
+      "types": "./dist/types/replay/index.d.ts",
+      "import": "./dist/types/replay/index.js",
+      "default": "./dist/types/replay/index.js"
     },
     "./types/replay/*": {
-      "types": "./src/types/replay/*.ts",
-      "import": "./src/types/replay/*.ts",
-      "default": "./src/types/replay/*.ts"
+      "types": "./dist/types/replay/*.d.ts",
+      "import": "./dist/types/replay/*.js",
+      "default": "./dist/types/replay/*.js"
     },
     "./types/redis": {
-      "types": "./src/types/redis/index.ts",
-      "import": "./src/types/redis/index.ts",
-      "default": "./src/types/redis/index.ts"
+      "types": "./dist/types/redis/index.d.ts",
+      "import": "./dist/types/redis/index.js",
+      "default": "./dist/types/redis/index.js"
     },
     "./validation/*": {
-      "types": "./src/validation/*.ts",
-      "import": "./src/validation/*.ts",
-      "default": "./src/validation/*.ts"
+      "types": "./dist/validation/*.d.ts",
+      "import": "./dist/validation/*.js",
+      "default": "./dist/validation/*.js"
     },
     "./utils": {
-      "types": "./src/utils/index.ts",
-      "import": "./src/utils/index.ts",
-      "default": "./src/utils/index.ts"
+      "types": "./dist/utils/index.d.ts",
+      "import": "./dist/utils/index.js",
+      "default": "./dist/utils/index.js"
     },
     "./utils/*": {
-      "types": "./src/utils/*.ts",
-      "import": "./src/utils/*.ts",
-      "default": "./src/utils/*.ts"
+      "types": "./dist/utils/*.d.ts",
+      "import": "./dist/utils/*.js",
+      "default": "./dist/utils/*.js"
     }
   },
   "sideEffects": false,
