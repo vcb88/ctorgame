@@ -1,4 +1,4 @@
-// Re-export all types with explicit exports
+// Re-export base types
 export {
     Player,
     GamePhase,
@@ -17,11 +17,13 @@ export {
     ConnectionState
 } from './base';
 
+// Re-export move types
 export {
     IBasicMove,
     GameMove
 } from './moves';
 
+// Re-export state types
 export {
     IBoard,
     IScores,
@@ -32,6 +34,7 @@ export {
     IStateStorage
 } from './state';
 
+// Re-export game types
 export {
     IPlayer,
     IGameRoom,
@@ -39,6 +42,7 @@ export {
     GameMetadata
 } from './game';
 
+// Re-export event types
 export {
     WebSocketEvents,
     WebSocketPayloads,
@@ -46,62 +50,24 @@ export {
     ReconnectionData,
     ServerToClientEvents,
     ClientToServerEvents,
-    WebSocketErrorCode
+    WebSocketErrorCode,
+    ErrorResponse
 } from './events';
 
-// Additional type exports
-export interface ErrorResponse {
-    code: WebSocketErrorCode;
-    message: string;
-    details?: Record<string, unknown>;
-}
+// Re-export replay types
+export {
+    GameHistory,
+    IReplayState
+} from './replay';
 
-export interface GameHistory {
-    metadata: GameMetadata;
-    moves: GameMove[];
-    details: GameDetails;
-}
-
-export interface IReplayState {
-    currentMoveIndex: number;
-    totalMoves: number;
-    isPlaying: boolean;
-    playbackSpeed: number;
-    gameCode: string;
-}
+// Re-export Redis types
+export {
+    IRedisGameState,
+    IRedisPlayerSession,
+    IRedisGameRoom,
+    IRedisGameEvent,
+    ICacheConfig
+} from './redis';
 
 // Re-export validation functions
 export { validateGameMove, validateGameState } from '../validation/game';
-
-// Additional exports for Redis types
-export interface IRedisGameState extends IGameState {
-    lastUpdate: number;
-}
-
-export interface IRedisPlayerSession {
-    gameId: string;
-    playerNumber: number;
-    lastActivity: number;
-}
-
-export interface IRedisGameRoom {
-    players: IPlayer[];
-    status: GameStatus;
-    lastUpdate: number;
-}
-
-export interface IRedisGameEvent {
-    type: 'move' | 'disconnect' | 'reconnect' | 'end_turn';
-    gameId: string;
-    playerId: string;
-    data: unknown;
-    timestamp: number;
-}
-
-export interface ICacheConfig {
-    ttl: {
-        gameState: number;
-        playerSession: number;
-        gameRoom: number;
-    };
-}
