@@ -82,7 +82,7 @@ export class GameLogicService {
       // 2. Достаточно ли своих фишек вокруг
       return (
         state.board.cells[y][x] === getOpponent(playerNumber) &&
-        this.validateReplace(state.board, position, playerNumber).isValid
+        this.validateReplace(state.board, position, playerNumber).valid
       );
     }
 
@@ -103,15 +103,16 @@ export class GameLogicService {
       board.cells[pos.y][pos.x] === playerNumber
     );
     
-    const validation = {
-      position,
-      isValid: playerPieces.length >= MIN_ADJACENT_FOR_REPLACE,
-      adjacentCount: playerPieces.length,
-      adjacentPositions: playerPieces
+    const validation: IReplaceValidation = {
+      valid: playerPieces.length >= MIN_ADJACENT_FOR_REPLACE,
+      replacements: playerPieces.map(pos => [pos.x, pos.y]),
+      message: playerPieces.length >= MIN_ADJACENT_FOR_REPLACE ? 
+        'Valid replacement' : 
+        `Not enough adjacent pieces (${playerPieces.length}/${MIN_ADJACENT_FOR_REPLACE})`
     };
 
-    logger.game.validation(validation.isValid, 
-      validation.isValid ? 'valid_replace' : 'invalid_replace', 
+    logger.game.validation(validation.valid, 
+      validation.valid ? 'valid_replace' : 'invalid_replace', 
       {
         position,
         playerNumber,
@@ -220,7 +221,7 @@ export class GameLogicService {
         if (state.board.cells[y][x] === getOpponent(playerNumber)) {
           const position: IPosition = { x, y };
           const candidate = this.validateReplace(state.board, position, playerNumber);
-          if (candidate.isValid) {
+          if (candidate.valid) {
             availableReplaces.push({
               type: OperationType.REPLACE,
               position,
