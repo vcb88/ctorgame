@@ -1,5 +1,4 @@
-import { Player, GameOutcome, GamePhase } from '../../types/base.js';
-import type { IScores, GameManagerState } from '../../types/game.js';
+import { Player, GameOutcome, GamePhase, IScores, GameManagerState } from '../../types/index.js';
 
 // Game utility functions
 export const getGameOutcome = (winner: Player | null, playerNumber: Player): GameOutcome => {
@@ -19,7 +18,7 @@ export const getOpponent = (player: Player): Player => {
 };
 
 // Score utilities
-export const legacyToScores = (legacy: { [Player.First]: number; [Player.Second]: number }): IScores => ({
+export const legacyToScores = (legacy: Record<Player, number>): IScores => ({
     player1: legacy[Player.First],
     player2: legacy[Player.Second],
     [Player.First]: legacy[Player.First],
