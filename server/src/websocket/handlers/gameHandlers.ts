@@ -1,6 +1,6 @@
 import { Socket } from 'socket.io';
-import { GameService } from '../../services/GameService';
-import { GameStorageService } from '../../services/GameStorageService';
+import { GameService } from '../../services/GameService.js';
+import { GameStorageService } from '../../services/GameStorageService.js';
 import {
   IGameMove,
   IPlayer,
@@ -14,10 +14,10 @@ import {
   isValidScores,
   GameMetadata
 } from '@ctor-game/shared';
-import { GameEventResponse } from '../../types/events';
-import { WebSocketErrorCode } from '../../types/errors';
-import { logger } from '../../utils/logger';
-import { toErrorWithStack } from '../../types/error';
+import { GameEventResponse } from '../../types/events.js';
+import { WebSocketErrorCode } from '../../types/errors.js';
+import { logger } from '../../utils/logger.js';
+import { toErrorWithStack } from '../../types/error.js';
 
 export function registerGameHandlers(
   socket: Socket, 

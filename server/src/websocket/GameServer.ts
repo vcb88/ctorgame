@@ -20,16 +20,16 @@ import {
   GamePhase,
   WebSocketPayloads
 } from '@ctor-game/shared';
-import { validateGameMove, validateGameState } from '../validation/game';
-import { GameService } from '../services/GameService';
-import { GameLogicService } from '../services/GameLogicService';
-import { GameStorageService } from '../services/GameStorageService';
-import { redisService } from '../services/RedisService';
-import { redisClient, connectRedis } from '../config/redis';
-import { GameEventResponse } from '../types/events';
-import { WebSocketErrorCode, ErrorResponse } from '../types/connection';
-import { logger } from '../utils/logger';
-import { ErrorWithStack, toErrorWithStack } from '../types/error';
+import { validateGameMove, validateGameState } from '../validation/game.js';
+import { GameService } from '../services/GameService.js';
+import { GameLogicService } from '../services/GameLogicService.js';
+import { GameStorageService } from '../services/GameStorageService.js';
+import { redisService } from '../services/RedisService.js';
+import { redisClient, connectRedis } from '../config/redis.js';
+import { GameEventResponse } from '../types/events.js';
+import { WebSocketErrorCode, ErrorResponse } from '../types/connection.js';
+import { logger } from '../utils/logger.js';
+import { ErrorWithStack, toErrorWithStack } from '../types/error.js';
 
 const PLAYER_RECONNECT_TIMEOUT = 5 * 60 * 1000; // 5 минут
 

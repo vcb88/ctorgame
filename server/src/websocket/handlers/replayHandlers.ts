@@ -1,5 +1,5 @@
 import { Socket } from 'socket.io';
-import { GameService } from '../../services/GameService';
+import { GameService } from '../../services/GameService.js';
 import { IGameState, IReplayState, GameHistory } from '@ctor-game/shared';
 
 // Состояние replay для каждой игры

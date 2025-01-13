@@ -45,6 +45,33 @@ export {
     WebSocketErrorCode
 } from './events';
 
+// Additional type exports
+export interface ErrorResponse {
+    code: WebSocketErrorCode;
+    message: string;
+    details?: Record<string, unknown>;
+}
+
+// Re-export GameMove type from game.ts
+export { GameMove } from './game';
+
+export interface GameHistory {
+    metadata: GameMetadata;
+    moves: GameMove[];
+    details: GameDetails;
+}
+
+export interface IReplayState {
+    currentMoveIndex: number;
+    totalMoves: number;
+    isPlaying: boolean;
+    playbackSpeed: number;
+    gameCode: string;
+}
+
+// Re-export validation functions
+export { validateGameMove, validateGameState } from '../validation/game';
+
 // Additional exports for Redis types
 export interface IRedisGameState extends IGameState {
     lastUpdate: number;

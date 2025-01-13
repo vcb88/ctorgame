@@ -7,8 +7,9 @@ import {
     IRedisGameEvent,
     Player
 } from '@ctor-game/shared';
-import { redisClient, REDIS_KEYS, REDIS_EVENTS, withLock, cacheConfig } from '../config/redis';
-import { GameLogicService } from './GameLogicService';
+import { redisClient, REDIS_KEYS, REDIS_EVENTS, withLock, cacheConfig } from '../config/redis.js';
+import { GameLogicService } from './GameLogicService.js';
+
 export class RedisService {
     /**
      * Сохраняет состояние игры
@@ -52,7 +53,7 @@ export class RedisService {
     async updateGameState(
         gameId: string,
         playerNumber: Player,
-        move: any,
+        move: { type: string; position: { x: number; y: number } },
         validateMove: boolean = true
     ): Promise<IGameState> {
         return await withLock(gameId, async () => {
@@ -219,7 +220,7 @@ export class RedisService {
      */
     async getGameEvents(gameId: string, limit: number = 10): Promise<IRedisGameEvent[]> {
         const events = await redisClient.lrange(REDIS_KEYS.GAME_EVENTS(gameId), 0, limit - 1);
-        return events.map(e => JSON.parse(e));
+        return events.map((e: string) => JSON.parse(e));
     }
 
     /**
@@ -264,7 +265,7 @@ export class RedisService {
     /**
      * Обновляет статистику игры
      */
-    async updateGameStats(gameId: string, stats: any): Promise<void> {
+    async updateGameStats(gameId: string, stats: Record<string, unknown>): Promise<void> {
         await redisClient
             .multi()
             .hset(REDIS_KEYS.GAME_STATS, gameId, JSON.stringify(stats))
@@ -275,7 +276,7 @@ export class RedisService {
     /**
      * Получает статистику игры
      */
-    async getGameStats(gameId: string): Promise<any | null> {
+    async getGameStats(gameId: string): Promise<Record<string, unknown> | null> {
         const stats = await redisClient.hget(REDIS_KEYS.GAME_STATS, gameId);
         return stats ? JSON.parse(stats) : null;
     }

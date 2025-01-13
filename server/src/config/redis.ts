@@ -1,8 +1,8 @@
 import Redis from 'ioredis';
 import * as dotenv from 'dotenv';
 import { ICacheConfig } from '@ctor-game/shared';
-import { logger } from '../utils/logger';
-import { ErrorWithStack, toErrorWithStack } from '../types/error';
+import { logger } from '../utils/logger.js';
+import { ErrorWithStack, toErrorWithStack } from '../types/error.js';
 
 dotenv.config();
 

@@ -8,8 +8,8 @@ import {
     IScores
 } from '@ctor-game/shared';
 import { GameLogicService } from './GameLogicService';
-import { logger } from '../utils/logger';
-import { toErrorWithStack } from '../types/error';
+import { logger } from '../utils/logger.js';
+import { toErrorWithStack } from '../types/error.js';
 
 export class GameService {
     private gamesCollection: Collection<GameMetadata>;

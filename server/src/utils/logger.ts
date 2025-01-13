@@ -1,4 +1,4 @@
-import { ErrorWithStack } from '../types/error';
+import { ErrorWithStack } from '../types/error.js';
 
 const DEBUG = true;
 
