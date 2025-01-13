@@ -119,9 +119,11 @@ export interface WebSocketPayloads {
     [WebSocketEvents.PlayerReconnected]: {
         player: number;
         gameState: IGameState;
+        currentPlayer: Player;
     };
     [WebSocketEvents.GameExpired]: {
         gameId: string;
+        reason?: string;
     };
     [WebSocketEvents.Error]: {
         code: WebSocketErrorCode;
@@ -130,6 +132,7 @@ export interface WebSocketPayloads {
     };
     [WebSocketEvents.AvailableReplaces]: {
         replacements: Array<[number, number]>;
+        moves: GameMove[];
     };
 }
 

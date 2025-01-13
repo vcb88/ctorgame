@@ -171,10 +171,7 @@ export class GameStorageService {
             players: {
                 first: playerId
             },
-            boardSize: {
-                width: 10,
-                height: 10
-            },
+            boardSize: { width: 10, height: 10 },
             totalTurns: 0
         };
 

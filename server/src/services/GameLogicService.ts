@@ -223,7 +223,9 @@ export class GameLogicService {
           if (candidate.isValid) {
             availableReplaces.push({
               type: OperationType.REPLACE,
-              position
+              position,
+              player: playerNumber,
+              timestamp: Date.now()
             });
           }
         }
