@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { GameCell } from './GameCell';
-import { IPosition, Player, OperationType } from '@ctor-game/shared';
+import type { IPosition } from '@ctor-game/shared/types/base/primitives';
+import type { Player, OperationType } from '@ctor-game/shared/types/base/enums';
 import { GameError } from '../types/connection';
 import { GameActionType } from '../types/actions';
 import { logger } from '../utils/logger';
