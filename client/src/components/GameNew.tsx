@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { useMultiplayerGameNew } from '../hooks/useMultiplayerGameNew.v2';
+import { useMultiplayerGameNew } from '@/hooks/useMultiplayerGameNew.v2';
 import type { OperationType, Player } from '@ctor-game/shared/types/base/enums';
 import type { GameActionType } from '@ctor-game/shared/types/game';
 import type { ErrorCode } from '@ctor-game/shared/types/network';
 import { cn } from '@/lib/utils';
-import { GameCell } from './GameCell';
-import { logger } from '../utils/logger';
+import { GameCell } from '@/components/GameCell';
+import { logger } from '@/utils/logger';
 
 export const GameNew: React.FC = () => {
   const {
