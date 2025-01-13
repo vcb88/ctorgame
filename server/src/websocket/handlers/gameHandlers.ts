@@ -1,20 +1,37 @@
 import { Socket } from 'socket.io';
 import { GameService } from '../../services/GameService.js';
 import { GameStorageService } from '../../services/GameStorageService.js';
+// Game types and moves
 import {
   GameMove,
-  IPlayer,
   IGameState,
-  WebSocketEvents,
-  BOARD_SIZE,
-  IScores,
   Player,
+  IScores,
+  IPlayer
+} from '@ctor-game/shared/game';
+
+// Board constants
+import {
+  BOARD_SIZE
+} from '@ctor-game/shared/base';
+
+// Network events and errors
+import {
+  WebSocketEvents,
+  WebSocketErrorCode
+} from '@ctor-game/shared/network';
+
+// Storage types
+import {
+  GameMetadata
+} from '@ctor-game/shared/storage';
+
+// Validation functions
+import {
   validateGameMove,
   validateGameState,
-  isValidScores,
-  GameMetadata,
-  WebSocketErrorCode
-} from '@ctor-game/shared';
+  isValidScores
+} from '@ctor-game/shared/validation';
 import { GameEventResponse } from '../../types/events.js';
 import { logger } from '../../utils/logger.js';
 import { toErrorWithStack } from '../../types/error.js';

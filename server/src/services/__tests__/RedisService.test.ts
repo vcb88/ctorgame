@@ -2,7 +2,18 @@ import { describe, it, expect, beforeEach, jest } from '@jest/globals';
 import { redisService } from '../RedisService.js';
 import { redisClient, REDIS_KEYS, REDIS_EVENTS } from '../../config/redis.js';
 import { GameLogicService } from '../GameLogicService.js';
-import { IGameState, IPlayer, Player, IScores, IGameEvent } from '@ctor-game/shared';
+// Game types
+import { 
+    IGameState, 
+    IPlayer, 
+    Player, 
+    IScores 
+} from '@ctor-game/shared/game';
+
+// Event types
+import { 
+    IGameEvent 
+} from '@ctor-game/shared/network';
 import { GameEventType } from '../../types/events.js';
 
 // Мокаем Redis и GameLogicService

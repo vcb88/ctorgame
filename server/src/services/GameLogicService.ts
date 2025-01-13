@@ -1,21 +1,42 @@
 import { logger } from '../utils/logger.js';
+// Game state and moves
 import {
   IGameState,
   GameMove,
   OperationType,
-  BOARD_SIZE,
-  MIN_ADJACENT_FOR_REPLACE,
-  MAX_PLACE_OPERATIONS,
-  IPosition,
-  IBoard,
   Player,
   GameOutcome,
-  getOpponent,
-  normalizePosition,
+  IBoard
+} from '@ctor-game/shared/game';
+
+// Board constants and types
+import {
+  BOARD_SIZE,
+  MIN_ADJACENT_FOR_REPLACE,
+  MAX_PLACE_OPERATIONS
+} from '@ctor-game/shared/base';
+
+// Position types and utils
+import {
+  IPosition,
   getAdjacentPositions,
-  IReplaceValidation,
+  normalizePosition
+} from '@ctor-game/shared/base';
+
+// Validation types
+import {
+  IReplaceValidation
+} from '@ctor-game/shared/validation';
+
+// Game utils
+import {
+  getOpponent
+} from '@ctor-game/shared/game';
+
+// Scoring
+import {
   IScores
-} from '@ctor-game/shared';
+} from '@ctor-game/shared/game';
 
 export class GameLogicService {
   /**

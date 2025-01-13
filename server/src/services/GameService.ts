@@ -1,12 +1,19 @@
 import { MongoClient, Collection } from 'mongodb';
+// Game state and moves
 import { 
-    IGameState, 
-    GameMove, 
-    IPlayer,
+    IGameState,
+    GameMove,
+    Player
+} from '@ctor-game/shared/game';
+
+// Player types
+import { IPlayer } from '@ctor-game/shared/game';
+
+// Game metadata and scores
+import { 
     GameMetadata,
-    Player,
-    IScores
-} from '@ctor-game/shared';
+    IScores 
+} from '@ctor-game/shared/storage';
 import { GameLogicService } from './GameLogicService';
 import { logger } from '../utils/logger.js';
 import { toErrorWithStack } from '../types/error.js';
