@@ -7,3 +7,4 @@ export interface IValidationResult {
 // Specific validation results can extend this interface
 export interface IValidationResultWithDetails extends IValidationResult {
     details?: Record<string, unknown>;
+}

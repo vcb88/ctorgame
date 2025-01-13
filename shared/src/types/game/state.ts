@@ -1,9 +1,9 @@
 import {
     ICell
-} from '../core.js.js';
-import { Player } from '../base/enums.js.js';
-import { IBoardSize } from '../base/primitives.js.js';
-import { IBasicMove } from './moves.js.js';".js"
+} from '../core.js';
+import { Player } from '../base/enums.js';
+import { IBoardSize } from '../base/primitives.js';
+import { IBasicMove } from './moves.js';".js"
 
 // Board interfaces
 export interface IBoardBase {
@@ -49,3 +49,4 @@ export interface IGameStateBase {
 export interface IGameState extends IGameStateBase {
     currentTurn: ITurnState;
     scores: IScores;
+}

@@ -28,3 +28,4 @@ export enum WebSocketErrorCode {
     
     // Generic errors
     Unknown = 9999
+}

@@ -5,7 +5,7 @@ import {
     IHeight,
     IPlayerNumber,
     IGameStatus
-} from './core.js.js';
+} from './core.js';
 
 // Player enum and interfaces
 export enum Player {

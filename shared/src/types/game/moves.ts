@@ -2,9 +2,9 @@ import {
     IOperationType,
     IValidationResult,
     ITimestamp
-} from '../core.js.js';
-import { IPositionBase } from '../base/primitives.js.js';
-import { Player } from '../base/enums.js.js';
+} from '../core.js';
+import { IPositionBase } from '../base/primitives.js';
+import { Player } from '../base/enums.js';
 
 // Move interfaces
 export interface IMoveBase extends IOperationType {
@@ -34,3 +34,4 @@ export interface GameMove extends IGameMoveBase, ITimestamp {}
 // Replace validation interfaces
 export interface IReplaceValidationBase extends IValidationResult {
     readonly replacements?: ReadonlyArray<[number, number]>;
+}

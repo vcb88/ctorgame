@@ -6,7 +6,7 @@ import {
     IErrorDetails,
     ITimestamp,
     IConnectionStatus
-} from './core.js.js';
+} from './core.js';
 
 // Game phase interfaces
 export interface IGamePhaseBase extends IPhase {}
@@ -124,3 +124,4 @@ export enum WebSocketErrorCode {
     INTERNAL_ERROR = 'INTERNAL_ERROR',
     SERVER_ERROR = 'SERVER_ERROR',
     CONNECTION_ERROR = 'CONNECTION_ERROR'
+}

@@ -1,7 +1,7 @@
-import { GameMove } from '../types/game/moves.js.js';
-import { IGameState } from '../types/game/state.js.js';
-import { IPosition, IBoardSize } from '../types/base/primitives.js.js';
-import { Player } from '../types/base/enums.js.js';
+import { GameMove } from '../types/game/moves.js';
+import { IGameState } from '../types/game/state.js';
+import { IPosition, IBoardSize } from '../types/base/primitives.js';
+import { Player } from '../types/base/enums.js';
 
 export function validatePosition(pos: IPosition, size: IBoardSize): boolean {
   return (
@@ -48,3 +48,4 @@ export function validateGameState(state: IGameState): boolean {
     typeof state.scores[Player.Second] === 'number' &&
     typeof state.isFirstTurn === 'boolean'
   );
+}

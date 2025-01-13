@@ -23,3 +23,4 @@ export interface IPlaybackControls {
     previous: () => void;
     setSpeed: (speed: number) => void;
     seekTo: (moveIndex: number) => void;
+}

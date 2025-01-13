@@ -9,3 +9,4 @@ export interface BasicPosition {
 export interface BasicMove {
     type: 'place' | 'replace';
     position: BasicPosition;
+}

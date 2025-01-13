@@ -15,3 +15,4 @@ export interface IRedisEventStatus {
     status: 'pending' | 'processing' | 'completed' | 'failed';
     error?: string;
     processedAt?: number;
+}

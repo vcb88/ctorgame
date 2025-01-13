@@ -115,3 +115,4 @@ export interface IGameStatus {
 export interface IValidationResult {
     readonly valid: boolean;
     readonly message?: string;
+}

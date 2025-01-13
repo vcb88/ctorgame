@@ -1,5 +1,5 @@
-import type { IPosition, IBoardSize } from '../types/basic-types.js.js';
-import type { IBoard } from '../types/state.js.js';
+import type { IPosition, IBoardSize } from '../types/basic-types.js';
+import type { IBoard } from '../types/state.js';
 
 /**
  * Direction vectors for adjacent cells.
@@ -87,3 +87,4 @@ export function positionToRowCol(pos: IPosition): { row: number; col: number } {
  */
 export function rowColToPosition(row: number, col: number): IPosition {
     return { x: col, y: row };
+}

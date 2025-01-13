@@ -27,3 +27,4 @@ export interface IRedisConfig {
     db?: number;
     tls?: boolean;
     maxReconnectAttempts?: number;
+}

@@ -1,5 +1,5 @@
-import { Player } from './basic-types.js.js';".js"
-import { IGameState } from './state.js.js';".js"
+import { Player } from './basic-types.js';".js"
+import { IGameState } from './state.js';".js"
 
 export interface IPlayer {
     id: string;
@@ -11,3 +11,4 @@ export interface IGameRoom {
     players: IPlayer[];
     currentState: IGameState;
     currentPlayer: Player;
+}
