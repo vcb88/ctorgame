@@ -1,24 +1,22 @@
 import { MongoClient, Collection } from 'mongodb';
 // Game types
-import { 
+import {
     IGameState,
-    GameMove,
-    Player,
     IPlayer
-} from '@ctor-game/shared/game';
+} from '../../../shared/src/types/game/state.js';
+import { GameMove } from '../../../shared/src/types/game/moves.js';
+import { Player } from '../../../shared/src/types/base/enums.js';
+import { IScores } from '../../../shared/src/types/game/state.js';
+import { GameMetadata } from '../../../shared/src/types/storage/metadata.js';
 
-// Game metadata and scores
-import { 
-    GameMetadata,
-    IScores 
-} from '@ctor-game/shared/storage';
-import { GameLogicService } from './GameLogicService';
+// Services
+import { GameLogicService } from './GameLogicService.js';
 import { logger } from '../utils/logger.js';
 import { toErrorWithStack } from '../types/error.js';
 
 export class GameService {
-    private gamesCollection: Collection<GameMetadata>;
-    private mongoClient: MongoClient;
+    private gamesCollection!: Collection<GameMetadata>;
+    private mongoClient!: MongoClient;
 
     constructor(
         private readonly mongoUrl: string = process.env.MONGODB_URL || 'mongodb://localhost:27017'
