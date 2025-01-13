@@ -6,35 +6,33 @@ import {
   IScores,
   GameMove,
   Player
-} from '@ctor-game/shared/game';
+} from '../../../shared/src/types/game/state.js';
 
 // Base types
-import { OperationType, GameOutcome, GamePhase } from '@ctor-game/shared/types/base/enums';
-import type { IPosition, IBoardSize } from '@ctor-game/shared/types/base/primitives';
+import { OperationType } from '../../../shared/src/types/primitives.js';
+import type { IPosition, IBoardSize } from '../../../shared/src/types/primitives.js';
 
 // Constants
 import {
   BOARD_SIZE,
   MIN_ADJACENT_FOR_REPLACE,
   MAX_PLACE_OPERATIONS
-} from '@ctor-game/shared/types/constants';
+} from '../../../shared/src/types/constants.js';
 
 // Board utils
-import { getAdjacentPositions } from '@ctor-game/shared/utils/board';
+import { getAdjacentPositions } from '../../../shared/src/utils/coordinates.js';
 
 // Game validation
 import {
   IReplaceValidation
-} from '@ctor-game/shared/validation';
+} from '../../../shared/src/types/validation/replace.js';
 
 // Game utils
 import {
   getOpponent,
-  getTurnScore,
   createEmptyScores,
-  createScores,
-  updateScores
-} from '@ctor-game/shared/utils';
+  createScores
+} from '../../../shared/src/utils/scores.js';
 
 export class GameLogicService {
   /**
@@ -116,13 +114,13 @@ export class GameLogicService {
   ): IReplaceValidation {
     const startTime = Date.now();
     const adjacentPositions = getAdjacentPositions(position, board);
-    const playerPieces = adjacentPositions.filter(pos => 
+    const playerPieces = adjacentPositions.filter((pos: IPosition) => 
       board.cells[pos.y][pos.x] === playerNumber
     );
     
     const validation: IReplaceValidation = {
       valid: playerPieces.length >= MIN_ADJACENT_FOR_REPLACE,
-      replacements: playerPieces.map(pos => [pos.x, pos.y]),
+      replacements: playerPieces.map((pos: IPosition): [number, number] => [pos.x, pos.y]),
       message: playerPieces.length >= MIN_ADJACENT_FOR_REPLACE ? 
         'Valid replacement' : 
         `Not enough adjacent pieces (${playerPieces.length}/${MIN_ADJACENT_FOR_REPLACE})`
@@ -277,7 +275,7 @@ export class GameLogicService {
    */
   private static checkGameOver(board: IBoard): boolean {
     // Игра заканчивается, когда все клетки заняты
-    return board.cells.every(row => row.every(cell => cell !== Player.None));
+    return board.cells.every((row: number[]) => row.every((cell: number) => cell !== Player.None));
   }
 
   /**
@@ -297,7 +295,7 @@ export class GameLogicService {
   private static cloneGameState(state: IGameState): IGameState {
     return {
       board: {
-        cells: state.board.cells.map(row => [...row]) as number[][],
+        cells: state.board.cells.map((row: number[]): number[] => [...row]) as number[][],
         size: { ...state.board.size }
       },
       gameOver: state.gameOver,
