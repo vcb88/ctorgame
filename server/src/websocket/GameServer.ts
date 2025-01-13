@@ -12,14 +12,18 @@ import {
   Player
 } from '@ctor-game/shared/game';
 
-// Base types and constants
-import {
+// Base types
+import type {
   OperationType,
   GamePhase,
-  GameOutcome,
+  GameOutcome
+} from '@ctor-game/shared/types/base/enums';
+
+// Constants
+import {
   BOARD_SIZE,
   MAX_PLACE_OPERATIONS
-} from '@ctor-game/shared';
+} from '@ctor-game/shared/types/constants';
 
 // Network types
 import {
