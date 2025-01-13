@@ -1,4 +1,4 @@
-import { IGameState, IGameMove, WebSocketEvents } from '@ctor-game/shared';
+import { IGameState, GameMove, WebSocketEvents } from '@ctor-game/shared';
 
 export enum GameEventType {
     MOVE = 'move',
@@ -18,7 +18,7 @@ export interface IGameEvent {
 export interface GameEventHandlers {
   [WebSocketEvents.CreateGame]: () => Promise<void>;
   [WebSocketEvents.JoinGame]: (payload: { gameId: string }) => Promise<void>;
-  [WebSocketEvents.MakeMove]: (payload: { gameId: string; move: IGameMove }) => Promise<void>;
+  [WebSocketEvents.MakeMove]: (payload: { gameId: string; move: GameMove }) => Promise<void>;
   [WebSocketEvents.EndTurn]: (payload: { gameId: string }) => Promise<void>;
   [WebSocketEvents.Reconnect]: (payload: { gameId: string }) => Promise<void>;
 }

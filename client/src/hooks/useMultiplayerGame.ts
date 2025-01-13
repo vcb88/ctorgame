@@ -3,7 +3,7 @@ import { io, Socket } from 'socket.io-client';
 import { logger } from '../utils/logger';
 import {
   IGameState,
-  IGameMove,
+  GameMove,
   OperationType,
   IPosition,
   WebSocketEvents,
@@ -59,7 +59,7 @@ export const useMultiplayerGame = () => {
     return saved ? Number(saved) as Player : Player.First;
   });
   
-  const [availableReplaces, setAvailableReplaces] = useState<IGameMove[]>([]);
+  const [availableReplaces, setAvailableReplaces] = useState<GameMove[]>([]);
 
   // Function to clear game state from localStorage
   const clearGameState = useCallback(() => {
@@ -374,7 +374,7 @@ export const useMultiplayerGame = () => {
         clearOperationTimeout('makeMove');
       },
 
-      [WebSocketEvents.AvailableReplaces]: ({ moves, eventId }: { moves: IGameMove[], eventId: string }) => {
+      [WebSocketEvents.AvailableReplaces]: ({ moves, eventId }: { moves: GameMove[], eventId: string }) => {
         logger.socketEvent(WebSocketEvents.AvailableReplaces, { moves, eventId }, 'in');
         setAvailableReplaces(moves);
         lastEventId.current = eventId;
@@ -604,7 +604,7 @@ export const useMultiplayerGame = () => {
       return;
     }
 
-    const move: IGameMove = {
+    const move: GameMove = {
       type,
       position: { x, y }
     };

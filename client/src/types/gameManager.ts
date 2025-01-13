@@ -2,7 +2,7 @@ import {
   GameManagerState,
   IGameState,
   Player,
-  IGameMove,
+  GameMove,
   GameError
 } from '@ctor-game/shared';
 
@@ -15,7 +15,7 @@ export interface ExtendedGameManagerState extends GameManagerState {
   /** Текущий игрок */
   currentPlayer: Player | null;
   /** Доступные замены для текущего хода */
-  availableReplaces: IGameMove[];
+  availableReplaces: GameMove[];
 }
 
 /**

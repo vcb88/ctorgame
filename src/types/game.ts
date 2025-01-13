@@ -1,4 +1,4 @@
-import { IPosition, IGameMove, IGameState, IScores } from '@ctor-game/shared';
+import { IPosition, GameMove, IGameState, IScores } from '@ctor-game/shared';
 
 /**
  * Represents possible player values
@@ -27,7 +27,7 @@ export enum GameStatus {
 /**
  * Extended move info for game history
  */
-export interface GameMoveHistory extends IGameMove {
+export interface GameMoveHistory extends GameMove {
     /** Player who made the move */
     player: Player;
     /** Timestamp when move was made */

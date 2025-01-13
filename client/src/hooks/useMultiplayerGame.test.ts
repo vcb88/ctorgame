@@ -4,7 +4,7 @@ import { useMultiplayerGame } from './useMultiplayerGame';
 import { 
   WebSocketEvents, 
   IGameState, 
-  IGameMove, 
+  GameMove, 
   OperationType,
   BOARD_SIZE,
   MAX_PLACE_OPERATIONS
@@ -109,7 +109,7 @@ describe('useMultiplayerGame', () => {
 
   it('should handle available replaces', async () => {
     const { result } = renderHook(() => useMultiplayerGame());
-    const availableReplaces: IGameMove[] = [
+    const availableReplaces: GameMove[] = [
       {
         type: OperationType.REPLACE,
         position: { x: 0, y: 0 }

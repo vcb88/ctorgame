@@ -1,5 +1,5 @@
 import { Socket } from 'socket.io-client';
-import { IGameMove, IGameState, Player } from '@ctor-game/shared';
+import { GameMove, IGameState, Player } from '@ctor-game/shared';
 
 export interface ITurnState {
   placeOperationsLeft: number;
@@ -23,6 +23,6 @@ export interface MockedSocket extends Socket {
 export interface GameHistoryEntry {
   moveNumber: number;
   playerNumber: Player;
-  move: IGameMove;
+  move: GameMove;
   timestamp: Date;
 }

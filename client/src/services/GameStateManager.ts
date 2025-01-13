@@ -7,7 +7,7 @@ import {
   WebSocketEvents,
   IGameState,
   WebSocketPayloads,
-  IGameMove
+  GameMove
 } from '@ctor-game/shared';
 import {
   validateStateUpdate,
@@ -403,7 +403,7 @@ export class GameStateManager {
     this.socket.disconnect();
   }
 
-  public async makeMove(move: IGameMove): Promise<void> {
+  public async makeMove(move: GameMove): Promise<void> {
     if (!this.socket || !this.state.gameId) {
       const error = {
         code: ErrorCode.CONNECTION_ERROR,

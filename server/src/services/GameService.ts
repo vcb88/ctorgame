@@ -1,7 +1,7 @@
 import { MongoClient, Collection } from 'mongodb';
 import { 
     IGameState, 
-    IGameMove, 
+    GameMove, 
     IPlayer,
     GameMetadata,
     Player,
@@ -206,7 +206,7 @@ export class GameService {
         return result;
     }
 
-    async makeMove(gameId: string, playerNumber: number, move: IGameMove): Promise<GameMetadata> {
+    async makeMove(gameId: string, playerNumber: number, move: GameMove): Promise<GameMetadata> {
         const startTime = Date.now();
         await this.ensureInitialized();
         

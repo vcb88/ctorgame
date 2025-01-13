@@ -47,7 +47,7 @@ export interface GameMetadata {
     isCompleted?: boolean;
     gameOver?: boolean;
     currentPlayer?: Player;
-    boardSize?: number;
+    boardSize?: IBoardSize;
     finalScore?: {
         [Player.First]: number;
         [Player.Second]: number;

@@ -2,7 +2,7 @@ import {
   GamePhase, 
   Player, 
   IGameState, 
-  IGameMove, 
+  GameMove, 
   isValidGamePhase,
   isValidGameManagerState,
   isValidScores

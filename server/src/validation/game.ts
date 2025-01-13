@@ -1,4 +1,4 @@
-import { IGameMove, IGameState, IPosition, IBoardSize, Player } from '@ctor-game/shared';
+import { GameMove, IGameState, IPosition, IBoardSize, Player } from '@ctor-game/shared';
 
 export function validatePosition(pos: IPosition, size: IBoardSize): boolean {
   return (
@@ -9,7 +9,7 @@ export function validatePosition(pos: IPosition, size: IBoardSize): boolean {
   );
 }
 
-export function validateGameMove(move: IGameMove, boardSize: IBoardSize): boolean {
+export function validateGameMove(move: GameMove, boardSize: IBoardSize): boolean {
   return (
     move &&
     typeof move.type === 'string' &&

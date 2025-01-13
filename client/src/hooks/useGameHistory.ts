@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Socket } from 'socket.io-client';
-import { IGameMove, OperationType, Player } from '@ctor-game/shared';
+import { GameMove, OperationType, Player } from '@ctor-game/shared';
 
 interface UseGameHistoryProps {
     socket: Socket;
@@ -10,7 +10,7 @@ interface UseGameHistoryProps {
 export interface HistoryEntry {
     moveNumber: number;
     playerNumber: Player;
-    move: IGameMove;
+    move: GameMove;
     timestamp: Date;
 }
 
