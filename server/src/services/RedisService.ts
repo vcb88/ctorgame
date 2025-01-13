@@ -7,8 +7,8 @@ import {
     IRedisGameEvent,
     Player
 } from '@ctor-game/shared';
-import { redisClient, REDIS_KEYS, REDIS_EVENTS, withLock, cacheConfig } from '../config/redis.js';
-import { GameLogicService } from './GameLogicService.js';
+import { redisClient, REDIS_KEYS, REDIS_EVENTS, withLock, cacheConfig } from '../config/redis';
+import { GameLogicService } from './GameLogicService';
 
 export class RedisService {
     /**
