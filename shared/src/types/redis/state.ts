@@ -16,6 +16,6 @@ export interface IRedisGameState extends IGameState, IRedisBase {
 export interface IRedisGameRoom extends IRedisBase {
     players: IPlayer[];
     status: GameStatus;
-    maxPlayers: number;
+    maxPlayers?: number; // Make it optional for backwards compatibility
     expiresAt?: number;
 }

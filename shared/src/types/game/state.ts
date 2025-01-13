@@ -29,24 +29,24 @@ export interface IScores extends IBasicScores {
 
 // Turn state interfaces
 export interface ITurnStateBase extends IOperationCount {
-    readonly placeOperationsLeft: number;
-    readonly replaceOperationsLeft: number;
+    placeOperationsLeft: number;
+    replaceOperationsLeft: number;
 }
 
-export interface ITurnState extends ITurnStateBase, ICollection<IBasicMove> {
-    readonly moves: ReadonlyArray<IBasicMove>;
+export interface ITurnState extends ITurnStateBase {
+    moves: IBasicMove[];
 }
 
 // Game state interfaces
 export interface IGameStateBase {
-    readonly board: IBoard;
-    readonly gameOver: boolean;
-    readonly winner: Player | null;
-    readonly currentPlayer: Player;
-    readonly isFirstTurn: boolean;
+    board: IBoard;
+    gameOver: boolean;
+    winner: Player | null;
+    currentPlayer: Player;
+    isFirstTurn: boolean;
 }
 
 export interface IGameState extends IGameStateBase {
-    readonly currentTurn: ITurnState;
-    readonly scores: IScores;
+    currentTurn: ITurnState;
+    scores: IScores;
 }
