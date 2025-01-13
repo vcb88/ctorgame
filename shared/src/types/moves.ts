@@ -1,21 +1,40 @@
 import { Player, IPosition } from './basic-types';
 
-export interface IBasicMove {
-    type: 'place' | 'replace' | 'end_turn';
-    position: IPosition;
+// Base move type interfaces
+export interface IMoveTypeBase {
+    readonly type: 'place' | 'replace' | 'end_turn';
 }
 
-export interface IServerMove extends IBasicMove {
-    replacements?: Array<[number, number]>;
+export interface IMovePositionBase {
+    readonly position: IPosition;
 }
 
-export interface GameMove extends IServerMove {
-    player: Player;
-    timestamp: number;
+export interface IBasicMoveBase extends IMoveTypeBase, IMovePositionBase {}
+
+export interface IBasicMove extends IBasicMoveBase {}
+
+// Server move interfaces
+export interface IServerMoveBase extends IBasicMoveBase {
+    readonly replacements?: ReadonlyArray<[number, number]>;
 }
 
-export interface IReplaceValidation {
-    valid: boolean;
-    replacements?: Array<[number, number]>;
-    message?: string;
+export interface IServerMove extends IServerMoveBase {}
+
+// Game move interfaces
+export interface IGameMoveBase extends IServerMoveBase {
+    readonly player: Player;
+}
+
+export interface GameMove extends IGameMoveBase {
+    readonly timestamp: number;
+}
+
+// Validation interfaces
+export interface IReplaceValidationBase {
+    readonly valid: boolean;
+    readonly message?: string;
+}
+
+export interface IReplaceValidation extends IReplaceValidationBase {
+    readonly replacements?: ReadonlyArray<[number, number]>;
 }

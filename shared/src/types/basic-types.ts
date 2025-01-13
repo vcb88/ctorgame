@@ -5,14 +5,34 @@ export enum Player {
     Second = 2
 }
 
-export interface IPosition {
+// Base interfaces for positions and coordinates
+export interface IPositionBase {
     x: number;
     y: number;
 }
 
-export interface IBoardSize {
+export interface IPosition extends IPositionBase {}
+
+// Base interfaces for board structure
+export interface IBoardSizeBase {
     width: number;
     height: number;
 }
 
-export type GameStatus = 'waiting' | 'playing' | 'finished';
+export interface IBoardSize extends IBoardSizeBase {}
+
+// Base interfaces for game status
+export interface IGameStatusBase {
+    status: 'waiting' | 'playing' | 'finished';
+}
+
+export type GameStatus = IGameStatusBase['status'];
+
+// Base interfaces for player-related types
+export interface IPlayerBase {
+    readonly player: Player;
+}
+
+export interface IPlayerIdentity extends IPlayerBase {
+    readonly name?: string;
+}

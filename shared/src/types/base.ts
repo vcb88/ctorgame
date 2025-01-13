@@ -2,6 +2,11 @@ import { Player, IPosition, IBoardSize, GameStatus } from './basic-types';
 
 export { Player, IPosition, IBoardSize, GameStatus };
 
+// Game phase interfaces
+export interface IGamePhaseBase {
+    readonly phase: GamePhase;
+}
+
 export enum GamePhase {
     INITIAL = 'INITIAL',
     CONNECTING = 'CONNECTING',
@@ -12,10 +17,20 @@ export enum GamePhase {
     ERROR = 'ERROR'
 }
 
+// Game outcome interfaces
+export interface IGameOutcomeBase {
+    readonly outcome: GameOutcome;
+}
+
 export enum GameOutcome {
     Win = 'WIN',
     Loss = 'LOSS',
     Draw = 'DRAW'
+}
+
+// Operation type interfaces
+export interface IOperationTypeBase {
+    readonly type: OperationType;
 }
 
 export enum OperationType {
@@ -29,7 +44,12 @@ export const BOARD_SIZE = 10;
 export const MIN_ADJACENT_FOR_REPLACE = 5;
 export const MAX_PLACE_OPERATIONS = 2;
 
-// Basic error types
+// Error interfaces
+export interface IErrorBase {
+    readonly code: ErrorCode;
+    readonly message: string;
+}
+
 export enum ErrorCode {
     // Connection errors
     CONNECTION_ERROR = 'CONNECTION_ERROR',
@@ -65,14 +85,20 @@ export enum ErrorSeverity {
     CRITICAL = 'CRITICAL'
 }
 
-export interface GameError {
-    code: ErrorCode;
-    message: string;
-    severity: ErrorSeverity;
-    details?: Record<string, unknown>;
-    timestamp?: number;
-    recoverable?: boolean;
-    retryCount?: number;
+export interface IGameErrorBase extends IErrorBase {
+    readonly severity: ErrorSeverity;
+}
+
+export interface GameError extends IGameErrorBase {
+    readonly details?: Record<string, unknown>;
+    readonly timestamp?: number;
+    readonly recoverable?: boolean;
+    readonly retryCount?: number;
+}
+
+// Recovery interfaces
+export interface IRecoveryStrategyBase {
+    readonly strategy: RecoveryStrategy;
 }
 
 export enum RecoveryStrategy {
@@ -83,12 +109,22 @@ export enum RecoveryStrategy {
     USER_ACTION = 'USER_ACTION'
 }
 
+// Connection interfaces
+export interface IConnectionStateBase {
+    readonly state: ConnectionState;
+}
+
 export enum ConnectionState {
     CONNECTING = 'CONNECTING',
     CONNECTED = 'CONNECTED',
     DISCONNECTED = 'DISCONNECTED',
     RECONNECTING = 'RECONNECTING',
     ERROR = 'ERROR'
+}
+
+// WebSocket error interfaces
+export interface IWebSocketErrorBase {
+    readonly code: WebSocketErrorCode;
 }
 
 export enum WebSocketErrorCode {
