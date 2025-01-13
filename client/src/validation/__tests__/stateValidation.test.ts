@@ -1,12 +1,12 @@
 import { describe, it, expect } from 'vitest';
-import { Player } from '@ctor-game/shared';
+import { Player } from '@ctor-game/shared/types/base/enums';
 import {
   validateGameState,
   validateExtendedGameManagerState,
   validateStateTransition,
   validateStateUpdate,
   StateValidationError
-} from '../stateValidation';
+} from '@/validation/stateValidation';
 
 describe('State Validation', () => {
   describe('validateGameState', () => {
