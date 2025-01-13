@@ -39,6 +39,7 @@ CTORGame transforms the original hotseat tic-tac-toe implementation into a full-
 Detailed documentation can be found in the [docs](./docs) directory:
 - [Development Guide](./docs/development.md) - Setup, configuration and development tips
 - [Database Guide](./docs/DATABASE.md) - Database setup and configuration
+- [Type Dependencies](./docs/TYPE_DEPENDENCIES.md) - Detailed type system documentation
 - [API Documentation](./docs/api.md) - API endpoints and WebSocket events (TODO)
 - [Deployment Guide](./docs/deployment.md) - Production deployment instructions (TODO)
 - [Testing Guide](./docs/testing.md) - Testing strategy and examples (TODO)
