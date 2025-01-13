@@ -166,8 +166,52 @@ export interface ErrorRecoveryConfig {
   recover?: (error: GameError) => Promise<void>;
 }
 
+// Action types
+export enum GameActionType {
+  MAKE_MOVE = 'MAKE_MOVE',
+  END_TURN = 'END_TURN',
+  JOIN_GAME = 'JOIN_GAME',
+  CREATE_GAME = 'CREATE_GAME',
+  RECONNECT = 'RECONNECT'
+}
+
+export interface GameAction {
+  type: GameActionType;
+  timestamp: number;
+  gameId?: string;
+}
+
+export interface MakeMoveAction extends GameAction {
+  type: GameActionType.MAKE_MOVE;
+  move: IGameMove;
+}
+
+export interface EndTurnAction extends GameAction {
+  type: GameActionType.END_TURN;
+}
+
+export interface JoinGameAction extends GameAction {
+  type: GameActionType.JOIN_GAME;
+  gameId: string;
+}
+
+export interface CreateGameAction extends GameAction {
+  type: GameActionType.CREATE_GAME;
+}
+
+export interface ReconnectAction extends GameAction {
+  type: GameActionType.RECONNECT;
+  gameId: string;
+}
+
+export type GameActionUnion = 
+  | MakeMoveAction 
+  | EndTurnAction 
+  | JoinGameAction 
+  | CreateGameAction
+  | ReconnectAction;
+
 // Re-export remaining domain-specific types
-export * from './actions.js';
 export * from './websocket.js';
 export * from './replay.js';
 export * from './redis.js';
