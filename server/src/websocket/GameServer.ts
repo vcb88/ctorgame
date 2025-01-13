@@ -7,6 +7,7 @@ import {
   OperationType,
   WebSocketEvents,
   ServerToClientEventType,
+  IServerMove,
   ServerToClientEvents,
   ClientToServerEvents,
   IGameState,
@@ -148,7 +149,7 @@ export class GameServer {
       this.io.to = (room: string) => {
         const result = originalTo.call(this.io, room);
         const originalRoomEmit = result.emit;
-        result.emit = function<Ev extends WebSocketEvents>(
+        result.emit = function<Ev extends ServerToClientEventType>(
           this: typeof result,
           ev: Ev,
           ...args: Parameters<typeof result.emit<Ev>>
@@ -360,11 +361,17 @@ export class GameServer {
             return;
           }
 
+          // Преобразуем ход в формат для сервера
+          const serverMove: IServerMove = {
+            type: move.type,
+            position: move.position
+          };
+
           // Проверяем и применяем ход
           const updatedState = await redisService.updateGameState(
             gameId,
             player.number,
-            move
+            serverMove
           );
 
           // Сохраняем ход в БД
@@ -456,7 +463,7 @@ export class GameServer {
 
           await redisService.setGameState(gameId, updatedState);
           await this.gameService.makeMove(gameId, player.number, {
-            type: OperationType.END_TURN,
+            type: 'end_turn' as const,
             position: { x: -1, y: -1 }
           });
 
