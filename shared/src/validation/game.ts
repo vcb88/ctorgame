@@ -1,5 +1,7 @@
-import type { GameMove, IGameState, IPosition, IBoardSize } from '../types/validation-types';
-import { Player } from '../types/basic-types';
+import { GameMove } from '../types/game/moves';
+import { IGameState } from '../types/game/state';
+import { IPosition, IBoardSize } from '../types/base/primitives';
+import { Player } from '../types/base/enums';
 
 export function validatePosition(pos: IPosition, size: IBoardSize): boolean {
   return (

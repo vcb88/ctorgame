@@ -1,8 +1,6 @@
 import {
     ICell,
-    ICollection,
-    IOperationCount,
-    ITimestamp
+    IOperationCount
 } from '../core';
 import { Player } from '../base/enums';
 import { IBoardSize } from '../base/primitives';
@@ -28,15 +26,16 @@ export interface IScores extends IBasicScores {
 }
 
 // Turn state interfaces
-export interface ITurnStateBase extends IOperationCount {
+// Basic turn state without operation count
+export interface ITurnStateBase {
     placeOperationsLeft: number;
     replaceOperationsLeft: number;
-    count?: number; // Required by IOperationCount
-    items?: IBasicMove[]; // Required by ICollection
 }
 
-export interface ITurnState extends ITurnStateBase {
+// Turn state with move tracking
+export interface ITurnState extends ITurnStateBase, IOperationCount {
     moves: IBasicMove[];
+    count: number; // Required by IOperationCount - represents total moves count
 }
 
 // Game state interfaces

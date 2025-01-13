@@ -3,7 +3,6 @@ import {
     IYCoordinate,
     IWidth,
     IHeight,
-    IPlayerNumber,
     IGameStatus
 } from '../core';
 
