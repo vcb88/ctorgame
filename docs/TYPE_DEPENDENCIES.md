@@ -11,6 +11,9 @@ graph TD
     game[game.ts]
     events[events.ts]
     payloads[payloads.ts]
+    coordinates[coordinates.ts]
+    redis[redis.ts]
+    replay[replay.ts]
 
     basics --> base
     basics --> moves
@@ -20,12 +23,18 @@ graph TD
     base --> state
     base --> payloads
     base --> events
+    base --> redis
     moves --> state
     moves --> game
     moves --> payloads
+    moves --> replay
     state --> game
     state --> payloads
-    payloads --> events
+    state --> redis
+    state --> events
+    game --> redis
+    game --> replay
+    game --> events
 ```
 
 ## Module Organization
@@ -68,9 +77,27 @@ graph TD
 
 7. **events.ts - Event Types**
    - Top-level module for WebSocket events
-   - Uses types from payloads.ts
+   - Imports from base.ts, state.ts, and moves.ts
    - Defines event handlers and callbacks
-   - Final consumer in type hierarchy
+   - Handles WebSocket communication types
+
+8. **coordinates.ts - Coordinate System Types**
+   - No external dependencies
+   - Contains coordinate system related types
+   - Used for board position calculations
+   - Provides utility types for spatial operations
+
+9. **redis.ts - Redis Storage Types**
+   - Imports from state.ts, game.ts, and base.ts
+   - Contains Redis-specific data structures
+   - Defines interfaces for data persistence
+   - Handles game state storage types
+
+10. **replay.ts - Game Replay Types**
+    - Imports from game.ts and moves.ts
+    - Contains types for game replay functionality
+    - Manages game history and playback
+    - Handles replay state management
 
 ## Type Dependency Guidelines
 
