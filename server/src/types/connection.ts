@@ -1,6 +1,7 @@
 import { WebSocketErrorCode, ErrorResponse } from '@ctor-game/shared';
 
-export type { WebSocketErrorCode, ErrorResponse };
+export { WebSocketErrorCode };
+export type { ErrorResponse };
 
 export interface GameEvent {
   eventId: string;
