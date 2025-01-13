@@ -1,6 +1,5 @@
 import {
-    ICell,
-    IOperationCount
+    ICell
 } from '../core';
 import { Player } from '../base/enums';
 import { IBoardSize } from '../base/primitives';

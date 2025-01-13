@@ -1,12 +1,9 @@
 import {
     ICell,
-    ICollection,
-    IOperationCount,
     IData,
     ITimestamp,
     IVersioned,
-    IExpiration,
-    IIdentifiable
+    IExpiration
 } from './core';
 import { Player, IBoardSize } from './basic-types';
 import { GamePhase } from './base';
@@ -32,13 +29,14 @@ export interface IScores extends IBasicScores {
 }
 
 // Turn state interfaces
-export interface ITurnStateBase extends IOperationCount {
+export interface ITurnStateBase {
     readonly placeOperationsLeft: number;
     readonly replaceOperationsLeft: number;
 }
 
-export interface ITurnState extends ITurnStateBase, ICollection<IBasicMove> {
+export interface ITurnState extends ITurnStateBase {
     readonly moves: ReadonlyArray<IBasicMove>;
+    readonly count: number; // Total moves count for validation
 }
 
 // Game state interfaces
