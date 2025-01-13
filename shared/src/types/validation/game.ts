@@ -1,8 +1,8 @@
-import { IPosition, IBoardSize } from '../base/primitives.js';
-import { Player } from '../base/enums.js';
-import { GameMove } from '../game/moves.js';
-import { IGameState } from '../game/state.js';
-import { IValidationResult } from './result.js';".js"
+import { IPosition, IBoardSize } from '../base/primitives.js.js';
+import { Player } from '../base/enums.js.js';
+import { GameMove } from '../game/moves.js.js';
+import { IGameState } from '../game/state.js.js';
+import { IValidationResult } from './result.js.js';".js"
 
 export interface IGameMoveValidation extends IValidationResult {
     move: GameMove;

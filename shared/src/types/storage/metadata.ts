@@ -1,7 +1,7 @@
-import { Player } from '../base/enums.js';
-import { GameStatus, IBoardSize } from '../base/primitives.js';
-import { IGameState } from '../game/state.js';
-import { GameMove } from '../game/moves.js';
+import { Player } from '../base/enums.js.js';
+import { GameStatus, IBoardSize } from '../base/primitives.js.js';
+import { IGameState } from '../game/state.js.js';
+import { GameMove } from '../game/moves.js.js';
 
 export interface GameDetails {
     moves: GameMove[];

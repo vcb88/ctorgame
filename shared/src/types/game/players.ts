@@ -1,4 +1,4 @@
-import { Player } from '../base/enums.js';
+import { Player } from '../base/enums.js.js';
 
 export interface IPlayer {
     id: string;

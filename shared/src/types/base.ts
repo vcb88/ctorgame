@@ -6,7 +6,7 @@ import {
     IErrorDetails,
     ITimestamp,
     IConnectionStatus
-} from './core.js';
+} from './core.js.js';
 
 // Game phase interfaces
 export interface IGamePhaseBase extends IPhase {}

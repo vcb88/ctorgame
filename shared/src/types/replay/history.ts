@@ -1,5 +1,5 @@
-import { GameMetadata, GameDetails } from '../storage/metadata.js';
-import { GameMove } from '../game/moves.js';
+import { GameMetadata, GameDetails } from '../storage/metadata.js.js';
+import { GameMove } from '../game/moves.js.js';
 
 export interface GameHistory {
     metadata: GameMetadata;

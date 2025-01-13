@@ -1,6 +1,6 @@
-import { Player, WebSocketErrorCode, GamePhase } from '../base/enums.js';
-import { GameMove } from '../game/moves.js';
-import { IGameState } from '../game/state.js';
+import { Player, WebSocketErrorCode, GamePhase } from '../base/enums.js.js';
+import { GameMove } from '../game/moves.js.js';
+import { IGameState } from '../game/state.js.js';
 
 export enum WebSocketEvents {
     // Client -> Server events

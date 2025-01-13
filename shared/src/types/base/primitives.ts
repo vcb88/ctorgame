@@ -4,7 +4,7 @@ import {
     IWidth,
     IHeight,
     IGameStatus
-} from '../core.js';
+} from '../core.js.js';
 
 export interface IPositionBase extends IXCoordinate, IYCoordinate {}
 export interface IPosition extends IPositionBase {}

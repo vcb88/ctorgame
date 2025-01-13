@@ -1,2 +1,2 @@
-export * from './moves';
-export * from './players';
+export * from './moves.js';
+export * from './players.js';

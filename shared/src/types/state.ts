@@ -4,10 +4,10 @@ import {
     ITimestamp,
     IVersioned,
     IExpiration
-} from './core.js';
-import { Player, IBoardSize } from './basic-types.js';".js"
-import { GamePhase } from './base.js';".js"
-import { IBasicMove } from './moves.js';".js"
+} from './core.js.js';
+import { Player, IBoardSize } from './basic-types.js.js';".js"
+import { GamePhase } from './base.js.js';".js"
+import { IBasicMove } from './moves.js.js';".js"
 
 // Board interfaces
 export interface IBoardBase {

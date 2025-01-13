@@ -2,9 +2,9 @@ import {
     IOperationType,
     IValidationResult,
     ITimestamp
-} from './core.js';
-import { IPositionBase } from './basic-types.js';".js"
-import { Player } from './basic-types.js';".js"
+} from './core.js.js';
+import { IPositionBase } from './basic-types.js.js';".js"
+import { Player } from './basic-types.js.js';".js"
 
 // Move interfaces
 export interface IMoveBase extends IOperationType {

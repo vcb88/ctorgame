@@ -1,5 +1,5 @@
-import { Player } from '../types/base/enums.js';
-import { IBasicScores, IScores } from '../types/game/state.js';
+import { Player } from '../types/base/enums.js.js';
+import { IBasicScores, IScores } from '../types/game/state.js.js';
 
 export function createEmptyScores(): IScores {
     return {

@@ -2,9 +2,9 @@ import {
     IOperationType,
     IValidationResult,
     ITimestamp
-} from '../core.js';
-import { IPositionBase } from '../base/primitives.js';
-import { Player } from '../base/enums.js';
+} from '../core.js.js';
+import { IPositionBase } from '../base/primitives.js.js';
+import { Player } from '../base/enums.js.js';
 
 // Move interfaces
 export interface IMoveBase extends IOperationType {

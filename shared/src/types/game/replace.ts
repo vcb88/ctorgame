@@ -1,4 +1,4 @@
-import type { IPosition } from '../base/primitives.js';
+import type { IPosition } from '../base/primitives.js.js';
 
 export interface ReplaceCandidate {
     position: IPosition;

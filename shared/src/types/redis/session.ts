@@ -1,4 +1,4 @@
-import { IRedisBase } from './state.js';".js"
+import { IRedisBase } from './state.js.js';".js"
 
 // Player session in Redis
 export interface IRedisPlayerSession extends IRedisBase {

@@ -1,4 +1,4 @@
 // Export all coordinate utilities
-export * from './coordinates';
+export * from './coordinates.js';
 
 // Export game utilities

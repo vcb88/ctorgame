@@ -1,5 +1,5 @@
-import { WebSocketErrorCode } from '../base/enums.js';
-import { WebSocketEvents, WebSocketPayloads } from './websocket.js';".js"
+import { WebSocketErrorCode } from '../base/enums.js.js';
+import { WebSocketEvents, WebSocketPayloads } from './websocket.js.js';".js"
 
 export interface ServerToClientEvents {
     [WebSocketEvents.GameCreated]: (payload: WebSocketPayloads[WebSocketEvents.GameCreated]) => void;

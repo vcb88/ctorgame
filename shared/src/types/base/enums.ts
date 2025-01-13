@@ -5,7 +5,7 @@ export enum Player {
 }
 
 // Re-export needed enums
-export { GamePhase } from '../base';
+export { GamePhase } from '../base.js';
 
 // WebSocket error codes
 export enum WebSocketErrorCode {

@@ -1,6 +1,6 @@
-import { IGameState } from '../game/state.js';
-import { IPlayer } from '../game/players.js';
-import { GameStatus } from '../base/primitives.js';
+import { IGameState } from '../game/state.js.js';
+import { IPlayer } from '../game/players.js.js';
+import { GameStatus } from '../base/primitives.js.js';
 
 // Base interface for Redis stored objects
 export interface IRedisBase {

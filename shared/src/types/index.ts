@@ -1,13 +1,13 @@
 // Re-export types from new structure
-export * from './base';
+export * from './base.js';
 // Export game types 
-export * from './game';
+export * from './game.js';
 // Export other type modules
-export * from './storage';
-export * from './network';
-export * from './validation';
-export * from './replay';
-export * from './redis';
+export * from './storage.js';
+export * from './network.js';
+export * from './validation.js';
+export * from './replay.js';
+export * from './redis.js';
 
 // Re-export constants
 export {
