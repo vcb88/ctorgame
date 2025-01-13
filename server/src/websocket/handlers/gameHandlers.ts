@@ -12,10 +12,10 @@ import {
   validateGameMove,
   validateGameState,
   isValidScores,
-  GameMetadata
+  GameMetadata,
+  WebSocketErrorCode
 } from '@ctor-game/shared';
 import { GameEventResponse } from '../../types/events.js';
-import { WebSocketErrorCode } from '../../types/errors.js';
 import { logger } from '../../utils/logger.js';
 import { toErrorWithStack } from '../../types/error.js';
 

@@ -20,7 +20,8 @@ import {
   getOpponent,
   isValidScores,
   GamePhase,
-  WebSocketPayloads
+  WebSocketPayloads,
+  WebSocketErrorCode
 } from '@ctor-game/shared';
 import { validateGameMove, validateGameState } from '../validation/game.js';
 import { GameService } from '../services/GameService.js';
@@ -29,7 +30,7 @@ import { GameStorageService } from '../services/GameStorageService.js';
 import { redisService } from '../services/RedisService.js';
 import { redisClient, connectRedis } from '../config/redis.js';
 import { GameEventResponse } from '../types/events.js';
-import { WebSocketErrorCode, ErrorResponse } from '../types/connection.js';
+import type { ErrorResponse } from '../types/connection.js';
 import { logger } from '../utils/logger.js';
 import { ErrorWithStack, toErrorWithStack } from '../types/error.js';
 
