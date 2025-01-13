@@ -105,8 +105,68 @@ export interface GameManagerState {
     connectionState: string;
 }
 
-// Re-export domain-specific types that don't have circular dependencies
-export * from './errors.js';
+// Error handling
+export enum ErrorCode {
+  // Connection errors
+  CONNECTION_ERROR = 'CONNECTION_ERROR',
+  CONNECTION_TIMEOUT = 'CONNECTION_TIMEOUT',
+  CONNECTION_LOST = 'CONNECTION_LOST',
+  
+  // Operation errors
+  OPERATION_FAILED = 'OPERATION_FAILED',
+  OPERATION_TIMEOUT = 'OPERATION_TIMEOUT',
+  OPERATION_CANCELLED = 'OPERATION_CANCELLED',
+  
+  // Game errors
+  INVALID_MOVE = 'INVALID_MOVE',
+  INVALID_STATE = 'INVALID_STATE',
+  GAME_NOT_FOUND = 'GAME_NOT_FOUND',
+  GAME_FULL = 'GAME_FULL',
+  
+  // State errors
+  STATE_VALIDATION_ERROR = 'STATE_VALIDATION_ERROR',
+  STATE_TRANSITION_ERROR = 'STATE_TRANSITION_ERROR',
+  
+  // Storage errors
+  STORAGE_ERROR = 'STORAGE_ERROR',
+  
+  // Unknown error
+  UNKNOWN_ERROR = 'UNKNOWN_ERROR'
+}
+
+export enum ErrorSeverity {
+  LOW = 'LOW',
+  MEDIUM = 'MEDIUM',
+  HIGH = 'HIGH',
+  CRITICAL = 'CRITICAL'
+}
+
+export interface GameError {
+  code: ErrorCode;
+  message: string;
+  severity: ErrorSeverity;
+  details?: Record<string, unknown>;
+  timestamp?: number;
+  recoverable?: boolean;
+  retryCount?: number;
+}
+
+export enum RecoveryStrategy {
+  NOTIFY = 'NOTIFY',
+  RETRY = 'RETRY',
+  RECONNECT = 'RECONNECT',
+  RESET = 'RESET',
+  USER_ACTION = 'USER_ACTION'
+}
+
+export interface ErrorRecoveryConfig {
+  maxRetries?: number;
+  retryDelay?: number;
+  useBackoff?: boolean;
+  recover?: (error: GameError) => Promise<void>;
+}
+
+// Re-export remaining domain-specific types
 export * from './actions.js';
 export * from './websocket.js';
 export * from './replay.js';
