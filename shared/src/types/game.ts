@@ -1,6 +1,5 @@
-import { Player, GameStatus, IBoardSize } from './basic-types';
+import { Player } from './basic-types';
 import { IGameState } from './state';
-import { GameMove } from './moves';
 
 export interface IPlayer {
     id: string;
@@ -13,4 +12,3 @@ export interface IGameRoom {
     currentState: IGameState;
     currentPlayer: Player;
 }
-
