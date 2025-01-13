@@ -1,78 +1,81 @@
-import { Player, IBoardSize, IPlayerBase } from './basic-types';
+import {
+    ICell,
+    ICollection,
+    IOperationCount,
+    IData,
+    ITimestamp,
+    IVersioned,
+    IExpiration,
+    IIdentifiable
+} from './core';
+import { Player, IBoardSize } from './basic-types';
 import { GamePhase } from './base';
 import { IBasicMove } from './moves';
 
-// Base interfaces for board state
+// Board interfaces
 export interface IBoardBase {
-    size: IBoardSize;
+    readonly size: IBoardSize;
+    readonly cells: ReadonlyArray<ReadonlyArray<ICell['value']>>;
 }
 
-export interface IBoard extends IBoardBase {
-    cells: (number | null)[][];
+export interface IBoard extends IBoardBase {}
+
+// Score interfaces
+export interface IBasicScores {
+    readonly player1: number;
+    readonly player2: number;
 }
 
-// Base interfaces for scores
-export interface IScoresBase {
-    player1: number;
-    player2: number;
+export interface IScores extends IBasicScores {
+    readonly [Player.First]: number;
+    readonly [Player.Second]: number;
 }
 
-export interface IScores extends IScoresBase {
-    [Player.First]: number;
-    [Player.Second]: number;
+// Turn state interfaces
+export interface ITurnStateBase extends IOperationCount {
+    readonly placeOperationsLeft: number;
+    readonly replaceOperationsLeft: number;
 }
 
-// Base interfaces for turn state
-export interface ITurnStateBase {
-    placeOperationsLeft: number;
-    replaceOperationsLeft: number;
+export interface ITurnState extends ITurnStateBase, ICollection<IBasicMove> {
+    readonly moves: ReadonlyArray<IBasicMove>;
 }
 
-export interface ITurnState extends ITurnStateBase {
-    moves: Array<IBasicMove>;
-}
-
-// Base interfaces for game state
+// Game state interfaces
 export interface IGameStateBase {
-    board: IBoard;
-    gameOver: boolean;
-    winner: Player | null;
-    currentPlayer: Player;
-    isFirstTurn: boolean;
+    readonly board: IBoard;
+    readonly gameOver: boolean;
+    readonly winner: Player | null;
+    readonly currentPlayer: Player;
+    readonly isFirstTurn: boolean;
 }
 
 export interface IGameState extends IGameStateBase {
-    currentTurn: ITurnState;
-    scores: IScores;
+    readonly currentTurn: ITurnState;
+    readonly scores: IScores;
 }
 
-// Base interfaces for game manager state
-export interface IGameManagerStateBase {
-    phase: GamePhase;
-    error: Error | null;
-    connectionState: string;
+// Game manager state interfaces
+export interface IGameManagerBase {
+    readonly phase: GamePhase;
+    readonly error: Error | null;
+    readonly connectionState: string;
 }
 
-export interface GameManagerState extends IGameManagerStateBase {
-    gameId: string | null;
-    playerNumber: Player | null;
-    lastUpdated: number;
+export interface GameManagerState extends IGameManagerBase, ITimestamp {
+    readonly gameId: string | null;
+    readonly playerNumber: Player | null;
+    readonly lastUpdated: number;
 }
 
-// Base interfaces for stored state
-export interface IStoredStateBase<T> {
-    version: string;
-    timestamp: number;
-    data: T;
-}
+// Stored state interfaces
+export interface IStoredStateBase<T> extends IVersioned, ITimestamp, IData<T> {}
 
-export interface StoredState<T> extends IStoredStateBase<T> {
-    expiresAt: number;
-}
+export interface StoredState<T> extends IStoredStateBase<T>, IExpiration {}
 
-// Base interfaces for state storage
+// State storage interfaces
 export interface IStateStorageBase {
-    getKeys(prefix?: string): string[];
+    getKeys(prefix?: string): ReadonlyArray<string>;
 }
 
 export interface IStateStorage extends IStateStorageBase {

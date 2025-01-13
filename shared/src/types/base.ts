@@ -1,11 +1,16 @@
-import { Player, IPosition, IBoardSize, GameStatus } from './basic-types';
-
-export { Player, IPosition, IBoardSize, GameStatus };
+import {
+    IPhase,
+    IOperationType,
+    IErrorCode,
+    IMessage,
+    IErrorDetails,
+    ITimestamp,
+    IConnectionStatus,
+    IValidationResult
+} from './core';
 
 // Game phase interfaces
-export interface IGamePhaseBase {
-    readonly phase: GamePhase;
-}
+export interface IGamePhaseBase extends IPhase {}
 
 export enum GamePhase {
     INITIAL = 'INITIAL',
@@ -17,21 +22,8 @@ export enum GamePhase {
     ERROR = 'ERROR'
 }
 
-// Game outcome interfaces
-export interface IGameOutcomeBase {
-    readonly outcome: GameOutcome;
-}
-
-export enum GameOutcome {
-    Win = 'WIN',
-    Loss = 'LOSS',
-    Draw = 'DRAW'
-}
-
 // Operation type interfaces
-export interface IOperationTypeBase {
-    readonly type: OperationType;
-}
+export interface IOperationTypeBase extends IOperationType {}
 
 export enum OperationType {
     PLACE = 'place',
@@ -45,10 +37,7 @@ export const MIN_ADJACENT_FOR_REPLACE = 5;
 export const MAX_PLACE_OPERATIONS = 2;
 
 // Error interfaces
-export interface IErrorBase {
-    readonly code: ErrorCode;
-    readonly message: string;
-}
+export interface IErrorBase extends IErrorCode, IMessage {}
 
 export enum ErrorCode {
     // Connection errors
@@ -89,30 +78,13 @@ export interface IGameErrorBase extends IErrorBase {
     readonly severity: ErrorSeverity;
 }
 
-export interface GameError extends IGameErrorBase {
-    readonly details?: Record<string, unknown>;
-    readonly timestamp?: number;
+export interface GameError extends IGameErrorBase, IErrorDetails, ITimestamp {
     readonly recoverable?: boolean;
     readonly retryCount?: number;
 }
 
-// Recovery interfaces
-export interface IRecoveryStrategyBase {
-    readonly strategy: RecoveryStrategy;
-}
-
-export enum RecoveryStrategy {
-    NOTIFY = 'NOTIFY',
-    RETRY = 'RETRY',
-    RECONNECT = 'RECONNECT',
-    RESET = 'RESET',
-    USER_ACTION = 'USER_ACTION'
-}
-
 // Connection interfaces
-export interface IConnectionStateBase {
-    readonly state: ConnectionState;
-}
+export interface IConnectionStateBase extends IConnectionStatus {}
 
 export enum ConnectionState {
     CONNECTING = 'CONNECTING',
@@ -123,9 +95,7 @@ export enum ConnectionState {
 }
 
 // WebSocket error interfaces
-export interface IWebSocketErrorBase {
-    readonly code: WebSocketErrorCode;
-}
+export interface IWebSocketErrorBase extends IErrorCode {}
 
 export enum WebSocketErrorCode {
     INVALID_GAME_ID = 'INVALID_GAME_ID',

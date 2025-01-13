@@ -1,20 +1,25 @@
-import { Player, IPosition } from './basic-types';
+import {
+    IOperationType,
+    IValidationResult,
+    ICollection,
+    ITimestamp
+} from './core';
+import { IPositionBase } from './basic-types';
+import { Player } from './basic-types';
 
-// Base move type interfaces
-export interface IMoveTypeBase {
+// Move interfaces
+export interface IMoveBase extends IOperationType {
     readonly type: 'place' | 'replace' | 'end_turn';
 }
 
-export interface IMovePositionBase {
-    readonly position: IPosition;
+export interface IPositionedMoveBase extends IMoveBase {
+    readonly position: IPositionBase;
 }
 
-export interface IBasicMoveBase extends IMoveTypeBase, IMovePositionBase {}
-
-export interface IBasicMove extends IBasicMoveBase {}
+export interface IBasicMove extends IPositionedMoveBase {}
 
 // Server move interfaces
-export interface IServerMoveBase extends IBasicMoveBase {
+export interface IServerMoveBase extends IBasicMove {
     readonly replacements?: ReadonlyArray<[number, number]>;
 }
 
@@ -25,16 +30,9 @@ export interface IGameMoveBase extends IServerMoveBase {
     readonly player: Player;
 }
 
-export interface GameMove extends IGameMoveBase {
-    readonly timestamp: number;
-}
+export interface GameMove extends IGameMoveBase, ITimestamp {}
 
-// Validation interfaces
-export interface IReplaceValidationBase {
-    readonly valid: boolean;
-    readonly message?: string;
-}
-
-export interface IReplaceValidation extends IReplaceValidationBase {
+// Replace validation interfaces
+export interface IReplaceValidationBase extends IValidationResult {
     readonly replacements?: ReadonlyArray<[number, number]>;
 }

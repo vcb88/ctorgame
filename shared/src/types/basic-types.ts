@@ -1,38 +1,34 @@
-// Most basic types that don't depend on anything else
+import {
+    IXCoordinate,
+    IYCoordinate,
+    IWidth,
+    IHeight,
+    IPlayerNumber,
+    IGameStatus
+} from './core';
+
+// Player enum and interfaces
 export enum Player {
     None = 0,
     First = 1,
     Second = 2
 }
 
-// Base interfaces for positions and coordinates
-export interface IPositionBase {
-    x: number;
-    y: number;
-}
-
-export interface IPosition extends IPositionBase {}
-
-// Base interfaces for board structure
-export interface IBoardSizeBase {
-    width: number;
-    height: number;
-}
-
-export interface IBoardSize extends IBoardSizeBase {}
-
-// Base interfaces for game status
-export interface IGameStatusBase {
-    status: 'waiting' | 'playing' | 'finished';
-}
-
-export type GameStatus = IGameStatusBase['status'];
-
-// Base interfaces for player-related types
-export interface IPlayerBase {
+export interface IPlayerBase extends IPlayerNumber {
     readonly player: Player;
 }
 
-export interface IPlayerIdentity extends IPlayerBase {
-    readonly name?: string;
-}
+// Position interfaces
+export interface IPositionBase extends IXCoordinate, IYCoordinate {}
+
+export interface IPosition extends IPositionBase {}
+
+// Board size interfaces
+export interface IBoardSizeBase extends IWidth, IHeight {}
+
+export interface IBoardSize extends IBoardSizeBase {}
+
+// Game status interfaces
+export interface IGameStatusBase extends IGameStatus {}
+
+export type GameStatus = 'waiting' | 'playing' | 'finished';
