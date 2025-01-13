@@ -354,8 +354,40 @@ export interface IPlaybackSpeedUpdate {
     speed: number;
 }
 
+// Redis types
+export interface IRedisGameState extends IGameState {
+    lastUpdate: number;
+}
+
+export interface IRedisPlayerSession {
+    gameId: string;
+    playerNumber: number;
+    lastActivity: number;
+}
+
+export interface IRedisGameRoom {
+    players: IPlayer[];
+    status: 'waiting' | 'playing' | 'finished';
+    lastUpdate: number;
+}
+
+export interface IRedisGameEvent {
+    type: 'move' | 'disconnect' | 'reconnect' | 'end_turn';
+    gameId: string;
+    playerId: string;
+    data: unknown;
+    timestamp: number;
+}
+
+export interface ICacheConfig {
+    ttl: {
+        gameState: number;
+        playerSession: number;
+        gameRoom: number;
+    };
+}
+
 // Re-export remaining domain-specific types
-export * from './redis.js';
 export * from './events.js';
 export * from './storage.js';
 export * from './state_storage.js';
