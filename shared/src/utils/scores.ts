@@ -21,8 +21,10 @@ export function createScores(player1Score: number, player2Score: number): IScore
 
 export function updateScores(scores: IScores, currentPlayer: Player, points: number): IScores {
     const updatedScores = {...scores};
-    updatedScores[currentPlayer] = points;
-    updatedScores[currentPlayer === Player.First ? 'player1' : 'player2'] = points;
+    if (currentPlayer === Player.First || currentPlayer === Player.Second) {
+        updatedScores[currentPlayer] = points;
+        updatedScores[currentPlayer === Player.First ? 'player1' : 'player2'] = points;
+    }
     return updatedScores;
 }
 

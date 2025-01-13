@@ -9,17 +9,13 @@
  */
 
 // Re-export from base types
-export {
+export type {
     IPosition,
-    IBoardSize,
-    IBasicMove,
-    Point2D
+    IBoardSize
 } from './types/base/primitives';
 
 export {
     GamePhase,
-    GameActionType,
-    OperationType
 } from './types/base/enums';
 
 // Re-export game constants
