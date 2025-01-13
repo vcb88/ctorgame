@@ -8,7 +8,7 @@ import { GameServer } from './websocket/GameServer';
 import cors from 'cors';
 import path from 'path';
 import { logger } from './utils/logger';
-import { ErrorWithStack, toErrorWithStack } from './types/error';
+import { toErrorWithStack } from './types/error';
 
 logger.info('Starting server initialization', {
   component: 'Server',
@@ -74,13 +74,13 @@ app.use(express.json());
 app.use(requestLogger);
 
 // Simple ping endpoint
-app.get('/ping', (req, res) => {
+app.get('/ping', (_req, res) => {
   logger.debug('Ping endpoint called', { component: 'HTTP' });
   res.json({ message: 'pong', timestamp: new Date().toISOString() });
 });
 
 // Info endpoint
-app.get('/info', (req, res) => {
+app.get('/info', (_req, res) => {
   logger.debug('Info endpoint called', { component: 'HTTP' });
   const info = {
     nodeVersion: process.version,
@@ -96,7 +96,7 @@ app.get('/info', (req, res) => {
 });
 
 // Simple test endpoint
-app.get('/test', (req, res) => {
+app.get('/test', (_req, res) => {
   logger.debug('Test endpoint called', {
     component: 'HTTP',
     context: { serverReady: isServerReady }
@@ -116,7 +116,7 @@ app.get('/test', (req, res) => {
 });
 
 // Health check endpoint - no logging to reduce noise
-app.get('/health', (req, res) => {
+app.get('/health', (_req, res) => {
   if (!isServerReady) {
     res.status(503).json({ 
       status: 'starting',
@@ -162,7 +162,8 @@ app.use(express.static(path.join(__dirname, '../../client/dist')));
 
 logger.info('Initializing WebSocket server', { component: 'Server' });
 // Create WebSocket game server using singleton pattern
-const gameServer = GameServer.getInstance(httpServer);
+// Initialize WebSocket game server
+GameServer.getInstance(httpServer);
 
 const PORT = process.env.PORT || 3000;
 logger.info('Server configuration', {
@@ -194,7 +195,7 @@ httpServer.on('error', (error: Error) => {
 });
 
 // Register basic error handlers
-app.use((err: Error, req: express.Request, res: express.Response, next: express.NextFunction) => {
+app.use((err: Error, req: express.Request, res: express.Response, _next: express.NextFunction) => {
   logger.error('Request error', {
     component: 'HTTP',
     context: {

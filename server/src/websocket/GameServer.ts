@@ -31,32 +31,27 @@ import {
   ServerToClientEventType,
   ServerToClientEvents,
   ClientToServerEvents,
-  WebSocketPayloads,
   WebSocketErrorCode
 } from '@ctor-game/shared/network';
 
 // Game utils
-import {
-  getOpponent,
-  isValidScores
-} from '@ctor-game/shared/utils';
+import { getOpponent } from '@ctor-game/shared/utils';
 import { validateGameMove, validateGameState } from '../validation/game.js';
 import { GameService } from '../services/GameService.js';
 import { GameLogicService } from '../services/GameLogicService.js';
 import { GameStorageService } from '../services/GameStorageService.js';
 import { redisService } from '../services/RedisService.js';
 import { redisClient, connectRedis } from '../config/redis.js';
-import { GameEventResponse } from '../types/events.js';
-import type { ErrorResponse } from '../types/connection.js';
+
 import { logger } from '../utils/logger.js';
-import { ErrorWithStack, toErrorWithStack } from '../types/error.js';
+import { toErrorWithStack } from '../types/error.js';
 
 const PLAYER_RECONNECT_TIMEOUT = 5 * 60 * 1000; // 5 минут
 
 export class GameServer {
   private io: Server<ClientToServerEvents, ServerToClientEvents>;
-  private gameService: GameService;
-  private storageService: GameStorageService;
+  private gameService!: GameService;
+  private storageService!: GameStorageService;
 
   private static instance: GameServer | null = null;
 
