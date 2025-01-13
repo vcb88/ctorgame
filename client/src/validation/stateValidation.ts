@@ -1,12 +1,12 @@
-import { 
-  GamePhase, 
-  Player, 
-  IGameState, 
-  GameMove, 
-  isValidGamePhase,
-  isValidGameManagerState,
-  isValidScores
-} from '@ctor-game/shared';
+// Base types
+import type { GamePhase, Player } from '@ctor-game/shared/types/base/enums';
+// Game state types
+import type { IGameState } from '@ctor-game/shared/types/game/state';
+import type { GameMove } from '@ctor-game/shared/types/game/moves';
+// Validation functions
+import { isValidGamePhase } from '@ctor-game/shared/validation/phase';
+import { isValidGameManagerState } from '@ctor-game/shared/validation/state';
+import { isValidScores } from '@ctor-game/shared/validation/scores';
 import { ExtendedGameManagerState, GameManagerStateUpdate } from '../types/gameManager';
 import { logger } from '@/utils/logger';
 
