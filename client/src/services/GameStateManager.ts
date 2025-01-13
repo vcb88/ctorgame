@@ -4,25 +4,25 @@ import {
   Player,
   GameMove,
   IGameState
-} from '@ctor-game/shared/game';
+} from '@ctor-game/shared/types/game';
 
 // Network types and events
 import {
   WebSocketEvents,
   WebSocketPayloads,
   ConnectionState
-} from '@ctor-game/shared/network';
+} from '@ctor-game/shared/types/network';
 
 // Game phases and actions
 import {
   GamePhase,
   GameActionType
-} from '@ctor-game/shared/base';
+} from '@ctor-game/shared/types/base/enums';
 
 // Storage configuration
 import { 
   StorageConfig 
-} from '@ctor-game/shared/storage';
+} from '@ctor-game/shared/types/storage';
 
 // Local validators
 import {
@@ -31,7 +31,7 @@ import {
   validateExtendedGameManagerState,
   recoverFromValidationError,
   StateValidationError
-} from '../validation/stateValidation';
+} from '@/validation/stateValidation';
 
 // Socket configuration
 import { createSocket, socketConfig } from './socket';
@@ -41,7 +41,7 @@ import {
   ExtendedGameManagerState,
   GameManagerStateUpdate,
   StateSubscriber
-} from '../types/gameManager';
+} from '@/types/gameManager';
 
 // Services
 import { StateStorage } from './StateStorage';
@@ -53,7 +53,7 @@ import {
   ErrorCode, 
   ErrorSeverity, 
   GameError 
-} from '../types/errors';
+} from '@/types/errors';
 
 const DEFAULT_STORAGE_CONFIG: StorageConfig = {
   prefix: 'game_state',
