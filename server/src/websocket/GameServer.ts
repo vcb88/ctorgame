@@ -569,14 +569,14 @@ export class GameServer {
           socket.emit(WebSocketEvents.PlayerReconnected, {
             gameState: state,
             currentPlayer,
-            playerNumber: player.number
+            player: player.number
           });
 
           // Уведомляем других игроков
           socket.to(gameId).emit(WebSocketEvents.PlayerReconnected, {
             gameState: state,
             currentPlayer,
-            playerNumber: player.number
+            player: player.number
           });
         } catch (err) {
           const error = err as Error;
