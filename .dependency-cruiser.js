@@ -28,7 +28,11 @@ module.exports = {
     enhancedResolveOptions: {
       exportsFields: ['exports'],
       conditionNames: ['import', 'require', 'node', 'default'],
-      extensions: ['.js', '.jsx', '.ts', '.tsx', '.json']
+      extensions: ['.js', '.jsx', '.ts', '.tsx', '.json'],
+      alias: {
+        '@ctor-game/shared': './shared/src',
+        '@': './client/src'
+      }
     },
     reporterOptions: {
       dot: {

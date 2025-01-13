@@ -11,45 +11,65 @@
       "import": "./src/index.ts",
       "default": "./src/index.ts"
     },
-    "./base": {
+    "./types/base": {
       "types": "./src/types/base/index.ts",
       "import": "./src/types/base/index.ts",
       "default": "./src/types/base/index.ts"
     },
-    "./game": {
+    "./types/base/*": {
+      "types": "./src/types/base/*.ts",
+      "import": "./src/types/base/*.ts",
+      "default": "./src/types/base/*.ts"
+    },
+    "./types/game": {
       "types": "./src/types/game/index.ts",
       "import": "./src/types/game/index.ts",
       "default": "./src/types/game/index.ts"
     },
-    "./network": {
+    "./types/game/*": {
+      "types": "./src/types/game/*.ts",
+      "import": "./src/types/game/*.ts",
+      "default": "./src/types/game/*.ts"
+    },
+    "./types/network": {
       "types": "./src/types/network/index.ts",
       "import": "./src/types/network/index.ts",
       "default": "./src/types/network/index.ts"
     },
-    "./storage": {
+    "./types/storage": {
       "types": "./src/types/storage/index.ts",
       "import": "./src/types/storage/index.ts",
       "default": "./src/types/storage/index.ts"
     },
-    "./validation": {
-      "types": "./src/types/validation/index.ts",
-      "import": "./src/types/validation/index.ts",
-      "default": "./src/types/validation/index.ts"
-    },
-    "./replay": {
+    "./types/replay": {
       "types": "./src/types/replay/index.ts",
       "import": "./src/types/replay/index.ts",
       "default": "./src/types/replay/index.ts"
     },
-    "./redis": {
+    "./types/replay/*": {
+      "types": "./src/types/replay/*.ts",
+      "import": "./src/types/replay/*.ts",
+      "default": "./src/types/replay/*.ts"
+    },
+    "./types/redis": {
       "types": "./src/types/redis/index.ts",
       "import": "./src/types/redis/index.ts",
       "default": "./src/types/redis/index.ts"
+    },
+    "./validation/*": {
+      "types": "./src/validation/*.ts",
+      "import": "./src/validation/*.ts",
+      "default": "./src/validation/*.ts"
     },
     "./utils": {
       "types": "./src/utils/index.ts",
       "import": "./src/utils/index.ts",
       "default": "./src/utils/index.ts"
+    },
+    "./utils/*": {
+      "types": "./src/utils/*.ts",
+      "import": "./src/utils/*.ts",
+      "default": "./src/utils/*.ts"
     }
   },
   "sideEffects": false,
