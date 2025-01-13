@@ -6,6 +6,7 @@ import {
   GameMove,
   OperationType,
   WebSocketEvents,
+  ServerToClientEventType,
   ServerToClientEvents,
   ClientToServerEvents,
   IGameState,
@@ -132,7 +133,7 @@ export class GameServer {
 
       // Оборачиваем emit для логирования
       const originalEmit = socket.emit;
-      const wrappedEmit = function<Ev extends WebSocketEvents>(
+      const wrappedEmit = function<Ev extends ServerToClientEventType>(
         this: typeof socket,
         ev: Ev,
         ...args: Parameters<typeof socket.emit<Ev>>
