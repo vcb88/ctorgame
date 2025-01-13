@@ -1,18 +1,26 @@
 import { useEffect, useState, useCallback, useRef } from 'react';
 import { io, Socket } from 'socket.io-client';
 import { logger } from '../utils/logger';
-import {
+// Game types
+import type {
   IGameState,
   GameMove,
-  OperationType,
-  IPosition,
+} from '@ctor-game/shared/types/game';
+
+// Network types
+import type {
   WebSocketEvents,
   ClientToServerEvents,
   ServerToClientEvents,
-  Player,
-  getOpponent
-} from '@ctor-game/shared';
-import { validateGameMove, validateGameState } from '@ctor-game/shared';
+} from '@ctor-game/shared/types/network';
+
+// Base types
+import type { IPosition } from '@ctor-game/shared/types/base/primitives';
+import type { OperationType, Player } from '@ctor-game/shared/types/base/enums';
+
+// Utils and validation
+import { getOpponent } from '@ctor-game/shared/utils/game';
+import { validateGameMove, validateGameState } from '@ctor-game/shared/validation/game';
 import {
   ConnectionState,
   GameError,
