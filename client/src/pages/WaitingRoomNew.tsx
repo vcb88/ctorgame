@@ -5,7 +5,7 @@ import { useGame } from '@/hooks/useGame';
 import { NeonBillboard } from '@/components/display/NeonBillboard';
 import { NeonGridBackground } from '@/components/backgrounds/NeonGridBackground';
 import { logger } from '@/utils/logger';
-import { Player } from '@ctor-game/shared';
+import type { Player } from '@ctor-game/shared/types/base/enums';
 import { GameStateManager } from '@/services/GameStateManager';
 import { JoinGameError } from '@/types/gameManager';
 
