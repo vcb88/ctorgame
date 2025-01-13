@@ -20,7 +20,8 @@ export {
 // Re-export move types
 export {
     IBasicMove,
-    GameMove
+    GameMove,
+    IReplaceValidation
 } from './moves';
 
 // Re-export state types
