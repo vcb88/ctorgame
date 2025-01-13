@@ -12,7 +12,7 @@
     "type-check": "tsc -p tsconfig.json --noEmit",
     "test": "jest",
     "test:watch": "jest --watch",
-    "clean": "rm -rf dist tsconfig.tsbuildinfo"
+    "clean": "rm -rf dist tsconfig.tsbuildinfo && cd ../shared && pnpm clean"
   },
   "dependencies": {
     "@ctor-game/shared": "workspace:*",
