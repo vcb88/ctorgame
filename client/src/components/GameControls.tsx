@@ -1,6 +1,7 @@
 import React from 'react';
 import { cn } from '@/lib/utils';
-import { ITurnState, Player, OperationType } from '@ctor-game/shared';
+import type { ITurnState } from '@ctor-game/shared/types/game';
+import type { Player, OperationType } from '@ctor-game/shared/types/base/enums';
 import { GameError } from '../types/connection';
 import { GameActionType } from '../types/actions';
 import { logger } from '../utils/logger';
