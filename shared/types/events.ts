@@ -1,6 +1,7 @@
 import { GamePhase, Player } from './base';
 import { IGameState } from './state';
 import { IGameRoom } from './game';
+import { GameMove } from './moves';
 
 export enum WebSocketErrorCode {
     INVALID_GAME_ID = 'INVALID_GAME_ID',
