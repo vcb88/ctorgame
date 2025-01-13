@@ -33,7 +33,7 @@ export interface IGameEvent {
     type: 'move' | 'disconnect' | 'reconnect' | 'end_turn';
     gameId: string;
     playerId: string;
-    data: Record<string, any>;
+    data: Record<string, unknown>;
     timestamp: number;
 }
 
@@ -44,4 +44,4 @@ export interface ReconnectionData {
     timestamp: number;
 }
 
-export { WebSocketEvents, WebSocketPayloads } from './web-socket-types';
+// WebSocket types are exported directly from web-socket-types.ts
