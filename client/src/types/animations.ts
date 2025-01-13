@@ -1,4 +1,5 @@
-import { IPosition, Player } from '@ctor-game/shared';
+import type { IPosition } from '@ctor-game/shared/types/base/primitives';
+import type { Player } from '@ctor-game/shared/types/base/enums';
 
 export interface AnimationState {
   type: AnimationType;

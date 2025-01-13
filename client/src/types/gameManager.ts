@@ -1,10 +1,11 @@
-import { 
-  GameManagerState,
-  IGameState,
-  Player,
-  GameMove,
-  GameError
-} from '@ctor-game/shared';
+// Base types
+import type { Player } from '@ctor-game/shared/types/base/enums';
+// Game state types
+import type { GameManagerState } from '@ctor-game/shared/types/state';
+import type { IGameState } from '@ctor-game/shared/types/game/state';
+import type { GameMove } from '@ctor-game/shared/types/game/moves';
+// Error types
+import type { GameError } from '@ctor-game/shared/types/base';
 
 /**
  * Расширенное состояние GameStateManager, включающее игровые данные

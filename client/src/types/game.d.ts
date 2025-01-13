@@ -1,5 +1,7 @@
 import { Socket } from 'socket.io-client';
-import { GameMove, IGameState, Player } from '@ctor-game/shared';
+import type { GameMove } from '@ctor-game/shared/types/game/moves';
+import type { IGameState } from '@ctor-game/shared/types/game/state';
+import type { Player } from '@ctor-game/shared/types/base/enums';
 
 export interface ITurnState {
   placeOperationsLeft: number;
