@@ -68,6 +68,28 @@ export enum WebSocketEvents {
     AvailableReplaces = 'availableReplaces'
 }
 
+// Тип для событий сервера -> клиент
+export type ServerToClientEventType = 
+    | WebSocketEvents.GameCreated 
+    | WebSocketEvents.GameJoined 
+    | WebSocketEvents.GameStarted 
+    | WebSocketEvents.GameStateUpdated 
+    | WebSocketEvents.GameOver 
+    | WebSocketEvents.PlayerDisconnected 
+    | WebSocketEvents.PlayerReconnected 
+    | WebSocketEvents.GameExpired 
+    | WebSocketEvents.Error 
+    | WebSocketEvents.AvailableReplaces;
+
+// Тип для событий клиент -> сервер
+export type ClientToServerEventType = 
+    | WebSocketEvents.CreateGame 
+    | WebSocketEvents.JoinGame 
+    | WebSocketEvents.MakeMove 
+    | WebSocketEvents.EndTurn 
+    | WebSocketEvents.Disconnect 
+    | WebSocketEvents.Reconnect;
+
 export interface WebSocketPayloads {
     // Client -> Server requests
     [WebSocketEvents.CreateGame]: void;
