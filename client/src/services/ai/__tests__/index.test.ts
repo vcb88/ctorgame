@@ -1,5 +1,6 @@
-import { GameAI } from '../index';
-import { IGameState, IBoard } from '@ctor-game/shared';
+import { GameAI } from '@/services/ai';
+import { IGameState } from '@ctor-game/shared/types/game';
+import { IBoard } from '@ctor-game/shared/types/board';
 
 describe('GameAI', () => {
     let ai: GameAI;
