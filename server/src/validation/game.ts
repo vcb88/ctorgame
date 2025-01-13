@@ -1,2 +1,3 @@
 // Re-export validation functions from shared types
-export { validatePosition, validateGameMove, validateGameState } from '@ctor-game/shared';
+export { validatePosition } from '@ctor-game/shared/validation/primitives';
+export { validateGameMove, validateGameState } from '@ctor-game/shared/validation/game';

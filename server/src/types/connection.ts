@@ -1,4 +1,4 @@
-import type { ErrorResponse } from '@ctor-game/shared';
+import type { ErrorResponse } from '@ctor-game/shared/types/network';
 
 export type { ErrorResponse };
 
