@@ -28,11 +28,11 @@ module.exports = {
     enhancedResolveOptions: {
       exportsFields: ['exports'],
       conditionNames: ['import', 'require', 'node', 'default'],
-      extensions: ['.js', '.jsx', '.ts', '.tsx', '.json'],
-      alias: {
-        '@ctor-game/shared': './shared/src',
-        '@': './client/src'
-      }
+      extensions: ['.js', '.jsx', '.ts', '.tsx', '.json']
+    },
+    baseDir: '.',
+    tsConfig: {
+      fileName: './tsconfig.base.json'
     },
     reporterOptions: {
       dot: {
