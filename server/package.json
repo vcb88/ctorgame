@@ -2,8 +2,9 @@
   "name": "ctor-game-server",
   "version": "0.1.0",
   "private": true,
+  "type": "module",
   "scripts": {
-    "dev": "NODE_ENV=development ts-node src/index.ts",
+    "dev": "NODE_ENV=development ts-node --esm src/index.ts",
     "build": "tsc --build tsconfig.json",
     "start": "node dist/index.js",
     "lint": "eslint -c eslint.config.cjs . --max-warnings 0",
