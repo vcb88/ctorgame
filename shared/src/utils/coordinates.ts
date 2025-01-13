@@ -1,5 +1,5 @@
-import type { IPosition, IBoardSize } from '../../types/basic-types.js';
-import type { IBoard } from '../../types/state.js';
+import type { IPosition, IBoardSize } from '../types/basic-types';
+import type { IBoard } from '../types/state';
 
 /**
  * Direction vectors for adjacent cells.

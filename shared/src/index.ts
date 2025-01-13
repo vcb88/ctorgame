@@ -1,21 +1,21 @@
 // Import and re-export basic types that we need
-import type { IPosition } from '../types/basic-types.js';
+import type { IPosition } from './types/basic-types';
 
 // Re-export all base types
-export * from '../types/basic-types.js';
-export * from '../types/base.js';
-export * from '../types/moves.js';
-export * from '../types/state.js';
-export * from '../types/game.js';
-export * from '../types/events.js';
-export * from '../types/web-socket-types.js';
-export * from '../types/replay.js';
-export * from '../types/redis.js';
-export * from '../types/payloads.js';
-export * from '../types/validation-types.js';
+export * from './types/basic-types';
+export * from './types/base';
+export * from './types/moves';
+export * from './types/state';
+export * from './types/game';
+export * from './types/events';
+export * from './types/web-socket-types';
+export * from './types/replay';
+export * from './types/redis';
+export * from './types/payloads';
+export * from './types/validation-types';
 
 // Export utilities
-export * from './utils/index.js';
+export * from './utils/index';
 
 // Export local interfaces
 export interface ReplaceCandidate {
