@@ -5,7 +5,7 @@
     "dev": "pnpm -r --parallel dev",
     "lint": "pnpm -r lint",
     "test": "pnpm -r test",
-    "clean": "pnpm -r clean"
+    "clean": "rm -rf node_modules && pnpm -r exec rm -rf node_modules dist coverage .nyc_output tsconfig.tsbuildinfo && rm -rf .pnpm-store"
   },
   "devDependencies": {
     "dependency-cruiser": "^16.9.0",
