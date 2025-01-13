@@ -448,6 +448,7 @@ export class GameServer {
             ...state,
             currentTurn: {
               placeOperationsLeft: MAX_PLACE_OPERATIONS,
+              replaceOperationsLeft: 0,
               moves: []
             }
           };
