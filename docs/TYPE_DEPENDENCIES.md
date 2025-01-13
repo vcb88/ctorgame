@@ -4,6 +4,7 @@
 
 ```mermaid
 graph TD
+    coordinates[coordinates.ts]
     basics[basic-types.ts]
     base[base.ts]
     moves[moves.ts]
@@ -11,10 +12,13 @@ graph TD
     game[game.ts]
     events[events.ts]
     payloads[payloads.ts]
-    coordinates[coordinates.ts]
     redis[redis.ts]
     replay[replay.ts]
 
+    coordinates --> state
+    coordinates --> moves
+    coordinates --> game
+    coordinates --> payloads
     basics --> base
     basics --> moves
     basics --> state
@@ -82,10 +86,10 @@ graph TD
    - Handles WebSocket communication types
 
 8. **coordinates.ts - Coordinate System Types**
-   - No external dependencies
-   - Contains coordinate system related types
-   - Used for board position calculations
-   - Provides utility types for spatial operations
+   - No external dependencies (foundational module)
+   - Contains core types for board representation (IPosition, IBoardSize, IBoard)
+   - Used extensively throughout the application
+   - Essential for game state and move validation
 
 9. **redis.ts - Redis Storage Types**
    - Imports from state.ts, game.ts, and base.ts
