@@ -10,6 +10,46 @@
       "types": "./src/index.ts",
       "import": "./src/index.ts",
       "default": "./src/index.ts"
+    },
+    "./base": {
+      "types": "./src/types/base/index.ts",
+      "import": "./src/types/base/index.ts",
+      "default": "./src/types/base/index.ts"
+    },
+    "./game": {
+      "types": "./src/types/game/index.ts",
+      "import": "./src/types/game/index.ts",
+      "default": "./src/types/game/index.ts"
+    },
+    "./network": {
+      "types": "./src/types/network/index.ts",
+      "import": "./src/types/network/index.ts",
+      "default": "./src/types/network/index.ts"
+    },
+    "./storage": {
+      "types": "./src/types/storage/index.ts",
+      "import": "./src/types/storage/index.ts",
+      "default": "./src/types/storage/index.ts"
+    },
+    "./validation": {
+      "types": "./src/types/validation/index.ts",
+      "import": "./src/types/validation/index.ts",
+      "default": "./src/types/validation/index.ts"
+    },
+    "./replay": {
+      "types": "./src/types/replay/index.ts",
+      "import": "./src/types/replay/index.ts",
+      "default": "./src/types/replay/index.ts"
+    },
+    "./redis": {
+      "types": "./src/types/redis/index.ts",
+      "import": "./src/types/redis/index.ts",
+      "default": "./src/types/redis/index.ts"
+    },
+    "./utils": {
+      "types": "./src/utils/index.ts",
+      "import": "./src/utils/index.ts",
+      "default": "./src/utils/index.ts"
     }
   },
   "sideEffects": false,

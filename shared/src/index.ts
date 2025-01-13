@@ -1,20 +1,25 @@
-// Import and re-export basic types that we need
-import type { IPosition } from './types/base/primitives';
+/**
+ * This is the main entry point for basic types and utilities.
+ * For specific domain types, use direct imports:
+ * 
+ * import { IGameState } from '@ctor-game/shared/game';
+ * import { IPlayer } from '@ctor-game/shared/game';
+ * import { INetworkEvent } from '@ctor-game/shared/network';
+ * etc.
+ */
 
-// Re-export all types from new structure
-export * from './types';
+// Export basic types that are commonly used
 export * from './types/base';
-export * from './types/game';
-export * from './types/network';
-export * from './types/storage';
-export * from './types/validation';
-export * from './types/replay';
-export * from './types/redis';
+
+// Export constants
+export * from './types/constants';
 
 // Export utilities
 export * from './utils/index';
 
-// Export local interfaces
+// Common interfaces used across multiple domains
+import type { IPosition } from './types/base/primitives';
+
 export interface ReplaceCandidate {
     position: IPosition;
     isValid: boolean;

@@ -1,14 +1,21 @@
+// Game related types
 import { 
-    IGameState, 
-    IPlayer, 
+    IGameState,
+    GameMove,
+    Player,
+    IServerMove 
+} from '@ctor-game/shared/game';
+
+// Player related types
+import { IPlayer } from '@ctor-game/shared/game';
+
+// Redis specific types
+import {
     IRedisGameState,
     IRedisPlayerSession,
     IRedisGameRoom,
-    IRedisGameEvent,
-    Player,
-    IServerMove,
-    GameMove
-} from '@ctor-game/shared';
+    IRedisGameEvent
+} from '@ctor-game/shared/redis';
 import { redisClient, REDIS_KEYS, REDIS_EVENTS, withLock, cacheConfig } from '../config/redis';
 import { GameLogicService } from './GameLogicService';
 
