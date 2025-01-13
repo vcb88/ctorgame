@@ -14,4 +14,3 @@ export {
     BOARD_SIZE,
     MIN_ADJACENT_FOR_REPLACE,
     MAX_PLACE_OPERATIONS
-} from './constants';

@@ -5,7 +5,7 @@ import {
     IHeight,
     IPlayerNumber,
     IGameStatus
-} from './core';
+} from './core.js';
 
 // Player enum and interfaces
 export enum Player {
@@ -31,4 +31,3 @@ export interface IBoardSize extends IBoardSizeBase {}
 // Game status interfaces
 export interface IGameStatusBase extends IGameStatus {}
 
-export type GameStatus = 'waiting' | 'playing' | 'finished';

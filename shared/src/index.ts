@@ -9,4 +9,3 @@
  */
 
 // This file is kept for backwards compatibility
-// All new code should use direct imports

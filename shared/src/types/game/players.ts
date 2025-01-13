@@ -1,4 +1,4 @@
-import { Player } from '../base/enums';
+import { Player } from '../base/enums.js';
 
 export interface IPlayer {
     id: string;
@@ -10,4 +10,3 @@ export interface IGameRoom {
     players: IPlayer[];
     currentState: import('./state').IGameState;
     currentPlayer: Player;
-}

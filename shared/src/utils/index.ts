@@ -2,4 +2,3 @@
 export * from './coordinates';
 
 // Export game utilities
-export * from './game';

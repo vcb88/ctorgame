@@ -1,5 +1,5 @@
-import { Player } from '../types/base/enums';
-import { IBasicScores, IScores } from '../types/game/state';
+import { Player } from '../types/base/enums.js';
+import { IBasicScores, IScores } from '../types/game/state.js';
 
 export function createEmptyScores(): IScores {
     return {
@@ -36,4 +36,3 @@ export function getWinnerFromScores(scores: IBasicScores): Player | null {
     if (scores.player1 > scores.player2) return Player.First;
     if (scores.player2 > scores.player1) return Player.Second;
     return null;
-}

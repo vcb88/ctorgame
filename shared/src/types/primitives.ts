@@ -24,4 +24,3 @@ export enum Player {
     Second = 2
 }
 
-export type GameStatus = 'waiting' | 'playing' | 'finished';

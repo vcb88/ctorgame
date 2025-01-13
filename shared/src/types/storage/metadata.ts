@@ -1,7 +1,7 @@
-import { Player } from '../base/enums';
-import { GameStatus, IBoardSize } from '../base/primitives';
-import { IGameState } from '../game/state';
-import { GameMove } from '../game/moves';
+import { Player } from '../base/enums.js';
+import { GameStatus, IBoardSize } from '../base/primitives.js';
+import { IGameState } from '../game/state.js';
+import { GameMove } from '../game/moves.js';
 
 export interface GameDetails {
     moves: GameMove[];
@@ -43,4 +43,3 @@ export interface GameMetadata {
         [Player.First]: number;
         [Player.Second]: number;
     };
-}

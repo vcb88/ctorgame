@@ -1,6 +1,6 @@
-import { Player, WebSocketErrorCode, GamePhase } from '../base/enums';
-import { GameMove } from '../game/moves';
-import { IGameState } from '../game/state';
+import { Player, WebSocketErrorCode, GamePhase } from '../base/enums.js';
+import { GameMove } from '../game/moves.js';
+import { IGameState } from '../game/state.js';
 
 export enum WebSocketEvents {
     // Client -> Server events
@@ -113,4 +113,3 @@ export type WebSocketPayloads = {
         replacements: Array<[number, number]>;
         moves: GameMove[];
     };
-}

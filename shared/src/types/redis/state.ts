@@ -1,6 +1,6 @@
-import { IGameState } from '../game/state';
-import { IPlayer } from '../game/players';
-import { GameStatus } from '../base/primitives';
+import { IGameState } from '../game/state.js';
+import { IPlayer } from '../game/players.js';
+import { GameStatus } from '../base/primitives.js';
 
 // Base interface for Redis stored objects
 export interface IRedisBase {
@@ -18,4 +18,3 @@ export interface IRedisGameRoom extends IRedisBase {
     status: GameStatus;
     maxPlayers?: number; // Make it optional for backwards compatibility
     expiresAt?: number;
-}

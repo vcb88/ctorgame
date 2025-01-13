@@ -1,4 +1,4 @@
-import type { IPosition } from '../base/primitives';
+import type { IPosition } from '../base/primitives.js';
 
 export interface ReplaceCandidate {
     position: IPosition;
@@ -7,4 +7,3 @@ export interface ReplaceCandidate {
     adjacentPositions: IPosition[];
     /** Calculated priority for this replacement (higher means more important) */
     priority: number;
-}

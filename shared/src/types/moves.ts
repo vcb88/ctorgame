@@ -2,9 +2,9 @@ import {
     IOperationType,
     IValidationResult,
     ITimestamp
-} from './core';
-import { IPositionBase } from './basic-types';
-import { Player } from './basic-types';
+} from './core.js';
+import { IPositionBase } from './basic-types.js';".js"
+import { Player } from './basic-types.js';".js"
 
 // Move interfaces
 export interface IMoveBase extends IOperationType {
@@ -34,4 +34,3 @@ export interface GameMove extends IGameMoveBase, ITimestamp {}
 // Replace validation interfaces
 export interface IReplaceValidationBase extends IValidationResult {
     readonly replacements?: ReadonlyArray<[number, number]>;
-}

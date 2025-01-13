@@ -1,5 +1,5 @@
-import { GameMetadata, GameDetails } from '../storage/metadata';
-import { GameMove } from '../game/moves';
+import { GameMetadata, GameDetails } from '../storage/metadata.js';
+import { GameMove } from '../game/moves.js';
 
 export interface GameHistory {
     metadata: GameMetadata;
@@ -16,4 +16,3 @@ export interface GameHistoryMetrics {
         moveIndex: number;
         territoryDelta: number;
     }>;
-}
