@@ -10,3 +10,9 @@ export interface GameMove extends IBasicMove {
     timestamp: number;
     replacements?: Array<[number, number]>;
 }
+
+export interface IReplaceValidation {
+    valid: boolean;
+    replacements?: Array<[number, number]>;
+    message?: string;
+}

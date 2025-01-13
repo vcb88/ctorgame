@@ -10,8 +10,11 @@ export enum WebSocketErrorCode {
     INVALID_MOVE = 'INVALID_MOVE',
     NOT_YOUR_TURN = 'NOT_YOUR_TURN',
     GAME_OVER = 'GAME_OVER',
+    GAME_ENDED = 'GAME_ENDED',
     INVALID_STATE = 'INVALID_STATE',
-    INTERNAL_ERROR = 'INTERNAL_ERROR'
+    INTERNAL_ERROR = 'INTERNAL_ERROR',
+    SERVER_ERROR = 'SERVER_ERROR',
+    CONNECTION_ERROR = 'CONNECTION_ERROR'
 }
 
 export interface ErrorResponse {
@@ -56,7 +59,8 @@ export enum WebSocketEvents {
     PlayerDisconnected = 'playerDisconnected',
     PlayerReconnected = 'playerReconnected',
     GameExpired = 'gameExpired',
-    Error = 'error'
+    Error = 'error',
+    AvailableReplaces = 'availableReplaces'
 }
 
 export interface WebSocketPayloads {
@@ -76,6 +80,9 @@ export interface WebSocketPayloads {
         gameId: string;
     };
     [WebSocketEvents.Disconnect]: void;
+    [WebSocketEvents.Reconnect]: {
+        gameId: string;
+    };
 
     // Server -> Client responses
     [WebSocketEvents.GameCreated]: {
@@ -105,10 +112,20 @@ export interface WebSocketPayloads {
     [WebSocketEvents.PlayerDisconnected]: {
         player: number;
     };
+    [WebSocketEvents.PlayerReconnected]: {
+        player: number;
+        gameState: IGameState;
+    };
+    [WebSocketEvents.GameExpired]: {
+        gameId: string;
+    };
     [WebSocketEvents.Error]: {
-        code: string;
+        code: WebSocketErrorCode;
         message: string;
         details?: unknown;
+    };
+    [WebSocketEvents.AvailableReplaces]: {
+        replacements: Array<[number, number]>;
     };
 }
 
