@@ -1,6 +1,8 @@
 import { Socket } from 'socket.io';
 import { GameService } from '../../services/GameService.js';
-import { IGameState, IReplayState, GameHistory } from '@ctor-game/shared';
+import type { IGameState } from '@ctor-game/shared/types/game';
+import type { IReplayState } from '@ctor-game/shared/types/replay';
+import type { GameHistory } from '@ctor-game/shared/types/history';
 
 // Состояние replay для каждой игры
 const replayStates = new Map<string, IReplayState>();
