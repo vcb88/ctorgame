@@ -1,41 +1,12 @@
 /**
- * This is the main entry point for basic types and utilities.
- * For specific domain types, use direct imports:
+ * @deprecated
+ * Please use direct imports from specific modules:
  * 
- * import { IGameState } from '@ctor-game/shared/game';
- * import { IPlayer } from '@ctor-game/shared/game';
- * import { INetworkEvent } from '@ctor-game/shared/network';
- * etc.
+ * import type { IPosition, IBoardSize } from '@ctor-game/shared/types/base/primitives';
+ * import { GamePhase } from '@ctor-game/shared/types/base/enums';
+ * import { BOARD_SIZE, MIN_ADJACENT_FOR_REPLACE, MAX_PLACE_OPERATIONS } from '@ctor-game/shared/types/constants';
+ * import type { ReplaceCandidate } from '@ctor-game/shared/types/game/replace';
  */
 
-// Re-export from base types
-export type {
-    IPosition,
-    IBoardSize
-} from './types/base/primitives';
-
-export {
-    GamePhase,
-} from './types/base/enums';
-
-// Re-export game constants
-export {
-    BOARD_SIZE,
-    MIN_ADJACENT_FOR_REPLACE,
-    MAX_PLACE_OPERATIONS
-} from './types/constants';
-
-// Export utilities
-export * from './utils/index';
-
-// Common interfaces used across multiple domains
-import type { IPosition } from './types/base/primitives';
-
-export interface ReplaceCandidate {
-    position: IPosition;
-    isValid: boolean;
-    adjacentCount: number;
-    adjacentPositions: IPosition[];
-    /** Calculated priority for this replacement (higher means more important) */
-    priority: number;
-}
+// This file is kept for backwards compatibility
+// All new code should use direct imports
