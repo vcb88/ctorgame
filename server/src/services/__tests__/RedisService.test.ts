@@ -105,7 +105,7 @@ describe('RedisService', () => {
             jest.mocked(GameLogicService.applyMove).mockReturnValue(mockGameState);
             jest.mocked(redisClient.get).mockResolvedValue(JSON.stringify(mockGameState));
 
-            await redisService.updateGameState('test-game', Player.First, { type: 'place', position: { x: 0, y: 0 }, player: Player.First, timestamp: Date.now() });
+            await redisService.updateGameState('test-game', Player.First, { type: 'place', position: { x: 0, y: 0 } });
 
             expect(GameLogicService.isValidMove).toHaveBeenCalled();
             expect(GameLogicService.applyMove).toHaveBeenCalled();
@@ -209,7 +209,7 @@ describe('RedisService', () => {
     describe('Game Events', () => {
         it('should add game event', async () => {
             const event = {
-                type: GameEventType.Move,
+                type: 'move',
                 gameId: 'test-game',
                 playerId: 'test-player',
                 data: {},
