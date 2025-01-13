@@ -11,6 +11,7 @@ export enum GamePhase {
     WAITING = 'WAITING',
     PLAYING = 'PLAYING',
     GAME_OVER = 'GAME_OVER',
+    FINISHED = 'FINISHED',
     ERROR = 'ERROR'
 }
 

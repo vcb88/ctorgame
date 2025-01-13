@@ -1,7 +1,7 @@
 import { logger } from '../utils/logger.js';
 import {
   IGameState,
-  IGameMove,
+  GameMove,
   OperationType,
   BOARD_SIZE,
   MIN_ADJACENT_FOR_REPLACE,
@@ -33,6 +33,7 @@ export class GameLogicService {
       winner: null,
       currentTurn: {
         placeOperationsLeft: 1, // Первый ход - только одна операция
+        replaceOperationsLeft: 0, // В первый ход нет операций замены
         moves: []
       },
       currentPlayer: Player.First,
@@ -54,7 +55,7 @@ export class GameLogicService {
    * @param playerNumber Номер игрока, делающего ход
    * @returns true если ход допустим
    */
-  static isValidMove(state: IGameState, move: IGameMove, playerNumber: Player): boolean {
+  static isValidMove(state: IGameState, move: GameMove, playerNumber: Player): boolean {
     const { type, position } = move;
     const { x, y } = position;
     const { width, height } = state.board.size;
@@ -126,7 +127,7 @@ export class GameLogicService {
   /**
    * Применяет ход к текущему состоянию игры
    */
-  static applyMove(state: IGameState, move: IGameMove, playerNumber: Player): IGameState {
+  static applyMove(state: IGameState, move: GameMove, playerNumber: Player): IGameState {
     const startTime = Date.now();
     logger.game.move('applying', move, {
       playerNumber,
@@ -155,6 +156,7 @@ export class GameLogicService {
       if (newState.currentTurn.placeOperationsLeft === 0) {
         newState.currentPlayer = getOpponent(newState.currentPlayer);
         newState.currentTurn.placeOperationsLeft = newState.isFirstTurn ? 1 : MAX_PLACE_OPERATIONS;
+        newState.currentTurn.replaceOperationsLeft = 0;
         newState.currentTurn.moves = [];
       }
 
@@ -208,8 +210,8 @@ export class GameLogicService {
   /**
    * Проверяет доступные замены после размещения фишки
    */
-  static getAvailableReplaces(state: IGameState, playerNumber: Player): IGameMove[] {
-    const availableReplaces: IGameMove[] = [];
+  static getAvailableReplaces(state: IGameState, playerNumber: Player): GameMove[] {
+    const availableReplaces: GameMove[] = [];
     const { width, height } = state.board.size;
 
     for (let y = 0; y < height; y++) {
@@ -283,6 +285,7 @@ export class GameLogicService {
       winner: state.winner,
       currentTurn: {
         placeOperationsLeft: state.currentTurn.placeOperationsLeft,
+        replaceOperationsLeft: state.currentTurn.replaceOperationsLeft,
         moves: [...state.currentTurn.moves]
       },
       currentPlayer: state.currentPlayer,

@@ -30,7 +30,10 @@ export interface ServerToClientEvents {
     [WebSocketEvents.GameStateUpdated]: (payload: WebSocketPayloads[WebSocketEvents.GameStateUpdated]) => void;
     [WebSocketEvents.GameOver]: (payload: WebSocketPayloads[WebSocketEvents.GameOver]) => void;
     [WebSocketEvents.PlayerDisconnected]: (payload: WebSocketPayloads[WebSocketEvents.PlayerDisconnected]) => void;
+    [WebSocketEvents.PlayerReconnected]: (payload: WebSocketPayloads[WebSocketEvents.PlayerReconnected]) => void;
+    [WebSocketEvents.GameExpired]: (payload: WebSocketPayloads[WebSocketEvents.GameExpired]) => void;
     [WebSocketEvents.Error]: (payload: WebSocketPayloads[WebSocketEvents.Error]) => void;
+    [WebSocketEvents.AvailableReplaces]: (payload: WebSocketPayloads[WebSocketEvents.AvailableReplaces]) => void;
 }
 
 export interface ClientToServerEvents {
@@ -39,6 +42,7 @@ export interface ClientToServerEvents {
     [WebSocketEvents.MakeMove]: (payload: WebSocketPayloads[WebSocketEvents.MakeMove]) => void;
     [WebSocketEvents.EndTurn]: (payload: WebSocketPayloads[WebSocketEvents.EndTurn]) => void;
     [WebSocketEvents.Disconnect]: (payload: WebSocketPayloads[WebSocketEvents.Disconnect]) => void;
+    [WebSocketEvents.Reconnect]: (payload: WebSocketPayloads[WebSocketEvents.Reconnect]) => void;
 }
 
 export enum WebSocketEvents {
