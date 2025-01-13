@@ -1,5 +1,5 @@
 import { Player } from '../base/enums.js';
-import { GameStatus, IBoardSize } from '../base/primitives.js';
+import { GameStatus, IBoardSize } from '../primitives.js';
 import { IGameState } from '../game/state.js';
 import { GameMove } from '../game/moves.js';
 
