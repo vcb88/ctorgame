@@ -1,19 +1,23 @@
-// Re-export base types
+// Re-export basic types
 export {
     Player,
+    IPosition,
+    IBoardSize,
+    GameStatus
+} from './basic-types';
+
+// Re-export base types
+export {
     GamePhase,
     GameOutcome,
     OperationType,
     BOARD_SIZE,
     MIN_ADJACENT_FOR_REPLACE,
     MAX_PLACE_OPERATIONS,
-    IPosition,
-    IBoardSize,
     ErrorCode,
     ErrorSeverity,
     GameError,
     RecoveryStrategy,
-    GameStatus,
     ConnectionState
 } from './base';
 

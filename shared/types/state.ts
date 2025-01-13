@@ -1,4 +1,5 @@
-import { Player, GamePhase, IBoardSize, IPosition } from './base';
+import { Player, IBoardSize } from './basic-types';
+import { GamePhase } from './base';
 import { IBasicMove } from './moves';
 
 // Basic game state interfaces

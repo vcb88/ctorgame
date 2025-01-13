@@ -1,4 +1,4 @@
-import { Player, IPosition } from './base';
+import { Player, IPosition } from './basic-types';
 
 export interface IBasicMove {
     type: 'place' | 'replace' | 'end_turn';

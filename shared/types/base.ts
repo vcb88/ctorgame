@@ -1,9 +1,6 @@
-// Basic enums and constants
-export enum Player {
-    None = 0,
-    First = 1,
-    Second = 2
-}
+import { Player, IPosition, IBoardSize, GameStatus } from './basic-types';
+
+export { Player, IPosition, IBoardSize, GameStatus };
 
 export enum GamePhase {
     INITIAL = 'INITIAL',
@@ -31,17 +28,6 @@ export enum OperationType {
 export const BOARD_SIZE = 10;
 export const MIN_ADJACENT_FOR_REPLACE = 5;
 export const MAX_PLACE_OPERATIONS = 2;
-
-// Basic interfaces
-export interface IPosition {
-    x: number;
-    y: number;
-}
-
-export interface IBoardSize {
-    width: number;
-    height: number;
-}
 
 // Basic error types
 export enum ErrorCode {
@@ -96,8 +82,6 @@ export enum RecoveryStrategy {
     RESET = 'RESET',
     USER_ACTION = 'USER_ACTION'
 }
-
-export type GameStatus = 'waiting' | 'playing' | 'finished';
 
 export enum ConnectionState {
     CONNECTING = 'CONNECTING',
