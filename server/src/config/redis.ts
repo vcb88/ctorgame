@@ -11,7 +11,8 @@ export const cacheConfig: ICacheConfig = {
     ttl: {
         gameState: parseInt(process.env.CACHE_TTL_GAME_STATE || '3600'),
         playerSession: parseInt(process.env.CACHE_TTL_PLAYER_SESSION || '7200'),
-        gameRoom: parseInt(process.env.CACHE_TTL_GAME_ROOM || '3600')
+        gameRoom: parseInt(process.env.CACHE_TTL_GAME_ROOM || '3600'),
+        events: parseInt(process.env.CACHE_TTL_EVENTS || '86400') // 24 часа по умолчанию
     }
 };
 

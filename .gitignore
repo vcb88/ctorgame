@@ -57,7 +57,13 @@ docker/volumes/
 
 # Generated files
 dependency-graph.png
+dependency-graph-new.svg
 *.bak
+
+# Development scripts
+fix_files.py
+shared/scripts/fix_files.sh
+shared/scripts/fix_imports_v2.py
 
 # Environment
 .env
