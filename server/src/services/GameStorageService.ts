@@ -1,11 +1,10 @@
-import { GameMove, IScores, Player } from '@ctor-game/shared/game';
+import { GameMove, IScores } from '@ctor-game/shared/game';
 import { GameMetadata, GameDetails } from '@ctor-game/shared/storage';
 import { GameHistory } from '@ctor-game/shared/replay';
 import { mkdirSync, existsSync, readFileSync, writeFileSync } from 'fs';
 import { join } from 'path';
-import { MongoClient, Collection, WithId } from 'mongodb';
+import { MongoClient, Collection } from 'mongodb';
 import Redis from 'ioredis';
-import * as uuid from 'uuid';
 
 export class GameStorageError extends Error {
     constructor(message: string) {
@@ -27,6 +26,7 @@ export class GameStorageService {
     ) {
         this.redisClient = redisClient || null;
         this.storagePath = storagePath || process.env.STORAGE_PATH || 'storage/games';
+        // Initialize storage synchronously as it's file system operations
         this.initializeStorage();
     }
 
@@ -64,7 +64,7 @@ export class GameStorageService {
      * @param path path to the game file
      * @returns game data with moves and metadata
      */
-    private readGameFile(path: string): { moves: GameMove[], metadata: any } {
+    private readGameFile(path: string): { moves: GameMove[], metadata: Record<string, unknown> } {
         try {
             const content = readFileSync(path, 'utf8');
             return JSON.parse(content);
@@ -78,7 +78,7 @@ export class GameStorageService {
      * @param path path to the game file
      * @param data game data to write
      */
-    private writeGameFile(path: string, data: { moves: GameMove[], metadata: any }): void {
+    private writeGameFile(path: string, data: { moves: GameMove[], metadata: Record<string, unknown> }): void {
         writeFileSync(path, JSON.stringify(data, null, 2), 'utf8');
     }
 
