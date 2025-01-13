@@ -37,7 +37,13 @@
    - Coverage requirements
 
 ## Detailed Guides
-1. [Testing Strategy](./TESTING_STRATEGY.md)
+1. [Dependency Management](./DEPENDENCY_MANAGEMENT.md)
+   - Dependency analysis tools
+   - Best practices
+   - Circular dependency prevention
+   - Regular maintenance
+
+2. [Testing Strategy](./TESTING_STRATEGY.md)
    - Testing pyramid
    - Test types
    - Coverage goals
@@ -111,6 +117,7 @@
 | Document | Status | Last Updated |
 |----------|---------|--------------|
 | Architecture | Updated | 2025-01-11 |
+| Dependency Management | New | 2025-01-13 |
 | State Management Migration | New | 2025-01-11 |
 | Testing Strategy | Complete | 2024-12-23 |
 | Component Testing | Complete | 2024-12-23 |
