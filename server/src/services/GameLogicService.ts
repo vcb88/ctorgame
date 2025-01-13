@@ -8,23 +8,19 @@ import {
   Player
 } from '@ctor-game/shared/game';
 
-// Base types and constants
+// Base types
+import type { OperationType, GameOutcome, GamePhase } from '@ctor-game/shared/types/base/enums';
+import type { IPosition, IBoardSize } from '@ctor-game/shared/types/base/primitives';
+
+// Constants
 import {
-  OperationType,
-  GameOutcome,
-  GamePhase,
   BOARD_SIZE,
   MIN_ADJACENT_FOR_REPLACE,
   MAX_PLACE_OPERATIONS
-} from '@ctor-game/shared';
+} from '@ctor-game/shared/types/constants';
 
-// Board utils and types
-import {
-  IPosition,
-  IBoardSize,
-  Point2D,
-  getAdjacentPositions
-} from '@ctor-game/shared/base';
+// Board utils
+import { getAdjacentPositions } from '@ctor-game/shared/utils/board';
 
 // Game validation
 import {
