@@ -16,7 +16,8 @@
   "scripts": {
     "build": "tsc --build",
     "lint": "eslint src/**/*.ts",
-    "type-check": "tsc --noEmit"
+    "type-check": "tsc --noEmit",
+    "clean": "rm -rf dist tsconfig.tsbuildinfo"
   },
   "devDependencies": {
     "@types/node": "^20.10.0",

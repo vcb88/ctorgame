@@ -20,7 +20,8 @@
     "test:e2e:ci": "start-server-and-test 'pnpm dev:ci' http://localhost:5173 'cypress run --headless'",
     "test:coverage": "vitest run --coverage",
     "test:e2e:coverage": "cypress run --headless --reporter mochawesome",
-    "type-check": "tsc --noEmit"
+    "type-check": "tsc --noEmit",
+    "clean": "rm -rf dist tsconfig.tsbuildinfo"
   },
   "dependencies": {
     "@ctor-game/shared": "workspace:*",
