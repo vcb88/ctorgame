@@ -1,11 +1,12 @@
 import { MongoClient, Collection } from 'mongodb';
 // Game types
 import {
-    IGameState,
-    IPlayer
+    IGameState
 } from '../../../shared/src/types/game/state.js';
+import { IPlayer } from '../../../shared/src/types/game/players.js';
 import { GameMove } from '../../../shared/src/types/game/moves.js';
 import { Player } from '../../../shared/src/types/base/enums.js';
+import { GameStatus } from '../../../shared/src/types/primitives.js';
 import { IScores } from '../../../shared/src/types/game/state.js';
 import { GameMetadata } from '../../../shared/src/types/storage/metadata.js';
 
@@ -153,7 +154,7 @@ export class GameService {
         const game: GameMetadata = {
             gameId: normalizedGameId,
             code,
-            status: 'waiting',
+            status: GameStatus.WAITING,
             startTime: new Date().toISOString(),
             lastActivityAt: new Date().toISOString(),
             expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
@@ -174,8 +175,8 @@ export class GameService {
         const normalizedId = gameIdOrCode.toUpperCase();
         const result = await this.gamesCollection.findOne({ 
             $or: [
-                { gameId: normalizedId, status: 'waiting' },
-                { code: normalizedId, status: 'waiting' }
+                { gameId: normalizedId, status: GameStatus.WAITING },
+                { code: normalizedId, status: GameStatus.WAITING }
             ]
         });
         return result;
@@ -194,7 +195,7 @@ export class GameService {
             { 
                 $set: { 
                     'players.second': player.id,
-                    status: 'playing',
+                    status: GameStatus.IN_PROGRESS,
                     lastActivityAt: new Date().toISOString(),
                 }
             },
@@ -229,7 +230,7 @@ export class GameService {
             throw error;
         }
 
-        if (game.status === 'finished') {
+        if (game.status === GameStatus.FINISHED) {
             const error = toErrorWithStack(new Error('Game is already completed'));
             logger.game.validation(false, 'game_finished', {
                 gameId,
@@ -246,7 +247,7 @@ export class GameService {
         const updateData: Partial<GameMetadata> = { 
             currentState: newState,
             lastActivityAt: now,
-            status: newState.gameOver ? 'finished' : 'playing',
+            status: newState.gameOver ? GameStatus.FINISHED : GameStatus.IN_PROGRESS,
             totalTurns: (game.totalTurns || 0) + 1,
             currentPlayer: newState.currentPlayer
         };
@@ -316,7 +317,7 @@ export class GameService {
     async getSavedGames(): Promise<GameMetadata[]> {
         await this.ensureInitialized();
         return this.gamesCollection.find({
-            status: 'finished'
+            status: GameStatus.FINISHED
         }).sort({ endTime: -1 }).limit(50).toArray();
     }
 
@@ -345,7 +346,7 @@ export class GameService {
             { gameId },
             {
                 $set: {
-                    status: 'finished',
+                    status: GameStatus.FINISHED,
                     endTime: now,
                     lastActivityAt: now,
                     winner: winner !== null ? winner : undefined,
