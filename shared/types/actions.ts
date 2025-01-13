@@ -1,4 +1,4 @@
-import { IGameMove } from './game';
+import { IGameMove } from './index.js';
 
 /**
  * Types of game actions

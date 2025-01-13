@@ -1,5 +1,4 @@
-import { IPosition, IBoard } from './coordinates';
-import { IGameState } from './game';
+import { IPosition, IBoard, IGameState } from './index.js';
 
 /**
  * Represents the strength evaluation of a position
