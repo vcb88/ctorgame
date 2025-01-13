@@ -507,6 +507,59 @@ export interface GameHistory {
 
 export type GameStatus = 'waiting' | 'playing' | 'finished';
 
+// State storage types
+export interface StorageConfig {
+    /** Prefix for storage keys to avoid conflicts */
+    prefix: string;
+    /** Time-to-live in milliseconds for stored states */
+    ttl: number;
+    /** Version of the storage format */
+    version: string;
+}
+
+export interface StoredState<T> {
+    /** Version of the storage format */
+    version: string;
+    /** Timestamp when the state was saved */
+    timestamp: number;
+    /** The actual state data */
+    data: T;
+    /** When this state will expire */
+    expiresAt: number;
+}
+
+export interface GameManagerState {
+    phase: GamePhase;
+    gameId: string | null;
+    playerNumber: number | null;
+    error: any | null;
+    connectionState: string;
+    lastUpdated: number;
+}
+
+export type MigrationStrategy = (oldState: any) => GameManagerState;
+
+export interface MigrationConfig {
+    version: string;
+    migrate: MigrationStrategy;
+}
+
+export interface IStateStorage {
+    /** Save state with key */
+    saveState(key: string, state: any): void;
+    
+    /** Load state by key */
+    loadState<T>(key: string): T | null;
+    
+    /** Remove expired states */
+    cleanupExpired(): void;
+    
+    /** Remove state by key */
+    removeState(key: string): void;
+    
+    /** Get all keys with prefix */
+    getKeys(prefix?: string): string[];
+}
+
 // Re-export remaining domain-specific types
-export * from './state_storage.js';
 export * from './ai.js';
