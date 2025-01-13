@@ -89,5 +89,5 @@ export {
     BasicMove
 } from './payloads';
 
-// Re-export validation functions
-export { validateGameMove, validateGameState } from '../validation/game';
+// Re-export validation types
+export * from './validation-types';
