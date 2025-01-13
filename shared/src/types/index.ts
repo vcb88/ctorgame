@@ -5,8 +5,6 @@ export * from './storage';
 export * from './network';
 export * from './validation';
 export * from './replay';
-
-// TODO: Move these to appropriate modules
 export * from './redis';
 
 // Re-export constants
