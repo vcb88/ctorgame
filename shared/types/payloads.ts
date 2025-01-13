@@ -2,6 +2,8 @@ import { GamePhase, Player } from './base';
 import { IGameState } from './state';
 import { GameMove } from './moves';
 
+export { WebSocketErrorCode } from './base';  // Re-export for compatibility
+
 // Basic payload types that don't depend on complex game types
 export interface BasicPosition {
     x: number;
@@ -27,27 +29,27 @@ export interface GameJoinedPayload extends BaseGamePayload {
 
 export interface GameStartedPayload extends BaseGamePayload {
     gameState: IGameState;
-    currentPlayer: number;
+    currentPlayer: Player;
     phase: GamePhase;
 }
 
 export interface GameStateUpdatedPayload extends BaseGamePayload {
     gameState: IGameState;
-    currentPlayer: number;
+    currentPlayer: Player;
     phase: GamePhase;
 }
 
 export interface GameOverPayload extends BaseGamePayload {
     gameState: IGameState;
-    winner: number | null;
+    winner: Player | null;
 }
 
 export interface PlayerDisconnectedPayload {
-    player: number;
+    player: Player;
 }
 
 export interface PlayerReconnectedPayload {
-    player: number;
+    player: Player;
     gameState: IGameState;
     currentPlayer: Player;
 }
@@ -58,7 +60,7 @@ export interface GameExpiredPayload {
 }
 
 export interface ErrorPayload {
-    code: string;
+    code: WebSocketErrorCode;
     message: string;
     details?: unknown;
 }

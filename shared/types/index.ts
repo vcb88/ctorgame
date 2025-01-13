@@ -52,9 +52,11 @@ export {
     ReconnectionData,
     ServerToClientEvents,
     ClientToServerEvents,
-    WebSocketErrorCode,
     ErrorResponse
 } from './events';
+
+// Re-export WebSocketErrorCode from base instead of events
+export { WebSocketErrorCode } from './base';
 
 // Re-export replay types
 export {

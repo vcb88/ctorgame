@@ -1,4 +1,6 @@
-import { WebSocketErrorCode } from './base';
+import { WebSocketErrorCode, GamePhase, Player } from './base';
+import { IGameState } from './state';
+import { GameMove } from './moves';
 import {
     GameCreatedPayload,
     GameJoinedPayload,
@@ -36,6 +38,12 @@ export interface ClientToServerEvents {
     [WebSocketEvents.EndTurn]: (payload: EndTurnPayload) => void;
     [WebSocketEvents.Disconnect]: () => void;
     [WebSocketEvents.Reconnect]: (payload: ReconnectPayload) => void;
+}
+
+export interface ErrorResponse {
+    code: WebSocketErrorCode;
+    message: string;
+    details?: Record<string, unknown>;
 }
 
 export enum WebSocketEvents {
