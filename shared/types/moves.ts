@@ -1,7 +1,7 @@
 import { Player, IPosition } from './base';
 
 export interface IBasicMove {
-    type: 'place' | 'replace';
+    type: 'place' | 'replace' | 'end_turn';
     position: IPosition;
 }
 
