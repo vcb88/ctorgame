@@ -8,6 +8,8 @@
     "clean": "pnpm -r clean"
   },
   "devDependencies": {
+    "dependency-cruiser": "^16.9.0",
+    "madge": "^8.0.0",
     "typescript": "^5.3.3"
   }
 }
