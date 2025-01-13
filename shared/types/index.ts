@@ -311,8 +311,50 @@ export type ClientToServerEvents = {
     ) => void;
 };
 
+// Replay types
+export interface IReplayState {
+    currentMoveIndex: number;  // Current move number
+    totalMoves: number;        // Total number of moves
+    isPlaying: boolean;        // Is replay active
+    playbackSpeed: number;     // Playback speed (1 = normal)
+    gameCode: string;         // Game code
+}
+
+export enum ReplayEvent {
+    // Client -> Server
+    START_REPLAY = 'START_REPLAY',
+    PAUSE_REPLAY = 'PAUSE_REPLAY',
+    RESUME_REPLAY = 'RESUME_REPLAY',
+    NEXT_MOVE = 'NEXT_MOVE',
+    PREV_MOVE = 'PREV_MOVE',
+    GOTO_MOVE = 'GOTO_MOVE',
+    SET_PLAYBACK_SPEED = 'SET_PLAYBACK_SPEED',
+    END_REPLAY = 'END_REPLAY',
+
+    // Server -> Client
+    REPLAY_STATE_UPDATED = 'REPLAY_STATE_UPDATED',
+    REPLAY_PAUSED = 'REPLAY_PAUSED',
+    REPLAY_RESUMED = 'REPLAY_RESUMED',
+    REPLAY_COMPLETED = 'REPLAY_COMPLETED',
+    REPLAY_ERROR = 'REPLAY_ERROR',
+    PLAYBACK_SPEED_UPDATED = 'PLAYBACK_SPEED_UPDATED'
+}
+
+export interface IReplayStateUpdate {
+    state: IGameState;
+    moveIndex: number;
+    totalMoves: number;
+}
+
+export interface IReplayError {
+    message: string;
+}
+
+export interface IPlaybackSpeedUpdate {
+    speed: number;
+}
+
 // Re-export remaining domain-specific types
-export * from './replay.js';
 export * from './redis.js';
 export * from './events.js';
 export * from './storage.js';
