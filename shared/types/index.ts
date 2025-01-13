@@ -531,8 +531,8 @@ export interface StoredState<T> {
 export interface GameManagerState {
     phase: GamePhase;
     gameId: string | null;
-    playerNumber: number | null;
-    error: any | null;
+    playerNumber: Player | null;
+    error: Error | null;
     connectionState: string;
     lastUpdated: number;
 }
