@@ -1,38 +1,25 @@
 import { logger } from '../utils/logger.js';
 // Game state and moves
+// Common types
 import {
   IGameState,
   IBoard,
   IScores,
-  GameMove,
-  Player
+  ITurnState
 } from '../../../shared/src/types/game/state.js';
+import { GameMove } from '../../../shared/src/types/game/moves.js';
+import { Player } from '../../../shared/src/types/base/enums.js';
+import { OperationType, BOARD_SIZE, MIN_ADJACENT_FOR_REPLACE, MAX_PLACE_OPERATIONS } from '../../../shared/src/types/base.js';
+import type { IPosition } from '../../../shared/src/types/base/primitives.js';
 
-// Base types
-import { OperationType } from '../../../shared/src/types/primitives.js';
-import type { IPosition, IBoardSize } from '../../../shared/src/types/primitives.js';
-
-// Constants
-import {
-  BOARD_SIZE,
-  MIN_ADJACENT_FOR_REPLACE,
-  MAX_PLACE_OPERATIONS
-} from '../../../shared/src/types/constants.js';
-
-// Board utils
+// Utils
 import { getAdjacentPositions } from '../../../shared/src/utils/coordinates.js';
-
-// Game validation
-import {
-  IReplaceValidation
-} from '../../../shared/src/types/validation/replace.js';
-
-// Game utils
+import { IReplaceValidation } from '../../../shared/src/types/validation/result.js';
 import {
   getOpponent,
   createEmptyScores,
   createScores
-} from '../../../shared/src/utils/scores.js';
+} from '../../../shared/src/utils/game.js';
 
 export class GameLogicService {
   /**
@@ -43,7 +30,7 @@ export class GameLogicService {
   static createInitialState(): IGameState {
     return {
       board: {
-        cells: Array(BOARD_SIZE).fill(Player.None).map(() => Array(BOARD_SIZE).fill(Player.None)),
+        cells: Array(BOARD_SIZE).fill(null).map(() => Array(BOARD_SIZE).fill(null)),
         size: { width: BOARD_SIZE, height: BOARD_SIZE }
       },
       gameOver: false,
@@ -52,7 +39,7 @@ export class GameLogicService {
         placeOperationsLeft: 1, // Первый ход - только одна операция
         replaceOperationsLeft: 0, // В первый ход нет операций замены
         moves: [],
-        count: 0
+        count: 1
       },
       currentPlayer: Player.First,
       scores: createEmptyScores(),
@@ -97,7 +84,7 @@ export class GameLogicService {
       // 2. Достаточно ли своих фишек вокруг
       return (
         state.board.cells[y][x] === getOpponent(playerNumber) &&
-        this.validateReplace(state.board, position, playerNumber).valid
+        this.validateReplace(state.board, position, playerNumber).isValid
       );
     }
 
@@ -119,15 +106,15 @@ export class GameLogicService {
     );
     
     const validation: IReplaceValidation = {
-      valid: playerPieces.length >= MIN_ADJACENT_FOR_REPLACE,
+      isValid: playerPieces.length >= MIN_ADJACENT_FOR_REPLACE,
       replacements: playerPieces.map((pos: IPosition): [number, number] => [pos.x, pos.y]),
       message: playerPieces.length >= MIN_ADJACENT_FOR_REPLACE ? 
         'Valid replacement' : 
         `Not enough adjacent pieces (${playerPieces.length}/${MIN_ADJACENT_FOR_REPLACE})`
     };
 
-    logger.game.validation(validation.valid, 
-      validation.valid ? 'valid_replace' : 'invalid_replace', 
+    logger.game.validation(validation.isValid, 
+      validation.isValid ? 'valid_replace' : 'invalid_replace', 
       {
         position,
         playerNumber,
@@ -161,7 +148,13 @@ export class GameLogicService {
     if (type === OperationType.PLACE) {
       // Размещаем фишку
       newState.board.cells[y][x] = playerNumber;
-      newState.currentTurn.placeOperationsLeft--;
+      
+      // Создаем новое состояние хода
+      const newTurnState: ITurnState = {
+        ...newState.currentTurn,
+        placeOperationsLeft: newState.currentTurn.placeOperationsLeft - 1
+      };
+      newState.currentTurn = newTurnState;
       
       // Если это был первый ход в игре, обновляем флаг и устанавливаем количество операций для следующего хода
       if (state.isFirstTurn) {
@@ -169,11 +162,14 @@ export class GameLogicService {
       }
       
       // Проверяем окончание хода (нет операций или первый ход завершен)
-      if (newState.currentTurn.placeOperationsLeft === 0) {
+      if (newTurnState.placeOperationsLeft === 0) {
         newState.currentPlayer = getOpponent(newState.currentPlayer);
-        newState.currentTurn.placeOperationsLeft = newState.isFirstTurn ? 1 : MAX_PLACE_OPERATIONS;
-        newState.currentTurn.replaceOperationsLeft = 0;
-        newState.currentTurn.moves = [];
+        newState.currentTurn = {
+          placeOperationsLeft: newState.isFirstTurn ? 1 : MAX_PLACE_OPERATIONS,
+          replaceOperationsLeft: 0,
+          moves: [],
+          count: newState.currentTurn.count + 1
+        };
       }
 
       // Автоматически выполняем все возможные замены
@@ -198,7 +194,10 @@ export class GameLogicService {
     }
 
     // Добавляем ход в историю
-    newState.currentTurn.moves.push(move);
+    newState.currentTurn = {
+      ...newState.currentTurn,
+      moves: [...newState.currentTurn.moves, move]
+    };
 
     // Обновляем счет
     this.updateScores(newState);
@@ -236,7 +235,7 @@ export class GameLogicService {
         if (state.board.cells[y][x] === getOpponent(playerNumber)) {
           const position: IPosition = { x, y };
           const candidate = this.validateReplace(state.board, position, playerNumber);
-          if (candidate.valid) {
+          if (candidate.isValid) {
             availableReplaces.push({
               type: OperationType.REPLACE,
               position,
@@ -275,7 +274,7 @@ export class GameLogicService {
    */
   private static checkGameOver(board: IBoard): boolean {
     // Игра заканчивается, когда все клетки заняты
-    return board.cells.every((row: number[]) => row.every((cell: number) => cell !== Player.None));
+    return board.cells.every((row: (Player | null)[]) => row.every((cell: Player | null) => cell !== Player.None));
   }
 
   /**
@@ -295,7 +294,7 @@ export class GameLogicService {
   private static cloneGameState(state: IGameState): IGameState {
     return {
       board: {
-        cells: state.board.cells.map((row: number[]): number[] => [...row]) as number[][],
+        cells: state.board.cells.map((row: (Player | null)[]): (Player | null)[] => [...row]),
         size: { ...state.board.size }
       },
       gameOver: state.gameOver,
@@ -303,13 +302,16 @@ export class GameLogicService {
       currentTurn: {
         placeOperationsLeft: state.currentTurn.placeOperationsLeft,
         replaceOperationsLeft: state.currentTurn.replaceOperationsLeft,
-        moves: [...state.currentTurn.moves]
-      },
+        moves: [...state.currentTurn.moves],
+        count: state.currentTurn.count
+      } as ITurnState,
       currentPlayer: state.currentPlayer,
       scores: {
         [Player.First]: state.scores[Player.First],
-        [Player.Second]: state.scores[Player.Second]
-      } as IScores,
+        [Player.Second]: state.scores[Player.Second],
+        player1: state.scores[Player.First],
+        player2: state.scores[Player.Second]
+      },
       isFirstTurn: state.isFirstTurn
     };
   }
