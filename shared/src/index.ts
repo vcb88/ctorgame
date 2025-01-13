@@ -8,11 +8,26 @@
  * etc.
  */
 
-// Export basic types that are commonly used
-export * from './types/base';
+// Re-export from base types
+export {
+    IPosition,
+    IBoardSize,
+    IBasicMove,
+    Point2D
+} from './types/base/primitives';
 
-// Export constants
-export * from './types/constants';
+export {
+    GamePhase,
+    GameActionType,
+    OperationType
+} from './types/base/enums';
+
+// Re-export game constants
+export {
+    BOARD_SIZE,
+    MIN_ADJACENT_FOR_REPLACE,
+    MAX_PLACE_OPERATIONS
+} from './types/constants';
 
 // Export utilities
 export * from './utils/index';

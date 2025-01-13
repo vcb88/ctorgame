@@ -1,28 +1,41 @@
 import { Server } from 'socket.io';
 import { Server as HttpServer } from 'http';
 import { Socket } from 'socket.io';
+// Game types
 import {
   IPlayer,
   GameMove,
-  OperationType,
-  WebSocketEvents,
-  ServerToClientEventType,
   IServerMove,
-  ServerToClientEvents,
-  ClientToServerEvents,
   IGameState,
   IBoard,
-  BOARD_SIZE,
-  MAX_PLACE_OPERATIONS,
   IScores,
-  Player,
-  GameOutcome,
-  getOpponent,
-  isValidScores,
+  Player
+} from '@ctor-game/shared/game';
+
+// Base types and constants
+import {
+  OperationType,
   GamePhase,
+  GameOutcome,
+  BOARD_SIZE,
+  MAX_PLACE_OPERATIONS
+} from '@ctor-game/shared';
+
+// Network types
+import {
+  WebSocketEvents,
+  ServerToClientEventType,
+  ServerToClientEvents,
+  ClientToServerEvents,
   WebSocketPayloads,
   WebSocketErrorCode
-} from '@ctor-game/shared';
+} from '@ctor-game/shared/network';
+
+// Game utils
+import {
+  getOpponent,
+  isValidScores
+} from '@ctor-game/shared/utils';
 import { validateGameMove, validateGameState } from '../validation/game.js';
 import { GameService } from '../services/GameService.js';
 import { GameLogicService } from '../services/GameLogicService.js';

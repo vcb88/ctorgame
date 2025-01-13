@@ -1,4 +1,6 @@
-import { GameMetadata, GameMove, GameHistory, GameDetails, IScores, Player } from '@ctor-game/shared';
+import { GameMove, IScores, Player } from '@ctor-game/shared/game';
+import { GameMetadata, GameDetails } from '@ctor-game/shared/storage';
+import { GameHistory } from '@ctor-game/shared/replay';
 import { mkdirSync, existsSync, readFileSync, writeFileSync } from 'fs';
 import { join } from 'path';
 import { MongoClient, Collection, WithId } from 'mongodb';
