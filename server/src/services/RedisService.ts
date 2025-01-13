@@ -6,7 +6,8 @@ import {
     IRedisGameRoom,
     IRedisGameEvent,
     Player,
-    IServerMove
+    IServerMove,
+    GameMove
 } from '@ctor-game/shared';
 import { redisClient, REDIS_KEYS, REDIS_EVENTS, withLock, cacheConfig } from '../config/redis';
 import { GameLogicService } from './GameLogicService';
@@ -54,7 +55,7 @@ export class RedisService {
     async updateGameState(
         gameId: string,
         playerNumber: Player,
-        move: IServerMove,
+        serverMove: IServerMove,
         validateMove: boolean = true
     ): Promise<IGameState> {
         return await withLock(gameId, async () => {
@@ -62,6 +63,13 @@ export class RedisService {
             if (!currentState) {
                 throw new Error('Game state not found');
             }
+
+            // Convert IServerMove to GameMove
+            const move: GameMove = {
+                ...serverMove,
+                player: playerNumber,
+                timestamp: Date.now()
+            };
 
             if (validateMove) {
                 const isValid = GameLogicService.isValidMove(currentState, move, playerNumber);
