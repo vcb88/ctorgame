@@ -2,7 +2,7 @@ import { Socket } from 'socket.io';
 import { GameService } from '../../services/GameService.js';
 import { GameStorageService } from '../../services/GameStorageService.js';
 import {
-  IGameMove,
+  GameMove,
   IPlayer,
   IGameState,
   WebSocketEvents,
@@ -55,6 +55,7 @@ export function registerGameHandlers(
                 },
                 currentTurn: { 
                     placeOperationsLeft: 1,
+                    replaceOperationsLeft: 0,
                     moves: []
                 },
                 scores: { 

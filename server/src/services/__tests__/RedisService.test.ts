@@ -2,7 +2,8 @@ import { describe, it, expect, beforeEach, jest } from '@jest/globals';
 import { redisService } from '../RedisService.js';
 import { redisClient, REDIS_KEYS, REDIS_EVENTS } from '../../config/redis.js';
 import { GameLogicService } from '../GameLogicService.js';
-import { IGameState, IPlayer, Player, IScores, IGameEvent, GameEventType } from '../../shared.js';
+import { IGameState, IPlayer, Player, IScores, IGameEvent } from '@ctor-game/shared';
+import { GameEventType } from '../../types/events.js';
 
 // Мокаем Redis и GameLogicService
 jest.mock('../../config/redis', () => {
@@ -59,6 +60,7 @@ describe('RedisService', () => {
         },
         currentTurn: {
             placeOperationsLeft: 2,
+            replaceOperationsLeft: 0,
             moves: []
         },
         scores: {
@@ -103,7 +105,7 @@ describe('RedisService', () => {
             jest.mocked(GameLogicService.applyMove).mockReturnValue(mockGameState);
             jest.mocked(redisClient.get).mockResolvedValue(JSON.stringify(mockGameState));
 
-            await redisService.updateGameState('test-game', Player.First, { x: 0, y: 0 });
+            await redisService.updateGameState('test-game', Player.First, { type: 'place', position: { x: 0, y: 0 }, player: Player.First, timestamp: Date.now() });
 
             expect(GameLogicService.isValidMove).toHaveBeenCalled();
             expect(GameLogicService.applyMove).toHaveBeenCalled();
