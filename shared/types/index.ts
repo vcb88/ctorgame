@@ -80,23 +80,16 @@ export {
 // Re-export payload types
 export {
     BasicPosition,
-    BasicMove,
-    BaseGamePayload,
-    GameCreatedPayload,
-    GameJoinedPayload,
-    GameStartedPayload,
-    GameStateUpdatedPayload,
-    GameOverPayload,
-    PlayerDisconnectedPayload,
-    PlayerReconnectedPayload,
-    GameExpiredPayload,
-    ErrorPayload,
-    AvailableReplacesPayload,
-    JoinGamePayload,
-    MakeMovePayload,
-    EndTurnPayload,
-    ReconnectPayload
+    BasicMove
 } from './payloads';
+
+// Re-export WebSocket types
+export {
+    WebSocketEvents,
+    WebSocketPayloads,
+    ServerToClientEventType,
+    ClientToServerEventType
+} from './web-socket-types';
 
 // Re-export validation functions
 export { validateGameMove, validateGameState } from '../validation/game';
