@@ -71,5 +71,26 @@ export {
     ICacheConfig
 } from './redis';
 
+// Re-export payload types
+export {
+    BasicPosition,
+    BasicMove,
+    BaseGamePayload,
+    GameCreatedPayload,
+    GameJoinedPayload,
+    GameStartedPayload,
+    GameStateUpdatedPayload,
+    GameOverPayload,
+    PlayerDisconnectedPayload,
+    PlayerReconnectedPayload,
+    GameExpiredPayload,
+    ErrorPayload,
+    AvailableReplacesPayload,
+    JoinGamePayload,
+    MakeMovePayload,
+    EndTurnPayload,
+    ReconnectPayload
+} from './payloads';
+
 // Re-export validation functions
 export { validateGameMove, validateGameState } from '../validation/game';

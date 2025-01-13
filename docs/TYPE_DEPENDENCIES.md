@@ -9,16 +9,19 @@ graph TD
     state[state.ts]
     game[game.ts]
     events[events.ts]
+    payloads[payloads.ts]
 
     base --> moves
     base --> state
+    base --> payloads
     moves --> state
+    moves --> payloads
+    state --> payloads
     base --> game
     moves --> game
     state --> game
     base --> events
-    state --> events
-    game --> events
+    payloads --> events
 ```
 
 ## Detailed Type Dependencies
@@ -244,3 +247,70 @@ graph TD
    - Validate type changes across both client and server
    - Update documentation when adding or modifying types
    - Consider impact on existing type relationships
+
+### payloads.ts - WebSocket Communication Types
+```mermaid
+graph TD
+    subgraph Basic Payload Types
+        BasicPosition[BasicPosition]
+        BasicMove[BasicMove]
+        BaseGamePayload[BaseGamePayload]
+        style BasicPosition fill:#f9f,stroke:#333
+        style BasicMove fill:#f9f,stroke:#333
+        style BaseGamePayload fill:#f9f,stroke:#333
+    end
+
+    subgraph Server Response Payloads
+        GameCreatedPayload[GameCreatedPayload]
+        GameJoinedPayload[GameJoinedPayload]
+        GameStartedPayload[GameStartedPayload]
+        GameStateUpdatedPayload[GameStateUpdatedPayload]
+        GameOverPayload[GameOverPayload]
+        PlayerPayloads[Player*Payloads]
+        ErrorPayload[ErrorPayload]
+        style GameCreatedPayload fill:#f9f,stroke:#333
+        style GameJoinedPayload fill:#f9f,stroke:#333
+        style GameStartedPayload fill:#f9f,stroke:#333
+        style GameStateUpdatedPayload fill:#f9f,stroke:#333
+        style GameOverPayload fill:#f9f,stroke:#333
+        style PlayerPayloads fill:#f9f,stroke:#333
+        style ErrorPayload fill:#f9f,stroke:#333
+    end
+
+    subgraph Client Request Payloads
+        JoinGamePayload[JoinGamePayload]
+        MakeMovePayload[MakeMovePayload]
+        EndTurnPayload[EndTurnPayload]
+        ReconnectPayload[ReconnectPayload]
+        style JoinGamePayload fill:#f9f,stroke:#333
+        style MakeMovePayload fill:#f9f,stroke:#333
+        style EndTurnPayload fill:#f9f,stroke:#333
+        style ReconnectPayload fill:#f9f,stroke:#333
+    end
+
+    BasicPosition --> BasicMove
+    BaseGamePayload --> GameCreatedPayload
+    BaseGamePayload --> GameJoinedPayload
+    BaseGamePayload --> GameStartedPayload
+    BaseGamePayload --> GameStateUpdatedPayload
+    BaseGamePayload --> GameOverPayload
+    BasicMove --> MakeMovePayload
+```
+
+The payloads.ts file contains types specifically for WebSocket communication between client and server. It helps break circular dependencies by separating communication-specific types from core game types. The file is organized into three main sections:
+
+1. **Basic Payload Types**: Foundation types used by other payload types
+   - BasicPosition: Simple x,y coordinates
+   - BasicMove: Basic move structure without game-specific details
+   - BaseGamePayload: Common fields for game-related messages
+
+2. **Server Response Payloads**: Types for server->client messages
+   - Game state updates
+   - Player connection events
+   - Error responses
+
+3. **Client Request Payloads**: Types for client->server messages
+   - Game actions
+   - Connection management
+
+This separation allows for cleaner type dependencies and better maintainability.
