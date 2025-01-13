@@ -464,8 +464,10 @@ export class GameServer {
           await redisService.setGameState(gameId, updatedState);
           await this.gameService.makeMove(gameId, player.number, {
             type: 'end_turn' as const,
-            position: { x: -1, y: -1 }
-          });
+            position: { x: -1, y: -1 },
+            player: player.number,
+            timestamp: Date.now()
+          } as GameMove);
 
           const nextPlayer = redisService.getCurrentPlayer(updatedState);
           // Отправляем обновленное состояние всем игрокам

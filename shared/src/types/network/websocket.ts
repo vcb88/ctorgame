@@ -1,5 +1,4 @@
-import { Player } from '../base/enums';
-import { WebSocketErrorCode, GamePhase } from '../base/enums';
+import { Player, WebSocketErrorCode, GamePhase } from '../base/enums';
 import { GameMove } from '../game/moves';
 import { IGameState } from '../game/state';
 

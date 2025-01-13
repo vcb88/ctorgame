@@ -31,6 +31,8 @@ export interface IScores extends IBasicScores {
 export interface ITurnStateBase extends IOperationCount {
     placeOperationsLeft: number;
     replaceOperationsLeft: number;
+    count?: number; // Required by IOperationCount
+    items?: IBasicMove[]; // Required by ICollection
 }
 
 export interface ITurnState extends ITurnStateBase {
