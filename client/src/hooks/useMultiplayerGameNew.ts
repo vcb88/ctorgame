@@ -1,17 +1,17 @@
 import { useCallback, useState } from 'react';
 import { useGame } from './useGame';
-import { 
-  OperationType, 
-  Player, 
-  IGameState, 
-  ConnectionState,
-  GameActionType,
-  ErrorCode,
-  ErrorSeverity,
-  GameError
-} from '@ctor-game/shared';
+// Base types
+import type { OperationType, Player } from '@ctor-game/shared/types/base/enums';
+// Game types
+import type { IGameState } from '@ctor-game/shared/types/game';
+import type { GameActionType } from '@ctor-game/shared/types/game';
+// Network types
+import type { ConnectionState } from '@ctor-game/shared/types/network';
+// Error types
+import type { ErrorCode, ErrorSeverity, GameError } from '@ctor-game/shared/types/errors';
+// Services and utils
 import { GameStateManager } from '../services/GameStateManager';
-import { validateGameMove } from '../validation/game';
+import { validateGameMove } from '@ctor-game/shared/validation/game';
 import { logger } from '../utils/logger';
 
 export interface UseMultiplayerGameReturn {
