@@ -1,11 +1,8 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Socket } from 'socket.io-client';
-import { 
-    IGameState, 
-    ReplayEvent,
-    IReplayStateUpdate,
-    IReplayError 
-} from '@ctor-game/shared';
+import type { IGameState } from '@ctor-game/shared/types/game/state';
+import type { ReplayEvent } from '@ctor-game/shared/types/replay/events';
+import type { IReplayStateUpdate, IReplayError } from '@ctor-game/shared/types/replay/events';
 
 interface UseReplayProps {
     socket: Socket;

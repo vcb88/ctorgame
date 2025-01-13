@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Socket } from 'socket.io-client';
-import { GameMove, OperationType, Player } from '@ctor-game/shared';
+import type { GameMove } from '@ctor-game/shared/types/game/moves';
+import type { OperationType, Player } from '@ctor-game/shared/types/base/enums';
 
 interface UseGameHistoryProps {
     socket: Socket;
