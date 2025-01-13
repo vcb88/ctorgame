@@ -15,7 +15,7 @@ import { IBasicMove } from './moves';
 // Board interfaces
 export interface IBoardBase {
     readonly size: IBoardSize;
-    readonly cells: ReadonlyArray<ReadonlyArray<ICell['value']>>;
+    cells: Array<Array<ICell['value']>>;
 }
 
 export interface IBoard extends IBoardBase {}

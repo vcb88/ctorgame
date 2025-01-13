@@ -26,7 +26,7 @@ export {
     IBasicMove,
     IServerMove,
     GameMove,
-    IReplaceValidation
+    IReplaceValidationBase
 } from './moves';
 
 // Re-export state types

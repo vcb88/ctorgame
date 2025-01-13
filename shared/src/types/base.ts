@@ -22,6 +22,21 @@ export enum GamePhase {
     ERROR = 'ERROR'
 }
 
+export enum GameOutcome {
+    WIN = 'WIN',
+    LOSS = 'LOSS',
+    DRAW = 'DRAW',
+    FORFEIT = 'FORFEIT',
+    TIMEOUT = 'TIMEOUT'
+}
+
+export enum RecoveryStrategy {
+    RETRY = 'RETRY',
+    ROLLBACK = 'ROLLBACK',
+    IGNORE = 'IGNORE',
+    ABORT = 'ABORT'
+}
+
 // Operation type interfaces
 export interface IOperationTypeBase extends IOperationType {}
 
