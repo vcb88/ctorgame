@@ -90,7 +90,7 @@ export type ClientToServerEventType =
     | WebSocketEvents.Disconnect 
     | WebSocketEvents.Reconnect;
 
-export interface WebSocketPayloads {
+export type WebSocketPayloads = {
     // Client -> Server requests
     [WebSocketEvents.CreateGame]: void;
     [WebSocketEvents.JoinGame]: {

@@ -1,8 +1,6 @@
-import { GamePhase, Player } from './base';
+import { GamePhase, Player, WebSocketErrorCode } from './base';
 import { IGameState } from './state';
 import { GameMove } from './moves';
-
-export { WebSocketErrorCode } from './base';  // Re-export for compatibility
 
 // Basic payload types that don't depend on complex game types
 export interface BasicPosition {
