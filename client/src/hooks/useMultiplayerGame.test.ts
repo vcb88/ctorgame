@@ -1,16 +1,12 @@
 import { renderHook, act, waitFor } from '@testing-library/react';
 import { io } from 'socket.io-client';
-import { useMultiplayerGame } from './useMultiplayerGame';
-import { 
-  WebSocketEvents, 
-  IGameState, 
-  GameMove, 
-  OperationType,
-  BOARD_SIZE,
-  MAX_PLACE_OPERATIONS
-} from '@ctor-game/shared';
+import { useMultiplayerGame } from '@/hooks/useMultiplayerGame';
+import { WebSocketEvents } from '@ctor-game/shared/types/network';
+import { IGameState, GameMove } from '@ctor-game/shared/types/game';
+import { OperationType } from '@ctor-game/shared/types/base/enums';
+import { BOARD_SIZE, MAX_PLACE_OPERATIONS } from '@ctor-game/shared/types/constants';
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { createMockSocket } from '../test/test-utils';
+import { createMockSocket } from '@/test/test-utils';
 
 vi.mock('socket.io-client', () => ({
   io: vi.fn()
