@@ -10,6 +10,7 @@
   "devDependencies": {
     "dependency-cruiser": "^16.9.0",
     "madge": "^8.0.0",
-    "typescript": "^5.3.3"
+    "ts-node": "^10.9.2",
+    "typescript": "^5.7.3"
   }
 }
