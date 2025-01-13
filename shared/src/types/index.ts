@@ -1,13 +1,13 @@
 // Re-export basic types
-export {
-    Player,
+export { Player } from './basic-types';
+export type { 
     IPosition,
     IBoardSize,
     GameStatus
 } from './basic-types';
 
 // Re-export base types
-export {
+export { 
     GamePhase,
     GameOutcome,
     OperationType,
@@ -16,13 +16,16 @@ export {
     MAX_PLACE_OPERATIONS,
     ErrorCode,
     ErrorSeverity,
+    WebSocketErrorCode
+} from './base';
+export type {
     GameError,
     RecoveryStrategy,
     ConnectionState
 } from './base';
 
 // Re-export move types
-export {
+export type {
     IBasicMove,
     IServerMove,
     GameMove,
@@ -30,7 +33,7 @@ export {
 } from './moves';
 
 // Re-export state types
-export {
+export type {
     IBoard,
     IScores,
     ITurnState,
@@ -41,7 +44,7 @@ export {
 } from './state';
 
 // Re-export game types
-export {
+export type {
     IPlayer,
     IGameRoom,
     GameDetails,
@@ -49,7 +52,7 @@ export {
 } from './game';
 
 // Re-export event types
-export {
+export type {
     IGameEvent,
     ReconnectionData,
     ServerToClientEvents,
@@ -58,24 +61,21 @@ export {
 } from './events';
 
 // Re-export WebSocket types
-export {
+export type {
     WebSocketEvents,
     WebSocketPayloads,
     ServerToClientEventType,
     ClientToServerEventType
 } from './web-socket-types';
 
-// Re-export WebSocketErrorCode from base
-export { WebSocketErrorCode } from './base';
-
 // Re-export replay types
-export {
+export type {
     GameHistory,
     IReplayState
 } from './replay';
 
 // Re-export Redis types
-export {
+export type {
     IRedisGameState,
     IRedisPlayerSession,
     IRedisGameRoom,
@@ -84,10 +84,10 @@ export {
 } from './redis';
 
 // Re-export payload types
-export {
+export type {
     BasicPosition,
     BasicMove
 } from './payloads';
 
 // Re-export validation types
-export * from './validation-types';
+export type * from './validation-types';

@@ -1,7 +1,6 @@
 import {
     IOperationType,
     IValidationResult,
-    ICollection,
     ITimestamp
 } from './core';
 import { IPositionBase } from './basic-types';
