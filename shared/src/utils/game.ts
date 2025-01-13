@@ -1,4 +1,7 @@
-import { Player, GameOutcome, GamePhase, IScores, GameManagerState } from '../../types/index.js';
+import { Player } from '../../types/basic-types.js';
+import { GameOutcome, GamePhase } from '../../types/base.js';
+import type { IScores } from '../../types/state.js';
+import type { GameManagerState } from '../../types/web-socket-types.js';
 
 // Game utility functions
 export const getGameOutcome = (winner: Player | null, playerNumber: Player): GameOutcome => {
