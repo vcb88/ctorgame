@@ -1,6 +1,4 @@
-import { GamePhase } from './base.js';
-import type { IGameState, IGameMove } from './game.js';
-import { WebSocketErrorCode } from './events';
+import { GamePhase, IGameState, IGameMove, WebSocketErrorCode } from './index.js';
 
 // WebSocket события
 export enum WebSocketEvents {

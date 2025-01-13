@@ -1,4 +1,4 @@
-import { IGameState } from './game';
+import { IGameState } from './index.js';
 
 /**
  * Состояние воспроизведения для конкретной игры

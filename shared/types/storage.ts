@@ -1,6 +1,4 @@
-import { Player } from './base.js';
-import type { IGameState, IScores } from './game.js';
-import type { IPlayer } from './player.js';
+import { Player, IGameState, IScores, IPlayer } from './index.js';
 
 export interface GameMetadata {
     gameId: string;           // Unique game identifier
