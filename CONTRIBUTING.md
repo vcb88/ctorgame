@@ -138,6 +138,44 @@ When modifying shared types:
    export { GameState } from '@ctor-game/shared';
    ```
 
+### Checking for Circular Dependencies
+
+The project includes two tools for detecting circular dependencies:
+
+1. **dependency-cruiser**:
+   ```bash
+   # Generate a visual dependency graph
+   pnpm exec depcruise --include-only "^shared" --output-type dot shared | dot -T svg > dependency-analysis.svg
+
+   # Check for circular dependencies
+   pnpm exec depcruise --validate .dependency-cruiser.js shared/
+   ```
+
+2. **madge**:
+   ```bash
+   # Find circular dependencies
+   pnpm exec madge --circular shared/
+
+   # Generate a visual dependency graph
+   pnpm exec madge --image dependency-graph.svg shared/
+   ```
+
+Regular dependency checks should be performed:
+- Before committing changes to shared types
+- When refactoring module imports
+- If TypeScript compilation shows stack size errors
+- As part of code review for PRs affecting module structure
+
+If circular dependencies are found:
+1. Identify the cycle in the dependency graph
+2. Consider these solutions:
+   - Move shared types to a common module
+   - Use interface segregation
+   - Implement dependency inversion
+   - Restructure the code to break the cycle
+3. Verify the fix with both tools
+4. Run TypeScript compilation to confirm
+
 ## Development Setup
 
 1. Fork and clone the repository
