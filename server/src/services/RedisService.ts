@@ -5,7 +5,8 @@ import {
     IRedisPlayerSession,
     IRedisGameRoom,
     IRedisGameEvent,
-    Player
+    Player,
+    IServerMove
 } from '@ctor-game/shared';
 import { redisClient, REDIS_KEYS, REDIS_EVENTS, withLock, cacheConfig } from '../config/redis';
 import { GameLogicService } from './GameLogicService';
@@ -53,7 +54,7 @@ export class RedisService {
     async updateGameState(
         gameId: string,
         playerNumber: Player,
-        move: { type: string; position: { x: number; y: number } },
+        move: IServerMove,
         validateMove: boolean = true
     ): Promise<IGameState> {
         return await withLock(gameId, async () => {

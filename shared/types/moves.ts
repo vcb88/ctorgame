@@ -5,10 +5,13 @@ export interface IBasicMove {
     position: IPosition;
 }
 
-export interface GameMove extends IBasicMove {
+export interface IServerMove extends IBasicMove {
+    replacements?: Array<[number, number]>;
+}
+
+export interface GameMove extends IServerMove {
     player: Player;
     timestamp: number;
-    replacements?: Array<[number, number]>;
 }
 
 export interface IReplaceValidation {
