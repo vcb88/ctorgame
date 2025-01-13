@@ -1,4 +1,5 @@
 import { Player, GamePhase, IBoardSize, IPosition } from './base';
+import { IBasicMove } from './moves';
 
 // Basic game state interfaces
 export interface IBoard {
@@ -16,10 +17,7 @@ export interface IScores {
 export interface ITurnState {
     placeOperationsLeft: number;
     replaceOperationsLeft: number;
-    moves: Array<{
-        type: 'place' | 'replace';
-        position: IPosition;
-    }>;
+    moves: Array<IBasicMove>;
 }
 
 export interface IGameState {

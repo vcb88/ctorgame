@@ -12,7 +12,7 @@
     "sourceMap": true,
     "rootDir": ".",
     "outDir": "./dist",
-    "allowImportingTsExtensions": true
+    "emitDeclarationOnly": true
   },
   "include": [
     "**/*.ts"

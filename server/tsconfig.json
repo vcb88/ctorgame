@@ -13,7 +13,7 @@
     "strictPropertyInitialization": false,
     "composite": true,
     "isolatedModules": true,
-    "allowImportingTsExtensions": true,
+    "noEmit": true,
     "baseUrl": ".",
     "paths": {
       "@ctor-game/shared": ["../shared"]

@@ -18,6 +18,11 @@ export {
 } from './base';
 
 export {
+    IBasicMove,
+    GameMove
+} from './moves';
+
+export {
     IBoard,
     IScores,
     ITurnState,
@@ -30,7 +35,6 @@ export {
 export {
     IPlayer,
     IGameRoom,
-    GameMove as IGameMove,  // Alias for backward compatibility
     GameDetails,
     GameMetadata
 } from './game';
@@ -51,9 +55,6 @@ export interface ErrorResponse {
     message: string;
     details?: Record<string, unknown>;
 }
-
-// Re-export GameMove type from game.ts
-export { GameMove } from './game';
 
 export interface GameHistory {
     metadata: GameMetadata;

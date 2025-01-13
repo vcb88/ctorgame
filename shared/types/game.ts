@@ -1,5 +1,6 @@
-import { Player, IPosition, GameStatus } from './base';
+import { Player, GameStatus } from './base';
 import { IGameState } from './state';
+import { GameMove } from './moves';
 
 export interface IPlayer {
     id: string;
@@ -13,13 +14,7 @@ export interface IGameRoom {
     currentPlayer: Player;
 }
 
-export interface GameMove {
-    player: Player;
-    x: number;
-    y: number;
-    timestamp: number;
-    replacements?: Array<[number, number]>;
-}
+
 
 export interface GameDetails {
     moves: GameMove[];
