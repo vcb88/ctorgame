@@ -24,3 +24,11 @@ export enum Player {
     Second = 2
 }
 
+export enum GameStatus {
+    CREATED = 'CREATED',
+    WAITING = 'WAITING',
+    IN_PROGRESS = 'IN_PROGRESS',
+    FINISHED = 'FINISHED',
+    ABANDONED = 'ABANDONED',
+    ERROR = 'ERROR'
+}
