@@ -10,14 +10,14 @@
     "declaration": true,
     "declarationMap": true,
     "sourceMap": true,
-    "rootDir": ".",
-    "outDir": "./dist"
+    "rootDir": "src",
+    "outDir": "dist",
+    "baseUrl": ".",
+    "paths": {
+      "@ctor-game/shared/*": ["src/*"]
+    }
   },
-  "include": [
-    "src/**/*",
-    "types/**/*",
-    "validation/**/*"
-  ],
+  "include": ["src/**/*"],
   "exclude": [
     "node_modules",
     "dist",

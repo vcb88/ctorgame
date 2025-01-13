@@ -55,6 +55,10 @@ __pycache__/
 # Docker volumes
 docker/volumes/
 
+# Generated files
+dependency-graph.png
+*.bak
+
 # Environment
 .env
 .env.*

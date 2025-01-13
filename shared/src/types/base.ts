@@ -5,8 +5,7 @@ import {
     IMessage,
     IErrorDetails,
     ITimestamp,
-    IConnectionStatus,
-    IValidationResult
+    IConnectionStatus
 } from './core';
 
 // Game phase interfaces

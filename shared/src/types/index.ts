@@ -1,9 +1,8 @@
 // Re-export types from new structure
 export * from './base';
-// Export game types without metadata (now in storage)
-export * from './game/moves';
-export * from './game/players';
-export * from './game/state';
+// Export game types 
+export * from './game';
+// Export other type modules
 export * from './storage';
 export * from './network';
 export * from './validation';

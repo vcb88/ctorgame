@@ -26,16 +26,16 @@ export interface IScores extends IBasicScores {
 }
 
 // Turn state interfaces
-// Basic turn state without operation count
+// Basic turn state with operation counts
 export interface ITurnStateBase {
-    placeOperationsLeft: number;
-    replaceOperationsLeft: number;
+    readonly placeOperationsLeft: number;
+    readonly replaceOperationsLeft: number;
 }
 
 // Turn state with move tracking
-export interface ITurnState extends ITurnStateBase, IOperationCount {
-    moves: IBasicMove[];
-    count: number; // Required by IOperationCount - represents total moves count
+export interface ITurnState extends ITurnStateBase {
+    readonly moves: IBasicMove[];
+    readonly count: number; // Total moves count
 }
 
 // Game state interfaces

@@ -18,8 +18,7 @@
     "baseUrl": ".",
     "paths": {
       "@ctor-game/shared": ["../shared/src"],
-      "@ctor-game/shared/types/*": ["../shared/types/*"],
-      "@ctor-game/shared/validation/*": ["../shared/validation/*"]
+      "@ctor-game/shared/*": ["../shared/src/*"]
     }
   },
   "include": ["src/**/*"],
