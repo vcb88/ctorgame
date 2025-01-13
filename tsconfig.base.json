@@ -19,8 +19,8 @@
     "noFallthroughCasesInSwitch": true,
     "baseUrl": ".",
     "paths": {
-      "@shared": ["./shared/src"],
-      "@shared/*": ["./shared/src/*"]
+      "@ctor-game/shared": ["./shared/src"],
+      "@ctor-game/shared/*": ["./shared/src/*"]
     }
   }
 }

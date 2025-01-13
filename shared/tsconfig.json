@@ -22,7 +22,8 @@
     "noImplicitReturns": true,
     "noFallthroughCasesInSwitch": true,
     "paths": {
-      "@shared/*": ["src/*"]
+      "@ctor-game/shared": ["src"],
+      "@ctor-game/shared/*": ["src/*"]
     }
   },
   "include": ["src/**/*"],
