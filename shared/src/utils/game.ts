@@ -4,8 +4,8 @@ import type { IScores, GameManagerState } from '../types/state';
 
 // Game utility functions
 export const getGameOutcome = (winner: Player | null, playerNumber: Player): GameOutcome => {
-    if (winner === null) return GameOutcome.Draw;
-    return winner === playerNumber ? GameOutcome.Win : GameOutcome.Loss;
+    if (winner === null) return GameOutcome.DRAW;
+    return winner === playerNumber ? GameOutcome.WIN : GameOutcome.LOSS;
 };
 
 export const getOpponent = (player: Player): Player => {

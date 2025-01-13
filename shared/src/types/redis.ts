@@ -1,6 +1,6 @@
 import { IGameState } from './state';
 import { IPlayer } from './game';
-import { GameStatus } from './base';
+import { GameStatus } from './basic-types';
 
 export interface IRedisGameState extends IGameState {
     lastUpdate: number;
