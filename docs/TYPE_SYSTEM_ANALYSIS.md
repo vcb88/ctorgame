@@ -1,5 +1,27 @@
 # Type System Analysis
 
+## Migration Status Table
+
+| File Path | Status | New Version Ready | Reviewed | Dependencies Updated | Notes |
+|-----------|--------|------------------|-----------|---------------------|-------|
+| /shared/src/utils/scores.ts | ✅ Done | N/A | ✅ | ✅ | Migrated to PlayerNumber, removed enum usage |
+| /shared/src/types/game/state.ts | 🔄 In Progress | ✅ | ✅ | ❌ | New version created, dependencies need update |
+| /shared/src/types/storage/metadata.ts | ✅ Done | ✅ | ✅ | ✅ | Using new type system |
+| /shared/src/types/redis/state.ts | ✅ Done | ✅ | ✅ | ✅ | New version with type guards |
+| /shared/src/types/validation/game.ts | ❌ Not Started | ❌ | ❌ | ❌ | Uses old Player enum |
+| /shared/src/types/base/network.ts | ❌ Not Started | ❌ | ❌ | ❌ | Uses old Player enum |
+| /shared/src/types/network/websocket.ts | ❌ Not Started | ❌ | ❌ | ❌ | Needs update to new event types |
+| /shared/src/types/game/moves.ts | ❌ Not Started | ❌ | ❌ | ❌ | Check for enum usage |
+| /shared/src/types/game/players.ts | ❌ Not Started | ❌ | ❌ | ❌ | Check for enum usage |
+| /shared/src/types/network/websocket.new.ts | 🔄 In Progress | ✅ | ❌ | ❌ | Verify compatibility with new types |
+| /shared/src/types/network/events.new.ts | 🔄 In Progress | ✅ | ❌ | ❌ | Verify compatibility with new types |
+
+Legend:
+- ✅ Done: File fully migrated and tested
+- 🔄 In Progress: Work started but not complete
+- ❌ Not Started: Still using old type system
+- N/A: Not applicable
+
 ## File Mapping
 
 ### Old Type System
@@ -143,15 +165,145 @@
    - ✅ Created backup of old validation files
    - [ ] Update imports in affected files
 
-4. Next Steps:
-   - Analyze and update imports in:
-     - [ ] Server files
-     - [ ] Shared utilities
-     - [ ] Test files
-   - Clean up:
-     - [ ] Remove backup files after testing
-     - [ ] Remove unused imports
-     - [ ] Update documentation
+4. Import Analysis and Updates
+
+### Shared Module Dependencies
+- [ ] Analyze current imports
+- [ ] List files using old types
+- [ ] Create update plan
+- [ ] Test changes
+
+### Server Module Dependencies
+- [ ] Analyze current imports
+- [ ] List files using old types
+- [ ] Create update plan
+- [ ] Test changes
+
+### Test Files
+- [ ] Analyze test imports
+- [ ] Update test utilities
+- [ ] Verify test coverage
+
+### Clean up
+- [ ] Remove backup files after testing
+- [ ] Remove unused imports
+- [ ] Update documentation
+
+### Current Progress
+Analyzing shared module imports:
+
+#### Files Using Old Type System
+
+1. /shared/src/index.ts
+   - Uses old import paths in documentation
+   - Needs update of examples
+   - No actual code changes needed (documentation only)
+
+2. /shared/src/utils/scores.ts
+   - Imports from '../types/base/enums.js'
+   - Imports from '../types/game/state.js'
+   - Uses old Player enum
+   - Uses old IScores interface
+   - High priority for update
+
+#### Migration Priority
+
+1. High Priority:
+   - scores.ts: Core utility used by many components
+   - Update to use new PlayerNumber type
+   - Update to use new IGameScores interface
+
+2. Documentation:
+   - index.ts: Update import examples
+   - Update type references
+
+#### Update Plan
+
+1. scores.ts Changes:
+   - ✅ Created scores.new.ts with new type system
+   - ✅ Replaced Player enum with PlayerNumber type
+   - ✅ Updated IScores to IGameScores
+   - ✅ Added type guards and helper functions
+   - ✅ Improved documentation
+   - [ ] Test new implementation
+   - [ ] Replace old file
+
+2. Next Steps:
+   a. Review remaining utils:
+      - Check for other files using Player enum
+      - Verify all type imports
+   
+   b. Update documentation in index.ts:
+      - Update import examples
+      - Update type references
+      - Add new utility functions
+
+#### Remaining Files Analysis
+
+1. Old Type Files (to be replaced):
+   - core.ts -> Already replaced by core/primitives.ts
+   - state.ts -> Replaced by game/types.ts
+   - moves.ts -> Moved to game/types.ts
+   - game.ts -> Consolidated in game/types.ts
+   - enums.ts -> Replaced by union types
+   - primitives.ts -> Moved to geometry/types.ts and core/primitives.ts
+   - basic-types.ts -> Distributed across new type system
+   - base.ts and base/ -> Replaced by new type organization
+
+2. Files to Keep (domain-specific):
+   - redis/ -> Redis-specific types
+   - replay/ -> Replay system types
+   - validation/ -> Validation specific types
+
+3. Migration Tasks:
+   a. Update Documentation:
+      - ✅ Create new import examples in index.ts
+      - [ ] Update API documentation
+      - [ ] Add migration guide
+
+   b. File Cleanup:
+      - ✅ Move scores.new.ts to scores.ts
+      - ✅ Replace index.ts with new version
+      - ✅ Create backups of old files
+      - [ ] Update imports in redis/
+      - [ ] Update imports in replay/
+      - [ ] Update imports in validation/
+      - [ ] Remove unused type files
+
+   c. Completed Changes (2025-01-14):
+      - Replaced scores.ts with new type-safe version
+      - Updated index.ts with new import examples
+      - Created backups for safety
+      - Updated documentation structure
+
+   d. Redis Types Migration (completed):
+      - ✅ Created state.new.ts
+         * Updated imports to use game/types.js
+         * Added readonly properties
+         * Added type guards
+      - ✅ Created session.new.ts
+         * Used PlayerNumber type
+         * Added readonly properties
+         * Added type guards
+      - ✅ Created events.new.ts
+         * Added type aliases
+         * Added readonly properties
+         * Added type guards
+      - ✅ Created config.new.ts
+         * Added readonly properties
+         * Added type guards
+         * Improved documentation
+      - ✅ Reviewed ttl.ts
+         * Already using modern patterns
+         * No changes needed
+      - [ ] Replace old files with new versions
+      - [ ] Verify all imports still work
+
+4. Testing Plan:
+   - [ ] Verify compilation after file removal
+   - [ ] Check for missing imports
+   - [ ] Test type inference
+   - [ ] Validate runtime checks
 
 Key improvements:
 - No inheritance, pure composition
