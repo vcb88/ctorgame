@@ -241,7 +241,11 @@ sequenceDiagram
     gameState: 3600,    // 1 hour
     playerSession: 7200, // 2 hours
     gameRoom: 3600,     // 1 hour
-    eventQueue: 3600    // 1 hour
+    eventQueue: {
+        default: 3600,  // 1 hour default TTL
+        maxAge: 7200,   // 2 hours for important events
+        cleanupInterval: 300 // cleanup every 5 minutes
+    }
 }
 ```
 
