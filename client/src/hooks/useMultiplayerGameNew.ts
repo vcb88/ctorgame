@@ -8,7 +8,7 @@ import type { GameActionType } from '@ctor-game/shared/types/game';
 // Network types
 import type { ConnectionState } from '@ctor-game/shared/types/network';
 // Error types
-import type { ErrorCode, ErrorSeverity, GameError } from '@ctor-game/shared/types/errors';
+import type { ErrorCode, ErrorSeverity, IErrorResponse as GameError } from '@ctor-game/shared/types/network/types';
 // Services and utils
 import { GameStateManager } from '../services/GameStateManager';
 import { validateGameMove } from '@ctor-game/shared/validation/game';
