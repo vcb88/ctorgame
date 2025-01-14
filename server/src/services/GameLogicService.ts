@@ -14,10 +14,15 @@ import type { IPosition } from '../../../shared/src/types/base/primitives.js';
 
 // Utils
 import { getAdjacentPositions } from '../../../shared/src/utils/coordinates.js';
-import { IReplaceValidation } from '../../../shared/src/types/validation/result.js';
+// Custom type for validation result
+interface IReplaceValidation {
+  isValid: boolean;
+  replacements: [number, number][];
+  message: string;
+}
+
 import {
   getOpponent,
-  createEmptyScores,
   createScores
 } from '../../../shared/src/utils/game.js';
 
@@ -42,8 +47,9 @@ export class GameLogicService {
         count: 1
       },
       currentPlayer: Player.First,
-      scores: createEmptyScores(),
-      isFirstTurn: true // Флаг первого хода (только 1 операция размещения)
+      scores: createScores(0, 0),
+      isFirstTurn: true, // Флаг первого хода (только 1 операция размещения)
+      turnNumber: 1 // Overall game turn counter
     };
   }
 
@@ -164,11 +170,12 @@ export class GameLogicService {
       // Проверяем окончание хода (нет операций или первый ход завершен)
       if (newTurnState.placeOperationsLeft === 0) {
         newState.currentPlayer = getOpponent(newState.currentPlayer);
+        newState.turnNumber++; // Increment global turn counter
         newState.currentTurn = {
           placeOperationsLeft: newState.isFirstTurn ? 1 : MAX_PLACE_OPERATIONS,
           replaceOperationsLeft: 0,
           moves: [],
-          count: newState.currentTurn.count + 1
+          count: 1 // Reset count for the new player's turn
         };
       }
 
@@ -312,7 +319,8 @@ export class GameLogicService {
         player1: state.scores[Player.First],
         player2: state.scores[Player.Second]
       },
-      isFirstTurn: state.isFirstTurn
+      isFirstTurn: state.isFirstTurn,
+      turnNumber: state.turnNumber
     };
   }
 }

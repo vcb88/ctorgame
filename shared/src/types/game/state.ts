@@ -49,4 +49,5 @@ export interface IGameStateBase {
 export interface IGameState extends IGameStateBase {
     currentTurn: ITurnState;
     scores: IScores;
+    turnNumber: number; // Global turn counter for the game
 }

@@ -2,28 +2,16 @@ import { Server } from 'socket.io';
 import { Server as HttpServer } from 'http';
 import { Socket } from 'socket.io';
 // Game types
-import {
-  IPlayer,
-  GameMove,
-  IServerMove,
-  IGameState,
-  IBoard,
-  IScores,
-  Player
-} from '@ctor-game/shared/game';
-
-// Base types
-import type {
-  OperationType,
-  GamePhase,
-  GameOutcome
-} from '@ctor-game/shared/types/base/enums';
+import { IGameState } from '../../../shared/src/types/game/state.js';
+import { IPlayer } from '../../../shared/src/types/game/players.js';
+import { GameMove, IServerMove } from '../../../shared/src/types/game/moves.js';
+import { Player, OperationType, GamePhase } from '../../../shared/src/types/base/enums.js';
+import { IScores } from '../../../shared/src/types/game/state.js';
 
 // Constants
-import {
-  BOARD_SIZE,
-  MAX_PLACE_OPERATIONS
-} from '@ctor-game/shared/types/constants';
+import { 
+  MAX_PLACE_OPERATIONS 
+} from '../../../shared/src/types/base/constants.js';
 
 // Network types
 import {
@@ -32,10 +20,10 @@ import {
   ServerToClientEvents,
   ClientToServerEvents,
   WebSocketErrorCode
-} from '@ctor-game/shared/network';
+} from '../../../shared/src/types/base/network.js';
 
 // Game utils
-import { getOpponent } from '@ctor-game/shared/utils';
+import { getOpponent } from '../../../shared/src/utils/game.js';
 import { validateGameMove, validateGameState } from '../validation/game.js';
 import { GameService } from '../services/GameService.js';
 import { GameLogicService } from '../services/GameLogicService.js';
@@ -254,7 +242,7 @@ export class GameServer {
         }
       });
 
-      socket.on(WebSocketEvents.JoinGame, async ({ gameId }) => {
+      socket.on(WebSocketEvents.JoinGame, async ({ gameId }: { gameId: string }) => {
         try {
           const room = await redisService.getGameRoom(gameId);
           if (!room) {
@@ -339,7 +327,7 @@ export class GameServer {
         }
       });
 
-      socket.on(WebSocketEvents.MakeMove, async ({ gameId, move }) => {
+      socket.on(WebSocketEvents.MakeMove, async ({ gameId, move }: { gameId: string; move: GameMove }) => {
         try {
           const [room, state] = await Promise.all([
             redisService.getGameRoom(gameId),
@@ -440,7 +428,7 @@ export class GameServer {
         }
       });
 
-      socket.on(WebSocketEvents.EndTurn, async ({ gameId }) => {
+      socket.on(WebSocketEvents.EndTurn, async ({ gameId }: { gameId: string }) => {
         try {
           const [room, state] = await Promise.all([
             redisService.getGameRoom(gameId),
@@ -467,10 +455,12 @@ export class GameServer {
           // Обновляем состояние для следующего хода
           const updatedState: IGameState = {
             ...state,
+            turnNumber: state.turnNumber + 1, // Increment global turn counter
             currentTurn: {
               placeOperationsLeft: MAX_PLACE_OPERATIONS,
               replaceOperationsLeft: 0,
-              moves: []
+              moves: [],
+              count: 1 // Reset count for the new turn
             }
           };
 
@@ -557,7 +547,7 @@ export class GameServer {
         }
       });
 
-      socket.on(WebSocketEvents.Reconnect, async ({ gameId }) => {
+      socket.on(WebSocketEvents.Reconnect, async ({ gameId }: { gameId: string }) => {
         try {
           const [room, state] = await Promise.all([
             redisService.getGameRoom(gameId),
