@@ -3,6 +3,7 @@
  */
 
 import type { IGameState, IGameMove, PlayerNumber, GameStatus } from '../game/types.js';
+import type { ErrorCode, ErrorSeverity, INetworkError } from './errors.js';
 type UUID = string;
 
 // WebSocket event types
@@ -25,18 +26,6 @@ export type WebSocketEventType =
     | 'game_expired'
     | 'available_replaces'
     | 'error';
-
-// Error codes
-export type WebSocketErrorCode =
-    | 'invalid_game_id'
-    | 'invalid_move'
-    | 'invalid_state'
-    | 'not_your_turn'
-    | 'game_ended'
-    | 'server_error'
-    | 'game_expired'
-    | 'game_not_found'
-    | 'game_full';
 
 // Base event interface
 export interface IWebSocketEvent {
@@ -92,11 +81,7 @@ export interface ServerToClientEvents {
         readonly moves: IGameMove[];
     }) => void;
 
-    'error': (event: {
-        readonly code: WebSocketErrorCode;
-        readonly message: string;
-        readonly details?: unknown;
-    }) => void;
+    'error': (event: INetworkError) => void;
 }
 
 // Client to server events
@@ -157,10 +142,4 @@ export interface IWebSocketServerOptions {
 export const isGameEvent = (event: unknown): event is IWebSocketEvent => {
     return typeof event === 'object' && event !== null &&
            'eventId' in event && 'timestamp' in event;
-};
-
-export const isErrorEvent = (
-    event: { code: WebSocketErrorCode; message: string; details?: unknown }
-): event is { code: WebSocketErrorCode; message: string; details?: unknown } => {
-    return typeof event.code === 'string' && typeof event.message === 'string';
 };
