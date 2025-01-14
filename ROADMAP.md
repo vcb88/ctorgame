@@ -1,135 +1,123 @@
 # Project Roadmap
 
-## Current Version (v0.1.0-stable)
+## MVP Focus (v0.1.x)
 
-### Completed Features
-- [x] Basic game functionality
-  - [x] 10x10 toroidal board implementation
-  - [x] Two operations per turn (first turn exception)
-  - [x] Automatic piece replacement
-  - [x] Score tracking
-- [x] Core Infrastructure
-  - [x] WebSocket integration
-  - [x] MongoDB setup with authentication
-  - [x] Redis integration
-  - [x] Docker containerization
-- [x] Development Environment
-  - [x] Vite setup with HMR
-  - [x] Nginx reverse proxy
-  - [x] Health monitoring
-  - [x] Build system configuration
+Current development is focused on delivering a Minimum Viable Product (MVP) that demonstrates core gameplay functionality while maintaining basic reliability.
 
-### Immediate Priority Tasks (v0.1.1)
+### Critical Path Features (v0.1.1)
 
-1. Error Handling (Critical Priority)
+1. Error Handling Essentials
    - [ ] Standard error response format
-   - [ ] Consistent error types across modules
-   - [ ] Error recovery procedures
-   - [ ] Client-side error display
-   - [ ] Error logging and monitoring
+   - [ ] Basic error recovery for critical paths
+   - [ ] Minimal error display on client
+   - [ ] Error logging for critical issues
 
-2. Connection Management (Critical Priority)
-   - [ ] Reliable WebSocket reconnection
-   - [ ] Connection state management
-   - [ ] Session recovery after disconnect
-   - [ ] Connection status indicators
-   - [ ] Timeout handling
+2. Connection Management
+   - [ ] Basic WebSocket reconnection
+   - [ ] Simple session recovery
+   - [ ] Connection status display
+   - [ ] Basic timeout handling
 
-3. Type System Improvements (High Priority)
-   - [ ] Consolidate shared types
-   - [ ] Strengthen type guards
-   - [ ] Add runtime type validation
-   - [ ] Update API interfaces
-   - [ ] Document type system
+3. Type System Cleanup
+   - [ ] Consolidate duplicated types
+   - [ ] Essential type guards
+   - [ ] Basic runtime validation
+   - [ ] Updated type documentation
 
-### Short-term Goals (v0.1.2)
+### Stability Improvements (v0.1.2)
 
-1. Testing Infrastructure
-   - [ ] Unit test coverage
-   - [ ] Integration tests
-   - [ ] E2E test setup
-   - [ ] Performance testing
+1. State Management
+   - [ ] Reliable state persistence
+   - [ ] Basic state recovery
+   - [ ] Simple validation rules
+   - [ ] Conflict resolution for MVP cases
+
+2. Testing Fundamentals
+   - [ ] Critical path tests
+   - [ ] Basic integration tests
+   - [ ] Simple E2E test setup
    - [ ] Test documentation
 
-2. Game State Management
-   - [ ] Reliable state persistence
-   - [ ] State recovery mechanisms
-   - [ ] Transaction support
-   - [ ] State validation
-   - [ ] Conflict resolution
-
 3. Development Experience
-   - [ ] Hot reload improvements
-   - [ ] Debug tooling
-   - [ ] Development documentation
-   - [ ] Error reporting
-   - [ ] Performance monitoring
+   - [ ] Updated development docs
+   - [ ] Basic debugging tools
+   - [ ] Simple error reporting
+   - [ ] Basic monitoring
 
-### Mid-term Goals (v0.2.0)
+## Post-MVP Features (v0.2.x)
 
-1. Game Features
-   - [ ] Move validation improvements
-   - [ ] Game replay enhancements
-   - [ ] Basic AI opponent
-   - [ ] Score history
-   - [ ] Game statistics
+### Game Enhancements
+- Move validation improvements
+- Game replay functionality
+- Basic AI opponent
+- Score history
+- Game statistics
 
-2. User Experience
-   - [ ] Loading states
-   - [ ] Error notifications
-   - [ ] Game tutorials
-   - [ ] Responsive design
-   - [ ] Accessibility
+### User Experience
+- Loading states
+- Error notifications
+- Game tutorials
+- Responsive design
+- Accessibility basics
 
-3. Infrastructure
-   - [ ] Backup system
-   - [ ] Monitoring setup
-   - [ ] Performance optimization
-   - [ ] Security improvements
-   - [ ] Scaling preparation
+### Infrastructure
+- Backup system
+- Monitoring setup
+- Performance optimization
+- Security improvements
+- Scaling preparation
 
-### Long-term Goals (v1.0.0)
+## Future Features (v1.0+)
 
-1. Advanced Features
-   - [ ] Tournament system
-   - [ ] Advanced AI
-   - [ ] Custom game modes
-   - [ ] Player rankings
-   - [ ] Achievement system
+### Advanced Features
+- Tournament system
+- Advanced AI
+- Custom game modes
+- Player rankings
+- Achievement system
 
-2. Platform Features
-   - [ ] User accounts
-   - [ ] Social features
-   - [ ] Match history
-   - [ ] Statistics
-   - [ ] API for tournaments
+### Platform Features
+- User accounts
+- Social features
+- Match history
+- Statistics
+- Tournament API
 
-3. Infrastructure
-   - [ ] High availability
-   - [ ] Geographic distribution
-   - [ ] Advanced security
-   - [ ] Analytics
-   - [ ] API gateway
+### Infrastructure
+- High availability
+- Geographic distribution
+- Advanced security
+- Analytics
+- API gateway
 
 ## Development Guidelines
+
+### MVP Phase Priority
+1. Focus on core gameplay functionality
+2. Maintain basic reliability
+3. Minimize unnecessary features
+4. Keep documentation current
+5. Focus on critical path testing
 
 ### Code Quality
 - Maintain type safety
 - Minimize code duplication
 - Keep changes atomic
 - Document interfaces
-- Write tests for new features
+- Test critical paths
 
 ### Infrastructure
 - Keep services isolated
-- Monitor health checks
-- Maintain backup strategy
+- Monitor critical health metrics
+- Basic backup strategy
 - Document configurations
-- Track performance metrics
+- Track core metrics
 
 ### Documentation
 - Keep API docs current
 - Document type changes
 - Update setup guides
 - Maintain changelog
-- Document decisions
+- Document key decisions
+
+Last updated: January 14, 2025
