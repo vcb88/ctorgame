@@ -1,60 +1,65 @@
-import type { IBoardSize } from '../geometry/types.js';
-import type { PlayerNumber } from './players.js';
-import type { IGameMove } from './moves.js';
+import type {
+    ITimestamped,
+    IVersioned,
+    IExpiration,
+    IData
+} from '../core/primitives.js';
+
+import type {
+    IGameState,
+    PlayerNumber,
+    GameStatus,
+    IGameScores,
+    IGameMove
+} from './types.js';
 
 /**
- * Base board interface defining size and cells
+ * Turn state interface
  */
-export interface IBoardBase {
-    readonly size: IBoardSize;
-    readonly cells: ReadonlyArray<ReadonlyArray<number | null>>;
-}
-
-/**
- * Game board interface
- */
-export interface IBoard extends IBoardBase {}
-
-/**
- * Game scores interface
- */
-export interface IGameScores {
-    readonly player1: number;
-    readonly player2: number;
-}
-
-/**
- * Basic turn state with operation counts
- */
-export interface ITurnStateBase {
+export interface ITurnState {
     readonly placeOperationsLeft: number;
     readonly replaceOperationsLeft: number;
-}
-
-/**
- * Turn state with move tracking
- */
-export interface ITurnState extends ITurnStateBase {
     readonly moves: ReadonlyArray<IGameMove>;
-    readonly count: number; // Total moves count
+    readonly count: number;
 }
 
 /**
- * Basic game state
+ * Game manager state
  */
-export interface IGameStateBase {
-    readonly board: IBoard;
-    readonly gameOver: boolean;
-    readonly winner: PlayerNumber | null;
-    readonly currentPlayer: PlayerNumber;
-    readonly isFirstTurn: boolean;
+export interface IGameManagerState {
+    readonly status: GameStatus;
+    readonly error: Error | null;
+    readonly connectionState: string;
+    readonly gameId: string | null;
+    readonly playerNumber: PlayerNumber | null;
+    readonly lastUpdated: number;
 }
 
 /**
- * Complete game state
+ * Stored state base interface
  */
-export interface IGameState extends IGameStateBase {
-    readonly currentTurn: ITurnState;
-    readonly scores: IGameScores;
-    readonly turnNumber: number; // Global turn counter for the game
+export interface IStoredStateBase<T> extends IVersioned, ITimestamped, IData<T> {}
+
+/**
+ * Stored state with expiration
+ */
+export interface IStoredState<T> extends IStoredStateBase<T>, IExpiration {}
+
+/**
+ * State storage interface
+ */
+export interface IStateStorage {
+    readonly getKeys: (prefix?: string) => ReadonlyArray<string>;
+    readonly saveState: (key: string, state: unknown) => void;
+    readonly loadState: <T>(key: string) => T | null;
+    readonly cleanupExpired: () => void;
+    readonly removeState: (key: string) => void;
 }
+
+// Re-export game state types
+export type {
+    IGameState,
+    IGameScores,
+    PlayerNumber,
+    GameStatus
+} from './types.js';

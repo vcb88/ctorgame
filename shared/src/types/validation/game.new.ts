@@ -1,7 +1,9 @@
 import type { IPosition, IBoardSize } from '../geometry/types.js';
-import type { PlayerNumber } from '../game/players.js';
-import type { IGameMoveComplete } from '../game/moves.js';
-import type { IGameState } from '../game/state.js';
+import type { 
+    PlayerNumber,
+    IGameState,
+    IGameMoveComplete
+} from '../game/types.js';
 
 /**
  * Base validation result interface
