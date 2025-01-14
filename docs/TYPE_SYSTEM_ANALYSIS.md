@@ -12,7 +12,7 @@
 | /shared/src/types/base/network.ts | ❌ Not Started | ❌ | ❌ | ❌ | Uses old Player enum |
 | /shared/src/types/network/websocket.ts | ❌ Not Started | ❌ | ❌ | ❌ | Needs update to new event types |
 | /shared/src/types/game/moves.ts | 🔄 In Progress | ✅ | ✅ | ❌ | New version with type guards and better names |
-| /shared/src/types/game/players.ts | ❌ Not Started | ❌ | ❌ | ❌ | Check for enum usage |
+| /shared/src/types/game/players.ts | 🔄 In Progress | ✅ | ✅ | ❌ | Added PlayerNumber type and guards |
 | /shared/src/types/network/websocket.new.ts | 🔄 In Progress | ✅ | ❌ | ❌ | Verify compatibility with new types |
 | /shared/src/types/network/events.new.ts | 🔄 In Progress | ✅ | ❌ | ❌ | Verify compatibility with new types |
 
