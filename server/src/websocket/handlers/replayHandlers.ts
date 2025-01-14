@@ -1,13 +1,19 @@
 import { Socket } from 'socket.io';
 import { GameService } from '../../services/GameService.js';
-import type { IGameState } from '@ctor-game/shared/types/game';
-import type { IReplayState } from '@ctor-game/shared/types/replay';
-import type { GameHistory } from '@ctor-game/shared/types/history';
+import type { IGameState } from '@ctor-game/shared/types/game/state';
+import type { 
+    IReplayState, 
+    IReplayClientEvents, 
+    IReplayServerEvents 
+} from '@ctor-game/shared/types/network/replay';
 
 // Состояние replay для каждой игры
 const replayStates = new Map<string, IReplayState>();
 
-export function registerReplayHandlers(socket: Socket, gameService: GameService) {
+export function registerReplayHandlers(
+    socket: Socket<IReplayClientEvents, IReplayServerEvents>,
+    gameService: GameService
+) {
     // Начать воспроизведение
     socket.on('START_REPLAY', async ({ gameCode }) => {
         try {
@@ -129,7 +135,11 @@ export function registerReplayHandlers(socket: Socket, gameService: GameService)
 }
 
 // Вспомогательная функция для автоматического воспроизведения следующего хода
-async function playNextMove(socket: Socket, gameService: GameService, gameCode: string) {
+async function playNextMove(
+    socket: Socket<IReplayClientEvents, IReplayServerEvents>,
+    gameService: GameService,
+    gameCode: string
+) {
     const state = replayStates.get(gameCode);
     if (!state || !state.isPlaying || state.currentMoveIndex >= state.totalMoves) {
         return;
