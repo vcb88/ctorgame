@@ -210,7 +210,8 @@ describe('Games API', () => {
 
       expect(response.body).toMatchObject({
         gameId: expect.any(String),
-        gameCode: expect.any(String)
+        gameCode: expect.any(String),
+        createdAt: expect.any(String)
       });
     });
   });
@@ -223,7 +224,13 @@ describe('Games API', () => {
 
       expect(response.body).toMatchObject({
         gameId: expect.any(String),
-        state: expect.any(Object)
+        state: {
+          board: expect.any(Array),
+          currentPlayer: expect.any(Number),
+          opsRemaining: expect.any(Number),
+          status: expect.stringMatching(/^(waiting|playing|finished)$/),
+          lastMoveAt: expect.any(Number)
+        }
       });
     });
 
@@ -250,13 +257,18 @@ Some endpoints complement WebSocket functionality:
 const syncGameState = async (gameId: string) => {
   try {
     const response = await fetch(`/api/v1/games/${gameId}`);
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
     const game = await response.json();
     
-    if (game.state !== currentState) {
+    if (game.state.lastMoveAt > currentState.lastMoveAt) {
       updateGameState(game.state);
     }
   } catch (error) {
     console.error('Failed to sync game state:', error);
+    // Attempt WebSocket reconnection if HTTP sync fails
+    socket.emit('reconnect', { gameId });
   }
 };
 ```
