@@ -1,11 +1,11 @@
 import { ErrorRecoveryManager } from './ErrorRecoveryManager';
-import type { GameActionType } from '@ctor-game/shared/types/game';
-import { ErrorCode, ErrorSeverity, GameError, GameActionUnion } from '@/types/errors';
+import type { GameAction, ICreateGameAction, IJoinGameAction, IMakeMoveAction, IEndTurnAction } from '@ctor-game/shared/src/types/game/actions.js';
+import type { ErrorCode, ErrorSeverity, INetworkError } from '@ctor-game/shared/src/types/network/errors.js';
 
 interface QueuedAction {
-  action: GameActionUnion;
+  action: GameAction;
   resolve: (value: any) => void;
-  reject: (error: GameError) => void;
+  reject: (error: INetworkError) => void;
 }
 
 /**
@@ -32,7 +32,7 @@ export class ActionQueue {
   /**
    * Add action to queue
    */
-  public enqueue<T>(action: GameActionUnion): Promise<T> {
+  public enqueue<T>(action: GameAction): Promise<T> {
     return new Promise<T>((resolve, reject) => {
       // Add action to queue
       this.queue.push({
@@ -50,10 +50,11 @@ export class ActionQueue {
    * Check if action can be processed
    * In MVP we only check for duplicates and basic conflicts
    */
-  private canProcessAction(action: GameActionUnion): boolean {
+  private canProcessAction(action: GameAction): boolean {
     // Check for duplicate actions in queue
     const duplicates = this.queue.filter(qa => 
       qa.action.type === action.type &&
+      'gameId' in qa.action && 'gameId' in action &&
       qa.action.gameId === action.gameId
     );
 
@@ -64,14 +65,14 @@ export class ActionQueue {
     // Check for conflicting actions
     const conflicts = this.queue.some(qa => {
       // Can't have multiple moves in queue
-      if (qa.action.type === GameActionType.MAKE_MOVE && 
-          action.type === GameActionType.MAKE_MOVE) {
+      if (qa.action.type === 'MAKE_MOVE' && 
+          action.type === 'MAKE_MOVE') {
         return true;
       }
 
       // Can't end turn while move is pending
-      if (qa.action.type === GameActionType.MAKE_MOVE && 
-          action.type === GameActionType.END_TURN) {
+      if (qa.action.type === 'MAKE_MOVE' && 
+          action.type === 'END_TURN') {
         return true;
       }
 
@@ -97,11 +98,11 @@ export class ActionQueue {
       // Check if action can be processed
       if (!this.canProcessAction(action)) {
         throw {
-          code: ErrorCode.OPERATION_FAILED,
+          code: 'OPERATION_FAILED' as ErrorCode,
           message: 'Conflicting operation in progress',
-          severity: ErrorSeverity.MEDIUM,
+          severity: 'MEDIUM' as ErrorSeverity,
           details: { action }
-        } as GameError;
+        } as INetworkError;
       }
 
       // Process action (in MVP we just resolve immediately)
@@ -111,9 +112,9 @@ export class ActionQueue {
       this.queue.shift();
     } catch (error) {
       // Handle error
-      const gameError = error as GameError;
-      this.errorManager.handleError(gameError);
-      reject(gameError);
+      const networkError = error as INetworkError;
+      this.errorManager.handleError(networkError);
+      reject(networkError);
       
       // Remove failed action
       this.queue.shift();
@@ -133,9 +134,10 @@ export class ActionQueue {
   public clear(): void {
     this.queue.forEach(({ reject }) => {
       reject({
-        code: ErrorCode.OPERATION_CANCELLED,
+        code: 'OPERATION_CANCELLED',
         message: 'Operation cancelled - queue cleared',
-        severity: ErrorSeverity.LOW
+        severity: 'LOW',
+        timestamp: Date.now()
       });
     });
     this.queue = [];
@@ -152,7 +154,7 @@ export class ActionQueue {
   /**
    * Check if specific action type is pending
    */
-  public isActionPending(type: GameActionType): boolean {
+  public isActionPending(type: GameAction['type']): boolean {
     return this.queue.some(qa => qa.action.type === type);
   }
 }
