@@ -1,613 +1,261 @@
 import { Server } from 'socket.io';
 import { Server as HttpServer } from 'http';
 import { Socket } from 'socket.io';
+
 // Game types
-import { IGameState } from '@ctor-game/shared/types/game/state';
-import { IPlayer } from '@ctor-game/shared/types/game/players';
-import { GameMove, IServerMove } from '@ctor-game/shared/types/game/moves';
-import { Player, OperationType, GamePhase } from '@ctor-game/shared/types/base/enums';
-import { IScores } from '@ctor-game/shared/types/game/state';
+import type {
+    IGameState,
+    IGameMove,
+    PlayerNumber,
+    GameStatus,
+    IGameScores
+} from '@ctor-game/shared/src/types/game/types';
 
-// Constants
-import { 
-  MAX_PLACE_OPERATIONS 
-} from '@ctor-game/shared/types/base/constants';
+// Event types
+import type {
+    GameEvent,
+    validateGameEvent
+} from '@ctor-game/shared/src/types/network/events';
 
-// Network types
-import {
-  WebSocketEvents,
-  ServerToClientEventType,
-  ServerToClientEvents,
-  ClientToServerEvents,
-  WebSocketErrorCode
-} from '@ctor-game/shared/types/base/network';
+// Socket types
+import type {
+    WebSocketEvent,
+    WebSocketErrorCode,
+    ServerToClientEvents,
+    ClientToServerEvents
+} from '@ctor-game/shared/src/types/network/websocket';
 
-// Game utils
-import { getOpponent } from '@ctor-game/shared/utils/game';
-import { validateGameMove, validateGameState } from '../validation/game.js';
+// Services
 import { GameService } from '../services/GameService.js';
 import { GameLogicService } from '../services/GameLogicService.js';
-import { GameStorageService } from '../services/GameStorageService.js';
+import { EventService } from '../services/EventService.js';
 import { redisService } from '../services/RedisService.js';
-import { redisClient, connectRedis } from '../config/redis.js';
-
 import { logger } from '../utils/logger.js';
 import { toErrorWithStack } from '../types/error.js';
 
-const PLAYER_RECONNECT_TIMEOUT = 5 * 60 * 1000; // 5 минут
-
-export class GameServer {
-  private io: Server<ClientToServerEvents, ServerToClientEvents>;
-  private gameService!: GameService;
-  private storageService!: GameStorageService;
-
-  private static instance: GameServer | null = null;
-
-  // Статический метод для получения экземпляра
-  public static getInstance(httpServer: HttpServer): GameServer {
-    if (!GameServer.instance) {
-      logger.info("Creating new GameServer instance", { component: 'GameServer' });
-      GameServer.instance = new GameServer(httpServer);
-    } else {
-      logger.info("Returning existing GameServer instance", { component: 'GameServer' });
-    }
-    return GameServer.instance;
-  }
-
-  // Приватный конструктор, чтобы предотвратить создание экземпляров через new
-  private constructor(httpServer: HttpServer) {
-    // Очищаем предыдущие экземпляры Socket.IO
-    if ((global as any).io) {
-      logger.info("Cleaning up previous Socket.IO instance", { component: 'GameServer' });
-      (global as any).io.close();
-    }
-
-    this.io = new Server(httpServer, {
-      cors: {
+const DEFAULT_CONFIG = {
+    cors: {
         origin: "*",
         methods: ["GET", "POST"]
-      },
-      path: '/socket.io/',
-      // Используем только WebSocket для предотвращения двойных подключений
-      transports: ['websocket'],
-      serveClient: false,
-      pingTimeout: 10000,
-      pingInterval: 5000,
-      upgradeTimeout: 10000,
-      maxHttpBufferSize: 1e6,
-    });
+    },
+    path: '/socket.io/',
+    transports: ['websocket'],
+    serveClient: false,
+    pingTimeout: 10000,
+    pingInterval: 5000,
+    upgradeTimeout: 10000,
+    maxHttpBufferSize: 1e6,
+} as const;
 
-    // Сохраняем экземпляры для последующего использования
-    (global as any).io = this.io;
-    GameServer.instance = this;
+const PLAYER_RECONNECT_TIMEOUT = 5 * 60 * 1000; // 5 minutes
 
-    // Инициализируем сервисы
-    this.initializeServices().catch(error => {
-      logger.error("Critical initialization error", {
-        component: 'GameServer',
-        error: toErrorWithStack(error)
-      });
-      process.exit(1);
-    });
-  }
+export class GameServer {
+    private io: Server<ClientToServerEvents, ServerToClientEvents>;
+    private gameService: GameService;
+    private eventService: EventService;
+    private static instance: GameServer | null = null;
 
-  private async initializeServices(): Promise<void> {
-    try {
-      logger.info("Starting services initialization...", { component: 'GameServer' });
-      
-      // Ждем подключения Redis
-      await connectRedis();
-      logger.info("Redis initialized", { component: 'GameServer' });
-
-      // Инициализируем сервисы
-      this.gameService = new GameService();
-      this.storageService = new GameStorageService(
-        process.env.MONGODB_URL,
-        redisClient
-      );
-
-      // Настраиваем обработчики событий
-      this.setupEventHandlers();
-      logger.info("WebSocket event handlers initialized", { component: 'GameServer' });
-    } catch (error) {
-      logger.error("Failed to initialize services", {
-        component: 'GameServer',
-        error: toErrorWithStack(error)
-      });
-      throw error;
+    public static getInstance(
+        httpServer: HttpServer,
+        options: {
+            gameService?: GameService;
+            eventService?: EventService;
+        } = {}
+    ): GameServer {
+        if (!GameServer.instance) {
+            logger.info("Creating new GameServer instance", { component: 'GameServer' });
+            GameServer.instance = new GameServer(httpServer, options);
+        } else {
+            logger.info("Returning existing GameServer instance", { component: 'GameServer' });
+        }
+        return GameServer.instance;
     }
-  }
 
-  private setupEventHandlers(): void {
-    // Добавляем общий обработчик для всех исходящих сообщений
-    this.io.engine.on("connection_error", (err) => {
-      logger.error("Connection error", {
-        component: 'GameServer',
-        context: { error: toErrorWithStack(err) }
-      });
-    });
-
-    this.io.on('connection', (socket: Socket<ClientToServerEvents, ServerToClientEvents>) => {
-      // Логируем все входящие сообщения
-      socket.onAny((eventName, ...args) => {
-        logger.websocket.message('in', eventName, args[0], socket.id);
-      });
-
-      // Оборачиваем emit для логирования
-      const originalEmit = socket.emit;
-      const wrappedEmit = function<Ev extends ServerToClientEventType>(
-        this: typeof socket,
-        ev: Ev,
-        ...args: Parameters<typeof socket.emit<Ev>>
-      ): ReturnType<typeof socket.emit<Ev>> {
-        logger.websocket.message('out', ev, args[0], socket.id);
-        return originalEmit.apply(this, [ev, ...args]);
-      };
-      socket.emit = wrappedEmit;
-
-      // Оборачиваем room emit для логирования
-      const originalTo = this.io.to;
-      this.io.to = (room: string) => {
-        const result = originalTo.call(this.io, room);
-        const originalRoomEmit = result.emit;
-        result.emit = function<Ev extends ServerToClientEventType>(
-          this: typeof result,
-          ev: Ev,
-          ...args: Parameters<typeof result.emit<Ev>>
-        ): ReturnType<typeof result.emit<Ev>> {
-          logger.websocket.message('out', ev, args[0], `room:${room}`);
-          return originalRoomEmit.apply(this, [ev, ...args]);
-        };
-        return result;
-      };
-
-      // Добавляем расширенное логирование подключений
-      logger.info('New client connection', {
-        component: 'GameServer',
-        context: {
-          socketId: socket.id,
-          transport: socket.conn.transport.name,
-          remoteAddress: socket.handshake.address,
-          userAgent: socket.handshake.headers['user-agent']
+    private constructor(
+        httpServer: HttpServer,
+        options: {
+            gameService?: GameService;
+            eventService?: EventService;
         }
-      });
-
-      socket.on(WebSocketEvents.CreateGame, async () => {
-        try {
-          // Генерируем 6 символов в верхнем регистре
-          const gameCode = Math.random().toString(36).substring(2, 8).toUpperCase();
-          const player: IPlayer = {
-            id: socket.id,
-            number: Player.First
-          };
-
-          // Создаем начальное состояние игры
-          const initialState = GameLogicService.createInitialState();
-
-          // Сохраняем игру в БД и Redis
-          await Promise.all([
-            this.gameService.createGame(gameCode, player, initialState),
-            redisService.createGame(gameCode, player, initialState)
-          ]);
-
-          // Проверяем успешность создания игры
-          await socket.join(gameCode);
-          const gameRoom = await redisService.getGameRoom(gameCode);
-
-          if (!gameRoom) {
-            throw new Error('Failed to create game room');
-          }
-
-          logger.info('Game created', {
-            component: 'GameServer',
-            context: {
-              gameId: gameCode,
-              playerId: socket.id
-            }
-          });
-          
-          // Сохраняем сессию игрока
-          await redisService.setPlayerSession(socket.id, gameCode, Player.First);
-          logger.info('Player session saved', {
-            component: 'GameServer',
-            context: {
-              playerId: socket.id,
-              gameId: gameCode
-            }
-          });
-
-          socket.emit(WebSocketEvents.GameCreated, { 
-            gameId: gameCode,
-            eventId: Date.now().toString()
-          });
-          logger.info('GameCreated event sent', {
-            component: 'GameServer',
-            context: {
-              playerId: socket.id,
-              gameId: gameCode
-            }
-          });
-        } catch (err) {
-          const error = err as Error;
-          logger.error('Error creating game', {
-            component: 'GameServer',
-            context: { playerId: socket.id },
-            error: toErrorWithStack(error)
-          });
-          socket.emit(WebSocketEvents.Error, { 
-            code: WebSocketErrorCode.SERVER_ERROR,
-            message: 'Failed to create game',
-            details: { error: error.message }
-          });
+    ) {
+        if ((global as any).io) {
+            logger.info("Cleaning up previous Socket.IO instance", { component: 'GameServer' });
+            (global as any).io.close();
         }
-      });
 
-      socket.on(WebSocketEvents.JoinGame, async ({ gameId }: { gameId: string }) => {
-        try {
-          const room = await redisService.getGameRoom(gameId);
-          if (!room) {
-            socket.emit(WebSocketEvents.Error, { code: WebSocketErrorCode.INVALID_GAME_ID, message: 'Game not found' });
-            return;
-          }
+        this.io = new Server(httpServer, DEFAULT_CONFIG);
+        this.gameService = options.gameService || new GameService();
+        this.eventService = options.eventService || new EventService();
 
-          if (room.players.length >= 2) {
-            socket.emit(WebSocketEvents.Error, { code: WebSocketErrorCode.SERVER_ERROR, message: 'Game is full' });
-            return;
-          }
+        (global as any).io = this.io;
+        this.setupEventHandlers();
+    }
 
-          const player: IPlayer = {
-            id: socket.id,
-            number: Player.Second
-          };
-
-          // Сохраняем игрока в БД и Redis
-          await Promise.all([
-            this.gameService.joinGame(gameId, player),
-            redisService.joinGame(gameId, player)
-          ]);
-
-          socket.join(gameId);
-
-          // Получаем актуальное состояние игры
-          const gameState = await redisService.getGameState(gameId);
-          if (!gameState) {
-            socket.emit(WebSocketEvents.Error, { code: WebSocketErrorCode.INVALID_STATE, message: 'Game state not found' });
-            return;
-          }
-
-          logger.info('Player joined game', {
-            component: 'GameServer',
-            context: {
-              playerId: socket.id,
-              gameId: gameId
-            }
-          });
-
-          // Сначала отправляем подтверждение присоединения
-          socket.emit(WebSocketEvents.GameJoined, { 
-            gameId,
-            eventId: Date.now().toString(),
-            phase: GamePhase.CONNECTING
-          });
-          logger.info('GameJoined event sent', {
-            component: 'GameServer',
-            context: {
-              playerId: socket.id,
-              gameId: gameId
-            }
-          });
-
-          // Потом отправляем всем участникам информацию о начале игры
-          const currentPlayer = redisService.getCurrentPlayer(gameState);
-          this.io.to(gameId).emit(WebSocketEvents.GameStarted, {
-            gameState,
-            currentPlayer,
-            eventId: Date.now().toString(),
-            phase: GamePhase.PLAYING
-          });
-          logger.info('GameStarted event sent', {
-            component: 'GameServer',
-            context: {
-              gameId: gameId,
-              currentPlayer: currentPlayer,
-              phase: GamePhase.PLAYING
-            }
-          });
-        } catch (err) {
-          const error = err as Error;
-          logger.error('Error joining game', {
-            component: 'GameServer',
-            context: {
-              playerId: socket.id,
-              gameId: gameId
-            },
-            error: toErrorWithStack(error)
-          });
-          socket.emit(WebSocketEvents.Error, { code: WebSocketErrorCode.SERVER_ERROR, message: 'Failed to join game' });
-        }
-      });
-
-      socket.on(WebSocketEvents.MakeMove, async ({ gameId, move }: { gameId: string; move: GameMove }) => {
-        try {
-          const [room, state] = await Promise.all([
-            redisService.getGameRoom(gameId),
-            redisService.getGameState(gameId)
-          ]);
-
-          if (!room || !state) {
-            socket.emit(WebSocketEvents.Error, { code: WebSocketErrorCode.INVALID_GAME_ID, message: 'Game not found' });
-            return;
-          }
-
-          const player = room.players.find((p: IPlayer) => p.id === socket.id);
-          if (!player) {
-            socket.emit(WebSocketEvents.Error, { code: WebSocketErrorCode.SERVER_ERROR, message: 'Player not found in game' });
-            return;
-          }
-
-          const session = await redisService.getPlayerSession(socket.id);
-          if (!session || session.gameId !== gameId) {
-            socket.emit(WebSocketEvents.Error, { code: WebSocketErrorCode.SERVER_ERROR, message: 'Invalid player session' });
-            return;
-          }
-
-          const currentPlayer = redisService.getCurrentPlayer(state);
-          if (player.number !== currentPlayer) {
-            socket.emit(WebSocketEvents.Error, { code: WebSocketErrorCode.NOT_YOUR_TURN, message: 'Not your turn' });
-            return;
-          }
-
-          if (state.gameOver) {
-            socket.emit(WebSocketEvents.Error, { code: WebSocketErrorCode.GAME_ENDED, message: 'Game is over' });
-            return;
-          }
-
-          // Преобразуем ход в формат для сервера
-          const serverMove: IServerMove = {
-            type: move.type,
-            position: move.position
-          };
-
-          // Проверяем и применяем ход
-          const updatedState = await redisService.updateGameState(
-            gameId,
-            player.number,
-            serverMove
-          );
-
-          // Сохраняем ход в БД
-          await this.gameService.makeMove(gameId, player.number, move);
-
-          const nextPlayer = redisService.getCurrentPlayer(updatedState);
-          // Отправляем обновленное состояние всем игрокам
-          this.io.to(gameId).emit(WebSocketEvents.GameStateUpdated, {
-            gameState: updatedState,
-            currentPlayer: nextPlayer,
-            phase: updatedState.gameOver ? GamePhase.FINISHED : GamePhase.PLAYING
-          });
-
-          // Проверяем доступные замены для операции размещения
-          if (move.type === OperationType.PLACE) {
-            const availableReplaces = GameLogicService.getAvailableReplaces(
-              updatedState,
-              player.number
-            );
-
-            if (availableReplaces.length > 0) {
-              socket.emit(WebSocketEvents.AvailableReplaces, {
-                moves: availableReplaces,
-                replacements: availableReplaces.map(move => [move.position.x, move.position.y])
-              });
-            }
-          }
-
-          // Обрабатываем завершение игры
-          if (updatedState.gameOver) {
-            await Promise.all([
-              redisService.cleanupGame(gameId),
-              this.gameService.finishGame(gameId, updatedState.winner, updatedState.scores)
-            ]);
-
-            this.io.to(gameId).emit(WebSocketEvents.GameOver, {
-              gameState: updatedState,
-              winner: updatedState.winner
+    private setupEventHandlers(): void {
+        this.io.engine.on("connection_error", (err) => {
+            logger.error("Connection error", {
+                component: 'GameServer',
+                error: toErrorWithStack(err)
             });
-          }
-        } catch (err) {
-          const error = err as Error;
-          logger.error('Error making move', {
-            component: 'GameServer',
-            context: {
-              playerId: socket.id,
-              gameId: gameId,
-              move: move
-            },
-            error: toErrorWithStack(error)
-          });
-          socket.emit(WebSocketEvents.Error, { code: WebSocketErrorCode.SERVER_ERROR, message: 'Failed to make move' });
-        }
-      });
+        });
 
-      socket.on(WebSocketEvents.EndTurn, async ({ gameId }: { gameId: string }) => {
-        try {
-          const [room, state] = await Promise.all([
-            redisService.getGameRoom(gameId),
-            redisService.getGameState(gameId)
-          ]);
-
-          if (!room || !state) {
-            socket.emit(WebSocketEvents.Error, { code: WebSocketErrorCode.INVALID_GAME_ID, message: 'Game not found' });
-            return;
-          }
-
-          const player = room.players.find((p: IPlayer) => p.id === socket.id);
-          if (!player) {
-            socket.emit(WebSocketEvents.Error, { code: WebSocketErrorCode.SERVER_ERROR, message: 'Player not found in game' });
-            return;
-          }
-
-          const currentPlayer = redisService.getCurrentPlayer(state);
-          if (player.number !== currentPlayer) {
-            socket.emit(WebSocketEvents.Error, { code: WebSocketErrorCode.NOT_YOUR_TURN, message: 'Not your turn' });
-            return;
-          }
-
-          // Обновляем состояние для следующего хода
-          const updatedState: IGameState = {
-            ...state,
-            turnNumber: state.turnNumber + 1, // Increment global turn counter
-            currentTurn: {
-              placeOperationsLeft: MAX_PLACE_OPERATIONS,
-              replaceOperationsLeft: 0,
-              moves: [],
-              count: 1 // Reset count for the new turn
-            }
-          };
-
-          await redisService.setGameState(gameId, updatedState);
-          await this.gameService.makeMove(gameId, player.number, {
-            type: 'end_turn' as const,
-            position: { x: -1, y: -1 },
-            player: player.number,
-            timestamp: Date.now()
-          } as GameMove);
-
-          const nextPlayer = redisService.getCurrentPlayer(updatedState);
-          // Отправляем обновленное состояние всем игрокам
-          this.io.to(gameId).emit(WebSocketEvents.GameStateUpdated, {
-            gameState: updatedState,
-            currentPlayer: nextPlayer,
-            phase: GamePhase.PLAYING
-          });
-        } catch (err) {
-          const error = err as Error;
-          logger.error('Error ending turn', {
-            component: 'GameServer',
-            context: {
-              playerId: socket.id,
-              gameId: gameId
-            },
-            error: toErrorWithStack(error)
-          });
-          socket.emit(WebSocketEvents.Error, { code: WebSocketErrorCode.SERVER_ERROR, message: 'Failed to end turn' });
-        }
-      });
-
-      socket.on(WebSocketEvents.Disconnect, async () => {
-        try {
-          const session = await redisService.getPlayerSession(socket.id);
-          if (session) {
-            // Уведомляем других игроков об отключении
-            this.io.to(session.gameId).emit(WebSocketEvents.PlayerDisconnected, {
-              player: session.playerNumber
+        this.io.on('connection', (socket: Socket<ClientToServerEvents, ServerToClientEvents>) => {
+            // Log all incoming messages
+            socket.onAny((eventName, ...args) => {
+                logger.websocket.message('in', eventName, args[0], socket.id);
             });
 
-            // Запускаем таймер на удаление игры
-            setTimeout(async () => {
-              try {
-                // Проверяем, не переподключился ли игрок
-                const currentSession = await redisService.getPlayerSession(socket.id);
-                if (currentSession && currentSession.gameId === session.gameId) {
-                  // Если игрок не переподключился - завершаем игру
-                  await Promise.all([
-                    // При дисконнекте противник побеждает, счет 0:0
-                    this.gameService.finishGame(session.gameId, getOpponent(session.playerNumber), {
-                      [Player.First]: 0,
-                      [Player.Second]: 0
-                    } as IScores),
-                    redisService.cleanupGame(session.gameId)
-                  ]);
+            // Wrap emit for logging
+            const originalEmit = socket.emit;
+            const wrappedEmit = function<Ev extends WebSocketEvent>(
+                this: typeof socket,
+                ev: Ev,
+                ...args: Parameters<typeof socket.emit<Ev>>
+            ): ReturnType<typeof socket.emit<Ev>> {
+                logger.websocket.message('out', ev, args[0], socket.id);
+                return originalEmit.apply(this, [ev, ...args]);
+            };
+            socket.emit = wrappedEmit;
 
-                  // Уведомляем оставшихся игроков
-                  this.io.to(session.gameId).emit(WebSocketEvents.GameExpired, {
-                    gameId: session.gameId,
-                    reason: 'Player disconnection timeout'
-                  });
+            // Wrap room emit for logging
+            const originalTo = this.io.to;
+            this.io.to = (room: string) => {
+                const result = originalTo.call(this.io, room);
+                const originalRoomEmit = result.emit;
+                result.emit = function<Ev extends WebSocketEvent>(
+                    this: typeof result,
+                    ev: Ev,
+                    ...args: Parameters<typeof result.emit<Ev>>
+                ): ReturnType<typeof result.emit<Ev>> {
+                    logger.websocket.message('out', ev, args[0], `room:${room}`);
+                    return originalRoomEmit.apply(this, [ev, ...args]);
+                };
+                return result;
+            };
+
+            logger.info('New client connection', {
+                component: 'GameServer',
+                context: {
+                    socketId: socket.id,
+                    transport: socket.conn.transport.name,
+                    remoteAddress: socket.handshake.address,
+                    userAgent: socket.handshake.headers['user-agent']
                 }
-              } catch (err) {
-          const error = err as Error;
-                logger.error('Error handling disconnection timeout', {
-                  component: 'GameServer',
-                  context: {
-                    playerId: socket.id,
-                    gameId: session.gameId
-                  },
-                  error: toErrorWithStack(error)
-                });
-              }
-            }, PLAYER_RECONNECT_TIMEOUT);
-          }
-        } catch (err) {
-          const error = err as Error;
-          logger.error('Error handling disconnect', {
-            component: 'GameServer',
-            context: { playerId: socket.id },
-            error: toErrorWithStack(error)
-          });
-        }
-      });
-
-      socket.on(WebSocketEvents.Reconnect, async ({ gameId }: { gameId: string }) => {
-        try {
-          const [room, state] = await Promise.all([
-            redisService.getGameRoom(gameId),
-            redisService.getGameState(gameId)
-          ]);
-
-          if (!room || !state) {
-            socket.emit(WebSocketEvents.Error, { 
-              code: WebSocketErrorCode.INVALID_GAME_ID,
-              message: 'Game not found or expired' 
             });
-            return;
-          }
 
-          const player = room.players.find((p: IPlayer) => p.id === socket.id);
-          if (!player) {
-            socket.emit(WebSocketEvents.Error, {
-              code: WebSocketErrorCode.SERVER_ERROR,
-              message: 'Player not found in this game'
+            socket.on('create_game', async () => {
+                try {
+                    const gameId = crypto.randomUUID();
+                    const game = await this.gameService.createGame(socket.id, gameId);
+                    await socket.join(gameId);
+
+                    const event = await this.eventService.createGameCreatedEvent(gameId, GameStatus.WAITING);
+                    if (!validateGameEvent(event)) {
+                        throw new Error('Invalid game created event');
+                    }
+
+                    logger.info('Game created', {
+                        component: 'GameServer',
+                        context: {
+                            gameId,
+                            code: game.code,
+                            playerId: socket.id
+                        }
+                    });
+
+                    socket.emit('game_created', {
+                        gameId,
+                        code: game.code,
+                        eventId: event.id,
+                        status: event.data.status
+                    });
+
+                } catch (err) {
+                    const error = err as Error;
+                    logger.error('Error creating game', {
+                        component: 'GameServer',
+                        context: { playerId: socket.id },
+                        error: toErrorWithStack(error)
+                    });
+                    socket.emit('error', {
+                        code: WebSocketErrorCode.InternalError,
+                        message: 'Failed to create game',
+                        details: { error: error.message }
+                    });
+                }
             });
-            return;
-          }
 
-          // Обновляем сессию игрока
-          await redisService.setPlayerSession(socket.id, gameId, player.number);
+            socket.on('join_game', async ({ gameId, code }: { gameId?: string; code?: string }) => {
+                try {
+                    if (!gameId && !code) {
+                        throw new Error('Either gameId or code must be provided');
+                    }
 
-          // Присоединяем к комнате игры
-          socket.join(gameId);
+                    // Find game by code if provided
+                    let targetGameId = gameId;
+                    if (code) {
+                        const game = await this.gameService.findGame(code);
+                        if (!game) {
+                            throw new Error('Game not found');
+                        }
+                        targetGameId = game.gameId;
+                    }
 
-          const currentPlayer = redisService.getCurrentPlayer(state);
-          // Отправляем текущее состояние игры
-          socket.emit(WebSocketEvents.PlayerReconnected, {
-            gameState: state,
-            currentPlayer,
-            player: player.number
-          });
+                    const game = await this.gameService.joinGame(targetGameId!, socket.id);
+                    await socket.join(targetGameId!);
 
-          // Уведомляем других игроков
-          socket.to(gameId).emit(WebSocketEvents.PlayerReconnected, {
-            gameState: state,
-            currentPlayer,
-            player: player.number
-          });
-        } catch (err) {
-          const error = err as Error;
-          logger.error('Error reconnecting', {
-            component: 'GameServer',
-            context: {
-              playerId: socket.id,
-              gameId: gameId
-            },
-            error: toErrorWithStack(error)
-          });
-          socket.emit(WebSocketEvents.Error, {
-            code: WebSocketErrorCode.CONNECTION_ERROR,
-            message: 'Failed to reconnect',
-            details: { error: error.message }
-          });
-        }
-      });
-    });
-  }
-}
+                    // Get state after join
+                    const state = await redisService.getGameState(targetGameId!);
+                    if (!state) {
+                        throw new Error('Game state not found');
+                    }
+
+                    const connectEvent = await this.eventService.createPlayerConnectedEvent(
+                        targetGameId!,
+                        socket.id,
+                        2 as PlayerNumber
+                    );
+
+                    if (!validateGameEvent(connectEvent)) {
+                        throw new Error('Invalid player connected event');
+                    }
+
+                    socket.emit('game_joined', {
+                        gameId: targetGameId,
+                        eventId: connectEvent.id,
+                        status: game.status
+                    });
+
+                    // If game is now ready to start
+                    if (game.players.first && game.players.second) {
+                        const startEvent = await this.eventService.createGameStartedEvent(targetGameId!, state);
+                        if (!validateGameEvent(startEvent)) {
+                            throw new Error('Invalid game started event');
+                        }
+
+                        this.io.to(targetGameId!).emit('game_started', {
+                            gameId: targetGameId,
+                            eventId: startEvent.id,
+                            gameState: state,
+                            currentPlayer: state.currentPlayer
+                        });
+                    }
+
+                } catch (err) {
+                    const error = err as Error;
+                    logger.error('Error joining game', {
+                        component: 'GameServer',
+                        context: { 
+                            playerId: socket.id,
+                            gameId,
+                            code 
+                        },
+                        error: toErrorWithStack(error)
+                    });
+                    socket.emit('error', {
+                        code: WebSocketErrorCode.InternalError,
+                        message: 'Failed to join game',
+                        details: { error: error.message }
+                    });
+                }
+            });

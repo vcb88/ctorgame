@@ -18,6 +18,11 @@
 - Added new methods to GameStorageService and RedisService
 - Combined functionality from old and new versions
 
+✅ WebSocket Layer migration in progress:
+- Migrated GameServer.events.ts to new type system
+- Migrated GameServer.ts to new type system
+- Removed obsolete GameServer.new.ts
+
 TODO: Add tests for:
 1. GameService:
    - Test game code generation and uniqueness
@@ -30,17 +35,17 @@ TODO: Add tests for:
 3. RedisService:
    - Test expireGameState method
    - Test deleteGameState method
+4. WebSocket Layer:
+   - Test reconnection handling
+   - Test game code functionality
+   - Test event validation
+   - Test error handling
 
-### Server Services Still Requiring Migration
-
-### WebSocket Layer (Priority High)
-4. ./server/src/websocket/GameServer.events.ts
-5. ./server/src/websocket/GameServer.ts
-6. ./server/src/websocket/GameServer.new.ts
-7. ./server/src/websocket/handlers/gameHandlers.new.ts
-8. ./server/src/websocket/handlers/gameHandlers.ts
-9. ./server/src/websocket/handlers/replayHandlers.ts
-10. ./server/src/types/events.ts
+### WebSocket Layer Still Requiring Migration (Priority High)
+1. ./server/src/websocket/handlers/gameHandlers.new.ts
+2. ./server/src/websocket/handlers/gameHandlers.ts
+3. ./server/src/websocket/handlers/replayHandlers.ts
+4. ./server/src/types/events.ts
 
 ### Client Hooks (Priority Medium)
 11. ./client/src/hooks/useMultiplayerGameNew.ts
