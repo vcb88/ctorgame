@@ -1,0 +1,23 @@
+/**
+ * Main type exports
+ * Re-exports all types from their respective domains
+ */
+
+// Core types
+export * from './core/base.js';
+
+// Game types
+export * from './game/core.js';
+
+// Network types
+export * from './network/core.js';
+
+/**
+ * @deprecated The following types are deprecated and will be removed in the next major version
+ * Please use the new types from core/base.js, game/core.js, and network/core.js
+ */
+export * from './state.js';
+export * from './moves.js';
+export * from './game.js';
+export * from './primitives.js';
+export * from './basic-types.js';
