@@ -1,6 +1,5 @@
-import type { IGameState } from '@ctor-game/shared/types/game';
-import type { GameMove } from '@ctor-game/shared/types/game';
-import { WebSocketEvents } from '@ctor-game/shared/types/network';
+import { GameMove } from '../../../shared/src/types/game/moves.js';
+import { WebSocketEvents } from '../../../shared/src/types/base/network.js';
 
 export enum GameEventType {
     MOVE = 'move',
@@ -17,12 +16,12 @@ export interface IGameEvent {
     timestamp: number;
 }
 
-export interface GameEventHandlers {
-  [WebSocketEvents.CreateGame]: () => Promise<void>;
-  [WebSocketEvents.JoinGame]: (payload: { gameId: string }) => Promise<void>;
-  [WebSocketEvents.MakeMove]: (payload: { gameId: string; move: GameMove }) => Promise<void>;
-  [WebSocketEvents.EndTurn]: (payload: { gameId: string }) => Promise<void>;
-  [WebSocketEvents.Reconnect]: (payload: { gameId: string }) => Promise<void>;
+export type GameEventHandlers = {
+  'create-game': () => Promise<void>;
+  'join-game': (payload: { gameId: string }) => Promise<void>;
+  'make-move': (payload: { gameId: string; move: GameMove }) => Promise<void>;
+  'end-turn': (payload: { gameId: string }) => Promise<void>;
+  'reconnect': (payload: { gameId: string }) => Promise<void>;
 }
 
 export interface GameEventResponse<T = any> {

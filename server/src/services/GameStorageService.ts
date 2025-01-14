@@ -1,6 +1,9 @@
-import { GameMove, IScores } from '@ctor-game/shared/game';
-import { GameMetadata, GameDetails } from '@ctor-game/shared/storage';
-import { GameHistory } from '@ctor-game/shared/replay';
+import { GameMove } from '../../../shared/src/types/game/moves.js';
+import { IScores } from '../../../shared/src/types/game/state.js';
+import { GameMetadata, GameDetails } from '../../../shared/src/types/storage/metadata.js';
+import { GameHistory } from '../../../shared/src/types/storage/history.js';
+import { GameStatus } from '../../../shared/src/types/primitives.js';
+import { Player } from '../../../shared/src/types/base/enums.js';
 import { mkdirSync, existsSync, readFileSync, writeFileSync } from 'fs';
 import { join } from 'path';
 import { MongoClient, Collection } from 'mongodb';
@@ -17,14 +20,12 @@ export class GameStorageService {
     private gamesCollection!: Collection<GameMetadata>;
     private mongoClient!: MongoClient;
     private storagePath: string;
-    private redisClient: Redis | null = null;
 
     constructor(
         private readonly mongoUrl: string = process.env.MONGODB_URL || 'mongodb://localhost:27017',
-        redisClient?: Redis,
+        _redisClient?: Redis,
         storagePath?: string
     ) {
-        this.redisClient = redisClient || null;
         this.storagePath = storagePath || process.env.STORAGE_PATH || 'storage/games';
         // Initialize storage synchronously as it's file system operations
         this.initializeStorage();
@@ -142,7 +143,7 @@ export class GameStorageService {
     async createGame(playerId: string, gameId: string): Promise<GameMetadata> {
         // Check active games limit
         const activeCount = await this.gamesCollection.countDocuments({
-            status: { $in: ['waiting', 'playing'] }
+            status: { $in: [GameStatus.WAITING, GameStatus.IN_PROGRESS] }
         });
 
         if (activeCount >= 50) {
@@ -168,7 +169,7 @@ export class GameStorageService {
         const game: GameMetadata = {
             gameId,
             code,
-            status: 'waiting',
+            status: GameStatus.WAITING,
             startTime: now.toISOString(),
             lastActivityAt: now.toISOString(),
             expiresAt: new Date(now.getTime() + 30 * 60 * 1000).toISOString(),
@@ -189,14 +190,14 @@ export class GameStorageService {
         const result = await this.gamesCollection.findOneAndUpdate(
             {
                 $or: [{ gameId: gameIdOrCode }, { code: gameIdOrCode }],
-                status: 'waiting',
+                status: GameStatus.WAITING,
                 expiresAt: { $gt: now.toISOString() },
                 'players.second': null
             },
             {
                 $set: {
                     'players.second': playerId,
-                    status: 'playing',
+                    status: GameStatus.IN_PROGRESS,
                     lastActivityAt: now.toISOString(),
                     expiresAt: new Date(now.getTime() + 30 * 60 * 1000).toISOString()
                 }
@@ -211,7 +212,7 @@ export class GameStorageService {
             });
             if (!game) {
                 throw new GameStorageError(`Game not found with ID/code: ${gameIdOrCode}`);
-            } else if (game.status !== 'waiting') {
+            } else if (game.status !== GameStatus.WAITING) {
                 throw new GameStorageError('Game already started');
             } else if (game.expiresAt <= now.toISOString()) {
                 throw new GameStorageError('Game expired');
@@ -263,7 +264,7 @@ export class GameStorageService {
             { gameId },
             {
                 $set: {
-                    status: 'finished',
+                    status: GameStatus.FINISHED,
                     endTime: now.toISOString(),
                     winner,
                     finalScore: scores,
@@ -290,7 +291,7 @@ export class GameStorageService {
     async cleanupExpiredGames(): Promise<number> {
         const now = new Date();
         const result = await this.gamesCollection.deleteMany({
-            status: { $in: ['waiting', 'playing'] },
+            status: { $in: [GameStatus.WAITING, GameStatus.IN_PROGRESS] },
             expiresAt: { $lte: now.toISOString() }
         });
         return result.deletedCount;
@@ -324,10 +325,10 @@ export class GameStorageService {
             const details: GameDetails = {
                 moves: moves,
                 timing: {
-                    moveTimes: storedDetails.moveTimes || [],
-                    avgMoveTime: storedDetails.avgMoveTime || 0
+                    moveTimes: (storedDetails.moveTimes as number[]) || [],
+                    avgMoveTime: (storedDetails.avgMoveTime as number) || 0
                 },
-                territoryHistory: storedDetails.territoryHistory || []
+                territoryHistory: (storedDetails.territoryHistory as Array<{ [Player.First]: number; [Player.Second]: number }>) || []
             };
 
             return {

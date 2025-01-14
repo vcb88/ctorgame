@@ -188,8 +188,8 @@ export class GameService {
         const result = await this.gamesCollection.findOneAndUpdate(
             { 
                 $or: [
-                    { gameId: normalizedId, status: 'waiting' },
-                    { code: normalizedId, status: 'waiting' }
+                    { gameId: normalizedId, status: GameStatus.WAITING },
+                    { code: normalizedId, status: GameStatus.WAITING }
                 ]
             },
             { 

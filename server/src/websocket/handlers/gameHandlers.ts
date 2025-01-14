@@ -2,36 +2,31 @@ import { Socket } from 'socket.io';
 import { GameService } from '../../services/GameService.js';
 import { GameStorageService } from '../../services/GameStorageService.js';
 // Game types and moves
-import {
-  GameMove,
-  IGameState,
-  Player,
-  IScores,
-  IPlayer
-} from '@ctor-game/shared/game';
+import { GameMove } from '../../../shared/src/types/game/moves.js';
+import { IGameState } from '../../../shared/src/types/game/state.js';
+import { Player } from '../../../shared/src/types/base/enums.js';
+import { IScores } from '../../../shared/src/types/game/state.js';
+import { IPlayer } from '../../../shared/src/types/game/players.js';
 
-// Board constants
-import {
-  BOARD_SIZE
-} from '@ctor-game/shared/base';
+// Constants
+import { BOARD_SIZE } from '../../../shared/src/types/base/constants.js';
 
 // Network events and errors
 import {
   WebSocketEvents,
   WebSocketErrorCode
-} from '@ctor-game/shared/network';
+} from '../../../shared/src/types/base/network.js';
 
 // Storage types
 import {
   GameMetadata
-} from '@ctor-game/shared/storage';
+} from '../../../shared/src/types/storage/metadata.js';
 
 // Validation functions
 import {
   validateGameMove,
-  validateGameState,
-  isValidScores
-} from '@ctor-game/shared/validation';
+  validateGameState
+} from '../../../shared/src/validation/game.js';
 import { GameEventResponse } from '../../types/events.js';
 import { logger } from '../../utils/logger.js';
 import { toErrorWithStack } from '../../types/error.js';
@@ -405,13 +400,13 @@ export function registerGameHandlers(
             });
 
             if (updatedState.gameOver) {
-                const gameScores: IScores = isValidScores(updatedState.scores) ? updatedState.scores : {
+                const gameScores: IScores = updatedState.scores || {
                     [Player.First]: 0,
                     [Player.Second]: 0
                 } as IScores;
                 await storageService.finishGame(
                     gameId, 
-                    updatedState.winner || Player.None,
+                    updatedState.winner || null,
                     gameScores
                 );
 

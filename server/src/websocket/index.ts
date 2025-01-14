@@ -2,9 +2,9 @@ import { Server as HTTPServer } from 'http';
 import { Server as SocketServer } from 'socket.io';
 import { GameService } from '../services/GameService.js';
 import { GameStorageService } from '../services/GameStorageService.js';
-import { registerGameHandlers } from './handlers/gameHandlers';
-import { registerReplayHandlers } from './handlers/replayHandlers';
-import { registerHistoryHandlers } from './handlers/historyHandlers';
+import { registerGameHandlers } from './handlers/gameHandlers.js';
+import { registerReplayHandlers } from './handlers/replayHandlers.js';
+import { registerHistoryHandlers } from './handlers/historyHandlers.js';
 import { redisClient } from '../config/redis.js';
 
 export function initializeWebSocket(httpServer: HTTPServer) {

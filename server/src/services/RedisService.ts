@@ -1,13 +1,9 @@
 // Game related types
-import { 
-    IGameState,
-    GameMove,
-    Player,
-    IServerMove 
-} from '@ctor-game/shared/game';
-
-// Player related types
-import { IPlayer } from '@ctor-game/shared/game';
+import { IGameState } from '../../../shared/src/types/game/state.js';
+import { Player } from '../../../shared/src/types/base/enums.js';
+import { GameMove } from '../../../shared/src/types/game/moves.js';
+import type { IServerMove } from '../../../shared/src/types/game/moves.js';
+import type { IPlayer } from '../../../shared/src/types/game/players.js';
 
 // Redis specific types
 import {
@@ -15,9 +11,9 @@ import {
     IRedisPlayerSession,
     IRedisGameRoom,
     IRedisGameEvent
-} from '@ctor-game/shared/redis';
-import { redisClient, REDIS_KEYS, REDIS_EVENTS, withLock, cacheConfig } from '../config/redis';
-import { GameLogicService } from './GameLogicService';
+} from '../../../shared/src/types/storage/redis.js';
+import { redisClient, REDIS_KEYS, REDIS_EVENTS, withLock, cacheConfig } from '../config/redis.js';
+import { GameLogicService } from './GameLogicService.js';
 
 export class RedisService {
     /**
@@ -50,9 +46,9 @@ export class RedisService {
         const state = await redisClient.get(REDIS_KEYS.GAME_STATE(gameId));
         if (!state) return null;
 
-        const redisState: IRedisGameState = JSON.parse(state);
+        const redisState: IRedisGameState & IGameState = JSON.parse(state);
         // Исключаем служебные поля при возврате
-        const { lastUpdate, ...gameState } = redisState;
+        const { lastUpdate, ...gameState } = redisState as any;
         return gameState;
     }
 
@@ -207,7 +203,7 @@ export class RedisService {
         await withLock(gameId, async () => {
             const room = await this.getGameRoom(gameId);
             if (room) {
-                room.players = room.players.filter(p => p.id !== socketId);
+                room.players = room.players.filter((p: IPlayer) => p.id !== socketId);
                 if (room.players.length === 0) {
                     // Если комната пустая, удаляем её
                     await redisClient.del(REDIS_KEYS.GAME_ROOM(gameId));
