@@ -3,15 +3,16 @@ import { MongoClient, Collection } from 'mongodb';
 import type {
     IGameState,
     IPlayer,
-    GameMove,
+    IGameMove,
     PlayerNumber,
     GameStatus,
-    IScores
-} from '@ctor-game/shared/types/game/types.js';
+    IGameScores
+} from '@ctor-game/shared/src/types/game/types';
 
 import type {
-    GameMetadata
-} from '@ctor-game/shared/types/storage/types.js';
+    GameMetadata,
+    GameDetails
+} from '@ctor-game/shared/src/types/storage/metadata';
 
 // Services
 import { GameLogicService } from './GameLogicService.js';
@@ -165,7 +166,7 @@ export class GameService {
                 first: player.id
             },
             totalTurns: 0,
-            boardSize: initialState.board.size,
+            boardSize: initialState.size,
             currentState: initialState
         };
 
@@ -212,7 +213,7 @@ export class GameService {
         return result;
     }
 
-    async makeMove(gameId: string, playerNumber: PlayerNumber, move: GameMove): Promise<GameMetadata> {
+    async makeMove(gameId: string, playerNumber: PlayerNumber, move: IGameMove): Promise<GameMetadata> {
         const startTime = Date.now();
         await this.ensureInitialized();
         
@@ -328,7 +329,7 @@ export class GameService {
         await this.ensureInitialized();
         const game = await this.gamesCollection.findOne({ gameId });
         if (!game) return 0;
-        return game.currentState?.currentTurn.moves.length || 0;
+        return game.totalTurns || 0;
     }
 
     async getGameStateAtMove(gameId: string, _moveNumber: number): Promise<IGameState | null> {
@@ -339,7 +340,7 @@ export class GameService {
         return game.currentState;
     }
 
-    async finishGame(gameId: string, winner: PlayerNumber | null, scores: IScores): Promise<void> {
+    async finishGame(gameId: string, winner: PlayerNumber | null, scores: IGameScores): Promise<void> {
         await this.ensureInitialized();
         const now = new Date().toISOString();
         const game = await this.gamesCollection.findOne({ gameId });
