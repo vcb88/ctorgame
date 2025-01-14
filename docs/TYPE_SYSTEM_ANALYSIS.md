@@ -4,17 +4,14 @@
 
 | File Path | Status | New Version Ready | Reviewed | Dependencies Updated | Notes |
 |-----------|--------|------------------|-----------|---------------------|-------|
-| /shared/src/utils/scores.ts | ✅ Done | N/A | ✅ | ✅ | Migrated to PlayerNumber, removed enum usage |
+| /server/src/services/EventService.ts | ✅ Done | N/A | ✅ | ✅ | Using new type system from events.ts |
+| /server/src/services/RedisService.ts | ✅ Done | N/A | ✅ | ✅ | Using new types and structures |
+| /server/src/services/GameService.ts | ✅ Done | N/A | ✅ | ✅ | Migrated to new type system |
+| /server/src/services/GameLogicService.ts | ✅ Done | N/A | ✅ | ✅ | Updated to use new game state structure |
+| /server/src/services/GameStorageService.ts | ✅ Done | N/A | ✅ | ✅ | Using new metadata types |
 | /shared/src/types/game/state.ts | ✅ Done | ✅ | ✅ | ✅ | Using types from game/types.ts |
-| /shared/src/types/storage/metadata.ts | ✅ Done | ✅ | ✅ | ✅ | Using new type system |
-| /shared/src/types/redis/state.ts | ✅ Done | ✅ | ✅ | ✅ | New version with type guards |
-| /shared/src/types/validation/game.ts | ✅ Done | ✅ | ✅ | ✅ | Using types from game/types.ts |
-| /shared/src/types/base/network.ts | ✅ Done | ✅ | ✅ | ✅ | Using types from game/types.ts |
-| /shared/src/types/network/websocket.ts | ✅ Done | ✅ | ✅ | ✅ | New version already using updated types |
-| /shared/src/types/game/moves.ts | ✅ Done | ✅ | ✅ | ✅ | Using types from game/types.ts |
-| /shared/src/types/game/players.ts | ✅ Done | ✅ | ✅ | ✅ | Using types from game/types.ts |
-| /shared/src/types/network/websocket.new.ts | ✅ Done | ✅ | ✅ | ✅ | Already using game/types.ts |
-| /shared/src/types/network/events.new.ts | ✅ Done | ✅ | ✅ | ✅ | Already using PlayerNumber and GameStatus |
+| /shared/src/types/storage/metadata.ts | ✅ Done | ✅ | ✅ | ✅ | Updated for immutability |
+| /shared/src/types/network/events.ts | ✅ Done | ✅ | ✅ | ✅ | Migrated from events.new.ts |
 
 ## Final Migration Steps
 
@@ -224,11 +221,13 @@ Legend:
 | GameLogicService | ✅ Done | ✅ Done | ✅ Done | ✅ Done |
 | RedisService | ✅ Done | ✅ Done | ✅ Done | ✅ Done |
 | GameService | ✅ Done | ✅ Done | ✅ Done | ✅ Done |
-| GameStorageService | ❌ Not Started | ❌ Pending | ❌ Pending | ❌ Pending |
+| GameStorageService | ✅ Done | ✅ Done | ✅ Done | ✅ Done |
+| EventService | ✅ Done | ✅ Done | ✅ Done | ✅ Done |
 
 #### Remaining Tasks
 - [x] Update GameService dependencies
-- [ ] Migrate GameStorageService
+- [x] Migrate GameStorageService
+- [x] Update EventService and dependencies
 - [ ] Update WebSocket handlers
 - [ ] Test integration between services
 
