@@ -38,6 +38,13 @@
   - [ ] Add basic type guards
   - [ ] Document type system architecture
   - [ ] Update interfaces documentation
+  
+- [ ] Client Code Migration
+  - [ ] Update ActionQueue.ts to use shared types
+  - [ ] Update ErrorRecoveryManager.ts to use shared error types
+  - [ ] Update GameStateManager.ts to use new action types
+  - [ ] Migrate local types in client/src/types to shared
+  - [ ] Update all imports in client components
 
 ## Game Over Implementation
 - [ ] Basic End Game Features
