@@ -1,25 +1,18 @@
 {
+  "extends": "../tsconfig.base.json",
   "compilerOptions": {
     "types": ["node", "jest"],
     "typeRoots": ["./node_modules/@types"],
-    "target": "ESNext",
     "useDefineForClassFields": true,
     "lib": ["DOM", "DOM.Iterable", "ESNext"],
     "allowJs": false,
-    "skipLibCheck": true,
-    "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
-    "strict": true,
     "forceConsistentCasingInFileNames": true,
-    "module": "ESNext",
-    "moduleResolution": "node",
-    "resolveJsonModule": true,
-    "isolatedModules": true,
     "noEmit": true,
     "jsx": "react-jsx",
     "baseUrl": ".",
     "paths": {
-      "@/*": ["src/*"],
+      "@/*": ["./src/*"],
       "@ctor-game/shared": ["../shared/src"],
       "@ctor-game/shared/*": ["../shared/src/*"]
     }

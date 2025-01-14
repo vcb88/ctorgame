@@ -4,27 +4,17 @@
     "module": "NodeNext",
     "moduleResolution": "NodeNext",
     "isolatedModules": true,
-    "noEmit": false,
+    "composite": true,
     "declaration": true,
     "declarationMap": true,
     "sourceMap": true,
-    "composite": true,
     "strict": true,
     "skipLibCheck": true,
     "esModuleInterop": true,
-    "baseUrl": ".",
+    "noEmit": false,
     "rootDir": "src",
     "outDir": "dist",
-    "noImplicitAny": true,
-    "noImplicitThis": true,
-    "noUnusedLocals": true,
-    "noUnusedParameters": true,
-    "noImplicitReturns": true,
-    "noFallthroughCasesInSwitch": true,
-    "paths": {
-      "@ctor-game/shared": ["src"],
-      "@ctor-game/shared/*": ["src/*"]
-    }
+    "baseUrl": "."
   },
   "include": ["src/**/*"],
   "exclude": [
