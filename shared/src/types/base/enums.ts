@@ -4,8 +4,15 @@ export enum Player {
     Second = 2
 }
 
-// Re-export needed enums
-export { GamePhase } from '../base.js';
+export enum GamePhase {
+    INITIAL = 'INITIAL',
+    CONNECTING = 'CONNECTING',
+    WAITING = 'WAITING',
+    PLAYING = 'PLAYING',
+    GAME_OVER = 'GAME_OVER',
+    FINISHED = 'FINISHED',
+    ERROR = 'ERROR'
+}
 
 // WebSocket error codes
 export enum WebSocketErrorCode {

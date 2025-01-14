@@ -11,16 +11,6 @@ import {
 // Game phase interfaces
 export interface IGamePhaseBase extends IPhase {}
 
-export enum GamePhase {
-    INITIAL = 'INITIAL',
-    CONNECTING = 'CONNECTING',
-    WAITING = 'WAITING',
-    PLAYING = 'PLAYING',
-    GAME_OVER = 'GAME_OVER',
-    FINISHED = 'FINISHED',
-    ERROR = 'ERROR'
-}
-
 export enum GameOutcome {
     WIN = 'WIN',
     LOSS = 'LOSS',
@@ -45,10 +35,7 @@ export enum OperationType {
     END_TURN = 'end_turn'
 }
 
-// Game constants
-export const BOARD_SIZE = 10;
-export const MIN_ADJACENT_FOR_REPLACE = 5;
-export const MAX_PLACE_OPERATIONS = 2;
+// Game constants have been moved to constants.ts
 
 // Error interfaces
 export interface IErrorBase extends IErrorCode, IMessage {}
@@ -108,20 +95,4 @@ export enum ConnectionState {
     ERROR = 'ERROR'
 }
 
-// WebSocket error interfaces
-export interface IWebSocketErrorBase extends IErrorCode {}
-
-export enum WebSocketErrorCode {
-    INVALID_GAME_ID = 'INVALID_GAME_ID',
-    GAME_FULL = 'GAME_FULL',
-    GAME_NOT_FOUND = 'GAME_NOT_FOUND',
-    GAME_ALREADY_STARTED = 'GAME_ALREADY_STARTED',
-    INVALID_MOVE = 'INVALID_MOVE',
-    NOT_YOUR_TURN = 'NOT_YOUR_TURN',
-    GAME_OVER = 'GAME_OVER',
-    GAME_ENDED = 'GAME_ENDED',
-    INVALID_STATE = 'INVALID_STATE',
-    INTERNAL_ERROR = 'INTERNAL_ERROR',
-    SERVER_ERROR = 'SERVER_ERROR',
-    CONNECTION_ERROR = 'CONNECTION_ERROR'
-}
+// WebSocket error interfaces have been moved to base/enums.ts
