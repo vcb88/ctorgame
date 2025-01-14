@@ -70,3 +70,5 @@ shared/scripts/fix_imports_v2.py
 .env.*
 !.env.example
 !.env.dev.example
+*.dot
+*.svg
