@@ -663,6 +663,64 @@ interface ReplayServerEvents {
 }
 ```
 
+### Data Validation
+
+All events in the replay and history system are validated before processing. The validation includes:
+
+```typescript
+// Replay State Validation
+interface ReplayStateValidation {
+    currentMoveIndex: number;   // Must be >= 0
+    totalMoves: number;         // Must be >= 0
+    isPlaying: boolean;         // Must be boolean
+    playbackSpeed: number;      // Must be > 0
+    gameCode: string;          // Must be non-empty string
+}
+
+// History Entry Validation
+interface GameHistoryEntryValidation {
+    gameCode: string;          // Must be non-empty string
+    startTime: string;         // Must be valid timestamp string
+    endTime?: string;          // Optional, must be valid timestamp if present
+    players: string[];         // Must be non-empty array of strings
+    winner?: string;           // Optional string
+    totalMoves: number;        // Must be >= 0
+}
+
+// Move Index Validation
+function validateMoveIndex(index: number, totalMoves: number): void {
+    if (index < 0 || index > totalMoves) {
+        throw new ValidationError('Move index out of bounds');
+    }
+}
+
+// Playback Speed Validation
+function validatePlaybackSpeed(speed: number): void {
+    if (speed <= 0) {
+        throw new ValidationError('Invalid playback speed');
+    }
+}
+```
+
+### Validation Error Handling
+All validation errors are caught and returned to the client with appropriate error messages:
+
+```typescript
+interface ValidationErrorResponse {
+    code: 'VALIDATION_ERROR';
+    message: string;
+    details?: {
+        field: string;
+        error: string;
+    };
+}
+```
+
+Example error responses:
+- Invalid move index: `{ code: 'VALIDATION_ERROR', message: 'Move index 15 is out of bounds [0..10]' }`
+- Invalid speed: `{ code: 'VALIDATION_ERROR', message: 'Invalid playback speed value' }`
+- Invalid game code: `{ code: 'VALIDATION_ERROR', message: 'Invalid game code in history entry' }`
+
 ### Replay Flow Example
 ```mermaid
 sequenceDiagram
