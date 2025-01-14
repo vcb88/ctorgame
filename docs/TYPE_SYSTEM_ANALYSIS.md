@@ -16,6 +16,50 @@
 | /shared/src/types/network/websocket.new.ts | ✅ Done | ✅ | ✅ | ✅ | Already using game/types.ts |
 | /shared/src/types/network/events.new.ts | ✅ Done | ✅ | ✅ | ✅ | Already using PlayerNumber and GameStatus |
 
+## Final Migration Steps
+
+### 1. Dependency Verification
+- [ ] Create dependency graph for new files
+- [ ] Verify all imports are using game/types.ts
+- [ ] Check for any remaining circular dependencies
+- [ ] Validate type consistency across files
+- [ ] Document any remaining type mismatches
+
+### 2. File Replacement
+- [ ] Create backup of all original files
+- [ ] Rename all .new.ts files to their final names:
+  - [ ] game/state.new.ts → game/state.ts
+  - [ ] game/moves.new.ts → game/moves.ts
+  - [ ] game/players.new.ts → game/players.ts
+  - [ ] base/network.new.ts → base/network.ts
+  - [ ] validation/game.new.ts → validation/game.ts
+  - [ ] network/websocket.new.ts → network/websocket.ts
+  - [ ] network/events.new.ts → network/events.ts
+  - [ ] storage/metadata.new.ts → storage/metadata.ts
+  - [ ] redis/state.new.ts → redis/state.ts
+- [ ] Remove old versions after successful testing
+
+### 3. Documentation Updates
+- [ ] Update all import examples in documentation
+- [ ] Add migration guide for dependent code
+- [ ] Document new type system architecture
+- [ ] Update API documentation with new types
+- [ ] Add examples of type usage
+
+### 4. Testing Plan
+- [ ] Create type compatibility tests
+- [ ] Test all type guards
+- [ ] Verify runtime type checks
+- [ ] Test error handling with invalid types
+- [ ] Validate all event type combinations
+
+### 5. Clean Up
+- [ ] Remove backup files
+- [ ] Remove unused type definitions
+- [ ] Clean up development documentation
+- [ ] Archive migration notes
+- [ ] Update CHANGELOG.md
+
 Legend:
 - ✅ Done: File fully migrated and tested
 - 🔄 In Progress: Work started but not complete
