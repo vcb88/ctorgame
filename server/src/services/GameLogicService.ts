@@ -64,6 +64,11 @@ export class GameLogicService {
    * @returns true если ход допустим
    */
   static isValidMove(state: IGameState, move: GameMove, playerNumber: Player): boolean {
+    // Нельзя делать ходы, если игра завершена
+    if (state.gameOver) {
+      return false;
+    }
+
     const { type, position } = move;
     const { x, y } = position;
     const { width, height } = state.board.size;
@@ -313,12 +318,10 @@ export class GameLogicService {
         count: state.currentTurn.count
       } as ITurnState,
       currentPlayer: state.currentPlayer,
-      scores: {
-        [Player.First]: state.scores[Player.First],
-        [Player.Second]: state.scores[Player.Second],
-        player1: state.scores[Player.First],
-        player2: state.scores[Player.Second]
-      },
+      scores: createScores(
+        state.scores[Player.First],
+        state.scores[Player.Second]
+      ),
       isFirstTurn: state.isFirstTurn,
       turnNumber: state.turnNumber
     };
