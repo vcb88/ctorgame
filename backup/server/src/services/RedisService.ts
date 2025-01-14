@@ -1,21 +1,17 @@
 // Game related types
-import type {
-    IGameState,
-    PlayerNumber,
-    GameMove,
-    IGameMove,
-    IPlayer,
-    GameStatus
-} from '@ctor-game/shared/types/game/types.js';
+import { IGameState } from '@ctor-game/shared/types/game/state.js';
+import { Player } from '@ctor-game/shared/types/base/enums.js';
+import { GameMove } from '@ctor-game/shared/types/game/moves.js';
+import type { IServerMove } from '@ctor-game/shared/types/game/moves.js';
+import type { IPlayer } from '@ctor-game/shared/types/game/players.js';
 
 // Redis specific types
-import type {
+import {
     IRedisGameState,
     IRedisPlayerSession,
     IRedisGameRoom,
     IRedisGameEvent
 } from '@ctor-game/shared/types/storage/redis.js';
-
 import { redisClient, REDIS_KEYS, REDIS_EVENTS, withLock, cacheConfig } from '../config/redis.js';
 import { GameLogicService } from './GameLogicService.js';
 
@@ -61,8 +57,8 @@ export class RedisService {
      */
     async updateGameState(
         gameId: string,
-        playerNumber: PlayerNumber,
-        serverMove: Omit<IGameMove, 'player' | 'timestamp'>,
+        playerNumber: Player,
+        serverMove: IServerMove,
         validateMove: boolean = true
     ): Promise<IGameState> {
         return await withLock(gameId, async () => {
@@ -97,7 +93,7 @@ export class RedisService {
     async setPlayerSession(
         socketId: string,
         gameId: string,
-        playerNumber: PlayerNumber
+        playerNumber: number
     ): Promise<void> {
         const session: IRedisPlayerSession = {
             gameId,
@@ -161,7 +157,7 @@ export class RedisService {
     async setGameRoom(gameId: string, players: IPlayer[]): Promise<void> {
         const room: IRedisGameRoom = {
             players,
-            status: players.length === 2 ? 'playing' as GameStatus : 'waiting' as GameStatus,
+            status: players.length === 2 ? 'playing' : 'waiting',
             lastUpdate: Date.now()
         };
 
@@ -318,8 +314,8 @@ export class RedisService {
     /**
      * Получает номер текущего игрока из состояния игры
      */
-    getCurrentPlayer(state: IGameState): PlayerNumber {
-        return (state.currentTurn.moves.length % 2 === 0 ? 1 : 2) as PlayerNumber;
+    getCurrentPlayer(state: IGameState): Player {
+        return state.currentTurn.moves.length % 2 === 0 ? Player.First : Player.Second;
     }
 }
 
