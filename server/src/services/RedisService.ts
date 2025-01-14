@@ -2,11 +2,10 @@
 import type {
     IGameState,
     PlayerNumber,
-    GameMove,
     IGameMove,
     IPlayer,
     GameStatus
-} from '@ctor-game/shared/types/game/types.js';
+} from '@ctor-game/shared/types/game/types';
 
 // Redis specific types
 import type {
@@ -71,11 +70,10 @@ export class RedisService {
                 throw new Error('Game state not found');
             }
 
-            // Convert IServerMove to GameMove
-            const move: GameMove = {
+            // Create game move from server move
+            const move: IGameMove = {
                 ...serverMove,
-                player: playerNumber,
-                timestamp: Date.now()
+                player: playerNumber
             };
 
             if (validateMove) {
@@ -319,7 +317,7 @@ export class RedisService {
      * Получает номер текущего игрока из состояния игры
      */
     getCurrentPlayer(state: IGameState): PlayerNumber {
-        return (state.currentTurn.moves.length % 2 === 0 ? 1 : 2) as PlayerNumber;
+        return state.currentPlayer;
     }
 }
 
