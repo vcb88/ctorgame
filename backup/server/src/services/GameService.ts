@@ -1,17 +1,14 @@
 import { MongoClient, Collection } from 'mongodb';
 // Game types
-import type {
-    IGameState,
-    IPlayer,
-    GameMove,
-    PlayerNumber,
-    GameStatus,
-    IScores
-} from '@ctor-game/shared/types/game/types.js';
-
-import type {
-    GameMetadata
-} from '@ctor-game/shared/types/storage/types.js';
+import {
+    IGameState
+} from '@ctor-game/shared/types/game/state.js';
+import { IPlayer } from '@ctor-game/shared/types/game/players.js';
+import { GameMove } from '@ctor-game/shared/types/game/moves.js';
+import { Player } from '@ctor-game/shared/types/base/enums.js';
+import { GameStatus } from '@ctor-game/shared/types/primitives.js';
+import { IScores } from '@ctor-game/shared/types/game/state.js';
+import { GameMetadata } from '@ctor-game/shared/types/storage/metadata.js';
 
 // Services
 import { GameLogicService } from './GameLogicService.js';
@@ -157,7 +154,7 @@ export class GameService {
         const game: GameMetadata = {
             gameId: normalizedGameId,
             code,
-            status: 'waiting',
+            status: GameStatus.WAITING,
             startTime: new Date().toISOString(),
             lastActivityAt: new Date().toISOString(),
             expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
@@ -178,8 +175,8 @@ export class GameService {
         const normalizedId = gameIdOrCode.toUpperCase();
         const result = await this.gamesCollection.findOne({ 
             $or: [
-                { gameId: normalizedId, status: 'waiting' },
-                { code: normalizedId, status: 'waiting' }
+                { gameId: normalizedId, status: GameStatus.WAITING },
+                { code: normalizedId, status: GameStatus.WAITING }
             ]
         });
         return result;
@@ -191,14 +188,14 @@ export class GameService {
         const result = await this.gamesCollection.findOneAndUpdate(
             { 
                 $or: [
-                    { gameId: normalizedId, status: 'waiting' },
-                    { code: normalizedId, status: 'waiting' }
+                    { gameId: normalizedId, status: GameStatus.WAITING },
+                    { code: normalizedId, status: GameStatus.WAITING }
                 ]
             },
             { 
                 $set: { 
                     'players.second': player.id,
-                    status: 'playing',
+                    status: GameStatus.IN_PROGRESS,
                     lastActivityAt: new Date().toISOString(),
                 }
             },
@@ -212,7 +209,7 @@ export class GameService {
         return result;
     }
 
-    async makeMove(gameId: string, playerNumber: PlayerNumber, move: GameMove): Promise<GameMetadata> {
+    async makeMove(gameId: string, playerNumber: number, move: GameMove): Promise<GameMetadata> {
         const startTime = Date.now();
         await this.ensureInitialized();
         
@@ -233,7 +230,7 @@ export class GameService {
             throw error;
         }
 
-        if (game.status === 'finished') {
+        if (game.status === GameStatus.FINISHED) {
             const error = toErrorWithStack(new Error('Game is already completed'));
             logger.game.validation(false, 'game_finished', {
                 gameId,
@@ -250,7 +247,7 @@ export class GameService {
         const updateData: Partial<GameMetadata> = { 
             currentState: newState,
             lastActivityAt: now,
-            status: newState.gameOver ? 'finished' : 'playing',
+            status: newState.gameOver ? GameStatus.FINISHED : GameStatus.IN_PROGRESS,
             totalTurns: (game.totalTurns || 0) + 1,
             currentPlayer: newState.currentPlayer
         };
@@ -310,9 +307,9 @@ export class GameService {
         if (!game) return null;
         
         if (game.players.first === playerId) {
-            return { id: playerId, number: 1 as PlayerNumber };
+            return { id: playerId, number: Player.First };
         } else if (game.players.second === playerId) {
-            return { id: playerId, number: 2 as PlayerNumber };
+            return { id: playerId, number: Player.Second };
         }
         return null;
     }
@@ -320,7 +317,7 @@ export class GameService {
     async getSavedGames(): Promise<GameMetadata[]> {
         await this.ensureInitialized();
         return this.gamesCollection.find({
-            status: 'finished'
+            status: GameStatus.FINISHED
         }).sort({ endTime: -1 }).limit(50).toArray();
     }
 
@@ -339,7 +336,7 @@ export class GameService {
         return game.currentState;
     }
 
-    async finishGame(gameId: string, winner: PlayerNumber | null, scores: IScores): Promise<void> {
+    async finishGame(gameId: string, winner: Player | null, scores: IScores): Promise<void> {
         await this.ensureInitialized();
         const now = new Date().toISOString();
         const game = await this.gamesCollection.findOne({ gameId });
@@ -349,7 +346,7 @@ export class GameService {
             { gameId },
             {
                 $set: {
-                    status: 'finished',
+                    status: GameStatus.FINISHED,
                     endTime: now,
                     lastActivityAt: now,
                     winner: winner !== null ? winner : undefined,
