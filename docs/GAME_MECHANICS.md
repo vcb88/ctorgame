@@ -49,11 +49,12 @@ enum Player {
 
 ### Move Validation
 A move is valid if:
-1. It's the player's turn (matches `currentPlayer`)
-2. The target cell is empty (`null` value)
-3. The player has operations remaining (`placeOperationsLeft > 0`)
-4. The coordinates are within board bounds (considering wrapping)
-5. Special first turn conditions are met:
+1. The game is not over (`gameOver` is false)
+2. It's the player's turn (matches `currentPlayer`)
+3. The target cell is empty (`null` value)
+4. The player has operations remaining (`placeOperationsLeft > 0`)
+5. The coordinates are within board bounds (considering wrapping)
+6. Special first turn conditions are met:
    - If `isFirstTurn` is true, only one operation is allowed
    - Move count must be less than operation limit
 
