@@ -1,6 +1,9 @@
-import type { IGameState } from '../game/state.js';
-import type { IGameMoveComplete } from '../game/moves.js';
-import type { PlayerNumber } from '../game/players.js';
+import type { 
+    IGameState, 
+    IGameMoveComplete, 
+    PlayerNumber,
+    GameStatus 
+} from '../game/types.js';
 
 /**
  * WebSocket event types
@@ -47,20 +50,20 @@ export type ServerToClientEvents = {
     'game-joined': (data: { 
         readonly gameId: string; 
         readonly eventId: string; 
-        readonly phase: string 
+        readonly phase: GameStatus 
     }) => void;
 
     'game-started': (data: { 
         readonly gameState: IGameState; 
         readonly currentPlayer: PlayerNumber; 
         readonly eventId: string; 
-        readonly phase: string 
+        readonly phase: GameStatus 
     }) => void;
 
     'game-state-updated': (data: { 
         readonly gameState: IGameState; 
         readonly currentPlayer: PlayerNumber; 
-        readonly phase: string 
+        readonly phase: GameStatus 
     }) => void;
 
     'available-replaces': (data: { 

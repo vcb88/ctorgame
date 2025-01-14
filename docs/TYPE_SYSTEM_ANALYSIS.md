@@ -9,7 +9,7 @@
 | /shared/src/types/storage/metadata.ts | ✅ Done | ✅ | ✅ | ✅ | Using new type system |
 | /shared/src/types/redis/state.ts | ✅ Done | ✅ | ✅ | ✅ | New version with type guards |
 | /shared/src/types/validation/game.ts | 🔄 In Progress | ✅ | ✅ | ❌ | Using new types and added guards |
-| /shared/src/types/base/network.ts | 🔄 In Progress | ✅ | ✅ | ❌ | Replaced enums with const objects |
+| /shared/src/types/base/network.ts | ✅ Done | ✅ | ✅ | ✅ | Using types from game/types.ts |
 | /shared/src/types/network/websocket.ts | ✅ Done | ✅ | ✅ | ✅ | New version already using updated types |
 | /shared/src/types/game/moves.ts | ✅ Done | ✅ | ✅ | ✅ | Using types from game/types.ts |
 | /shared/src/types/game/players.ts | ✅ Done | ✅ | ✅ | ✅ | Using types from game/types.ts |
