@@ -13,9 +13,25 @@
 ## Files Requiring Migration
 
 ### Server Services (Priority High)
-1. ./server/src/services/GameService.new.ts
-2. ./server/src/services/GameStorageService.new.ts
-3. ./server/src/services/GameService.next.ts
+✅ GameService migration completed:
+- Migrated GameService.next.ts to new type system
+- Added new methods to GameStorageService and RedisService
+- Combined functionality from old and new versions
+
+TODO: Add tests for:
+1. GameService:
+   - Test game code generation and uniqueness
+   - Test state management with Redis
+   - Test proper cleanup and expiration
+   - Test interaction with EventService
+2. GameStorageService:
+   - Test new findGameByCode method
+   - Test markGameExpired method
+3. RedisService:
+   - Test expireGameState method
+   - Test deleteGameState method
+
+### Server Services Still Requiring Migration
 
 ### WebSocket Layer (Priority High)
 4. ./server/src/websocket/GameServer.events.ts

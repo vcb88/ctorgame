@@ -299,6 +299,33 @@ export class GameStorageService {
     }
 
     /**
+     * Find a game by its connection code
+     * @param code 4-digit game connection code
+     * @returns game metadata or null if not found
+     */
+    async findGameByCode(code: string): Promise<GameMetadata | null> {
+        return await this.gamesCollection.findOne({ code });
+    }
+
+    /**
+     * Mark a game as expired
+     * @param gameId unique game identifier
+     */
+    async markGameExpired(gameId: string): Promise<void> {
+        const now = new Date();
+        await this.gamesCollection.updateOne(
+            { gameId },
+            {
+                $set: {
+                    status: 'expired',
+                    lastActivityAt: now.toISOString(),
+                    expiresAt: now.toISOString()
+                }
+            }
+        );
+    }
+
+    /**
      * Get full game history including metadata, moves and details
      * @param gameId unique game identifier
      * @returns complete game history

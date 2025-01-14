@@ -319,6 +319,35 @@ export class RedisService {
     getCurrentPlayer(state: IGameState): PlayerNumber {
         return state.currentPlayer;
     }
+
+    /**
+     * Set TTL for game state
+     * @param gameId game identifier
+     * @param ttl TTL in seconds
+     */
+    async expireGameState(gameId: string, ttl: number): Promise<void> {
+        await redisClient
+            .multi()
+            .expire(REDIS_KEYS.GAME_STATE(gameId), ttl)
+            .expire(REDIS_KEYS.GAME_ROOM(gameId), ttl)
+            .expire(REDIS_KEYS.GAME_EVENTS(gameId), ttl)
+            .expire(REDIS_KEYS.GAME_STATS, ttl)
+            .exec();
+    }
+
+    /**
+     * Delete game state immediately
+     * @param gameId game identifier
+     */
+    async deleteGameState(gameId: string): Promise<void> {
+        await redisClient
+            .multi()
+            .del(REDIS_KEYS.GAME_STATE(gameId))
+            .del(REDIS_KEYS.GAME_ROOM(gameId))
+            .del(REDIS_KEYS.GAME_EVENTS(gameId))
+            .hdel(REDIS_KEYS.GAME_STATS, gameId)
+            .exec();
+    }
 }
 
 // Экспортируем синглтон

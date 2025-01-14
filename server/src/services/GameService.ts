@@ -1,5 +1,3 @@
-import { MongoClient, Collection } from 'mongodb';
-// Game types
 import type {
     IGameState,
     IPlayer,
@@ -14,354 +12,303 @@ import type {
     GameDetails
 } from '@ctor-game/shared/src/types/storage/metadata';
 
-// Services
 import { GameLogicService } from './GameLogicService.js';
+import { GameStorageService } from './GameStorageService.js';
+import { EventService } from './EventService.js';
+import { RedisService } from './RedisService.js';
 import { logger } from '../utils/logger.js';
 import { toErrorWithStack } from '../types/error.js';
 
-export class GameService {
-    private gamesCollection!: Collection<GameMetadata>;
-    private mongoClient!: MongoClient;
-
-    constructor(
-        private readonly mongoUrl: string = process.env.MONGODB_URL || 'mongodb://localhost:27017'
-    ) {
-        // Инициализация будет выполнена при первом запросе
+export class GameServiceError extends Error {
+    constructor(message: string) {
+        super(message);
+        this.name = 'GameServiceError';
     }
+}
 
+/**
+ * Main service for game operations, coordinating between storage, Redis, and events
+ */
+export class GameService {
     private initialized = false;
     private initializationPromise: Promise<void> | null = null;
 
-    private async ensureInitialized() {
+    constructor(
+        private readonly storageService: GameStorageService,
+        private readonly eventService: EventService,
+        private readonly redisService: RedisService
+    ) {}
+
+    async initialize(): Promise<void> {
         if (this.initialized) return;
 
-        logger.debug('Initializing GameService', {
-            component: 'GameService',
-            context: {
-                mongoUrl: this.mongoUrl
-            }
-        });
-
         if (!this.initializationPromise) {
-            this.initializationPromise = this.initializeDatabase().then(() => {
+            const startTime = Date.now();
+            this.initializationPromise = Promise.all([
+                this.storageService.connect(),
+                this.redisService.connect()
+            ]).then(() => {
                 this.initialized = true;
                 logger.info('GameService initialized successfully', {
-                    component: 'GameService'
+                    component: 'GameService',
+                    duration: Date.now() - startTime
                 });
             });
         }
         await this.initializationPromise;
     }
 
-    private async initializeDatabase() {
-        const maxRetries = 5;
-        const retryDelay = 5000; // 5 seconds
-        
-        for (let i = 0; i < maxRetries; i++) {
-            try {
-                logger.info(`Initializing MongoDB connection`, {
-                    component: 'Database',
-                    context: {
-                        attempt: i + 1,
-                        maxRetries,
-                        mongoUrl: this.mongoUrl
-                    }
-                });
-
-                this.mongoClient = new MongoClient(this.mongoUrl, {
-                    serverSelectionTimeoutMS: 5000,
-                    connectTimeoutMS: 10000,
-                });
-                
-                await this.mongoClient.connect();
-                logger.info('MongoDB connection established', {
-                    component: 'Database'
-                });
-                
-                this.gamesCollection = this.mongoClient.db('ctorgame').collection<GameMetadata>('games');
-                
-                // Create indexes
-                await this.gamesCollection.createIndex({ code: 1 }, { unique: true });
-                await this.gamesCollection.createIndex({ status: 1 });
-                await this.gamesCollection.createIndex({ startTime: 1 });
-                await this.gamesCollection.createIndex({ lastActivityAt: 1 });
-                await this.gamesCollection.createIndex({ gameId: 1 });
-                
-                logger.info('MongoDB indexes created', {
-                    component: 'Database',
-                    context: {
-                        indexes: ['code', 'status', 'startTime', 'lastActivityAt', 'gameId']
-                    }
-                });
-                return; // Success - exit the retry loop
-            } catch (error) {
-                const dbError = toErrorWithStack(error);
-                logger.error('MongoDB connection failed', {
-                    component: 'Database',
-                    context: {
-                        attempt: i + 1,
-                        maxRetries,
-                        retryDelay
-                    },
-                    error: dbError
-                });
-
-                if (i < maxRetries - 1) {
-                    logger.info(`Scheduling retry`, {
-                        component: 'Database',
-                        context: {
-                            nextAttempt: i + 2,
-                            delaySeconds: retryDelay/1000
-                        }
-                    });
-                    await new Promise(resolve => setTimeout(resolve, retryDelay));
-                } else {
-                    logger.error('Max MongoDB connection retries reached', {
-                        component: 'Database',
-                        error: dbError
-                    });
-                    throw error;
-                }
-            }
+    private async ensureInitialized(): Promise<void> {
+        if (!this.initialized) {
+            await this.initialize();
         }
     }
 
-    async createGame(gameId: string, player: IPlayer, initialState: IGameState): Promise<GameMetadata> {
+    async createGame(playerId: string, gameId: string): Promise<GameMetadata> {
+        const startTime = Date.now();
         await this.ensureInitialized();
-        
-        logger.game.state('creating', initialState, {
-            gameId,
-            playerId: player.id
-        });
 
-        const normalizedGameId = gameId.toUpperCase();
-        let code: string;
-        let exists: GameMetadata | null;
-        let attempts = 0;
-        
-        do {
-            code = Math.floor(Math.random() * 10000).toString().padStart(4, '0');
-            exists = await this.gamesCollection.findOne({ code });
-            attempts++;
+        try {
+            // Generate game code (from old version)
+            let code: string;
+            let exists: GameMetadata | null;
+            do {
+                code = Math.floor(Math.random() * 10000).toString().padStart(4, '0');
+                exists = await this.storageService.findGameByCode(code);
+            } while (exists);
+
+            // Create initial game state
+            const initialState = GameLogicService.createInitialState();
             
-            logger.debug('Generated game code', {
+            // Create game in storage with code
+            const game = await this.storageService.createGame(playerId, gameId, code);
+            
+            // Store state in Redis
+            await this.redisService.setGameState(gameId, initialState);
+            
+            // Create game event
+            await this.eventService.createGameCreatedEvent(gameId, GameStatus.WAITING);
+
+            logger.game.info('game_created', {
                 component: 'GameService',
-                context: {
-                    gameId,
-                    code,
-                    attempt: attempts,
-                    exists: !!exists
-                }
+                gameId,
+                playerId,
+                code,
+                duration: Date.now() - startTime
             });
-        } while (exists);
 
-        const game: GameMetadata = {
-            gameId: normalizedGameId,
-            code,
-            status: 'waiting',
-            startTime: new Date().toISOString(),
-            lastActivityAt: new Date().toISOString(),
-            expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
-            players: {
-                first: player.id
-            },
-            totalTurns: 0,
-            boardSize: initialState.size,
-            currentState: initialState
-        };
-
-        await this.gamesCollection.insertOne(game);
-        return game;
+            return game;
+        } catch (error) {
+            logger.error('Failed to create game', {
+                component: 'GameService',
+                error: toErrorWithStack(error),
+                gameId,
+                playerId,
+                duration: Date.now() - startTime
+            });
+            throw new GameServiceError(`Failed to create game: ${error.message}`);
+        }
     }
 
     async findGame(gameIdOrCode: string): Promise<GameMetadata | null> {
         await this.ensureInitialized();
-        const normalizedId = gameIdOrCode.toUpperCase();
-        const result = await this.gamesCollection.findOne({ 
-            $or: [
-                { gameId: normalizedId, status: 'waiting' },
-                { code: normalizedId, status: 'waiting' }
-            ]
-        });
-        return result;
+        return this.storageService.findGame(gameIdOrCode);
     }
 
-    async joinGame(gameIdOrCode: string, player: IPlayer): Promise<GameMetadata> {
-        await this.ensureInitialized();
-        const normalizedId = gameIdOrCode.toUpperCase();
-        const result = await this.gamesCollection.findOneAndUpdate(
-            { 
-                $or: [
-                    { gameId: normalizedId, status: 'waiting' },
-                    { code: normalizedId, status: 'waiting' }
-                ]
-            },
-            { 
-                $set: { 
-                    'players.second': player.id,
-                    status: 'playing',
-                    lastActivityAt: new Date().toISOString(),
-                }
-            },
-            { returnDocument: 'after' }
-        );
-
-        if (!result) {
-            throw toErrorWithStack(new Error('Game not found or already completed'));
-        }
-
-        return result;
-    }
-
-    async makeMove(gameId: string, playerNumber: PlayerNumber, move: IGameMove): Promise<GameMetadata> {
+    async joinGame(gameId: string, playerId: string): Promise<GameMetadata> {
         const startTime = Date.now();
         await this.ensureInitialized();
-        
-        logger.game.move('processing', move, {
-            gameId,
-            playerNumber,
-            timestamp: new Date().toISOString()
-        });
 
-        const game = await this.gamesCollection.findOne({ gameId });
-        if (!game || !game.currentState) {
-            const error = toErrorWithStack(new Error('Game not found or invalid state'));
-            logger.game.validation(false, 'game_not_found', {
-                gameId,
-                exists: !!game,
-                hasState: !!game?.currentState
-            });
-            throw error;
-        }
+        try {
+            // Join game in storage
+            const game = await this.storageService.joinGame(gameId, playerId);
+            
+            // Get current state from Redis
+            const state = await this.redisService.getGameState(gameId);
+            if (!state) {
+                throw new GameServiceError('Game state not found');
+            }
 
-        if (game.status === 'finished') {
-            const error = toErrorWithStack(new Error('Game is already completed'));
-            logger.game.validation(false, 'game_finished', {
-                gameId,
-                status: game.status
-            });
-            throw error;
-        }
+            // Create player joined event
+            await this.eventService.createPlayerConnectedEvent(gameId, playerId, 2 as PlayerNumber);
 
-        // Применяем ход и получаем новое состояние
-        const newState = GameLogicService.applyMove(game.currentState, move, playerNumber);
+            // If game is now full, create game started event
+            if (game.players.first && game.players.second) {
+                await this.eventService.createGameStartedEvent(gameId, state);
+            }
 
-        // Обновляем состояние игры
-        const now = new Date().toISOString();
-        const updateData: Partial<GameMetadata> = { 
-            currentState: newState,
-            lastActivityAt: now,
-            status: newState.gameOver ? 'finished' : 'playing',
-            totalTurns: (game.totalTurns || 0) + 1,
-            currentPlayer: newState.currentPlayer
-        };
-
-        if (newState.gameOver) {
-            updateData.endTime = now;
-            updateData.winner = newState.winner || undefined;
-            updateData.finalScore = newState.scores;
-            updateData.duration = (new Date(now).getTime() - new Date(game.startTime).getTime()) / 1000;
-        }
-
-        const result = await this.gamesCollection.findOneAndUpdate(
-            { gameId },
-            { $set: updateData },
-            { returnDocument: 'after' }
-        );
-
-        if (!result) {
-            const error = toErrorWithStack(new Error('Failed to update game state'));
-            logger.error('State update failed', {
+            logger.game.info('game_joined', {
                 component: 'GameService',
-                context: {
-                    gameId,
-                    move
-                },
-                error
+                gameId,
+                playerId,
+                duration: Date.now() - startTime
             });
-            throw error;
+
+            return game;
+        } catch (error) {
+            logger.error('Failed to join game', {
+                component: 'GameService',
+                error: toErrorWithStack(error),
+                gameId,
+                playerId,
+                duration: Date.now() - startTime
+            });
+            throw new GameServiceError(`Failed to join game: ${error.message}`);
         }
-
-        const duration = Date.now() - startTime;
-        logger.game.performance('make_move', duration, {
-            gameId,
-            move,
-            success: true
-        });
-
-        logger.game.state('updated', result.currentState, {
-            gameId,
-            playerNumber,
-            move,
-            duration
-        });
-
-        return result;
     }
 
-    async getGameState(gameId: string): Promise<IGameState | null> {
+    async makeMove(gameId: string, playerNumber: PlayerNumber, move: IGameMove): Promise<IGameState> {
+        const startTime = Date.now();
         await this.ensureInitialized();
-        const game = await this.gamesCollection.findOne({ gameId });
-        return game?.currentState || null;
+
+        try {
+            // Get current state
+            const currentState = await this.redisService.getGameState(gameId);
+            if (!currentState) {
+                throw new GameServiceError('Game state not found');
+            }
+
+            // Validate and apply move
+            if (!GameLogicService.isValidMove(currentState, move, playerNumber)) {
+                throw new GameServiceError('Invalid move');
+            }
+
+            const newState = GameLogicService.applyMove(currentState, move, playerNumber);
+
+            // Update state in Redis
+            await this.redisService.setGameState(gameId, newState);
+
+            // Record move in storage
+            await this.storageService.recordMove(gameId, move);
+
+            // Create move event
+            await this.eventService.createGameMoveEvent(gameId, playerNumber, move, newState);
+
+            // Check for game end
+            if (newState.gameOver) {
+                const scores: IGameScores = {
+                    player1: newState.scores.player1,
+                    player2: newState.scores.player2
+                };
+                await this.finishGame(gameId, newState.winner as PlayerNumber, scores);
+            }
+
+            logger.game.info('move_made', {
+                component: 'GameService',
+                gameId,
+                playerNumber,
+                moveType: move.type,
+                duration: Date.now() - startTime
+            });
+
+            return newState;
+        } catch (error) {
+            logger.error('Failed to make move', {
+                component: 'GameService',
+                error: toErrorWithStack(error),
+                gameId,
+                playerNumber,
+                move,
+                duration: Date.now() - startTime
+            });
+            throw new GameServiceError(`Failed to make move: ${error.message}`);
+        }
     }
 
-    async getPlayer(gameId: string, playerId: string): Promise<IPlayer | null> {
+    async finishGame(
+        gameId: string,
+        winner: PlayerNumber,
+        scores: IGameScores
+    ): Promise<void> {
+        const startTime = Date.now();
         await this.ensureInitialized();
-        const game = await this.gamesCollection.findOne({ gameId });
-        if (!game) return null;
-        
-        if (game.players.first === playerId) {
-            return { id: playerId, number: 1 as PlayerNumber };
-        } else if (game.players.second === playerId) {
-            return { id: playerId, number: 2 as PlayerNumber };
+
+        try {
+            // Update storage
+            await this.storageService.finishGame(gameId, winner, scores);
+
+            // Create game ended event
+            const state = await this.redisService.getGameState(gameId);
+            await this.eventService.createGameEndedEvent(gameId, winner, state);
+
+            // Clean up Redis state (keep for a while for potential analysis)
+            await this.redisService.expireGameState(gameId, 3600); // 1 hour
+
+            logger.game.info('game_finished', {
+                component: 'GameService',
+                gameId,
+                winner,
+                scores,
+                duration: Date.now() - startTime
+            });
+        } catch (error) {
+            logger.error('Failed to finish game', {
+                component: 'GameService',
+                error: toErrorWithStack(error),
+                gameId,
+                winner,
+                scores,
+                duration: Date.now() - startTime
+            });
+            throw new GameServiceError(`Failed to finish game: ${error.message}`);
         }
-        return null;
     }
 
     async getSavedGames(): Promise<GameMetadata[]> {
         await this.ensureInitialized();
-        return this.gamesCollection.find({
-            status: 'finished'
-        }).sort({ endTime: -1 }).limit(50).toArray();
+        return this.storageService.getSavedGames();
     }
 
     async getGameHistory(gameId: string): Promise<number> {
         await this.ensureInitialized();
-        const game = await this.gamesCollection.findOne({ gameId });
-        if (!game) return 0;
-        return game.totalTurns || 0;
+        return this.storageService.getGameHistory(gameId);
     }
 
-    async getGameStateAtMove(gameId: string, _moveNumber: number): Promise<IGameState | null> {
+    async getGameStateAtMove(gameId: string, moveNumber: number): Promise<IGameState | null> {
         await this.ensureInitialized();
-        const game = await this.gamesCollection.findOne({ gameId });
-        if (!game || !game.currentState) return null;
-        // TODO: Implement getting state at specific move number
-        return game.currentState;
+        return this.storageService.getGameStateAtMove(gameId, moveNumber);
     }
 
-    async finishGame(gameId: string, winner: PlayerNumber | null, scores: IGameScores): Promise<void> {
+    async expireGame(gameId: string): Promise<void> {
+        const startTime = Date.now();
         await this.ensureInitialized();
-        const now = new Date().toISOString();
-        const game = await this.gamesCollection.findOne({ gameId });
-        if (!game) return;
 
-        await this.gamesCollection.updateOne(
-            { gameId },
-            {
-                $set: {
-                    status: 'finished',
-                    endTime: now,
-                    lastActivityAt: now,
-                    winner: winner !== null ? winner : undefined,
-                    finalScore: scores,
-                    duration: (new Date(now).getTime() - new Date(game.startTime).getTime()) / 1000
-                }
-            }
-        );
+        try {
+            // Get current state before expiring
+            const state = await this.redisService.getGameState(gameId);
+            
+            // Create expired event
+            await this.eventService.createGameExpiredEvent(gameId);
+            
+            // Clean up Redis state
+            await this.redisService.deleteGameState(gameId);
+
+            // Update storage status
+            await this.storageService.markGameExpired(gameId);
+
+            logger.game.info('game_expired', {
+                component: 'GameService',
+                gameId,
+                state,
+                duration: Date.now() - startTime
+            });
+        } catch (error) {
+            logger.error('Failed to expire game', {
+                component: 'GameService',
+                error: toErrorWithStack(error),
+                gameId,
+                duration: Date.now() - startTime
+            });
+            throw new GameServiceError(`Failed to expire game: ${error.message}`);
+        }
     }
 
     async disconnect(): Promise<void> {
-        await this.mongoClient?.close();
+        await Promise.all([
+            this.storageService.disconnect(),
+            this.redisService.disconnect()
+        ]);
+        this.initialized = false;
+        this.initializationPromise = null;
     }
 }
