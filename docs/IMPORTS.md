@@ -18,24 +18,21 @@ The project now uses a modular import system for shared types and utilities. Ins
 
 ## Examples
 
-### Before
+### Before (pre-NodeNext)
 ```typescript
-import { 
-    IGameState, 
-    IPlayer, 
-    IRedisGameState,
-    GameMove 
-} from '@ctor-game/shared';
+import { IGameState, GameMove } from '@ctor-game/shared/game';
 ```
 
-### After
+### After (with NodeNext)
 ```typescript
 // Game related types
-import { IGameState, GameMove } from '@ctor-game/shared/game';
-import { IPlayer } from '@ctor-game/shared/game';
+import { IGameState, GameMove } from '@ctor-game/shared/game.js';
 
 // Redis specific types
-import { IRedisGameState } from '@ctor-game/shared/redis';
+import { IRedisGameState } from '@ctor-game/shared/redis.js';
+
+// Type-only imports
+import type { IPlayer } from '@ctor-game/shared/game.js';
 ```
 
 ## Benefits
@@ -48,11 +45,31 @@ import { IRedisGameState } from '@ctor-game/shared/redis';
 
 ## Best Practices
 
-1. Import only from specific domains
-2. Group imports by domain
-3. Add comments to clarify import groups
+1. Always include .js extension for imports in NodeNext mode
+2. Use type-only imports when possible
+3. Group imports by domain and add comments
 4. Keep related types in the same import statement
-5. Use basic types from main entry point (`@ctor-game/shared`)
+5. Place runtime imports before type imports
+
+## NodeNext Module Resolution
+
+The project uses TypeScript's NodeNext module resolution, which requires:
+
+1. Always including the .js extension in imports
+2. Using ESM-style imports
+3. Separating runtime and type imports when possible
+
+### Common Patterns
+
+```typescript
+// Runtime imports first
+import { GameStatus, validateMove } from '@ctor-game/shared/game.js';
+import { EventCache } from '@ctor-game/shared/cache.js';
+
+// Type imports second
+import type { IGameState } from '@ctor-game/shared/game.js';
+import type { IEventConfig } from '@ctor-game/shared/cache.js';
+```
 
 ## Migration Guide
 
