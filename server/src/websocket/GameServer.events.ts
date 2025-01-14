@@ -1,31 +1,19 @@
 import { Server as HttpServer } from 'http';
-import { Server as SocketIOServer } from 'socket.io';
+import { Server as SocketIOServer, Socket } from 'socket.io';
 import type {
-    GameSocket,
-    GameServer as GameServerType,
-    GameServerConfig,
-    GameServerOptions
-} from './types.js';
-
-// Import event types
-import type {
-    GameEvent,
-    IGameCreatedEvent,
-    IGameStartedEvent,
-    IGameMoveEvent,
-    IGameEndedEvent,
-    IGameExpiredEvent,
-    IPlayerConnectedEvent,
-    IPlayerDisconnectedEvent,
-    IGameErrorEvent,
-    validateGameEvent
-} from '@ctor-game/shared/src/types/network/events.js';
-
-import type {
-    WebSocketEvent,
+    IWebSocketEvent,
     WebSocketErrorCode,
-    ServerToClientEvents
+    ServerToClientEvents,
+    ClientToServerEvents,
+    InterServerEvents,
+    ISocketData,
+    IWebSocketServerConfig,
+    IWebSocketServerOptions
 } from '@ctor-game/shared/src/types/network/websocket.js';
+
+// Define socket types using imported interfaces
+type GameSocket = Socket<ClientToServerEvents, ServerToClientEvents, InterServerEvents, ISocketData>;
+type GameServerType = SocketIOServer<ClientToServerEvents, ServerToClientEvents, InterServerEvents, ISocketData>;
 
 import type {
     IGameState,
@@ -41,7 +29,7 @@ import { GameLogicService } from '../services/GameLogicService.js';
 import { EventService } from '../services/EventService.js';
 import { logger } from '../utils/logger.js';
 
-const DEFAULT_CONFIG: GameServerConfig = {
+const DEFAULT_CONFIG: IWebSocketServerConfig = {
     cors: {
         origin: "*",
         methods: ["GET", "POST"]
@@ -62,14 +50,14 @@ export class GameServer {
     private eventService: EventService;
     private reconnectTimeout: number;
 
-    public static getInstance(httpServer: HttpServer, options: GameServerOptions = {}): GameServer {
+    public static getInstance(httpServer: HttpServer, options: IWebSocketServerOptions = {}): GameServer {
         if (!GameServer.instance) {
             GameServer.instance = new GameServer(httpServer, options);
         }
         return GameServer.instance;
     }
 
-    private constructor(httpServer: HttpServer, options: GameServerOptions) {
+    private constructor(httpServer: HttpServer, options: IWebSocketServerOptions) {
         if ((global as any).io) {
             (global as any).io.close();
         }
@@ -120,7 +108,7 @@ export class GameServer {
             await socket.join(gameId);
 
             const event = await this.eventService.createGameCreatedEvent(gameId, GameStatus.WAITING);
-            if (!validateGameEvent(event)) {
+            if (!isGameEvent(event)) {
                 throw new Error('Invalid game created event');
             }
 
