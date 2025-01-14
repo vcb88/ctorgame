@@ -1,251 +1,327 @@
-import Redis from 'ioredis';
+// Game related types
 import type {
     IGameState,
-    IGameMove,
     PlayerNumber,
-    UUID,
+    GameMove,
+    IGameMove,
+    IPlayer,
     GameStatus
-} from '@ctor-game/shared/types/core/base.js';
+} from '@ctor-game/shared/types/game/types.js';
 
+// Redis specific types
 import type {
-    IRedisConfig,
-    IRedisTTL,
     IRedisGameState,
     IRedisPlayerSession,
     IRedisGameRoom,
-    IRedisGameEvent,
-    REDIS_KEYS
-} from '@ctor-game/shared/types/storage/redis.new.js';
+    IRedisGameEvent
+} from '@ctor-game/shared/types/storage/redis.js';
 
-import { GameLogicService } from './GameLogicService.new.js';
-import { logger } from '../utils/logger.js';
-
-/**
- * Lock manager for Redis operations
- */
-class RedisLock {
-    constructor(private readonly redis: Redis) {}
-
-    async acquire(key: string, timeout: number = 5000): Promise<boolean> {
-        const lockId = crypto.randomUUID();
-        const acquired = await this.redis.set(
-            `lock:${key}`,
-            lockId,
-            'NX',
-            'PX',
-            timeout
-        );
-        return acquired === 'OK';
-    }
-
-    async release(key: string): Promise<void> {
-        await this.redis.del(`lock:${key}`);
-    }
-}
+import { redisClient, REDIS_KEYS, REDIS_EVENTS, withLock, cacheConfig } from '../config/redis.js';
+import { GameLogicService } from './GameLogicService.js';
 
 export class RedisService {
-    private readonly redis: Redis;
-    private readonly lock: RedisLock;
-    private readonly config: IRedisConfig;
-    private readonly ttl: IRedisTTL;
-
-    constructor(config: IRedisConfig, ttl: IRedisTTL) {
-        this.config = config;
-        this.ttl = ttl;
-        this.redis = new Redis(config);
-        this.lock = new RedisLock(this.redis);
-
-        // Setup error handler
-        this.redis.on('error', (error) => {
-            logger.error('Redis error', {
-                component: 'RedisService',
-                error
-            });
-        });
-    }
-
     /**
-     * Game State Management
+     * Сохраняет состояние игры
      */
-    async setGameState(gameId: UUID, state: IGameState): Promise<void> {
+    async setGameState(gameId: string, state: IGameState): Promise<void> {
         const redisState: IRedisGameState = {
             ...state,
-            lastUpdate: Date.now(),
-            version: (state as IRedisGameState).version ?? 0 + 1
+            lastUpdate: Date.now()
         };
 
-        await this.withLock(gameId, async () => {
-            await this.redis
+        await withLock(gameId, async () => {
+            await redisClient
                 .multi()
                 .set(
                     REDIS_KEYS.GAME_STATE(gameId),
                     JSON.stringify(redisState),
                     'EX',
-                    this.ttl.gameState
+                    cacheConfig.ttl.gameState
                 )
-                .publish('game:state:updated', JSON.stringify({ gameId, state: redisState }))
+                .publish(REDIS_EVENTS.GAME_STATE_UPDATED, JSON.stringify({ gameId, state: redisState }))
                 .exec();
         });
     }
 
-    async getGameState(gameId: UUID): Promise<IGameState | null> {
-        const data = await this.redis.get(REDIS_KEYS.GAME_STATE(gameId));
-        if (!data) return null;
+    /**
+     * Получает состояние игры
+     */
+    async getGameState(gameId: string): Promise<IGameState | null> {
+        const state = await redisClient.get(REDIS_KEYS.GAME_STATE(gameId));
+        if (!state) return null;
 
-        const redisState = JSON.parse(data) as IRedisGameState;
-        // Remove Redis-specific fields
-        const { lastUpdate, version, ...gameState } = redisState;
+        const redisState: IRedisGameState & IGameState = JSON.parse(state);
+        // Исключаем служебные поля при возврате
+        const { lastUpdate, ...gameState } = redisState as any;
         return gameState;
     }
 
+    /**
+     * Обновляет состояние игры после хода
+     */
     async updateGameState(
-        gameId: UUID,
+        gameId: string,
         playerNumber: PlayerNumber,
-        move: IGameMove,
+        serverMove: Omit<IGameMove, 'player' | 'timestamp'>,
         validateMove: boolean = true
     ): Promise<IGameState> {
-        return await this.withLock(gameId, async () => {
-            const state = await this.getGameState(gameId);
-            if (!state) throw new Error('Game state not found');
-
-            if (validateMove) {
-                const isValid = GameLogicService.isValidMove(state, move, playerNumber);
-                if (!isValid) throw new Error('Invalid move');
+        return await withLock(gameId, async () => {
+            const currentState = await this.getGameState(gameId);
+            if (!currentState) {
+                throw new Error('Game state not found');
             }
 
-            const newState = GameLogicService.applyMove(state, move, playerNumber);
+            // Convert IServerMove to GameMove
+            const move: GameMove = {
+                ...serverMove,
+                player: playerNumber,
+                timestamp: Date.now()
+            };
+
+            if (validateMove) {
+                const isValid = GameLogicService.isValidMove(currentState, move, playerNumber);
+                if (!isValid) {
+                    throw new Error('Invalid move');
+                }
+            }
+
+            const newState = GameLogicService.applyMove(currentState, move, playerNumber);
             await this.setGameState(gameId, newState);
-
-            // Add move to event history
-            await this.addGameEvent({
-                id: crypto.randomUUID(),
-                gameId,
-                type: 'move',
-                timestamp: Date.now(),
-                playerNumber,
-                data: { move, state: newState }
-            });
-
             return newState;
         });
     }
 
     /**
-     * Player Session Management
+     * Сохраняет сессию игрока
      */
     async setPlayerSession(
-        socketId: UUID,
-        gameId: UUID,
-        playerNumber: PlayerNumber,
-        reconnectTimeout?: number
+        socketId: string,
+        gameId: string,
+        playerNumber: PlayerNumber
     ): Promise<void> {
         const session: IRedisPlayerSession = {
             gameId,
             playerNumber,
-            lastActivity: Date.now(),
-            reconnectUntil: reconnectTimeout ? Date.now() + reconnectTimeout : undefined
+            lastActivity: Date.now()
         };
 
-        await this.redis.setex(
+        await redisClient.setex(
             REDIS_KEYS.PLAYER_SESSION(socketId),
-            this.ttl.playerSession,
+            cacheConfig.ttl.playerSession,
             JSON.stringify(session)
         );
     }
 
-    async getPlayerSession(socketId: UUID): Promise<IRedisPlayerSession | null> {
-        const data = await this.redis.get(REDIS_KEYS.PLAYER_SESSION(socketId));
-        return data ? JSON.parse(data) : null;
+    /**
+     * Получает сессию игрока
+     */
+    async getPlayerSession(socketId: string): Promise<IRedisPlayerSession | null> {
+        const session = await redisClient.get(REDIS_KEYS.PLAYER_SESSION(socketId));
+        return session ? JSON.parse(session) : null;
     }
 
     /**
-     * Game Room Management
+     * Обновляет активность игрока
      */
-    async createGameRoom(gameId: UUID, playerId: UUID, playerNumber: PlayerNumber): Promise<void> {
+    async updatePlayerActivity(socketId: string): Promise<void> {
+        const session = await this.getPlayerSession(socketId);
+        if (session) {
+            session.lastActivity = Date.now();
+            await this.setPlayerSession(
+                socketId,
+                session.gameId,
+                session.playerNumber
+            );
+        }
+    }
+
+    /**
+     * Удаляет сессию игрока и оповещает других игроков
+     */
+    async removePlayerSession(socketId: string): Promise<void> {
+        const session = await this.getPlayerSession(socketId);
+        if (session) {
+            await redisClient
+                .multi()
+                .del(REDIS_KEYS.PLAYER_SESSION(socketId))
+                .publish(
+                    REDIS_EVENTS.PLAYER_DISCONNECTED,
+                    JSON.stringify({
+                        gameId: session.gameId,
+                        playerNumber: session.playerNumber
+                    })
+                )
+                .exec();
+        }
+    }
+
+    /**
+     * Сохраняет информацию об игровой комнате
+     */
+    async setGameRoom(gameId: string, players: IPlayer[]): Promise<void> {
         const room: IRedisGameRoom = {
-            gameId,
-            status: 'waiting',
-            players: [{
-                id: playerId,
-                number: playerNumber
-            }],
+            players,
+            status: players.length === 2 ? 'playing' as GameStatus : 'waiting' as GameStatus,
             lastUpdate: Date.now()
         };
 
-        await this.redis.setex(
+        await redisClient.setex(
             REDIS_KEYS.GAME_ROOM(gameId),
-            this.ttl.gameRoom,
+            cacheConfig.ttl.gameRoom,
             JSON.stringify(room)
         );
     }
 
-    async joinGameRoom(gameId: UUID, playerId: UUID, playerNumber: PlayerNumber): Promise<void> {
-        await this.withLock(gameId, async () => {
+    /**
+     * Получает информацию об игровой комнате
+     */
+    async getGameRoom(gameId: string): Promise<IRedisGameRoom | null> {
+        const room = await redisClient.get(REDIS_KEYS.GAME_ROOM(gameId));
+        return room ? JSON.parse(room) : null;
+    }
+
+    /**
+     * Добавляет игрока в комнату
+     */
+    async addPlayerToRoom(gameId: string, player: IPlayer): Promise<void> {
+        await withLock(gameId, async () => {
             const room = await this.getGameRoom(gameId);
-            if (!room) throw new Error('Game room not found');
-            if (room.players.length >= 2) throw new Error('Game room is full');
-
-            const updatedRoom: IRedisGameRoom = {
-                ...room,
-                status: 'playing',
-                players: [...room.players, { id: playerId, number: playerNumber }],
-                lastUpdate: Date.now()
-            };
-
-            await this.redis.setex(
-                REDIS_KEYS.GAME_ROOM(gameId),
-                this.ttl.gameRoom,
-                JSON.stringify(updatedRoom)
-            );
-
-            await this.addGameEvent({
-                id: crypto.randomUUID(),
-                gameId,
-                type: 'join',
-                timestamp: Date.now(),
-                playerNumber,
-                data: {}
-            });
+            if (!room) {
+                // Создаем новую комнату
+                await this.setGameRoom(gameId, [player]);
+            } else if (room.players.length < 2) {
+                // Добавляем игрока в существующую комнату
+                room.players.push(player);
+                room.status = 'playing';
+                await this.setGameRoom(gameId, room.players);
+            } else {
+                throw new Error('Room is full');
+            }
         });
     }
 
-    async getGameRoom(gameId: UUID): Promise<IRedisGameRoom | null> {
-        const data = await this.redis.get(REDIS_KEYS.GAME_ROOM(gameId));
-        return data ? JSON.parse(data) : null;
+    /**
+     * Удаляет игрока из комнаты
+     */
+    async removePlayerFromRoom(gameId: string, socketId: string): Promise<void> {
+        await withLock(gameId, async () => {
+            const room = await this.getGameRoom(gameId);
+            if (room) {
+                room.players = room.players.filter((p: IPlayer) => p.id !== socketId);
+                if (room.players.length === 0) {
+                    // Если комната пустая, удаляем её
+                    await redisClient.del(REDIS_KEYS.GAME_ROOM(gameId));
+                } else {
+                    room.status = 'waiting';
+                    await this.setGameRoom(gameId, room.players);
+                }
+            }
+        });
     }
 
     /**
-     * Event Management
+     * Добавляет событие в историю игры
      */
     async addGameEvent(event: IRedisGameEvent): Promise<void> {
-        await this.redis
+        const key = REDIS_KEYS.GAME_EVENTS(event.gameId);
+        await redisClient
             .multi()
-            .lpush(REDIS_KEYS.GAME_EVENTS(event.gameId), JSON.stringify(event))
-            .ltrim(REDIS_KEYS.GAME_EVENTS(event.gameId), 0, 99) // Keep last 100 events
-            .expire(REDIS_KEYS.GAME_EVENTS(event.gameId), this.ttl.eventQueue.default)
+            .lpush(key, JSON.stringify(event))
+            .expire(key, cacheConfig.ttl.gameState)
             .exec();
     }
 
-    async getGameEvents(gameId: UUID, limit: number = 10): Promise<IRedisGameEvent[]> {
-        const events = await this.redis.lrange(REDIS_KEYS.GAME_EVENTS(gameId), 0, limit - 1);
-        return events.map(data => JSON.parse(data));
+    /**
+     * Получает последние события игры
+     */
+    async getGameEvents(gameId: string, limit: number = 10): Promise<IRedisGameEvent[]> {
+        const events = await redisClient.lrange(REDIS_KEYS.GAME_EVENTS(gameId), 0, limit - 1);
+        return events.map((e: string) => JSON.parse(e));
     }
 
     /**
-     * Utility Methods
+     * Добавляет игру в список активных
      */
-    private async withLock<T>(key: string, fn: () => Promise<T>): Promise<T> {
-        const acquired = await this.lock.acquire(key);
-        if (!acquired) throw new Error('Failed to acquire lock');
-
-        try {
-            return await fn();
-        } finally {
-            await this.lock.release(key);
-        }
+    async addActiveGame(gameId: string): Promise<void> {
+        await redisClient.sadd(REDIS_KEYS.ACTIVE_GAMES, gameId);
     }
 
-    async cleanup(): Promise<void> {
-        await this.redis.quit();
+    /**
+     * Удаляет игру из списка активных
+     */
+    async removeActiveGame(gameId: string): Promise<void> {
+        await redisClient.srem(REDIS_KEYS.ACTIVE_GAMES, gameId);
+    }
+
+    /**
+     * Получает список активных игр
+     */
+    async getActiveGames(): Promise<string[]> {
+        return await redisClient.smembers(REDIS_KEYS.ACTIVE_GAMES);
+    }
+
+    /**
+     * Очищает все данные игры
+     */
+    async cleanupGame(gameId: string): Promise<void> {
+        const keys = [
+            REDIS_KEYS.GAME_STATE(gameId),
+            REDIS_KEYS.GAME_ROOM(gameId),
+            REDIS_KEYS.GAME_EVENTS(gameId),
+            REDIS_KEYS.GAME_LOCK(gameId)
+        ];
+
+        await redisClient
+            .multi()
+            .del(...keys)
+            .srem(REDIS_KEYS.ACTIVE_GAMES, gameId)
+            .exec();
+    }
+
+    /**
+     * Обновляет статистику игры
+     */
+    async updateGameStats(gameId: string, stats: Record<string, unknown>): Promise<void> {
+        await redisClient
+            .multi()
+            .hset(REDIS_KEYS.GAME_STATS, gameId, JSON.stringify(stats))
+            .expire(REDIS_KEYS.GAME_STATS, cacheConfig.ttl.gameState)
+            .exec();
+    }
+
+    /**
+     * Получает статистику игры
+     */
+    async getGameStats(gameId: string): Promise<Record<string, unknown> | null> {
+        const stats = await redisClient.hget(REDIS_KEYS.GAME_STATS, gameId);
+        return stats ? JSON.parse(stats) : null;
+    }
+
+    /**
+     * Создает новую игру
+     */
+    async createGame(gameId: string, player: IPlayer, initialState: IGameState): Promise<void> {
+        await Promise.all([
+            this.setGameState(gameId, initialState),
+            this.setGameRoom(gameId, [player]),
+            this.addActiveGame(gameId)
+        ]);
+    }
+
+    /**
+     * Присоединяет игрока к существующей игре
+     */
+    async joinGame(gameId: string, player: IPlayer): Promise<void> {
+        await this.addPlayerToRoom(gameId, player);
+    }
+
+    /**
+     * Получает номер текущего игрока из состояния игры
+     */
+    getCurrentPlayer(state: IGameState): PlayerNumber {
+        return (state.currentTurn.moves.length % 2 === 0 ? 1 : 2) as PlayerNumber;
     }
 }
+
+// Экспортируем синглтон
+export const redisService = new RedisService();
