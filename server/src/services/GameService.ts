@@ -2,13 +2,13 @@ import { MongoClient, Collection } from 'mongodb';
 // Game types
 import {
     IGameState
-} from '../../../shared/src/types/game/state.js';
-import { IPlayer } from '../../../shared/src/types/game/players.js';
-import { GameMove } from '../../../shared/src/types/game/moves.js';
-import { Player } from '../../../shared/src/types/base/enums.js';
-import { GameStatus } from '../../../shared/src/types/primitives.js';
-import { IScores } from '../../../shared/src/types/game/state.js';
-import { GameMetadata } from '../../../shared/src/types/storage/metadata.js';
+} from '@ctor-game/shared/types/game/state.js';
+import { IPlayer } from '@ctor-game/shared/types/game/players.js';
+import { GameMove } from '@ctor-game/shared/types/game/moves.js';
+import { Player } from '@ctor-game/shared/types/base/enums.js';
+import { GameStatus } from '@ctor-game/shared/types/primitives.js';
+import { IScores } from '@ctor-game/shared/types/game/state.js';
+import { GameMetadata } from '@ctor-game/shared/types/storage/metadata.js';
 
 // Services
 import { GameLogicService } from './GameLogicService.js';

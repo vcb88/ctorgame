@@ -2,16 +2,16 @@ import { Server } from 'socket.io';
 import { Server as HttpServer } from 'http';
 import { Socket } from 'socket.io';
 // Game types
-import { IGameState } from '../../../shared/src/types/game/state.js';
-import { IPlayer } from '../../../shared/src/types/game/players.js';
-import { GameMove, IServerMove } from '../../../shared/src/types/game/moves.js';
-import { Player, OperationType, GamePhase } from '../../../shared/src/types/base/enums.js';
-import { IScores } from '../../../shared/src/types/game/state.js';
+import { IGameState } from '@ctor-game/shared/types/game/state.js';
+import { IPlayer } from '@ctor-game/shared/types/game/players.js';
+import { GameMove, IServerMove } from '@ctor-game/shared/types/game/moves.js';
+import { Player, OperationType, GamePhase } from '@ctor-game/shared/types/base/enums.js';
+import { IScores } from '@ctor-game/shared/types/game/state.js';
 
 // Constants
 import { 
   MAX_PLACE_OPERATIONS 
-} from '../../../shared/src/types/base/constants.js';
+} from '@ctor-game/shared/types/base/constants.js';
 
 // Network types
 import {
@@ -20,10 +20,10 @@ import {
   ServerToClientEvents,
   ClientToServerEvents,
   WebSocketErrorCode
-} from '../../../shared/src/types/base/network.js';
+} from '@ctor-game/shared/types/base/network.js';
 
 // Game utils
-import { getOpponent } from '../../../shared/src/utils/game.js';
+import { getOpponent } from '@ctor-game/shared/utils/game.js';
 import { validateGameMove, validateGameState } from '../validation/game.js';
 import { GameService } from '../services/GameService.js';
 import { GameLogicService } from '../services/GameLogicService.js';

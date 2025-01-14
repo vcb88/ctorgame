@@ -2,31 +2,31 @@ import { Socket } from 'socket.io';
 import { GameService } from '../../services/GameService.js';
 import { GameStorageService } from '../../services/GameStorageService.js';
 // Game types and moves
-import { GameMove } from '../../../shared/src/types/game/moves.js';
-import { IGameState } from '../../../shared/src/types/game/state.js';
-import { Player } from '../../../shared/src/types/base/enums.js';
-import { IScores } from '../../../shared/src/types/game/state.js';
-import { IPlayer } from '../../../shared/src/types/game/players.js';
+import { GameMove } from '@ctor-game/shared/types/game/moves.js';
+import { IGameState } from '@ctor-game/shared/types/game/state.js';
+import { Player } from '@ctor-game/shared/types/base/enums.js';
+import { IScores } from '@ctor-game/shared/types/game/state.js';
+import { IPlayer } from '@ctor-game/shared/types/game/players.js';
 
 // Constants
-import { BOARD_SIZE } from '../../../shared/src/types/base/constants.js';
+import { BOARD_SIZE } from '@ctor-game/shared/types/base/constants.js';
 
 // Network events and errors
 import {
   WebSocketEvents,
   WebSocketErrorCode
-} from '../../../shared/src/types/base/network.js';
+} from '@ctor-game/shared/types/base/network.js';
 
 // Storage types
 import {
   GameMetadata
-} from '../../../shared/src/types/storage/metadata.js';
+} from '@ctor-game/shared/types/storage/metadata.js';
 
 // Validation functions
 import {
   validateGameMove,
   validateGameState
-} from '../../../shared/src/validation/game.js';
+} from '@ctor-game/shared/validation/game.js';
 import { GameEventResponse } from '../../types/events.js';
 import { logger } from '../../utils/logger.js';
 import { toErrorWithStack } from '../../types/error.js';

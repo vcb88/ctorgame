@@ -6,14 +6,14 @@ import {
   IBoard,
   IScores,
   ITurnState
-} from '../../../shared/src/types/game/state.js';
-import { GameMove } from '../../../shared/src/types/game/moves.js';
-import { Player } from '../../../shared/src/types/base/enums.js';
-import { OperationType, BOARD_SIZE, MIN_ADJACENT_FOR_REPLACE, MAX_PLACE_OPERATIONS } from '../../../shared/src/types/base.js';
-import type { IPosition } from '../../../shared/src/types/base/primitives.js';
+} from '@ctor-game/shared/types/game/state.js';
+import { GameMove } from '@ctor-game/shared/types/game/moves.js';
+import { Player } from '@ctor-game/shared/types/base/enums.js';
+import { OperationType, BOARD_SIZE, MIN_ADJACENT_FOR_REPLACE, MAX_PLACE_OPERATIONS } from '@ctor-game/shared/types/base.js';
+import type { IPosition } from '@ctor-game/shared/types/base/primitives.js';
 
 // Utils
-import { getAdjacentPositions } from '../../../shared/src/utils/coordinates.js';
+import { getAdjacentPositions } from '@ctor-game/shared/utils/coordinates.js';
 // Custom type for validation result
 interface IReplaceValidation {
   isValid: boolean;
@@ -24,7 +24,7 @@ interface IReplaceValidation {
 import {
   getOpponent,
   createScores
-} from '../../../shared/src/utils/game.js';
+} from '@ctor-game/shared/utils/game.js';
 
 export class GameLogicService {
   /**

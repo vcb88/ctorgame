@@ -1,9 +1,9 @@
-import { GameMove } from '../../../shared/src/types/game/moves.js';
-import { IScores } from '../../../shared/src/types/game/state.js';
-import { GameMetadata, GameDetails } from '../../../shared/src/types/storage/metadata.js';
-import { GameHistory } from '../../../shared/src/types/storage/history.js';
-import { GameStatus } from '../../../shared/src/types/primitives.js';
-import { Player } from '../../../shared/src/types/base/enums.js';
+import { GameMove } from '@ctor-game/shared/types/game/moves.js';
+import { IScores } from '@ctor-game/shared/types/game/state.js';
+import { GameMetadata, GameDetails } from '@ctor-game/shared/types/storage/metadata.js';
+import { GameHistory } from '@ctor-game/shared/types/storage/history.js';
+import { GameStatus } from '@ctor-game/shared/types/primitives.js';
+import { Player } from '@ctor-game/shared/types/base/enums.js';
 import { mkdirSync, existsSync, readFileSync, writeFileSync } from 'fs';
 import { join } from 'path';
 import { MongoClient, Collection } from 'mongodb';

@@ -3,7 +3,7 @@ import {
 } from '../core.js';
 import { Player } from '../base/enums.js';
 import { IBoardSize } from '../base/primitives.js';
-import { IBasicMove } from './moves.js';".js"
+import { IBasicMove } from './moves.js';
 
 // Board interfaces
 export interface IBoardBase {

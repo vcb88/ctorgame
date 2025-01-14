@@ -1,5 +1,5 @@
-import { GameMove } from '../../../shared/src/types/game/moves.js';
-import { WebSocketEvents } from '../../../shared/src/types/base/network.js';
+import { GameMove } from '@ctor-game/shared/types/game/moves.js';
+import { WebSocketEvents } from '@ctor-game/shared/types/base/network.js';
 
 export enum GameEventType {
     MOVE = 'move',

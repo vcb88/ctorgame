@@ -1,9 +1,9 @@
 // Game related types
-import { IGameState } from '../../../shared/src/types/game/state.js';
-import { Player } from '../../../shared/src/types/base/enums.js';
-import { GameMove } from '../../../shared/src/types/game/moves.js';
-import type { IServerMove } from '../../../shared/src/types/game/moves.js';
-import type { IPlayer } from '../../../shared/src/types/game/players.js';
+import { IGameState } from '@ctor-game/shared/types/game/state.js';
+import { Player } from '@ctor-game/shared/types/base/enums.js';
+import { GameMove } from '@ctor-game/shared/types/game/moves.js';
+import type { IServerMove } from '@ctor-game/shared/types/game/moves.js';
+import type { IPlayer } from '@ctor-game/shared/types/game/players.js';
 
 // Redis specific types
 import {
@@ -11,7 +11,7 @@ import {
     IRedisPlayerSession,
     IRedisGameRoom,
     IRedisGameEvent
-} from '../../../shared/src/types/storage/redis.js';
+} from '@ctor-game/shared/types/storage/redis.js';
 import { redisClient, REDIS_KEYS, REDIS_EVENTS, withLock, cacheConfig } from '../config/redis.js';
 import { GameLogicService } from './GameLogicService.js';
 
