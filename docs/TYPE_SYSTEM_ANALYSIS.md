@@ -8,7 +8,7 @@
 | /shared/src/types/game/state.ts | 🔄 In Progress | ✅ | ✅ | ❌ | New version created, dependencies need update |
 | /shared/src/types/storage/metadata.ts | ✅ Done | ✅ | ✅ | ✅ | Using new type system |
 | /shared/src/types/redis/state.ts | ✅ Done | ✅ | ✅ | ✅ | New version with type guards |
-| /shared/src/types/validation/game.ts | ❌ Not Started | ❌ | ❌ | ❌ | Uses old Player enum |
+| /shared/src/types/validation/game.ts | 🔄 In Progress | ✅ | ✅ | ❌ | Using new types and added guards |
 | /shared/src/types/base/network.ts | ❌ Not Started | ❌ | ❌ | ❌ | Uses old Player enum |
 | /shared/src/types/network/websocket.ts | ❌ Not Started | ❌ | ❌ | ❌ | Needs update to new event types |
 | /shared/src/types/game/moves.ts | 🔄 In Progress | ✅ | ✅ | ❌ | New version with type guards and better names |
