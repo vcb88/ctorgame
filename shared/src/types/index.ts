@@ -3,7 +3,7 @@ import {
     BOARD_SIZE,
     MIN_ADJACENT_FOR_REPLACE,
     MAX_PLACE_OPERATIONS
-} from './base.js';
+} from './base/constants.js';
 
 // Re-export types from new structure
 export * from './base.js';

@@ -1,5 +1,6 @@
 import { Player } from '../types/basic-types.js';
-import { GameOutcome, GamePhase } from '../types/base.js';
+import { GameOutcome } from '../types/base.js';
+import { GamePhase } from '../types/base/enums.js';
 import type { IScores, GameManagerState } from '../types/state.js';
 
 // Game utility functions

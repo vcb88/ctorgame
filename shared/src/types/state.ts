@@ -5,9 +5,9 @@ import {
     IVersioned,
     IExpiration
 } from './core.js';
-import { Player, IBoardSize } from './basic-types.js';".js"
-import { GamePhase } from './base.js';".js"
-import { IBasicMove } from './moves.js';".js"
+import { Player, IBoardSize } from './basic-types.js';
+import { GamePhase } from './base/enums.js';
+import { IBasicMove } from './moves.js';
 
 // Board interfaces
 export interface IBoardBase {
