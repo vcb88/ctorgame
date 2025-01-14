@@ -1,26 +1,33 @@
 # Type System Documentation
 
-## Current Migration Status
+## Overview
 
-This document combines the current type system migration status and dependency analysis to provide a comprehensive view of the type system state and planned changes.
+The project is in the middle of a major type system refactoring effort. The main goals are:
+- ✅ Simplify type hierarchy
+- ✅ Remove type duplication
+- ✅ Move from inheritance to composition
+- 🔄 Improve type safety (in progress)
+- 🔄 Make the system more maintainable (in progress)
+
+## Migration Status
 
 ### Recent Completions
 
-✅ Server Components:
-- EventService
-- RedisService
-- GameService
-- GameLogicService
-- GameStorageService
-- WebSocket Layer (in progress)
+#### Server Components
+- ✅ EventService
+- ✅ RedisService
+- ✅ GameService
+- ✅ GameLogicService
+- ✅ GameStorageService
+- ✅ WebSocket Layer (in progress)
 
-✅ Shared Types:
-- network/events.ts (migrated from events.new.ts)
-- storage/metadata.ts (updated to use new types)
+#### Shared Types
+- ✅ network/events.ts (migrated from events.new.ts)
+- ✅ storage/metadata.ts (updated to use new types)
 
-## Type Dependencies Structure
+### Type Dependencies Structure
 
-### Core Layer
+#### Core Layer
 1. Primitive Types (core/primitives.js)
    - ITimestamp
    - IIdentifiable
@@ -33,7 +40,7 @@ This document combines the current type system migration status and dependency a
    - IPosition
    - Dependencies: none
 
-### Game Layer
+#### Game Layer
 1. Game Types (game/types.js)
    - PlayerNumber
    - GameStatus
@@ -56,97 +63,170 @@ This document combines the current type system migration status and dependency a
    - IGameMoveComplete
    - Dependencies: IPosition, PlayerNumber, ITimestamp
 
-### Network Layer
-1. Network Base
-   - Dependencies: IGameState, IGameMoveComplete, PlayerNumber, GameStatus
+### Migration Status Table
 
-2. WebSocket
-   - Dependencies: IGameState, IGameMove, PlayerNumber, GameStatus
+| Component | Status | Description |
+|-----------|--------|-------------|
+| Core Types | ✅ Complete | Base types migrated and documented |
+| Event System | ✅ Complete | Full event type system implemented |
+| EventService | ✅ Complete | Service implemented and integrated |
+| GameService | ✅ Complete | Migrated to new type system |
+| WebSocket Handlers | 🔄 90% | Base handlers updated, some pending |
+| Client Integration | ✅ Complete | New hooks and types implemented |
+| Testing | 🔄 10% | Basic structure only |
+| Documentation | 🔄 50% | Core docs updated, details pending |
+| Validation | 🔄 30% | Basic validation implemented |
 
-3. Events
-   - Dependencies: Game types, ITimestamped, IIdentifiable
+### Success Metrics
 
-### Storage Layer
-1. Redis State
-   - Dependencies: IGameState, IPlayer, GameStatus
+1. Type Safety
+   - ✅ No any types in new code
+   - ✅ Full type coverage for events
+   - ✅ Runtime type checking in validation
+   - ✅ Comprehensive type guards
 
-2. Storage Metadata
-   - Dependencies: GameStatus, PlayerNumber, IGameMove, IBoardSize
+2. Code Quality
+   - ✅ Clear type hierarchy
+   - ✅ Minimal type duplication
+   - ✅ Consistent patterns
+   - 🔄 Test coverage (pending)
 
-## Pending Migration Tasks
+3. Developer Experience
+   - ✅ Improved type inference
+   - ✅ Better error messages
+   - 🔄 Documentation (in progress)
+   - 🔄 Development tools (pending)
 
-### High Priority
-1. WebSocket Layer
-   - gameHandlers.new.ts
-   - gameHandlers.ts
-   - replayHandlers.ts
-   - types/events.ts
+## Type System Architecture
 
-2. Client Types
-   - types/game.d.ts
-   - types/animations.ts
-   - types/errors.new.ts
-   - types/gameManager.ts
+### Principles
+- Composition over inheritance
+- Immutable interfaces (readonly properties)
+- Domain-driven design
+- Single source of truth for types
+- Clear dependency hierarchy
 
-### Medium Priority
-1. Client Hooks
-   - useMultiplayerGameNew.ts
-   - useGame.ts
-   - useMultiplayerGame.ts
-   - useReplay.ts
-   - useGameHistory.ts
+### Import Order
+1. core/primitives.js
+2. geometry/types.js
+3. game/types.js
+4. game/moves.js
+5. game/state.js
+6. game/players.js
+7. network/* files
+8. validation/* files
 
-2. Client Services
-   - GameStateManager.ts
-   - ActionQueue.new.ts
-   - ActionQueue.ts
-   - ai/index.ts
+## Known Issues and Type Duplications
 
-3. Client Validation
-   - validation/game.ts
-   - validation/stateValidation.ts
+### Critical Issues
 
-### Low Priority
-1. Tests
-   - All disabled tests in client/src/hooks/__tests__/
-   - All disabled tests in client/src/services/ai/__tests__/
-   - All disabled tests in client/src/validation/__tests__/
-   - src/game/__tests__/rules.test.ts
+1. Type System Compilation
+   - Maximum call stack size exceeded error during compilation
+   - Potential circular dependencies in type resolution
+   - Mixed usage of old and new type systems
+   - Duplicate type definitions causing conflicts
 
-2. Backup Files
-   - backup/shared/src/**/*
+2. Testing Coverage
+   - Limited test coverage for new types
+   - Missing integration tests
+   - Event validation needs testing
 
-## Migration Guidelines
+3. Documentation
+   - Some sections need updating
+   - Missing examples for new features
+   - Migration guides incomplete
 
-### Key Changes Required
-1. Replace enum types with string literals/union types
-2. Update state management (remove currentTurn, use new game state structure)
-3. Update score handling (use player1/player2 instead of indexed access)
-4. Make interfaces immutable (add readonly)
-5. Use proper typing for moves and game state
-6. Update validation logic to match new type system
-7. Ensure all files use consistent import paths
-8. Remove timestamp from moves
-9. Update board access (direct array instead of cells property)
+4. Validation
+   - Runtime validation incomplete
+   - Missing schema validation
+   - Error messages need improvement
 
-### Dependency Resolution Plan
-1. Break Circular Dependencies:
-   - Move shared types to game/types.js
-   - Update all imports to use centralized type definitions
+### Type Duplications Being Resolved
 
-2. Import Order (to prevent circular dependencies):
-   1. core/primitives.js
-   2. geometry/types.js
-   3. game/types.js
-   4. game/moves.js
-   5. game/state.js
-   6. game/players.js
-   7. network/* files
-   8. validation/* files
+1. Position/Coordinate Types:
+   - Old: IXCoordinate, IYCoordinate (core.ts)
+   - New: IPosition (geometry/types.ts)
 
-## Open Questions
+2. Dimension Types:
+   - Old: IWidth, IHeight (core.ts)
+   - New: ISize (geometry/types.ts)
 
-1. Verify if .new and .next files should be merged or replaced
-2. Check if any files in backup are still needed
-3. Verify if all disabled tests should be updated or removed
-4. Consider updating file organization to better reflect new type system
+3. Game State Types:
+   - Old: IGamePhaseBase extends IPhase (base.ts)
+   - New: Direct union type GameStatus = 'waiting' | 'playing' | 'finished'
+
+4. Operation Types:
+   - Old: IOperationTypeBase extends IOperationType (base.ts)
+   - New: Direct union type OperationType = 'place' | 'replace'
+
+5. Validation Types:
+   - Old: IValidationResult (core.ts)
+   - New: IMoveValidation (game/types.ts)
+
+## Files Status
+
+### Migration Complete
+| File Path | Status | Notes |
+|-----------|--------|-------|
+| /server/src/services/EventService.ts | ✅ Done | Using new type system from events.ts |
+| /server/src/services/RedisService.ts | ✅ Done | Using new types and structures |
+| /server/src/services/GameService.ts | ✅ Done | Migrated to new type system |
+| /server/src/services/GameLogicService.ts | ✅ Done | Updated to use new game state structure |
+| /server/src/services/GameStorageService.ts | ✅ Done | Using new metadata types |
+| /shared/src/types/game/state.ts | ✅ Done | Using types from game/types.ts |
+| /shared/src/types/storage/metadata.ts | ✅ Done | Updated for immutability |
+| /shared/src/types/network/events.ts | ✅ Done | Migrated from events.new.ts |
+
+### Pending Migration
+
+1. WebSocket Layer (Priority: High)
+   - [ ] gameHandlers.new.ts → gameHandlers.ts
+   - [ ] replayHandlers.ts
+   - [ ] types/events.ts
+
+2. Client Hooks (Priority: Medium)
+   - [ ] useMultiplayerGameNew.ts
+   - [ ] useGame.ts
+   - [ ] useMultiplayerGame.ts
+   - [ ] useReplay.ts
+   - [ ] useGameHistory.ts
+
+3. Client Services (Priority: Medium)
+   - [ ] GameStateManager.ts
+   - [ ] ActionQueue.new.ts
+   - [ ] ActionQueue.ts
+   - [ ] ai/index.ts
+
+4. Client Types (Priority: High)
+   - [ ] types/game.d.ts
+   - [ ] types/animations.ts
+   - [ ] types/errors.new.ts
+   - [ ] types/gameManager.ts
+
+## Next Actions
+
+1. Complete Integration
+   - [ ] Update remaining handlers
+   - [ ] Finish WebSocket integration
+   - [ ] Update client components
+   - [ ] Verify type consistency
+
+2. Testing
+   - [ ] Create test plan
+   - [ ] Implement basic tests
+   - [ ] Add integration tests
+   - [ ] Verify type guards
+
+3. Documentation
+   - [ ] Update API docs
+   - [ ] Add usage examples
+   - [ ] Complete migration guides
+   - [ ] Document type system architecture
+
+## Notes
+
+- When migrating files, always make backups first
+- Test compilation after each file migration
+- Check for circular dependencies
+- Update documentation as you go
+- Keep both old and new versions until testing is complete
