@@ -11,7 +11,7 @@ import type {
     OperationType
 } from '../types/game/types.js';
 import type { IPosition, ISize } from '../types/geometry/types.js';
-import { validatePosition, validateSize, isPosition } from './primitives.new.js';
+import { validatePosition, validateSize, isPosition } from './primitives';
 
 /**
  * Validates a game move
