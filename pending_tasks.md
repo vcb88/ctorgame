@@ -33,18 +33,33 @@
   - [ ] Add reconnection logic
 
 ## Type System Improvements (MVP Support)
-- [ ] Consolidate Shared Types
-  - [ ] Merge duplicate type definitions
-  - [ ] Add basic type guards
-  - [ ] Document type system architecture
-  - [ ] Update interfaces documentation
-  
+- [x] Consolidate Core Shared Types
+  - [x] Move error types to shared/network/errors.ts
+  - [x] Move game action types to shared/game/actions.ts
+  - [x] Move WebSocket types to shared/network/websocket.ts
+  - [x] Add basic type guards
+  - [x] Add proper readonly modifiers
+  - [x] Remove server-side duplicate types
+
+- [ ] WebSocket Handlers Migration (Priority: High)
+  - [x] Update GameServer.events.ts to use new types
+  - [ ] Create shared/types/network/replay.ts for replay events
+  - [ ] Update historyHandlers.ts to use new types
+  - [ ] Update replayHandlers.ts to use new types
+  - [ ] Add validation for replay and history events
+
 - [ ] Client Code Migration
   - [ ] Update ActionQueue.ts to use shared types
   - [ ] Update ErrorRecoveryManager.ts to use shared error types
   - [ ] Update GameStateManager.ts to use new action types
   - [ ] Migrate local types in client/src/types to shared
   - [ ] Update all imports in client components
+
+- [ ] Documentation Updates
+  - [ ] Document type system architecture
+  - [ ] Update interfaces documentation
+  - [ ] Document WebSocket event flow
+  - [ ] Document replay system types and events
 
 ## Game Over Implementation
 - [ ] Basic End Game Features
