@@ -139,9 +139,19 @@
    - ✅ Renamed coordinates.new.ts to coordinates.ts
    - ✅ Renamed game.new.ts (utils) to game.ts
    - ✅ Created backup of old files
+   - ✅ Renamed validation .new.ts files to replace old versions
+   - ✅ Created backup of old validation files
    - [ ] Update imports in affected files
-   - [ ] Rename validation .new.ts files
-   - [ ] Remove old validation files after migration
+
+4. Next Steps:
+   - Analyze and update imports in:
+     - [ ] Server files
+     - [ ] Shared utilities
+     - [ ] Test files
+   - Clean up:
+     - [ ] Remove backup files after testing
+     - [ ] Remove unused imports
+     - [ ] Update documentation
 
 Key improvements:
 - No inheritance, pure composition
