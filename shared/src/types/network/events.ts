@@ -30,10 +30,10 @@ export interface ErrorResponse {
 }
 
 export interface IGameEvent {
-    type: 'move' | 'disconnect' | 'reconnect' | 'end_turn';
+    type: WebSocketEvents.MakeMove | WebSocketEvents.Disconnect | WebSocketEvents.Reconnect | WebSocketEvents.EndTurn;
     gameId: string;
     playerId: string;
-    data: Record<string, unknown>;
+    data: WebSocketPayloads[WebSocketEvents.MakeMove | WebSocketEvents.Disconnect | WebSocketEvents.Reconnect | WebSocketEvents.EndTurn];
     timestamp: number;
 }
 
