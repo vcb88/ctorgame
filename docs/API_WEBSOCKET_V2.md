@@ -581,6 +581,117 @@ interface GameHistory {
 }
 ```
 
+## Replay and History System
+
+### History Events
+```typescript
+// Client -> Server
+interface HistoryClientEvents {
+    // Request list of all saved games
+    GET_SAVED_GAMES: () => void;
+}
+
+// Server -> Client
+interface HistoryServerEvents {
+    // List of saved games
+    SAVED_GAMES: (data: { games: GameSummary[] }) => void;
+    // Error response
+    ERROR: (error: ErrorResponse) => void;
+}
+
+interface GameHistoryEntry {
+    readonly gameCode: string;
+    readonly startTime: string;
+    readonly endTime?: string;
+    readonly players: readonly string[];
+    readonly winner?: string;
+    readonly totalMoves: number;
+}
+```
+
+### Replay System
+```typescript
+// State of replay playback
+interface ReplayState {
+    readonly currentMoveIndex: number;
+    readonly totalMoves: number;
+    readonly isPlaying: boolean;
+    readonly playbackSpeed: number;
+    readonly gameCode: string;
+}
+
+// Client -> Server Events
+interface ReplayClientEvents {
+    // Start replay for specified game
+    START_REPLAY: (data: { gameCode: string }) => void;
+    // Pause current replay
+    PAUSE_REPLAY: (data: { gameCode: string }) => void;
+    // Resume paused replay
+    RESUME_REPLAY: (data: { gameCode: string }) => void;
+    // Move to next game state
+    NEXT_MOVE: (data: { gameCode: string }) => void;
+    // Move to previous game state
+    PREV_MOVE: (data: { gameCode: string }) => void;
+    // Jump to specific move
+    GOTO_MOVE: (data: { gameCode: string; moveIndex: number }) => void;
+    // Change playback speed
+    SET_PLAYBACK_SPEED: (data: { gameCode: string; speed: number }) => void;
+    // Stop replay and cleanup
+    END_REPLAY: (data: { gameCode: string }) => void;
+}
+
+// Server -> Client Events
+interface ReplayServerEvents {
+    // Current game state and replay progress
+    REPLAY_STATE_UPDATED: (data: {
+        state: GameState;
+        moveIndex: number;
+        totalMoves: number;
+    }) => void;
+    // Replay was paused
+    REPLAY_PAUSED: (data: { moveIndex: number }) => void;
+    // Replay was resumed
+    REPLAY_RESUMED: (data: { moveIndex: number }) => void;
+    // Playback speed was changed
+    PLAYBACK_SPEED_UPDATED: (data: { speed: number }) => void;
+    // Replay has finished
+    REPLAY_COMPLETED: (data: { gameCode: string }) => void;
+    // Replay was stopped by user
+    REPLAY_ENDED: (data: { gameCode: string }) => void;
+    // Error occurred during replay
+    REPLAY_ERROR: (data: { message: string }) => void;
+}
+```
+
+### Replay Flow Example
+```mermaid
+sequenceDiagram
+    participant Client
+    participant Server
+    participant Storage
+    
+    Client->>Server: START_REPLAY {gameCode}
+    Server->>Storage: Load game history
+    Storage-->>Server: Game history data
+    Server-->>Client: REPLAY_STATE_UPDATED
+    
+    Note over Client,Server: Replay starts automatically
+    loop For each move
+        Server-->>Client: REPLAY_STATE_UPDATED
+        Note over Client: Display state with delay
+    end
+    
+    alt User pauses
+        Client->>Server: PAUSE_REPLAY
+        Server-->>Client: REPLAY_PAUSED
+    else User jumps to move
+        Client->>Server: GOTO_MOVE {moveIndex}
+        Server-->>Client: REPLAY_STATE_UPDATED
+    else Playback completes
+        Server-->>Client: REPLAY_COMPLETED
+    end
+```
+
 ## Best Practices
 
 ### 1. Security
