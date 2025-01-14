@@ -1,9 +1,10 @@
-import { GameMove } from '@ctor-game/shared/types/game/moves.js';
-import { IScores } from '@ctor-game/shared/types/game/state.js';
-import { GameMetadata, GameDetails } from '@ctor-game/shared/types/storage/metadata.js';
-import { GameHistory } from '@ctor-game/shared/types/storage/history.js';
-import { GameStatus } from '@ctor-game/shared/types/primitives.js';
-import { Player } from '@ctor-game/shared/types/base/enums.js';
+import type { IGameMove, GameStatus, IGameScores } from '@ctor-game/shared/src/types/game/types';
+import type { GameMetadata, GameDetails } from '@ctor-game/shared/src/types/storage/metadata';
+export interface GameHistory {
+    metadata: GameMetadata;
+    moves: IGameMove[];
+    details: GameDetails;
+}
 import { mkdirSync, existsSync, readFileSync, writeFileSync } from 'fs';
 import { join } from 'path';
 import { MongoClient, Collection } from 'mongodb';
@@ -65,7 +66,7 @@ export class GameStorageService {
      * @param path path to the game file
      * @returns game data with moves and metadata
      */
-    private readGameFile(path: string): { moves: GameMove[], metadata: Record<string, unknown> } {
+    private readGameFile(path: string): { moves: IGameMove[], metadata: Record<string, unknown> } {
         try {
             const content = readFileSync(path, 'utf8');
             return JSON.parse(content);
@@ -79,7 +80,7 @@ export class GameStorageService {
      * @param path path to the game file
      * @param data game data to write
      */
-    private writeGameFile(path: string, data: { moves: GameMove[], metadata: Record<string, unknown> }): void {
+    private writeGameFile(path: string, data: { moves: IGameMove[], metadata: Record<string, unknown> }): void {
         writeFileSync(path, JSON.stringify(data, null, 2), 'utf8');
     }
 
@@ -143,7 +144,7 @@ export class GameStorageService {
     async createGame(playerId: string, gameId: string): Promise<GameMetadata> {
         // Check active games limit
         const activeCount = await this.gamesCollection.countDocuments({
-            status: { $in: [GameStatus.WAITING, GameStatus.IN_PROGRESS] }
+            status: { $in: ['waiting', 'playing'] }
         });
 
         if (activeCount >= 50) {
@@ -169,7 +170,7 @@ export class GameStorageService {
         const game: GameMetadata = {
             gameId,
             code,
-            status: GameStatus.WAITING,
+            status: 'waiting',
             startTime: now.toISOString(),
             lastActivityAt: now.toISOString(),
             expiresAt: new Date(now.getTime() + 30 * 60 * 1000).toISOString(),
@@ -190,14 +191,14 @@ export class GameStorageService {
         const result = await this.gamesCollection.findOneAndUpdate(
             {
                 $or: [{ gameId: gameIdOrCode }, { code: gameIdOrCode }],
-                status: GameStatus.WAITING,
+                status: 'waiting',
                 expiresAt: { $gt: now.toISOString() },
                 'players.second': null
             },
             {
                 $set: {
                     'players.second': playerId,
-                    status: GameStatus.IN_PROGRESS,
+                    status: 'playing',
                     lastActivityAt: now.toISOString(),
                     expiresAt: new Date(now.getTime() + 30 * 60 * 1000).toISOString()
                 }
@@ -224,7 +225,7 @@ export class GameStorageService {
         return result;
     }
 
-    async recordMove(gameId: string, move: GameMove): Promise<void> {
+    async recordMove(gameId: string, move: IGameMove): Promise<void> {
         const gamePath = this.getGamePath(gameId);
         const gameData = this.readGameFile(gamePath);
         gameData.moves.push(move);
@@ -257,14 +258,14 @@ export class GameStorageService {
     async finishGame(
         gameId: string,
         winner: number,
-        scores: IScores
+        scores: IGameScores
     ): Promise<void> {
         const now = new Date();
         const game = await this.gamesCollection.findOneAndUpdate(
             { gameId },
             {
                 $set: {
-                    status: GameStatus.FINISHED,
+                    status: 'finished',
                     endTime: now.toISOString(),
                     winner,
                     finalScore: scores,
@@ -291,7 +292,7 @@ export class GameStorageService {
     async cleanupExpiredGames(): Promise<number> {
         const now = new Date();
         const result = await this.gamesCollection.deleteMany({
-            status: { $in: [GameStatus.WAITING, GameStatus.IN_PROGRESS] },
+            status: { $in: ['waiting', 'playing'] },
             expiresAt: { $lte: now.toISOString() }
         });
         return result.deletedCount;
@@ -328,7 +329,7 @@ export class GameStorageService {
                     moveTimes: (storedDetails.moveTimes as number[]) || [],
                     avgMoveTime: (storedDetails.avgMoveTime as number) || 0
                 },
-                territoryHistory: (storedDetails.territoryHistory as Array<{ [Player.First]: number; [Player.Second]: number }>) || []
+                territoryHistory: (storedDetails.territoryHistory as Array<{ player1: number; player2: number }>) || []
             };
 
             return {

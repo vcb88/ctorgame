@@ -1,46 +1,38 @@
-import { Player } from '../base/enums.js';
-import { GameStatus, IBoardSize } from '../primitives.js';
-import { IGameState } from '../game/state.js';
-import { GameMove } from '../game/moves.js';
+import type { GameStatus } from '../game/types';
+import type { IGameState, PlayerNumber, IGameMove, ISize, IGameScores } from '../game/types';
 
 export interface GameDetails {
-    moves: GameMove[];
+    moves: IGameMove[];
     timing: {
         moveTimes: number[];
         avgMoveTime: number;
     };
     territoryHistory: Array<{
-        [Player.First]: number;
-        [Player.Second]: number;
+        player1: number;
+        player2: number;
     }>;
 }
 
 export interface GameMetadata {
-    gameId: string;
-    code: string;
-    status: GameStatus;
-    startTime: string;
-    endTime?: string;
-    duration?: number;
-    lastActivityAt: string;
-    expiresAt: string;
-    players: {
-        first?: string;
-        second?: string;
+    readonly gameId: string;
+    readonly code: string;
+    readonly status: GameStatus;
+    readonly startTime: string;
+    readonly endTime?: string;
+    readonly duration?: number;
+    readonly lastActivityAt: string;
+    readonly expiresAt: string;
+    readonly players: {
+        readonly first?: string;
+        readonly second?: string;
     };
-    winner?: Player;
-    totalTurns: number;
-    currentState?: IGameState;
-    isCompleted?: boolean;
-    gameOver?: boolean;
-    currentPlayer?: Player;
-    boardSize?: IBoardSize;
-    finalScore?: {
-        [Player.First]: number;
-        [Player.Second]: number;
-    };
-    scores?: {
-        [Player.First]: number;
-        [Player.Second]: number;
-    };
+    readonly winner?: PlayerNumber;
+    readonly totalTurns: number;
+    readonly currentState?: IGameState;
+    readonly isCompleted?: boolean;
+    readonly gameOver?: boolean;
+    readonly currentPlayer?: PlayerNumber;
+    readonly boardSize?: ISize;
+    readonly finalScore?: IGameScores;
+    readonly scores?: IGameScores;
 }
