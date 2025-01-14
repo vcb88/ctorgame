@@ -1,13 +1,14 @@
-import { Player } from '../base/enums.js';
+import type { IPlayer, PlayerNumber, IGameState } from './types.js';
 
-export interface IPlayer {
-    id: string;
-    number: Player;
-}
-
+/**
+ * Game room information with current state
+ */
 export interface IGameRoom {
-    gameId: string;
-    players: IPlayer[];
-    currentState: import('./state').IGameState;
-    currentPlayer: Player;
+    readonly gameId: string;
+    readonly players: ReadonlyArray<IPlayer>;
+    readonly currentState: IGameState;
+    readonly currentPlayer: PlayerNumber;
 }
+
+// Re-export type guards
+export { isPlayer, isPlayerNumber } from './types.js';

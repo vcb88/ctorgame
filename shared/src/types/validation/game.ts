@@ -1,28 +1,58 @@
-import { IPosition, IBoardSize } from '../base/primitives.js';
-import { Player } from '../base/enums.js';
-import { GameMove } from '../game/moves.js';
-import { IGameState } from '../game/state.js';
-import { IValidationResult } from './result.js';".js"
+import type { IPosition, IBoardSize } from '../geometry/types.js';
+import type { 
+    PlayerNumber,
+    IGameState,
+    IGameMoveComplete
+} from '../game/types.js';
 
+/**
+ * Base validation result interface
+ */
+interface IValidationResult {
+    readonly valid: boolean;
+    readonly error?: string;
+}
+
+/**
+ * Game move validation result
+ */
 export interface IGameMoveValidation extends IValidationResult {
-    move: GameMove;
+    readonly move: IGameMoveComplete;
 }
 
+/**
+ * Board position validation result
+ */
 export interface IBoardValidation extends IValidationResult {
-    position: IPosition;
-    size: IBoardSize;
+    readonly position: IPosition;
+    readonly size: IBoardSize;
 }
 
+/**
+ * Game state validation result
+ */
 export interface IStateValidation extends IValidationResult {
-    state: IGameState;
-    player: Player;
+    readonly state: IGameState;
+    readonly player: PlayerNumber;
 }
 
-// Re-export game-related types needed for validation
+/**
+ * Type guard for validation result
+ */
+export function isValidationResult(value: unknown): value is IValidationResult {
+    if (!value || typeof value !== 'object') return false;
+    const result = value as IValidationResult;
+    return (
+        typeof result.valid === 'boolean' &&
+        (result.error === undefined || typeof result.error === 'string')
+    );
+}
+
+// Re-export types needed for validation
 export type {
     IPosition,
     IBoardSize,
-    GameMove,
+    IGameMoveComplete,
     IGameState,
-    Player
+    PlayerNumber
 }

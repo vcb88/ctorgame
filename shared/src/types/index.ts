@@ -1,24 +1,19 @@
-// Import constants
-import {
-    BOARD_SIZE,
-    MIN_ADJACENT_FOR_REPLACE,
-    MAX_PLACE_OPERATIONS
-} from './base/constants.js';
+/**
+ * Main entry point for types
+ * Re-exports all types in an organized way
+ */
 
-// Re-export types from new structure
-export * from './base.js';
-// Export game types 
-export * from './game.js';
-// Export other type modules
-export * from './storage/index.js';
-export * from './network/index.js';
-export * from './validation/index.js';
-export * from './replay/index.js';
-export * from './redis/index.js';
+// Core types
+export * from './core/primitives.js';
 
-// Re-export constants
-export {
-    BOARD_SIZE,
-    MIN_ADJACENT_FOR_REPLACE,
-    MAX_PLACE_OPERATIONS
-}
+// Geometry types
+export * from './geometry/types.js';
+
+// Game types
+export * from './game/types.js';
+
+// Network types
+export * from './network/types.js';
+
+// Storage types
+export * from './storage/types.js';

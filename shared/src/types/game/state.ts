@@ -1,53 +1,65 @@
-import {
-    ICell
-} from '../core.js';
-import { Player } from '../base/enums.js';
-import { IBoardSize } from '../base/primitives.js';
-import { IBasicMove } from './moves.js';
+import type {
+    ITimestamped,
+    IVersioned,
+    IExpiration,
+    IData
+} from '../core/primitives.js';
 
-// Board interfaces
-export interface IBoardBase {
-    readonly size: IBoardSize;
-    cells: Array<Array<ICell['value']>>;
-}
+import type {
+    IGameState,
+    PlayerNumber,
+    GameStatus,
+    IGameScores,
+    IGameMove
+} from './types.js';
 
-export interface IBoard extends IBoardBase {}
-
-// Score interfaces
-export interface IBasicScores {
-    readonly player1: number;
-    readonly player2: number;
-}
-
-export interface IScores extends IBasicScores {
-    readonly [Player.First]: number;
-    readonly [Player.Second]: number;
-}
-
-// Turn state interfaces
-// Basic turn state with operation counts
-export interface ITurnStateBase {
+/**
+ * Turn state interface
+ */
+export interface ITurnState {
     readonly placeOperationsLeft: number;
     readonly replaceOperationsLeft: number;
+    readonly moves: ReadonlyArray<IGameMove>;
+    readonly count: number;
 }
 
-// Turn state with move tracking
-export interface ITurnState extends ITurnStateBase {
-    readonly moves: IBasicMove[];
-    readonly count: number; // Total moves count
+/**
+ * Game manager state
+ */
+export interface IGameManagerState {
+    readonly status: GameStatus;
+    readonly error: Error | null;
+    readonly connectionState: string;
+    readonly gameId: string | null;
+    readonly playerNumber: PlayerNumber | null;
+    readonly lastUpdated: number;
 }
 
-// Game state interfaces
-export interface IGameStateBase {
-    board: IBoard;
-    gameOver: boolean;
-    winner: Player | null;
-    currentPlayer: Player;
-    isFirstTurn: boolean;
+/**
+ * Stored state base interface
+ */
+export interface IStoredStateBase<T> extends IVersioned, ITimestamped, IData<T> {}
+
+/**
+ * Stored state with expiration
+ */
+export interface IStoredState<T> extends IStoredStateBase<T>, IExpiration {}
+
+/**
+ * State storage interface
+ */
+export interface IStateStorage {
+    readonly getKeys: (prefix?: string) => ReadonlyArray<string>;
+    readonly saveState: (key: string, state: unknown) => void;
+    readonly loadState: <T>(key: string) => T | null;
+    readonly cleanupExpired: () => void;
+    readonly removeState: (key: string) => void;
 }
 
-export interface IGameState extends IGameStateBase {
-    currentTurn: ITurnState;
-    scores: IScores;
-    turnNumber: number; // Global turn counter for the game
-}
+// Re-export game state types
+export type {
+    IGameState,
+    IGameScores,
+    PlayerNumber,
+    GameStatus
+} from './types.js';

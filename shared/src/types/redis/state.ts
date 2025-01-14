@@ -1,21 +1,51 @@
-import { IGameState } from '../game/state.js';
-import { IPlayer } from '../game/players.js';
-import { GameStatus } from '../primitives.js';
+/**
+ * Redis state types
+ */
+import type { IGameState, IPlayer, GameStatus } from '../game/types.js';
 
-// Base interface for Redis stored objects
+/**
+ * Base interface for Redis stored objects
+ */
 export interface IRedisBase {
-    lastUpdate: number;
+    readonly lastUpdate: number;
 }
 
-// Game state in Redis
+/**
+ * Game state in Redis
+ */
 export interface IRedisGameState extends IGameState, IRedisBase {
-    version?: number; // Optional version for state migrations
+    readonly version?: number; // Optional version for state migrations
 }
 
-// Game room in Redis
+/**
+ * Game room in Redis
+ */
 export interface IRedisGameRoom extends IRedisBase {
-    players: IPlayer[];
-    status: GameStatus;
-    maxPlayers?: number; // Make it optional for backwards compatibility
-    expiresAt?: number;
+    readonly players: ReadonlyArray<IPlayer>;
+    readonly status: GameStatus;
+    readonly maxPlayers?: number;
+    readonly expiresAt?: number;
+}
+
+/**
+ * Type guards
+ */
+export function isRedisGameState(value: unknown): value is IRedisGameState {
+    return (
+        typeof value === 'object' &&
+        value !== null &&
+        'lastUpdate' in value &&
+        typeof (value as IRedisGameState).lastUpdate === 'number'
+    );
+}
+
+export function isRedisGameRoom(value: unknown): value is IRedisGameRoom {
+    if (!value || typeof value !== 'object') return false;
+    const room = value as IRedisGameRoom;
+    return (
+        typeof room.lastUpdate === 'number' &&
+        Array.isArray(room.players) &&
+        typeof room.status === 'string' &&
+        ['waiting', 'playing', 'finished'].includes(room.status)
+    );
 }

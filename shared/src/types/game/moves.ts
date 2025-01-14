@@ -1,37 +1,30 @@
-import {
-    IOperationType,
-    IValidationResult,
-    ITimestamp
-} from '../core.js';
-import { IPositionBase } from '../base/primitives.js';
-import { Player } from '../base/enums.js';
+import type { IPosition } from '../geometry/types.js';
+import type { 
+    MoveType,
+    IGameMove,
+    IGameMoveComplete,
+    PlayerNumber 
+} from './types.js';
 
-// Move interfaces
-export interface IMoveBase extends IOperationType {
-    readonly type: 'place' | 'replace' | 'end_turn';
-}
-
-export interface IPositionedMoveBase extends IMoveBase {
-    readonly position: IPositionBase;
-}
-
-export interface IBasicMove extends IPositionedMoveBase {}
-
-// Server move interfaces
-export interface IServerMoveBase extends IBasicMove {
+/**
+ * Server-side move with replacement information
+ */
+export interface IServerMove extends IGameMove {
     readonly replacements?: ReadonlyArray<[number, number]>;
 }
 
-export interface IServerMove extends IServerMoveBase {}
-
-// Game move interfaces
-export interface IGameMoveBase extends IServerMoveBase {
-    readonly player: Player;
-}
-
-export interface GameMove extends IGameMoveBase, ITimestamp {}
-
-// Replace validation interfaces
-export interface IReplaceValidationBase extends IValidationResult {
+/**
+ * Replacement validation result
+ */
+export interface IReplaceValidation {
+    readonly valid: boolean;
     readonly replacements?: ReadonlyArray<[number, number]>;
+    readonly error?: string;
 }
+
+// Re-export type guards and move types
+export { 
+    isGameMove,
+    isGameMoveComplete,
+    isMoveType
+} from './types.js';

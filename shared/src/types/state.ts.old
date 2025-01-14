@@ -1,29 +1,31 @@
-import type {
+import {
+    ICell,
+    IData,
     ITimestamp,
     IVersioned,
-    IExpiration,
-    IData
-} from './core/primitives.js';
-
-import type {
-    IBoardSize,
-    PlayerNumber,
-    GameStatus,
-    IGameMove
-} from './game/types.js';
+    IExpiration
+} from './core.js';
+import { Player, IBoardSize } from './basic-types.js';
+import { GamePhase } from './base/enums.js';
+import { IBasicMove } from './moves.js';
 
 // Board interfaces
 export interface IBoardBase {
     readonly size: IBoardSize;
-    cells: Array<Array<number>>; // Simplified cell type
+    cells: Array<Array<ICell['value']>>;
 }
 
 export interface IBoard extends IBoardBase {}
 
 // Score interfaces
-export interface IGameScores {
+export interface IBasicScores {
     readonly player1: number;
     readonly player2: number;
+}
+
+export interface IScores extends IBasicScores {
+    readonly [Player.First]: number;
+    readonly [Player.Second]: number;
 }
 
 // Turn state interfaces
@@ -33,7 +35,7 @@ export interface ITurnStateBase {
 }
 
 export interface ITurnState extends ITurnStateBase {
-    readonly moves: ReadonlyArray<IGameMove>;
+    readonly moves: ReadonlyArray<IBasicMove>;
     readonly count: number; // Total moves count for validation
 }
 
@@ -41,26 +43,26 @@ export interface ITurnState extends ITurnStateBase {
 export interface IGameStateBase {
     readonly board: IBoard;
     readonly gameOver: boolean;
-    readonly winner: PlayerNumber | null;
-    readonly currentPlayer: PlayerNumber;
+    readonly winner: Player | null;
+    readonly currentPlayer: Player;
     readonly isFirstTurn: boolean;
 }
 
 export interface IGameState extends IGameStateBase {
     readonly currentTurn: ITurnState;
-    readonly scores: IGameScores;
+    readonly scores: IScores;
 }
 
 // Game manager state interfaces
 export interface IGameManagerBase {
-    readonly status: GameStatus;
+    readonly phase: GamePhase;
     readonly error: Error | null;
     readonly connectionState: string;
 }
 
 export interface GameManagerState extends IGameManagerBase, ITimestamp {
     readonly gameId: string | null;
-    readonly playerNumber: PlayerNumber | null;
+    readonly playerNumber: Player | null;
     readonly lastUpdated: number;
 }
 
@@ -75,7 +77,7 @@ export interface IStateStorageBase {
 }
 
 export interface IStateStorage extends IStateStorageBase {
-    saveState(key: string, state: unknown): void;
+    saveState(key: string, state: any): void;
     loadState<T>(key: string): T | null;
     cleanupExpired(): void;
     removeState(key: string): void;
