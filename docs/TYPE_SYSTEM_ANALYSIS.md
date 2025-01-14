@@ -223,11 +223,11 @@ Legend:
 |---------|--------|---------------|---------------------|---------------|
 | GameLogicService | ✅ Done | ✅ Done | ✅ Done | ✅ Done |
 | RedisService | ✅ Done | ✅ Done | ✅ Done | ✅ Done |
-| GameService | 🔄 In Progress | ❌ Pending | ❌ Pending | ❌ Pending |
+| GameService | ✅ Done | ✅ Done | ✅ Done | ✅ Done |
 | GameStorageService | ❌ Not Started | ❌ Pending | ❌ Pending | ❌ Pending |
 
 #### Remaining Tasks
-- [ ] Update GameService dependencies
+- [x] Update GameService dependencies
 - [ ] Migrate GameStorageService
 - [ ] Update WebSocket handlers
 - [ ] Test integration between services
