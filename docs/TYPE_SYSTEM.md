@@ -180,28 +180,42 @@ The project is in the middle of a major type system refactoring effort. The main
 ### Pending Migration
 
 1. WebSocket Layer (Priority: High)
-   - [ ] gameHandlers.new.ts → gameHandlers.ts
+   - ✅ gameHandlers.new.ts → gameHandlers.ts (completed)
+   - ✅ consolidated in GameServer.events.ts
    - [ ] replayHandlers.ts
-   - [ ] types/events.ts
 
-2. Client Hooks (Priority: Medium)
+2. Client Types (Priority: High)
+   - 🔄 types/game.d.ts (ready for review)
+     * Created new version with updated imports
+     * Replaced Player with PlayerNumber
+     * Added readonly properties
+     * Renamed interfaces for consistency
+     * Updated operation names
+   - [ ] types/animations.ts (next in queue)
+     * Needs enum to union type conversion
+     * Update imports from base/primitives
+     * Update Player to PlayerNumber
+   - [ ] types/errors.new.ts
+     * New version exists with improvements
+     * Needs merging with errors.ts
+     * Already uses new type system
+   - [ ] types/gameManager.ts
+     * Needs import path updates
+     * Replace Player with PlayerNumber
+     * Use new error types
+
+3. Client Hooks (Priority: Medium)
    - [ ] useMultiplayerGameNew.ts
    - [ ] useGame.ts
    - [ ] useMultiplayerGame.ts
    - [ ] useReplay.ts
    - [ ] useGameHistory.ts
 
-3. Client Services (Priority: Medium)
+4. Client Services (Priority: Medium)
    - [ ] GameStateManager.ts
    - [ ] ActionQueue.new.ts
    - [ ] ActionQueue.ts
    - [ ] ai/index.ts
-
-4. Client Types (Priority: High)
-   - [ ] types/game.d.ts
-   - [ ] types/animations.ts
-   - [ ] types/errors.new.ts
-   - [ ] types/gameManager.ts
 
 ## Next Actions
 
@@ -221,6 +235,48 @@ The project is in the middle of a major type system refactoring effort. The main
    - [ ] Update API docs
    - [ ] Add usage examples
    - [ ] Complete migration guides
+
+## Recent Breaking Changes (2025-01-14)
+
+1. WebSocket Layer
+   - Removed old gameHandlers.ts and consolidated in GameServer.events.ts
+   - Event validation added for all WebSocket events
+   - Improved error handling with type-safe codes
+
+2. Game Types
+   - Renamed operation properties:
+     * placeOperationsLeft → placeOperations
+     * replaceOperationsLeft → replaceOperations
+   - Added readonly modifiers to interface properties
+   - Replaced Player enum with PlayerNumber type
+
+3. Imports
+   - Updated import paths to use new type system:
+     * @ctor-game/shared/types/base/* → @ctor-game/shared/src/types/game/types.js
+     * @ctor-game/shared/types/core/* → @ctor-game/shared/src/types/core/*.js
+     * @ctor-game/shared/types/network/* → @ctor-game/shared/src/types/network/*.js
+
+4. Interface Naming
+   - Added 'I' prefix to interfaces for consistency
+   - Updated related type references across the codebase
+
+## Migration Progress (2025-01-14)
+
+Last PR: Consolidated WebSocket handlers (gameHandlers.ts → GameServer.events.ts)
+Current task: Migrating client types, starting with game.d.ts
+
+Dependencies to watch:
+1. game.d.ts updates might affect:
+   - useGame hook
+   - useMultiplayerGame hook
+   - GameStateManager
+   - Game components using turn state
+
+Next steps:
+1. Review and merge game.d.ts changes
+2. Migrate animations.ts (remove enum)
+3. Merge errors.ts files
+4. Update gameManager.ts
    - [ ] Document type system architecture
 
 ## Notes
