@@ -1,10 +1,8 @@
 import type { IGameMove, GameStatus, IGameScores } from '@ctor-game/shared/src/types/game/types';
 import type { GameMetadata, GameDetails } from '@ctor-game/shared/src/types/storage/metadata';
-export interface GameHistory {
-    metadata: GameMetadata;
-    moves: IGameMove[];
-    details: GameDetails;
-}
+import type { IGameHistory } from '@ctor-game/shared/src/types/storage/history';
+import { validateGameHistoryEntry } from '@ctor-game/shared/utils/validation/replay';
+import { ValidationError } from '@ctor-game/shared/types/network/errors';
 import { mkdirSync, existsSync, readFileSync, writeFileSync } from 'fs';
 import { join } from 'path';
 import { MongoClient, Collection } from 'mongodb';
@@ -331,7 +329,7 @@ export class GameStorageService {
      * @returns complete game history
      * @throws GameStorageError if game not found or history file is corrupted
      */
-    async getGameHistory(gameId: string): Promise<GameHistory> {
+    async getGameHistory(gameId: string): Promise<IGameHistory> {
         // Get metadata from MongoDB
         const game = await this.gamesCollection.findOne({ gameId });
         if (!game) {

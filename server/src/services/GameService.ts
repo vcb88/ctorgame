@@ -6,6 +6,7 @@ import type {
     GameStatus,
     IGameScores
 } from '@ctor-game/shared/src/types/game/types';
+import type { IGameHistory, IGameHistorySummary } from '@ctor-game/shared/src/types/storage/history';
 
 import type {
     GameMetadata,
@@ -254,19 +255,33 @@ export class GameService {
         }
     }
 
-    async getSavedGames(): Promise<GameMetadata[]> {
+    async getSavedGames(): Promise<IGameHistorySummary[]> {
         await this.ensureInitialized();
         return this.storageService.getSavedGames();
     }
 
-    async getGameHistory(gameId: string): Promise<number> {
+    async getGameHistory(gameId: string): Promise<IGameHistory> {
         await this.ensureInitialized();
         return this.storageService.getGameHistory(gameId);
     }
 
     async getGameStateAtMove(gameId: string, moveNumber: number): Promise<IGameState | null> {
         await this.ensureInitialized();
-        return this.storageService.getGameStateAtMove(gameId, moveNumber);
+        const history = await this.getGameHistory(gameId);
+        
+        if (moveNumber < 0 || moveNumber >= history.moves.length) {
+            return null;
+        }
+
+        // Rebuild game state up to the requested move
+        let state = GameLogicService.createInitialState();
+        for (let i = 0; i <= moveNumber; i++) {
+            const move = history.moves[i];
+            const playerNumber = i % 2 === 0 ? 1 : 2;
+            state = GameLogicService.applyMove(state, move, playerNumber as PlayerNumber);
+        }
+
+        return state;
     }
 
     async expireGame(gameId: string): Promise<void> {
