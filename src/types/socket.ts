@@ -1,72 +1,90 @@
-// Types for Socket.IO events
+import type {
+    GameEvent,
+    IGameCreatedEvent,
+    IGameStartedEvent,
+    IGameMoveEvent,
+    IGameEndedEvent,
+    IGameExpiredEvent,
+    IPlayerConnectedEvent,
+    IPlayerDisconnectedEvent,
+    IGameErrorEvent
+} from '@ctor-game/shared/src/types/network/events.new.js';
 
-export interface SocketResponse {
-    type: string;
-    code?: string;
-    message?: string;
-}
+import type { IGameState, PlayerNumber } from '@ctor-game/shared/src/types/game/types.js';
+import type { WebSocketErrorCode } from '@ctor-game/shared/src/types/network/events.js';
 
-export interface GameCreatedResponse extends SocketResponse {
-    gameId: string;
-    code: string;
-    status: string;
-    playerNumber: number;
-}
-
-export interface GameJoinedResponse extends SocketResponse {
-    gameId: string;
-    status: string;
-    playerNumber: number;
-}
-
-export interface GameState {
-    currentPlayer: number;
-    board: Array<Array<number | null>>;
-    gameOver: boolean;
-    winner: number | null;
-    lastMove?: { row: number; col: number };
-    opsRemaining?: number;
-}
-
-export interface GameStartedResponse extends SocketResponse {
-    gameId: string;
-    status: string;
-    state: GameState;
-}
-
-export interface GameMove {
-    x: number;
-    y: number;
-    player: number;
+// Base event interface for all socket responses
+export interface SocketEvent {
+    eventId: string;
     timestamp: number;
 }
 
-export interface GameUpdatedResponse extends SocketResponse {
+// Event responses
+export interface GameCreatedResponse extends SocketEvent {
     gameId: string;
-    move: GameMove;
-    nextPlayer: number;
+    status: 'waiting';
 }
 
-export interface GameReconnectedResponse extends SocketResponse {
+export interface GameJoinedResponse extends SocketEvent {
     gameId: string;
-    state: GameState;
+    status: string;
 }
 
-export interface PlayerEvent extends SocketResponse {
+export interface GameStartedResponse extends SocketEvent {
     gameId: string;
-    connectionId: string;
+    gameState: IGameState;
+    currentPlayer: PlayerNumber;
 }
 
-export interface GameEvents {
-    connected: (response: SocketResponse) => void;
-    error: (response: SocketResponse) => void;
-    gameCreated: (response: GameCreatedResponse) => void;
-    gameJoined: (response: GameJoinedResponse) => void;
-    gameStarted: (response: GameStartedResponse) => void;
-    gameUpdated: (response: GameUpdatedResponse) => void;
-    gameLeft: (response: { gameId: string }) => void;
-    playerLeft: (response: PlayerEvent) => void;
-    playerDisconnected: (response: PlayerEvent) => void;
-    playerReconnected: (response: PlayerEvent) => void;
-    gameReconnected: (response: GameReconnectedResponse) => void;
+export interface GameStateUpdatedResponse extends SocketEvent {
+    gameState: IGameState;
+    currentPlayer: PlayerNumber;
+}
+
+export interface GameOverResponse extends SocketEvent {
+    gameState: IGameState;
+    winner: PlayerNumber | null;
+}
+
+export interface PlayerDisconnectedResponse extends SocketEvent {
+    playerId: string;
+    playerNumber: PlayerNumber;
+}
+
+export interface PlayerReconnectedResponse extends SocketEvent {
+    playerId: string;
+    playerNumber: PlayerNumber;
+}
+
+export interface GameExpiredResponse extends SocketEvent {
+    gameId: string;
+}
+
+export interface ErrorResponse extends SocketEvent {
+    code: WebSocketErrorCode;
+    message: string;
+    details?: unknown;
+}
+
+// Socket event map
+export interface ServerToClientEvents {
+    'game_created': (response: GameCreatedResponse) => void;
+    'game_joined': (response: GameJoinedResponse) => void;
+    'game_started': (response: GameStartedResponse) => void;
+    'game_state_updated': (response: GameStateUpdatedResponse) => void;
+    'game_over': (response: GameOverResponse) => void;
+    'player_disconnected': (response: PlayerDisconnectedResponse) => void;
+    'player_reconnected': (response: PlayerReconnectedResponse) => void;
+    'game_expired': (response: GameExpiredResponse) => void;
+    'error': (response: ErrorResponse) => void;
+}
+
+// Client event map
+export interface ClientToServerEvents {
+    'create_game': () => void;
+    'join_game': (data: { gameId: string }) => void;
+    'make_move': (data: { gameId: string; move: { type: 'place' | 'replace'; position: { x: number; y: number } } }) => void;
+    'end_turn': (data: { gameId: string }) => void;
+    'reconnect': (data: { gameId: string }) => void;
+    'disconnect': () => void;
 }

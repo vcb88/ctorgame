@@ -1,27 +1,82 @@
 import { useEffect, useRef, useCallback } from 'react';
 import io, { Socket } from 'socket.io-client';
-import { GameEvents, GameState } from '../types/socket';
+import type {
+    ServerToClientEvents,
+    ClientToServerEvents,
+    GameCreatedResponse,
+    GameJoinedResponse,
+    GameStartedResponse,
+    GameStateUpdatedResponse,
+    GameOverResponse,
+    PlayerDisconnectedResponse,
+    PlayerReconnectedResponse,
+    GameExpiredResponse,
+    ErrorResponse
+} from '../types/socket.new';
+import type { IGameState } from '@ctor-game/shared/src/types/game/types.js';
 
 const SOCKET_URL = process.env.VITE_WS_URL || 'http://localhost:8080';
 
 export interface UseSocketOptions {
+    // Connection callbacks
     onConnected?: () => void;
     onDisconnected?: () => void;
-    onError?: (error: string) => void;
-    onGameCreated?: (gameId: string, code: string, playerNumber: number) => void;
-    onGameJoined?: (gameId: string, playerNumber: number) => void;
-    onGameStarted?: (gameId: string, state: GameState) => void;
-    onGameUpdated?: (gameId: string, state: Partial<GameState>) => void;
-    onPlayerLeft?: (gameId: string, playerId: string) => void;
-    onPlayerDisconnected?: (gameId: string, playerId: string) => void;
-    onPlayerReconnected?: (gameId: string, playerId: string) => void;
+    onError?: (error: ErrorResponse) => void;
+
+    // Game state callbacks
+    onGameCreated?: (response: GameCreatedResponse) => void;
+    onGameJoined?: (response: GameJoinedResponse) => void;
+    onGameStarted?: (response: GameStartedResponse) => void;
+    onGameStateUpdated?: (response: GameStateUpdatedResponse) => void;
+    onGameOver?: (response: GameOverResponse) => void;
+
+    // Player state callbacks
+    onPlayerDisconnected?: (response: PlayerDisconnectedResponse) => void;
+    onPlayerReconnected?: (response: PlayerReconnectedResponse) => void;
+    onGameExpired?: (response: GameExpiredResponse) => void;
 }
 
-export const useSocket = (options: UseSocketOptions = {}) => {
-    const socketRef = useRef<Socket<GameEvents> | null>(null);
+export interface UseSocketActions {
+    createGame: () => void;
+    joinGame: (gameId: string) => void;
+    makeMove: (gameId: string, x: number, y: number, type: 'place' | 'replace') => void;
+    endTurn: (gameId: string) => void;
+    reconnectToGame: (gameId: string) => void;
+    disconnect: () => void;
+}
+
+export const useSocket = (options: UseSocketOptions = {}): UseSocketActions => {
+    const socketRef = useRef<Socket<ServerToClientEvents, ClientToServerEvents> | null>(null);
+
+    // Socket actions
+    const createGame = useCallback(() => {
+        socketRef.current?.emit('create_game');
+    }, []);
+
+    const joinGame = useCallback((gameId: string) => {
+        socketRef.current?.emit('join_game', { gameId });
+    }, []);
+
+    const makeMove = useCallback((gameId: string, x: number, y: number, type: 'place' | 'replace') => {
+        socketRef.current?.emit('make_move', {
+            gameId,
+            move: {
+                type,
+                position: { x, y }
+            }
+        });
+    }, []);
+
+    const endTurn = useCallback((gameId: string) => {
+        socketRef.current?.emit('end_turn', { gameId });
+    }, []);
 
     const reconnectToGame = useCallback((gameId: string) => {
         socketRef.current?.emit('reconnect', { gameId });
+    }, []);
+
+    const disconnect = useCallback(() => {
+        socketRef.current?.emit('disconnect');
     }, []);
 
     useEffect(() => {
@@ -37,7 +92,7 @@ export const useSocket = (options: UseSocketOptions = {}) => {
 
         const socket = socketRef.current;
 
-        // Connection event handlers
+        // Connection events
         socket.on('connect', () => {
             console.log('Connected to game server');
             options.onConnected?.();
@@ -48,59 +103,67 @@ export const useSocket = (options: UseSocketOptions = {}) => {
             options.onDisconnected?.();
         });
 
+        // Game events
         socket.on('error', (response) => {
-            console.error('Socket error:', response.message);
-            options.onError?.(response.message || 'Unknown error');
+            console.error('Socket error:', response);
+            options.onError?.(response);
         });
 
-        // Game event handlers
-        socket.on('gameCreated', (response) => {
-            options.onGameCreated?.(response.gameId, response.code, response.playerNumber);
+        socket.on('game_created', (response) => {
+            console.log('Game created:', response);
+            options.onGameCreated?.(response);
         });
 
-        socket.on('gameJoined', (response) => {
-            options.onGameJoined?.(response.gameId, response.playerNumber);
+        socket.on('game_joined', (response) => {
+            console.log('Game joined:', response);
+            options.onGameJoined?.(response);
         });
 
-        socket.on('gameStarted', (response) => {
-            options.onGameStarted?.(response.gameId, response.state);
+        socket.on('game_started', (response) => {
+            console.log('Game started:', response);
+            options.onGameStarted?.(response);
         });
 
-        socket.on('gameUpdated', (response) => {
-            options.onGameUpdated?.(response.gameId, {
-                currentPlayer: response.nextPlayer,
-                lastMove: { row: response.move.y, col: response.move.x }
-            });
+        socket.on('game_state_updated', (response) => {
+            console.log('Game state updated:', response);
+            options.onGameStateUpdated?.(response);
         });
 
-        socket.on('playerLeft', (response) => {
-            options.onPlayerLeft?.(response.gameId, response.connectionId);
+        socket.on('game_over', (response) => {
+            console.log('Game over:', response);
+            options.onGameOver?.(response);
         });
 
-        socket.on('playerDisconnected', (response) => {
-            options.onPlayerDisconnected?.(response.gameId, response.connectionId);
+        // Player events
+        socket.on('player_disconnected', (response) => {
+            console.log('Player disconnected:', response);
+            options.onPlayerDisconnected?.(response);
         });
 
-        socket.on('playerReconnected', (response) => {
-            options.onPlayerReconnected?.(response.gameId, response.connectionId);
+        socket.on('player_reconnected', (response) => {
+            console.log('Player reconnected:', response);
+            options.onPlayerReconnected?.(response);
         });
 
-        socket.on('gameReconnected', (response) => {
-            options.onGameStarted?.(response.gameId, response.state);
+        socket.on('game_expired', (response) => {
+            console.log('Game expired:', response);
+            options.onGameExpired?.(response);
         });
 
         // Cleanup on unmount
         return () => {
-            if (socket) {
-                socket.removeAllListeners();
-                socket.disconnect();
-            }
+            socket.removeAllListeners();
+            socket.disconnect();
             socketRef.current = null;
         };
     }, [options]);
 
     return {
-        socket: socketRef.current!,
-        reconnectToGame
+        createGame,
+        joinGame,
+        makeMove,
+        endTurn,
+        reconnectToGame,
+        disconnect
     };
 };
