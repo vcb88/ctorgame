@@ -53,26 +53,7 @@ The shared package is referenced in both client and server packages as a workspa
 
 ### Working with Shared Types
 
-#### Organization Structure
-The project maintains shared types in three locations:
-1. `shared/types/` - source of truth, contains original type definitions
-2. `client/src/shared.ts` - copy of types for client
-3. `server/src/shared.ts` - copy of types for server
-
-#### Important Rules
-1. Do NOT use direct imports from shared module in client or server (e.g., `import { Type } from '../../shared/types'`).
-2. All required types should be copied into local `shared.ts` files.
-3. When adding or modifying types:
-   - First update the types in `shared/types/`
-   - Then copy the changes to both `client/src/shared.ts` and `server/src/shared.ts`
-   - Maintain identical type definitions across all three locations
-   - Before committing, verify type consistency between all files
-
-#### Type Synchronization
-- After any changes in shared types, sync the changes across all three locations
-- Consider the most recent version as the source of truth in case of discrepancies
-- Remove duplicate type definitions to prevent confusion
-- Keep consistent naming and structure across all locations
+The project uses a centralized approach to type management through the `@ctor-game/shared` package. All types are defined in this package and imported directly by client and server.
 
 #### Best Practices
 1. Minimize changes to type signatures to reduce maintenance overhead
@@ -82,28 +63,23 @@ The project maintains shared types in three locations:
    - Update related validation and test code
 3. Document type changes in commit messages and update relevant documentation
 
-#### Example Workflow
+#### Example Type Definition
 ```typescript
-// 1. First update in shared/types/game.ts
+// @ctor-game/shared/game.ts
 export interface IGameMove {
     type: OperationType;
     position: IPosition;
-    timestamp?: number; // New field
+    timestamp?: number;
 }
+```
 
-// 2. Update in client/src/shared.ts
-export interface IGameMove {
-    type: OperationType;
-    position: IPosition;
-    timestamp?: number; // Copy the change
-}
+#### Example Usage
+```typescript
+// In client code
+import { IGameMove } from '@ctor-game/shared/game.js';
 
-// 3. Update in server/src/shared.ts
-export interface IGameMove {
-    type: OperationType;
-    position: IPosition;
-    timestamp?: number; // Copy the change
-}
+// In server code
+import { IGameMove } from '@ctor-game/shared/game.js';
 ```
 
 ## Testing Setup
