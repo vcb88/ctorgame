@@ -59,6 +59,9 @@ docker/volumes/
 dependency-graph.png
 dependency-graph-new.svg
 *.bak
+import_analysis.txt
+old_types_analysis.txt
+scripts/analyze_imports.sh
 
 # Development scripts
 fix_files.py
