@@ -13,7 +13,7 @@
 | /shared/src/types/network/websocket.ts | ✅ Done | ✅ | ✅ | ✅ | New version already using updated types |
 | /shared/src/types/game/moves.ts | ✅ Done | ✅ | ✅ | ✅ | Using types from game/types.ts |
 | /shared/src/types/game/players.ts | ✅ Done | ✅ | ✅ | ✅ | Using types from game/types.ts |
-| /shared/src/types/network/websocket.new.ts | 🔄 In Progress | ✅ | ❌ | ❌ | Verify compatibility with new types |
+| /shared/src/types/network/websocket.new.ts | ✅ Done | ✅ | ✅ | ✅ | Already using game/types.ts |
 | /shared/src/types/network/events.new.ts | ✅ Done | ✅ | ✅ | ✅ | Already using PlayerNumber and GameStatus |
 
 Legend:
