@@ -10,6 +10,8 @@ import type {
     IWebSocketServerConfig,
     IWebSocketServerOptions
 } from '@ctor-game/shared/src/types/network/websocket.js';
+import { GameError, GameNotFoundError, NotYourTurnError, GameEndedError } from '../errors/GameError.js';
+import { ErrorHandlingService } from '../services/ErrorHandlingService.js';
 
 // Define socket types using imported interfaces
 type GameSocket = Socket<ClientToServerEvents, ServerToClientEvents, InterServerEvents, ISocketData>;
@@ -48,6 +50,7 @@ export class GameServer {
     private io: GameServerType;
     private gameService: GameService;
     private eventService: EventService;
+    private errorHandlingService: ErrorHandlingService;
     private reconnectTimeout: number;
 
     public static getInstance(httpServer: HttpServer, options: IWebSocketServerOptions = {}): GameServer {
@@ -68,6 +71,7 @@ export class GameServer {
         this.io = new SocketIOServer(httpServer, config);
         this.gameService = new GameService(options.storageService, options.eventService, options.redisService);
         this.eventService = options.eventService || new EventService(redisService);
+        this.errorHandlingService = ErrorHandlingService.getInstance();
 
         (global as any).io = this.io;
         this.setupEventHandlers();
@@ -109,7 +113,7 @@ export class GameServer {
 
             const event = await this.eventService.createGameCreatedEvent(gameId, GameStatus.WAITING);
             if (!isGameEvent(event)) {
-                throw new Error('Invalid game created event');
+                throw new GameError('server_error', 'Invalid game created event');
             }
 
             socket.emit('game_created', {
@@ -130,7 +134,7 @@ export class GameServer {
     ): Promise<void> {
         try {
             if (!gameId && !code) {
-                throw new Error('Either gameId or code must be provided');
+                throw new GameError('invalid_game_id', 'Either gameId or code must be provided');
             }
 
             // Find game by code if provided
@@ -138,7 +142,7 @@ export class GameServer {
             if (code) {
                 const game = await this.gameService.findGame(code);
                 if (!game) {
-                    throw new Error('Game not found');
+                    throw new GameNotFoundError();
                 }
                 targetGameId = game.gameId;
             }
@@ -196,20 +200,20 @@ export class GameServer {
         try {
             const state = await redisService.getGameState(gameId);
             if (!state) {
-                throw new Error('Game not found');
+                throw new GameNotFoundError();
             }
 
             if (state.gameOver) {
-                throw new Error('Game is already finished');
+                throw new GameEndedError();
             }
 
             const playerNumber = await redisService.getPlayerNumber(gameId, socket.id);
             if (!playerNumber) {
-                throw new Error('Player not found in game');
+                throw new GameError('invalid_state', 'Player not found in game');
             }
 
             if (playerNumber !== state.currentPlayer) {
-                throw new Error('Not your turn');
+                throw new NotYourTurnError();
             }
 
             // Apply move and get new state
@@ -262,16 +266,16 @@ export class GameServer {
         try {
             const state = await redisService.getGameState(gameId);
             if (!state) {
-                throw new Error('Game not found');
+                throw new GameNotFoundError();
             }
 
             const playerNumber = await redisService.getPlayerNumber(gameId, socket.id);
             if (!playerNumber) {
-                throw new Error('Player not found in game');
+                throw new GameError('invalid_state', 'Player not found in game');
             }
 
             if (playerNumber !== state.currentPlayer) {
-                throw new Error('Not your turn');
+                throw new NotYourTurnError();
             }
 
             // Create end turn move
@@ -359,54 +363,51 @@ export class GameServer {
         }
     }
 
-    private async handleError(socket: GameSocket, error: Error): Promise<void> {
-        logger.error('Game error', {
+    private async handleError(socket: GameSocket, error: Error | GameError): Promise<void> {
+        // Log error with context
+        this.errorHandlingService.logError(error, {
             component: 'GameServer',
-            context: { socketId: socket.id },
-            error
+            socketId: socket.id
         });
 
         try {
+            // Get formatted error response
+            const errorResponse = this.errorHandlingService.handleError(error);
+
+            // Try to create error event if we have game session
             const session = await redisService.getPlayerSession(socket.id);
             if (session) {
                 const errorEvent = await this.eventService.createErrorEvent(
                     session.gameId,
-                    {
-                        code: WebSocketErrorCode.InternalError,
-                        message: error.message
-                    },
+                    errorResponse,
                     socket.id
                 );
 
-                if (!validateGameEvent(errorEvent)) {
-                    logger.warn('Invalid error event', {
-                        component: 'GameServer',
-                        context: { 
-                            socketId: socket.id,
-                            gameId: session.gameId
-                        }
-                    });
+                if (!isGameEvent(errorEvent)) {
+                    this.errorHandlingService.logError(
+                        new GameError('server_error', 'Invalid error event'),
+                        { socketId: socket.id, gameId: session.gameId }
+                    );
                 }
 
                 socket.emit('error', {
                     eventId: errorEvent.id,
-                    code: WebSocketErrorCode.InternalError,
-                    message: error.message
+                    ...errorResponse
                 });
             } else {
-                socket.emit('error', {
-                    code: WebSocketErrorCode.InternalError,
-                    message: error.message
-                });
+                socket.emit('error', errorResponse);
             }
         } catch (err) {
-            logger.error('Error creating error event', {
+            // Handle errors in error handling itself
+            this.errorHandlingService.logError(err as Error, {
                 component: 'GameServer',
-                error: err
+                context: 'Error handler',
+                socketId: socket.id
             });
+            
             socket.emit('error', {
-                code: WebSocketErrorCode.InternalError,
-                message: error.message
+                code: 'server_error',
+                message: 'Internal server error'
             });
         }
     }
