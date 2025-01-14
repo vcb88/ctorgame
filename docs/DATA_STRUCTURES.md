@@ -9,71 +9,106 @@ The project uses a hybrid storage approach:
 
 ## Data Types
 
-### Coordinate System
+### Core Types
 
 ```typescript
-interface IPosition {
-  x: number;  // X coordinate (0-9)
-  y: number;  // Y coordinate (0-9)
+/** Base interface for objects with numeric values */
+interface INumeric {
+    readonly value: number;
 }
 
-interface IBoardSize {
-  width: number;   // Board width (default: 10)
-  height: number;  // Board height (default: 10)
+/** Base interface for objects with unique identifiers */
+interface IIdentifiable {
+    readonly id: string;
 }
 
-/**
- * Player identification in the game
- */
-enum Player {
-    None = 0,     // Empty cell or no player
-    First = 1,    // First player
-    Second = 2    // Second player
+/** Base interface for objects with timestamps */
+interface ITimestamped {
+    readonly timestamp: number;
 }
 
-interface IBoard {
-  cells: (Player | null)[][];  // 2D array of Player enum values or null
-  size: IBoardSize;            // Board dimensions
+/** Base interface for validatable objects */
+interface IValidatable {
+    readonly valid: boolean;
+    readonly message?: string;
 }
 ```
 
-### Game State
+### Geometric Types
 
 ```typescript
-interface IGameState {
-  /** Current board state */
-  board: IBoard;
-  
-  /** Whether the game has ended */
-  gameOver: boolean;
-  
-  /** Winner of the game or null for ongoing/draw */
-  winner: Player | null;
-  
-  /** Current turn state */
-  currentTurn: {
-    /** Number of placement operations left in current turn */
-    placeOperationsLeft: number;
-    /** Moves made in current turn */
-    moves: IGameMove[];
-  };
-  
-  /** Current active player */
-  currentPlayer: Player;
-  
-  /** Player scores */
-  scores: {
-    [Player.First]: number;   // First player's score
-    [Player.Second]: number;  // Second player's score
-  };
-  
-  /** Special flag for first turn (1 operation only) */
-  isFirstTurn: boolean;
+/** Position on the game board */
+interface IPosition {
+    readonly x: number;
+    readonly y: number;
 }
 
+/** Board dimensions */
+interface ISize {
+    readonly width: number;
+    readonly height: number;
+}
+
+/** Extended position with validity check */
+interface IBoardPosition {
+    readonly position: IPosition;
+    readonly valid: boolean; // Indicates if position is within board bounds
+}
+
+/** Board cell with value */
+interface IBoardCell {
+    readonly position: IPosition;
+    readonly value: number | null;
+}
+```
+
+### Game Types
+
+```typescript
+/** Game state enum as union type */
+type GameStatus = 'waiting' | 'playing' | 'finished';
+
+/** Operation type enum as union type */
+type OperationType = 'place' | 'replace';
+
+/** Player number as literal type */
+type PlayerNumber = 1 | 2;
+
+/** Player information */
+interface IPlayer extends IIdentifiable {
+    readonly number: PlayerNumber;
+    readonly connected: boolean;
+}
+
+/** Game move structure */
 interface IGameMove {
-  type: 'place' | 'replace';
-  position: IPosition;
+    readonly type: OperationType;
+    readonly position: IPosition;
+    readonly player: PlayerNumber;
+}
+
+/** Game scores structure */
+interface IGameScores {
+    readonly player1: number;
+    readonly player2: number;
+}
+
+/** Complete game state */
+interface IGameState extends ITimestamped {
+    readonly id: string;
+    readonly board: ReadonlyArray<ReadonlyArray<number | null>>;
+    readonly size: ISize;
+    readonly currentPlayer: PlayerNumber;
+    readonly status: GameStatus;
+    readonly scores: IGameScores;
+    readonly lastMove?: IGameMove;
+}
+
+/** Move validation result */
+interface IMoveValidation {
+    readonly valid: boolean;
+    readonly message?: string;
+    readonly captures?: ReadonlyArray<IPosition>;
 }
 ```
 
