@@ -41,12 +41,12 @@
   - [x] Add proper readonly modifiers
   - [x] Remove server-side duplicate types
 
-- [ ] WebSocket Handlers Migration (Priority: High)
+- [x] WebSocket Handlers Migration (Priority: High)
   - [x] Update GameServer.events.ts to use new types
-  - [ ] Create shared/types/network/replay.ts for replay events
-  - [ ] Update historyHandlers.ts to use new types
-  - [ ] Update replayHandlers.ts to use new types
-  - [ ] Add validation for replay and history events
+  - [x] Create shared/types/network/replay.ts for replay events
+  - [x] Update historyHandlers.ts to use new types
+  - [x] Update replayHandlers.ts to use new types
+  - [x] Add validation for replay and history events
 
 - [ ] Client Code Migration
   - [ ] Update ActionQueue.ts to use shared types
@@ -101,5 +101,5 @@
 - Verify documentation matches implementation
 - Test critical paths only
 
-Last updated: January 14, 2025
+Last updated: January 14, 2025 15:55 UTC
 Current branch: refactor/simplify-types
