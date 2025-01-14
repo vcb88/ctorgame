@@ -12,12 +12,8 @@ import type {
     IMakeMoveAction,
     IEndTurnAction
 } from '@ctor-game/shared/src/types/game/actions.js';
-import type {
-    IWebSocketEvent,
-    WebSocketErrorCode,
-    ErrorSeverity,
-    INetworkError
-} from '@ctor-game/shared/src/types/network/websocket.js';
+import type { IWebSocketEvent } from '@ctor-game/shared/src/types/network/websocket.js';
+import type { INetworkError, ErrorCode, ErrorSeverity } from '@ctor-game/shared/src/types/network/errors.js';
 import type { IStorageConfig } from '@ctor-game/shared/src/types/storage/config.js';
 
 // Local imports
@@ -246,18 +242,11 @@ export class GameStateManager {
             });
         });
 
-        this.socket.on('error', (payload: {
-            code: WebSocketErrorCode;
-            message: string;
-            details?: unknown;
-        }) => {
+        this.socket.on('error', (payload: INetworkError) => {
             const networkError: INetworkError = {
-                code: payload.code,
-                message: payload.message,
-                severity: 'MEDIUM',
-                details: payload.details,
-                recoverable: true,
-                timestamp: Date.now()
+                ...payload,
+                severity: payload.severity || 'MEDIUM',
+                timestamp: payload.timestamp || Date.now()
             };
             
             this.updateState({ error: networkError });
