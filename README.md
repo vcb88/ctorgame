@@ -2,6 +2,18 @@
 
 A multiplayer online version of the classic tic-tac-toe game, supporting real-time gameplay between two players.
 
+## 🚧 Type System Migration in Progress
+
+The project is currently undergoing a major type system refactoring. For details about the current status, pending tasks, and migration strategy, see [TYPE_SYSTEM_MIGRATION.md](docs/TYPE_SYSTEM_MIGRATION.md).
+
+Key changes:
+- Moving from inheritance to composition
+- Simplifying type hierarchy
+- Improving type safety
+- Removing type duplication
+
+**Note**: Some parts of the codebase are using the new type system while others still use the old one. Please refer to the migration document before making any changes.
+
 ## ⚠️ Important Note About Shared Types
 
 This project maintains shared TypeScript type definitions in three locations:
