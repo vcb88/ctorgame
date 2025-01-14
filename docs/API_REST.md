@@ -49,9 +49,11 @@ Response: 200 OK
   "gameCode": "string",
   "state": {
     "board": number[][],
-    "currentPlayer": number,
-    "gameOver": boolean,
-    "winner": number | null
+    "currentPlayer": 1 | 2,
+    "opsRemaining": number,
+    "status": "waiting" | "playing" | "finished",
+    "lastMoveAt": number,
+    "winner": 1 | 2 | null
   },
   "createdAt": "string",
   "updatedAt": "string"
@@ -92,8 +94,8 @@ Response: 200 OK
     {
       "player": number,
       "position": {
-        "row": number,
-        "col": number
+        "x": number,
+        "y": number
       },
       "timestamp": "string"
     }
@@ -123,27 +125,26 @@ Response: 200 OK
 ### Game State
 ```typescript
 interface GameState {
-  board: (number | null)[][];
-  currentPlayer: number;
-  gameOver: boolean;
-  winner: number | null;
-  lastMove?: {
-    player: number;
-    row: number;
-    col: number;
-  };
+  board: number[][];          // Game board state
+  currentPlayer: 1 | 2;       // Current active player
+  opsRemaining: number;       // Operations remaining in current turn
+  status: GameStatus;         // Current game status
+  lastMoveAt: number;         // Last activity timestamp
+  winner?: 1 | 2 | null;      // Winner if game is finished
 }
+
+type GameStatus = 'waiting' | 'playing' | 'finished';
 ```
 
 ### Move History
 ```typescript
 interface Move {
-  player: number;
+  player: 1 | 2;           // Player number
   position: {
-    row: number;
-    col: number;
+    x: number;            // X coordinate (0-9)
+    y: number;            // Y coordinate (0-9)
   };
-  timestamp: string;
+  timestamp: number;       // Move timestamp in milliseconds
 }
 ```
 
