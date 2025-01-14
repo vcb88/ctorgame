@@ -113,20 +113,46 @@ See the detailed list in the Breaking Changes section of the original document.
 
 ### Known Issues
 
-1. Testing Coverage
+1. Critical: Type System Compilation
+   - Maximum call stack size exceeded error during compilation
+   - Potential circular dependencies in type resolution
+   - Mixed usage of old and new type systems
+   - Duplicate type definitions causing conflicts
+
+2. Testing Coverage
    - Limited test coverage for new types
    - Missing integration tests
    - Event validation needs testing
 
-2. Documentation
+3. Documentation
    - Some sections need updating
    - Missing examples for new features
    - Migration guides incomplete
 
-3. Validation
+4. Validation
    - Runtime validation incomplete
    - Missing schema validation
    - Error messages need improvement
+
+### Current Investigation Plan (2025-01-14)
+
+1. Type System Analysis [IN PROGRESS]
+   - [ ] Map all remaining .ts and .new.ts files
+   - [ ] Document import/export relationships
+   - [ ] Identify all type duplications
+   - [ ] Create dependency graph for remaining old types
+
+2. Immediate Tasks
+   - [ ] Create list of all duplicate type definitions
+   - [ ] Document all circular dependencies
+   - [ ] Map type usage in all modules
+   - [ ] Plan safe removal of old type system
+
+3. Validation Steps
+   - [ ] Test compilation with each type removal
+   - [ ] Verify no new circular dependencies
+   - [ ] Check all dependent modules
+   - [ ] Update affected documentation
 
 ### Success Metrics
 
