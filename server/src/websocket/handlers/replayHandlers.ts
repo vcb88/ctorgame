@@ -6,6 +6,11 @@ import type {
     IReplayClientEvents, 
     IReplayServerEvents 
 } from '@ctor-game/shared/types/network/replay';
+import { 
+    validateReplayState,
+    validateMoveIndex,
+    validatePlaybackSpeed
+} from '@ctor-game/shared/utils/validation/replay';
 
 // Состояние replay для каждой игры
 const replayStates = new Map<string, IReplayState>();
@@ -28,6 +33,9 @@ export function registerReplayHandlers(
                 playbackSpeed: 1,
                 gameCode
             };
+
+            // Валидируем состояние реплея
+            validateReplayState(replayState);
             
             replayStates.set(gameCode, replayState);
             
@@ -103,8 +111,15 @@ export function registerReplayHandlers(
 
     // Перейти к определенному ходу
     socket.on('GOTO_MOVE', async ({ gameCode, moveIndex }) => {
-        const state = replayStates.get(gameCode);
-        if (state && moveIndex >= 0 && moveIndex <= state.totalMoves) {
+        try {
+            const state = replayStates.get(gameCode);
+            if (!state) {
+                throw new Error('Replay session not found');
+            }
+
+            // Validate move index
+            validateMoveIndex(moveIndex, state.totalMoves);
+            
             state.currentMoveIndex = moveIndex;
             replayStates.set(gameCode, state);
             
@@ -114,16 +129,31 @@ export function registerReplayHandlers(
                 moveIndex: state.currentMoveIndex,
                 totalMoves: state.totalMoves
             });
+        } catch (error) {
+            socket.emit('REPLAY_ERROR', { 
+                message: error instanceof Error ? error.message : 'Invalid move request'
+            });
         }
     });
 
     // Изменить скорость воспроизведения
     socket.on('SET_PLAYBACK_SPEED', ({ gameCode, speed }) => {
-        const state = replayStates.get(gameCode);
-        if (state) {
+        try {
+            const state = replayStates.get(gameCode);
+            if (!state) {
+                throw new Error('Replay session not found');
+            }
+
+            // Validate playback speed
+            validatePlaybackSpeed(speed);
+            
             state.playbackSpeed = speed;
             replayStates.set(gameCode, state);
             socket.emit('PLAYBACK_SPEED_UPDATED', { speed });
+        } catch (error) {
+            socket.emit('REPLAY_ERROR', { 
+                message: error instanceof Error ? error.message : 'Invalid playback speed'
+            });
         }
     });
 
