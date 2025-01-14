@@ -52,8 +52,9 @@ The project is at version 0.1.0 (stable) with active development focused on MVP 
    - ✅ Error types centralized
    - ✅ Replay and history types migrated
    - ✅ Server handlers updated and validated
+   - ✅ WebSocket server types migrated
    - 🔄 Client code migration ongoing
-   Progress: 85%
+   Progress: 90%
 
 ### Pending Features
 
@@ -167,4 +168,4 @@ Nginx       | ✅     | Latest
    - Minimal monitoring
    - Simple backup strategy
 
-Last updated: January 14, 2025 15:55 UTC
+Last updated: January 14, 2025 16:45 UTC
