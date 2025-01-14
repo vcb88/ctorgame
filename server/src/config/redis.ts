@@ -1,18 +1,28 @@
 import Redis from 'ioredis';
 import * as dotenv from 'dotenv';
-import { ICacheConfig } from '@ctor-game/shared/types/redis/config.js';
+import type { TTLConfig } from '@ctor-game/shared/types/redis/ttl.js';
 import { logger } from '../utils/logger.js';
 import { ErrorWithStack, toErrorWithStack } from '../types/error.js';
 
 dotenv.config();
 
-// Конфигурация TTL из переменных окружения или значений по умолчанию
-export const cacheConfig: ICacheConfig = {
-    ttl: {
+// TTL configuration from environment variables
+export const ttlConfig: TTLConfig = {
+    base: {
         gameState: parseInt(process.env.CACHE_TTL_GAME_STATE || '3600'),
         playerSession: parseInt(process.env.CACHE_TTL_PLAYER_SESSION || '7200'),
         gameRoom: parseInt(process.env.CACHE_TTL_GAME_ROOM || '3600'),
-        events: parseInt(process.env.CACHE_TTL_EVENTS || '86400') // 24 часа по умолчанию
+        events: parseInt(process.env.CACHE_TTL_EVENTS || '86400')
+    },
+    active: {
+        gameState: parseInt(process.env.CACHE_TTL_ACTIVE_GAME_STATE || '14400'),
+        playerSession: parseInt(process.env.CACHE_TTL_ACTIVE_PLAYER_SESSION || '14400'),
+        gameRoom: parseInt(process.env.CACHE_TTL_ACTIVE_GAME_ROOM || '14400')
+    },
+    finished: {
+        gameState: parseInt(process.env.CACHE_TTL_FINISHED_GAME_STATE || '900'),
+        playerSession: parseInt(process.env.CACHE_TTL_FINISHED_PLAYER_SESSION || '900'),
+        gameRoom: parseInt(process.env.CACHE_TTL_FINISHED_GAME_ROOM || '900')
     }
 };
 
