@@ -171,12 +171,21 @@ export const validateGameExpiredEvent = (event: IGameExpiredEvent): boolean => {
 export const validatePlayerEvent = (
     event: IPlayerConnectedEvent | IPlayerDisconnectedEvent
 ): boolean => {
-    return (
-        typeof event.gameId === 'string' &&
-        typeof event.data.playerId === 'string' &&
-        [1, 2].includes(event.data.playerNumber) &&
-        typeof event.data[event.type === 'player_connected' ? 'connectedAt' : 'disconnectedAt'] === 'number'
-    );
+    if (event.type === 'player_connected') {
+        return (
+            typeof event.gameId === 'string' &&
+            typeof event.data.playerId === 'string' &&
+            [1, 2].includes(event.data.playerNumber) &&
+            typeof event.data.connectedAt === 'number'
+        );
+    } else {
+        return (
+            typeof event.gameId === 'string' &&
+            typeof event.data.playerId === 'string' &&
+            [1, 2].includes(event.data.playerNumber) &&
+            typeof event.data.disconnectedAt === 'number'
+        );
+    }
 };
 
 export const validateGameErrorEvent = (event: IGameErrorEvent): boolean => {

@@ -1,10 +1,5 @@
-import type {
-    IGameState,
-    IGameMove,
-    PlayerNumber,
-    UUID,
-    GameStatus
-} from '../core/base.js';
+import type { IGameState, IGameMove, PlayerNumber, GameStatus } from '../game/types.js';
+type UUID = string;
 
 /**
  * Redis configuration

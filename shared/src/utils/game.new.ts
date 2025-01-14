@@ -1,11 +1,8 @@
-import type {
-    PlayerNumber,
-    GameStatus,
-    IScores,
-    IGameState,
-    ISize,
-    UUID
-} from '../types/core/base.js';
+import type { PlayerNumber, GameStatus } from '../types/game/types.js';
+import type { IGameState, IGameScores as IScores } from '../types/game/types.js';
+import type { ISize } from '../types/geometry/types.js';
+
+type UUID = string;
 
 export type GameOutcome = 'win' | 'loss' | 'draw';
 
@@ -39,15 +36,10 @@ export function createInitialState(size: ISize): IGameState {
         id: crypto.randomUUID(),
         board: Array(size.height).fill(null).map(() => Array(size.width).fill(null)),
         size,
-        turn: {
-            currentPlayer: 1,
-            placeOperationsLeft: 1,
-            moves: []
-        },
+        currentPlayer: 1,
         scores: createScores(0, 0),
         status: 'playing',
-        timestamp: Date.now(),
-        isFirstTurn: true
+        timestamp: Date.now()
     };
 }
 
@@ -79,18 +71,14 @@ export const isValidGameState = (state: unknown): state is IGameState => {
     return !!(
         isValidUUID(s.id) &&
         Array.isArray(s.board) &&
-        s.board.every(row => Array.isArray(row)) &&
+        s.board.every((row: Array<PlayerNumber | null>) => Array.isArray(row)) &&
         s.size &&
         typeof s.size.width === 'number' &&
         typeof s.size.height === 'number' &&
-        s.turn &&
-        isValidPlayerNumber(s.turn.currentPlayer) &&
-        typeof s.turn.placeOperationsLeft === 'number' &&
-        Array.isArray(s.turn.moves) &&
+        isValidPlayerNumber(s.currentPlayer) &&
         isValidScores(s.scores) &&
         isValidGameStatus(s.status) &&
-        typeof s.timestamp === 'number' &&
-        typeof s.isFirstTurn === 'boolean'
+        typeof s.timestamp === 'number'
     );
 };
 

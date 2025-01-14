@@ -1,10 +1,5 @@
-import type {
-    IGameState,
-    IGameMove,
-    PlayerNumber,
-    GameStatus,
-    UUID
-} from '../core/base.js';
+import type { IGameState, IGameMove, PlayerNumber, GameStatus } from '../game/types.js';
+type UUID = string;
 
 // WebSocket event types
 export type WebSocketEventType =
