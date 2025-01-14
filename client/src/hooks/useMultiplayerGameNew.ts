@@ -1,7 +1,7 @@
 import { useCallback, useState } from 'react';
 import { useGame } from './useGame';
 // Base types
-import type { OperationType, Player } from '@ctor-game/shared/types/base/enums';
+import type { OperationType, Player } from '@ctor-game/shared/types/enums';
 // Game types
 import type { IGameState } from '@ctor-game/shared/types/game';
 import type { GameActionType } from '@ctor-game/shared/types/game';

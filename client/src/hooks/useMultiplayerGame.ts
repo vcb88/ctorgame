@@ -16,7 +16,7 @@ import type {
 
 // Base types
 import type { IPosition } from '@ctor-game/shared/types/base/primitives';
-import type { OperationType, Player } from '@ctor-game/shared/types/base/enums';
+import type { OperationType, Player } from '@ctor-game/shared/types/enums';
 
 // Utils and validation
 import { getOpponent } from '@ctor-game/shared/utils/game';

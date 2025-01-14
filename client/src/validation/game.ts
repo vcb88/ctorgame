@@ -1,7 +1,7 @@
 import type { GameMove } from '@ctor-game/shared/types/game/moves';
 import type { IGameState } from '@ctor-game/shared/types/game/state';
 import type { IPosition, IBoardSize } from '@ctor-game/shared/types/base/primitives';
-import type { Player } from '@ctor-game/shared/types/base/enums';
+import type { Player } from '@ctor-game/shared/types/enums';
 
 export function validatePosition(pos: IPosition, size: IBoardSize): boolean {
   return (

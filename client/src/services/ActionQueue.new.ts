@@ -1,5 +1,5 @@
 import { ErrorRecoveryManager } from './ErrorRecoveryManager';
-import type { GameActionType } from '@ctor-game/shared/types/base/enums.js';
+import type { GameActionType } from '@ctor-game/shared/types/enums.js';
 import type { GameMove } from '@ctor-game/shared/types/game/moves.js';
 import type { ErrorCode, ErrorSeverity, IErrorResponse } from '@ctor-game/shared/types/network/types.js';
 

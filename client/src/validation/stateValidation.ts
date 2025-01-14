@@ -1,5 +1,5 @@
 // Base types
-import type { GamePhase, Player } from '@ctor-game/shared/types/base/enums';
+import type { GamePhase, Player } from '@ctor-game/shared/types/enums';
 // Game state types
 import type { IGameState } from '@ctor-game/shared/types/game/state';
 import type { GameMove } from '@ctor-game/shared/types/game/moves';
