@@ -1,8 +1,7 @@
 import { ErrorRecoveryManager } from './ErrorRecoveryManager';
 import type { GameActionType } from '@ctor-game/shared/types/base/enums.js';
 import type { GameMove } from '@ctor-game/shared/types/game/moves.js';
-import type { ErrorCode, ErrorSeverity } from '@ctor-game/shared/types/errors.js';
-import type { ClientError } from '@/types/errors.new.js';
+import type { ErrorCode, ErrorSeverity, IErrorResponse } from '@ctor-game/shared/types/network/types.js';
 
 /**
  * Game action types supported by the queue
@@ -16,7 +15,7 @@ export type QueuedGameAction =
 interface QueuedAction<T = unknown> {
     readonly action: QueuedGameAction;
     readonly resolve: (value: T) => void;
-    readonly reject: (error: ClientError) => void;
+    readonly reject: (error: IErrorResponse) => void;
 }
 
 /**
@@ -111,7 +110,7 @@ export class ActionQueue {
                     message: 'Conflicting operation in progress',
                     severity: ErrorSeverity.MEDIUM,
                     details: { action }
-                } satisfies ClientError;
+                } satisfies IErrorResponse;
             }
 
             // Process action (in MVP we just resolve immediately)
@@ -126,7 +125,7 @@ export class ActionQueue {
                 message: error instanceof Error ? error.message : 'Operation failed',
                 severity: ErrorSeverity.MEDIUM,
                 details: { error, action }
-            } satisfies ClientError;
+            } satisfies IErrorResponse;
 
             this.errorManager.handleError(clientError);
             reject(clientError);
@@ -152,7 +151,7 @@ export class ActionQueue {
                 code: ErrorCode.OPERATION_CANCELLED,
                 message: 'Operation cancelled - queue cleared',
                 severity: ErrorSeverity.LOW
-            } satisfies ClientError);
+            } satisfies IErrorResponse);
         });
         this.queue = [];
         this.processing = false;
