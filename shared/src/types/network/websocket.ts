@@ -1,116 +1,166 @@
-import { Player, WebSocketErrorCode, GamePhase } from '../base/enums.js';
-import { GameMove } from '../game/moves.js';
-import { IGameState } from '../game/state.js';
+/**
+ * WebSocket types and interfaces for game communication
+ */
 
-export enum WebSocketEvents {
+import type { IGameState, IGameMove, PlayerNumber, GameStatus } from '../game/types.js';
+type UUID = string;
+
+// WebSocket event types
+export type WebSocketEventType =
     // Client -> Server events
-    CreateGame = 'createGame',
-    JoinGame = 'joinGame',
-    MakeMove = 'makeMove',
-    EndTurn = 'endTurn',
-    Disconnect = 'disconnect',
-    Reconnect = 'reconnect',
-
+    | 'create_game'
+    | 'join_game'
+    | 'make_move'
+    | 'end_turn'
+    | 'disconnect'
+    | 'reconnect'
     // Server -> Client events
-    GameCreated = 'gameCreated',
-    GameJoined = 'gameJoined',
-    GameStarted = 'gameStarted',
-    GameStateUpdated = 'gameStateUpdated',
-    GameOver = 'gameOver',
-    PlayerDisconnected = 'playerDisconnected',
-    PlayerReconnected = 'playerReconnected',
-    GameExpired = 'gameExpired',
-    Error = 'error',
-    AvailableReplaces = 'availableReplaces'
+    | 'game_created'
+    | 'game_joined'
+    | 'game_started'
+    | 'game_state_updated'
+    | 'game_over'
+    | 'player_disconnected'
+    | 'player_reconnected'
+    | 'game_expired'
+    | 'available_replaces'
+    | 'error';
+
+// Error codes
+export type WebSocketErrorCode =
+    | 'invalid_game_id'
+    | 'invalid_move'
+    | 'invalid_state'
+    | 'not_your_turn'
+    | 'game_ended'
+    | 'server_error'
+    | 'game_expired'
+    | 'game_not_found'
+    | 'game_full';
+
+// Base event interface
+export interface IWebSocketEvent {
+    readonly eventId: UUID;
+    readonly timestamp: number;
 }
 
-// Тип для событий сервера -> клиент
-export type ServerToClientEventType = 
-    | WebSocketEvents.GameCreated 
-    | WebSocketEvents.GameJoined 
-    | WebSocketEvents.GameStarted 
-    | WebSocketEvents.GameStateUpdated 
-    | WebSocketEvents.GameOver 
-    | WebSocketEvents.PlayerDisconnected 
-    | WebSocketEvents.PlayerReconnected 
-    | WebSocketEvents.GameExpired 
-    | WebSocketEvents.Error 
-    | WebSocketEvents.AvailableReplaces;
+// Server to client events
+export interface ServerToClientEvents {
+    'game_created': (event: IWebSocketEvent & {
+        readonly gameId: UUID;
+    }) => void;
 
-// Тип для событий клиент -> сервер
-export type ClientToServerEventType = 
-    | WebSocketEvents.CreateGame 
-    | WebSocketEvents.JoinGame 
-    | WebSocketEvents.MakeMove 
-    | WebSocketEvents.EndTurn 
-    | WebSocketEvents.Disconnect 
-    | WebSocketEvents.Reconnect;
+    'game_joined': (event: IWebSocketEvent & {
+        readonly gameId: UUID;
+        readonly status: GameStatus;
+    }) => void;
 
-export type WebSocketPayloads = {
-    // Client -> Server requests
-    [WebSocketEvents.CreateGame]: void;
-    [WebSocketEvents.JoinGame]: {
-        gameId: string;
-    };
-    [WebSocketEvents.MakeMove]: {
-        gameId: string;
-        move: {
-            type: 'place' | 'replace';
-            position: { x: number; y: number };
-        };
-    };
-    [WebSocketEvents.EndTurn]: {
-        gameId: string;
-    };
-    [WebSocketEvents.Disconnect]: void;
-    [WebSocketEvents.Reconnect]: {
-        gameId: string;
-    };
+    'game_started': (event: IWebSocketEvent & {
+        readonly gameId: UUID;
+        readonly gameState: IGameState;
+        readonly currentPlayer: PlayerNumber;
+    }) => void;
 
-    // Server -> Client responses
-    [WebSocketEvents.GameCreated]: {
-        gameId: string;
-        eventId: string;
-    };
-    [WebSocketEvents.GameJoined]: {
-        gameId: string;
-        eventId: string;
-        phase: GamePhase;
-    };
-    [WebSocketEvents.GameStarted]: {
-        gameState: IGameState;
-        currentPlayer: number;
-        eventId: string;
-        phase: GamePhase;
-    };
-    [WebSocketEvents.GameStateUpdated]: {
-        gameState: IGameState;
-        currentPlayer: number;
-        phase: GamePhase;
-    };
-    [WebSocketEvents.GameOver]: {
-        gameState: IGameState;
-        winner: number | null;
-    };
-    [WebSocketEvents.PlayerDisconnected]: {
-        player: number;
-    };
-    [WebSocketEvents.PlayerReconnected]: {
-        player: number;
-        gameState: IGameState;
-        currentPlayer: Player;
-    };
-    [WebSocketEvents.GameExpired]: {
-        gameId: string;
-        reason?: string;
-    };
-    [WebSocketEvents.Error]: {
-        code: WebSocketErrorCode;
-        message: string;
-        details?: unknown;
-    };
-    [WebSocketEvents.AvailableReplaces]: {
-        replacements: Array<[number, number]>;
-        moves: GameMove[];
-    };
+    'game_state_updated': (event: IWebSocketEvent & {
+        readonly gameState: IGameState;
+        readonly currentPlayer: PlayerNumber;
+        readonly status: GameStatus;
+    }) => void;
+
+    'game_over': (event: IWebSocketEvent & {
+        readonly gameState: IGameState;
+        readonly winner: PlayerNumber | null;
+    }) => void;
+
+    'player_disconnected': (event: IWebSocketEvent & {
+        readonly playerNumber: PlayerNumber;
+    }) => void;
+
+    'player_reconnected': (event: IWebSocketEvent & {
+        readonly playerNumber: PlayerNumber;
+        readonly gameState: IGameState;
+        readonly currentPlayer: PlayerNumber;
+    }) => void;
+
+    'game_expired': (event: IWebSocketEvent & {
+        readonly gameId: UUID;
+        readonly reason?: string;
+    }) => void;
+
+    'available_replaces': (event: IWebSocketEvent & {
+        readonly replacements: Array<[number, number]>;
+        readonly moves: IGameMove[];
+    }) => void;
+
+    'error': (event: {
+        readonly code: WebSocketErrorCode;
+        readonly message: string;
+        readonly details?: unknown;
+    }) => void;
 }
+
+// Client to server events
+export interface ClientToServerEvents {
+    'create_game': () => void;
+
+    'join_game': (data: {
+        readonly gameId: UUID;
+    }) => void;
+
+    'make_move': (data: {
+        readonly gameId: UUID;
+        readonly move: IGameMove;
+    }) => void;
+
+    'end_turn': (data: {
+        readonly gameId: UUID;
+    }) => void;
+
+    'disconnect': () => void;
+
+    'reconnect': (data: {
+        readonly gameId: UUID;
+    }) => void;
+}
+
+// Inter-server events (for clustering support)
+export interface InterServerEvents {
+    'ping': () => void;
+}
+
+// Socket data
+export interface ISocketData {
+    readonly userId: UUID;
+    readonly gameId?: UUID;
+    readonly playerNumber?: PlayerNumber;
+}
+
+// Server configuration
+export interface IWebSocketServerConfig {
+    readonly cors: {
+        readonly origin: string;
+        readonly methods: string[];
+    };
+    readonly path: string;
+    readonly transports: string[];
+    readonly pingTimeout: number;
+    readonly pingInterval: number;
+    readonly maxHttpBufferSize: number;
+}
+
+export interface IWebSocketServerOptions {
+    readonly config?: Partial<IWebSocketServerConfig>;
+    readonly reconnectTimeout?: number;
+}
+
+// Type guards
+export const isGameEvent = (event: unknown): event is IWebSocketEvent => {
+    return typeof event === 'object' && event !== null &&
+           'eventId' in event && 'timestamp' in event;
+};
+
+export const isErrorEvent = (
+    event: { code: WebSocketErrorCode; message: string; details?: unknown }
+): event is { code: WebSocketErrorCode; message: string; details?: unknown } => {
+    return typeof event.code === 'string' && typeof event.message === 'string';
+};
