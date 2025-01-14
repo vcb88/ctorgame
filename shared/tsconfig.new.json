@@ -1,0 +1,22 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "declaration": true,
+    "sourceMap": true,
+    "outDir": "dist/new",
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true
+  },
+  "include": [
+    "src/types/core/**/*.ts",
+    "src/types/geometry/**/*.ts",
+    "src/types/game/**/*.ts",
+    "src/types/network/**/*.ts",
+    "src/types/storage/**/*.ts",
+    "src/types/index.new.ts"
+  ],
+  "exclude": ["node_modules", "dist"]
+}
