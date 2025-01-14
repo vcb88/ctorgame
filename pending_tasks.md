@@ -40,6 +40,8 @@
   - [x] Add basic type guards
   - [x] Add proper readonly modifiers
   - [x] Remove server-side duplicate types
+  - [x] Consolidate enums and constants
+  - [x] Migrate to new type definitions
 
 - [x] WebSocket Handlers Migration (Priority: High)
   - [x] Update GameServer.events.ts to use new types
@@ -47,6 +49,11 @@
   - [x] Update historyHandlers.ts to use new types
   - [x] Update replayHandlers.ts to use new types
   - [x] Add validation for replay and history events
+
+- [x] Type System Clean Up
+  - [x] Remove duplicate constants.ts and enums.ts
+  - [x] Migrate all .new.ts files to their base versions
+  - [x] Keep .ts.old files temporarily for backup
 
 - [ ] Client Code Migration
   - [ ] Update ActionQueue.ts to use shared types
@@ -101,5 +108,5 @@
 - Verify documentation matches implementation
 - Test critical paths only
 
-Last updated: January 14, 2025 15:55 UTC
-Current branch: refactor/simplify-types
+Last updated: January 14, 2025 17:15 UTC
+Current branch: stable-v0.1.0

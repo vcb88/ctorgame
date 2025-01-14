@@ -54,8 +54,10 @@ The project is at version 0.1.0 (stable) with active development focused on MVP 
    - ✅ Replay and history types migrated
    - ✅ Server handlers updated and validated
    - ✅ WebSocket server types migrated
+   - ✅ Constants and enums consolidated
+   - ✅ New type definitions migrated
    - 🔄 Client code migration ongoing
-   Progress: 90%
+   Progress: 95%
 
 ### Pending Features
 
@@ -131,8 +133,7 @@ The project is at version 0.1.0 (stable) with active development focused on MVP 
 
 ## Branch Status
 
-- Current Branch: refactor/simplify-types
-- Target Branch: stable-v0.1.0
+- Current Branch: stable-v0.1.0
 - Status: Active Development
 
 ## Build Status
@@ -169,4 +170,4 @@ Nginx       | ✅     | Latest
    - Minimal monitoring
    - Simple backup strategy
 
-Last updated: January 14, 2025 17:45 UTC
+Last updated: January 14, 2025 17:20 UTC
