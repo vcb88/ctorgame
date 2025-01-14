@@ -218,10 +218,19 @@ Legend:
 - [ ] Test changes
 
 ### Server Module Dependencies
-- [ ] Analyze current imports
-- [ ] List files using old types
-- [ ] Create update plan
-- [ ] Test changes
+#### Core Services Migration Status
+| Service | Status | Tests Updated | Dependencies Updated | Documentation |
+|---------|--------|---------------|---------------------|---------------|
+| GameLogicService | ✅ Done | ✅ Done | ✅ Done | ✅ Done |
+| RedisService | ✅ Done | ✅ Done | ✅ Done | ✅ Done |
+| GameService | 🔄 In Progress | ❌ Pending | ❌ Pending | ❌ Pending |
+| GameStorageService | ❌ Not Started | ❌ Pending | ❌ Pending | ❌ Pending |
+
+#### Remaining Tasks
+- [ ] Update GameService dependencies
+- [ ] Migrate GameStorageService
+- [ ] Update WebSocket handlers
+- [ ] Test integration between services
 
 ### Test Files
 - [ ] Analyze test imports
