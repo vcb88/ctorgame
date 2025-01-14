@@ -43,18 +43,23 @@ The project is in the middle of a major type system refactoring effort. The main
 
 ### Pending Tasks
 
-1. EventService Migration
-   - [ ] Create new event types
-   - [ ] Implement type-safe event handling
-   - [ ] Add event validation
-   - [ ] Improve event queueing
-   - [ ] Add event persistence
+See [PENDING_TASKS.md](./PENDING_TASKS.md) for a detailed breakdown of remaining tasks, including:
+- Priority levels
+- Dependencies
+- Timeline estimates
+- Risk assessment
+- Success criteria
+- Monitoring metrics
 
+Key areas pending migration:
+1. Event System
 2. Client-Side Types
-   - [ ] Update client state management
-   - [ ] Migrate React components to new types
-   - [ ] Update WebSocket client handlers
-   - [ ] Add client-side type guards
+3. API Layer
+4. Storage Layer
+5. Documentation
+6. Testing
+
+Each area has its own section in the pending tasks document with detailed subtasks and success criteria.
 
 3. Data Validation
    - [ ] Create validation schemas for new types
