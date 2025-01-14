@@ -31,7 +31,7 @@ import { GameLogicService } from '../services/GameLogicService.js';
 import { EventService } from '../services/EventService.js';
 import { redisService } from '../services/RedisService.js';
 import { logger } from '../utils/logger.js';
-import { toErrorWithStack } from '../types/error.js';
+import { toErrorWithStack } from '@ctor-game/shared/src/utils/errors.js';
 
 const DEFAULT_CONFIG = {
     cors: {

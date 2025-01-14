@@ -17,7 +17,7 @@ import { GameStorageService } from './GameStorageService.js';
 import { EventService } from './EventService.js';
 import { RedisService } from './RedisService.js';
 import { logger } from '../utils/logger.js';
-import { toErrorWithStack } from '../types/error.js';
+import { toErrorWithStack } from '@ctor-game/shared/src/utils/errors.js';
 
 export class GameServiceError extends Error {
     constructor(message: string) {
