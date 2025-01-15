@@ -73,7 +73,7 @@
         - [✓] TurnTimer.tsx - обновлен с использованием Timestamp и улучшенной типизацией
         
         Компоненты повтора:
-        - [ ] Replay/MoveTimeline.tsx
+        - [✓] Replay/MoveTimeline.tsx - обновлен для использования Position, MoveType и Timestamp
         - [ ] Replay/ReplayControls.tsx
         - [ ] Replay/ReplayView.tsx
         
