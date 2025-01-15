@@ -64,7 +64,32 @@
       - [✓] GameControls.tsx - обновлен для использования PlayerNumber
       - [✓] GameBoard.tsx - обновлен для использования Position и PlayerNumber
       - [✓] GameOverScreen.tsx - обновлен для использования PlayerNumber и Scores
-      - [ ] Обновить оставшиеся компоненты
+      - [ ] Обновить оставшиеся компоненты:
+        
+        Игровые компоненты:
+        - [ ] GameCell.tsx - требует обновления Position и PlayerNumber
+        - [ ] Game.tsx - требует проверки использования типов
+        - [ ] GameNew.tsx - требует проверки использования типов
+        - [ ] TurnTimer.tsx - требует проверки использования типов
+        
+        Компоненты повтора:
+        - [ ] Replay/MoveTimeline.tsx
+        - [ ] Replay/ReplayControls.tsx
+        - [ ] Replay/ReplayView.tsx
+        
+        Страницы:
+        - [ ] pages/GameBoard.tsx - проверить использование обновленных типов
+        - [ ] pages/WaitingRoom.tsx - проверить GameState и Player types
+        - [ ] pages/WaitingRoomNew.tsx
+        - [ ] pages/GameHistory.tsx - проверить использование типов для истории игр
+        - [ ] pages/CreateGame.tsx
+        - [ ] pages/JoinGame.tsx
+        
+        Модальные окна:
+        - [ ] modals/DisconnectionOverlay.tsx
+        - [ ] modals/Settings.tsx
+        
+        Остальные компоненты будут проверены на использование типов по мере необходимости
 
       b. Проблемы с типами:
       - [✓] Заменена объектная нотация Position на кортежи в GameBoard
