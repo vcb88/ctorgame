@@ -2,7 +2,9 @@
  * Simplified game metadata types
  */
 import type { GameStatus, PlayerNumber, GameMove, Scores } from '../primitives.js';
-import { BOARD_SIZE } from '../../config/constants.js';
+
+// TODO: Move back to constants when module system is fixed
+const BOARD_SIZE = 10;
 
 /**
  * Basic game metadata

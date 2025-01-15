@@ -2,6 +2,21 @@
  * Core primitive types
  */
 
+// For backwards compatibility
+export type IPhase = GamePhase;
+export type IOperationType = MoveType;
+export type IErrorCode = string;
+export type IMessage = string;
+export type IErrorDetails = Record<string, unknown>;
+export type ITimestamp = Timestamp;
+export type IConnectionStatus = ConnectionStatus;
+export type IXCoordinate = number;
+export type IYCoordinate = number;
+export type IWidth = number;
+export type IHeight = number;
+export type IPlayerNumber = PlayerNumber;
+export type IGameStatus = GameStatus;
+
 /** Position type [x, y] */
 export type Position = [number, number];
 
@@ -66,3 +81,14 @@ export type WithMetadata<T> = {
     timestamp: Timestamp;
     version?: string;
 };
+
+/** Game state interface */
+export interface IGameState {
+    board: CellValue[][];
+    scores: Scores;
+    currentPlayer: PlayerNumber;
+    status: GameStatus;
+    winner?: PlayerNumber;
+    lastMove?: GameMove;
+    timestamp: number;
+}
