@@ -1,16 +1,18 @@
 import type {
-    IGameState,
-    IPlayer,
-    IGameMove,
+    GameState,
+    Player,
+    GameMove,
     PlayerNumber,
-    IGameScores
-} from '@ctor-game/shared/types/game/types';
-import { GameStatus } from '@ctor-game/shared/types/game/types';
-import type { IGameHistory, IGameHistorySummary } from '@ctor-game/shared/types/storage/history';
+    Scores,
+    GameStatus,
+    GameMoveComplete,
+    GameHistoryEntry
+} from '@ctor-game/shared/types/primitives';
 
 import type {
-    GameMetadata,
-    GameDetails
+    GameMeta,
+    GameHistory,
+    GameHistorySummary
 } from '@ctor-game/shared/types/storage/metadata';
 
 import { GameLogicService } from './GameLogicService.js';
@@ -65,14 +67,14 @@ export class GameService {
         }
     }
 
-    async createGame(playerId: string, gameId: string): Promise<GameMetadata> {
+    async createGame(playerId: string, gameId: string): Promise<GameMeta> {
         const startTime = Date.now();
         await this.ensureInitialized();
 
         try {
             // Generate game code (from old version)
             let code: string;
-            let exists: GameMetadata | null;
+            let exists: GameMeta | null;
             do {
                 code = Math.floor(Math.random() * 10000).toString().padStart(4, '0');
                 exists = await this.storageService.findGameByCode(code);
@@ -112,12 +114,12 @@ export class GameService {
         }
     }
 
-    async findGame(gameIdOrCode: string): Promise<GameMetadata | null> {
+    async findGame(gameIdOrCode: string): Promise<GameMeta | null> {
         await this.ensureInitialized();
         return this.storageService.findGameByCode(gameIdOrCode);
     }
 
-    async joinGame(gameId: string, playerId: string): Promise<GameMetadata> {
+    async joinGame(gameId: string, playerId: string): Promise<GameMeta> {
         const startTime = Date.now();
         await this.ensureInitialized();
 
@@ -135,7 +137,7 @@ export class GameService {
             await this.eventService.createPlayerConnectedEvent(gameId, playerId, 2 as PlayerNumber);
 
             // If game is now full, create game started event
-            if (game.players.first && game.players.second) {
+            if (game.players[0] && game.players[1]) {
                 await this.eventService.createGameStartedEvent(gameId, state);
             }
 
@@ -160,7 +162,7 @@ export class GameService {
         }
     }
 
-    async makeMove(gameId: string, playerNumber: PlayerNumber, move: IGameMove): Promise<IGameState> {
+    async makeMove(gameId: string, playerNumber: PlayerNumber, move: GameMove): Promise<GameState> {
         const startTime = Date.now();
         await this.ensureInitialized();
 
@@ -188,12 +190,8 @@ export class GameService {
             await this.eventService.createGameMoveEvent(gameId, playerNumber, move, newState);
 
             // Check for game end
-            if (newState.gameOver) {
-                const scores: IGameScores = {
-                    player1: newState.scores.player1,
-                    player2: newState.scores.player2
-                };
-                await this.finishGame(gameId, newState.winner as PlayerNumber, scores);
+            if (newState.status === 'finished') {
+                await this.finishGame(gameId, newState.winner as PlayerNumber, newState.scores);
             }
 
             logger.info('move_made', {
@@ -222,7 +220,7 @@ export class GameService {
     async finishGame(
         gameId: string,
         winner: PlayerNumber,
-        scores: IGameScores
+        scores: Scores
     ): Promise<void> {
         const startTime = Date.now();
         await this.ensureInitialized();
@@ -259,17 +257,17 @@ export class GameService {
         }
     }
 
-    async getSavedGames(): Promise<IGameHistorySummary[]> {
+    async getSavedGames(): Promise<GameHistorySummary[]> {
         await this.ensureInitialized();
         return this.storageService.getSavedGames();
     }
 
-    async getGameHistory(gameId: string): Promise<IGameHistory> {
+    async getGameHistory(gameId: string): Promise<GameHistory> {
         await this.ensureInitialized();
         return this.storageService.getGameHistory(gameId);
     }
 
-    async getGameStateAtMove(gameId: string, moveNumber: number): Promise<IGameState | null> {
+    async getGameStateAtMove(gameId: string, moveNumber: number): Promise<GameState | null> {
         await this.ensureInitialized();
         const history = await this.getGameHistory(gameId);
         

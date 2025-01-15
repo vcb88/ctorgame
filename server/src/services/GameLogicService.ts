@@ -84,7 +84,7 @@ export class GameLogicService {
       // 2. Достаточно ли своих фишек вокруг
       return (
         state.board[y][x] === getOpponent(playerNumber) &&
-        this.validateReplace(state.board, state.size, position, playerNumber).isValid
+        this.validateReplace(state.board, pos, playerNumber).isValid
       );
     }
 
@@ -108,7 +108,7 @@ export class GameLogicService {
       }
     );
     
-    const validation: IReplaceValidation = {
+    const validation: ReplaceValidation = {
       isValid: playerPieces.length >= MIN_ADJACENT_FOR_REPLACE,
       replacements: playerPieces,
       message: playerPieces.length >= MIN_ADJACENT_FOR_REPLACE ? 
@@ -169,8 +169,10 @@ export class GameLogicService {
           });
           
           for (const replaceMove of availableReplaces) {
-            const { x: replaceX, y: replaceY } = replaceMove.position;
-            newBoard = update2DArrayValue(newBoard, replaceX, replaceY, playerNumber);
+            if (replaceMove.pos) {
+              const [replaceX, replaceY] = replaceMove.pos;
+              newBoard = update2DArrayValue(newBoard, replaceX, replaceY, playerNumber);
+            }
           }
         }
       } while (replacementsFound);

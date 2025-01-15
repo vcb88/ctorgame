@@ -24,18 +24,22 @@ export type ValidationResult = {
 };
 
 /** Core game types */
+/** Move type */
+export type MoveType = 'place' | 'replace' | 'skip';
+
 export type Player = {
     id: string;
     num: PlayerNumber;
+    connected: boolean;
 };
 
 export type GameMove = {
-    type: string;
+    type: MoveType;
     pos?: Position;
 };
 
-/** Game cell value */
-export type CellValue = number | null;
+/** Game cell value - can only be PlayerNumber or null */
+export type CellValue = PlayerNumber | null;
 
 /** Basic error type */
 export type GameError = {
@@ -51,7 +55,7 @@ export type ConnectionStatus = 'connected' | 'disconnected' | 'error';
 export type GamePhase = 'setup' | 'play' | 'end';
 
 /** Game status */
-export type GameStatus = 'waiting' | 'active' | 'finished' | 'error';
+export type GameStatus = 'waiting' | 'active' | 'finished';
 
 /** Generic type for collections */
 export type Collection<T> = ReadonlyArray<T>;

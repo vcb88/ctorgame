@@ -5,18 +5,18 @@
 import { RedisService } from './RedisService.js';
 import type {
     GameEvent,
-    IGameCreatedEvent,
-    IGameStartedEvent,
-    IGameMoveEvent,
-    IGameEndedEvent,
-    IGameExpiredEvent,
-    IPlayerConnectedEvent,
-    IPlayerDisconnectedEvent,
-    IGameErrorEvent
+    GameCreatedEvent,
+    GameStartedEvent,
+    GameMoveEvent,
+    GameEndedEvent,
+    GameExpiredEvent,
+    PlayerConnectedEvent,
+    PlayerDisconnectedEvent,
+    ErrorEvent
 } from '@ctor-game/shared/types/network/events';
-import type { IErrorResponse } from '@ctor-game/shared/types/network/errors';
-import { validateGameEvent } from '@ctor-game/shared/validation/network';
-import type { IGameState, PlayerNumber } from '@ctor-game/shared/types/game/types';
+import type { GameError } from '@ctor-game/shared/types/primitives';
+import type { GameState, PlayerNumber, GameMove } from '@ctor-game/shared/types/primitives';
+import { validateEvent } from '@ctor-game/shared/validation/events';
 import { generateId } from '../utils/id.js';
 import { logger } from '../utils/logger.js';
 
@@ -42,7 +42,7 @@ export class EventService {
             timestamp,
         } as T;
 
-        if (!validateGameEvent(fullEvent)) {
+        if (!validateEvent(fullEvent)) {
             throw new Error('Invalid event data');
         }
 
@@ -70,8 +70,8 @@ export class EventService {
     /**
      * Game events
      */
-    async createGameCreatedEvent(gameId: string, status: 'waiting'): Promise<IGameCreatedEvent> {
-        return this.createEvent<IGameCreatedEvent>({
+    async createGameCreatedEvent(gameId: string, status: 'waiting'): Promise<GameCreatedEvent> {
+        return this.createEvent<GameCreatedEvent>({
             type: 'game_created',
             gameId,
             data: {
@@ -82,8 +82,8 @@ export class EventService {
         });
     }
 
-    async createGameStartedEvent(gameId: string, state: IGameState): Promise<IGameStartedEvent> {
-        return this.createEvent<IGameStartedEvent>({
+    async createGameStartedEvent(gameId: string, state: GameState): Promise<GameStartedEvent> {
+        return this.createEvent<GameStartedEvent>({
             type: 'game_started',
             gameId,
             data: {
@@ -96,10 +96,10 @@ export class EventService {
     async createGameMoveEvent(
         gameId: string,
         playerId: string,
-        move: IGameMoveEvent['data']['move'],
-        state: IGameState
-    ): Promise<IGameMoveEvent> {
-        return this.createEvent<IGameMoveEvent>({
+        move: GameMove,
+        state: GameState
+    ): Promise<GameMoveEvent> {
+        return this.createEvent<GameMoveEvent>({
             type: 'game_move',
             gameId,
             playerId,
@@ -113,9 +113,9 @@ export class EventService {
     async createGameEndedEvent(
         gameId: string,
         winner: PlayerNumber | null,
-        finalState: IGameState
-    ): Promise<IGameEndedEvent> {
-        return this.createEvent<IGameEndedEvent>({
+        finalState: GameState
+    ): Promise<GameEndedEvent> {
+        return this.createEvent<GameEndedEvent>({
             type: 'game_ended',
             gameId,
             data: {
@@ -126,8 +126,8 @@ export class EventService {
         });
     }
 
-    async createGameExpiredEvent(gameId: string): Promise<IGameExpiredEvent> {
-        return this.createEvent<IGameExpiredEvent>({
+    async createGameExpiredEvent(gameId: string): Promise<GameExpiredEvent> {
+        return this.createEvent<GameExpiredEvent>({
             type: 'game_expired',
             gameId,
             data: {
@@ -143,8 +143,8 @@ export class EventService {
         gameId: string,
         playerId: string,
         playerNumber: PlayerNumber
-    ): Promise<IPlayerConnectedEvent> {
-        return this.createEvent<IPlayerConnectedEvent>({
+    ): Promise<PlayerConnectedEvent> {
+        return this.createEvent<PlayerConnectedEvent>({
             type: 'player_connected',
             gameId,
             playerId,
@@ -160,8 +160,8 @@ export class EventService {
         gameId: string,
         playerId: string,
         playerNumber: PlayerNumber
-    ): Promise<IPlayerDisconnectedEvent> {
-        return this.createEvent<IPlayerDisconnectedEvent>({
+    ): Promise<PlayerDisconnectedEvent> {
+        return this.createEvent<PlayerDisconnectedEvent>({
             type: 'player_disconnected',
             gameId,
             playerId,
@@ -175,10 +175,10 @@ export class EventService {
 
     async createErrorEvent(
         gameId: string,
-        error: IErrorResponse,
+        error: GameError,
         playerId?: string
-    ): Promise<IGameErrorEvent> {
-        return this.createEvent<IGameErrorEvent>({
+    ): Promise<ErrorEvent> {
+        return this.createEvent<ErrorEvent>({
             type: 'error',
             gameId,
             playerId,
@@ -196,7 +196,7 @@ export class EventService {
         }
 
         const event = JSON.parse(eventData) as GameEvent;
-        if (!validateGameEvent(event)) {
+        if (!validateEvent(event)) {
             logger.error('Invalid event data in storage', { eventId, event });
             return null;
         }
