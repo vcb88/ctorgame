@@ -1,50 +1,52 @@
-// Base types
-import type { Player } from '@ctor-game/shared/types/enums';
-// Game state types
-import type { GameManagerState } from '@ctor-game/shared/types/state';
-import type { IGameState } from '@ctor-game/shared/types/game/state';
-import type { GameMove } from '@ctor-game/shared/types/game/moves';
-// Error types
-import type { GameError } from '@ctor-game/shared/types/base';
+import type {
+    PlayerNumber,
+    GameState,
+    GameMove,
+    GameError,
+    GameId
+} from '@ctor-game/shared/src/types/core.js';
 
 /**
- * Расширенное состояние GameStateManager, включающее игровые данные
+ * Game manager state type
+ * Contains all necessary information about current game state
  */
-export interface ExtendedGameManagerState extends GameManagerState {
-  /** Текущее состояние игры */
-  gameState: IGameState | null;
-  /** Текущий игрок */
-  currentPlayer: Player | null;
-  /** Доступные замены для текущего хода */
-  availableReplaces: GameMove[];
-}
+export type GameManagerState = {
+    /** Current game state */
+    gameState: GameState | null;
+    /** Current player */
+    currentPlayer: PlayerNumber | null;
+    /** Available replace moves for current turn */
+    availableReplaces: GameMove[];
+    /** Connection status */
+    isConnected: boolean;
+    /** Loading status */
+    isLoading: boolean;
+    /** Error state */
+    error: GameError | null;
+};
 
 /**
- * Тип для частичного обновления состояния
+ * Partial update type for game manager state
  */
-export type GameManagerStateUpdate = Partial<ExtendedGameManagerState>;
+export type GameManagerStateUpdate = Partial<GameManagerState>;
 
 /**
- * Тип для подписчика на изменения состояния
+ * State change subscriber type
  */
-export type StateSubscriber = (state: ExtendedGameManagerState) => void;
+export type StateSubscriber = (state: GameManagerState) => void;
 
 /**
- * Результат операции присоединения к игре
+ * Game join operation result
  */
-export interface JoinGameResult {
-  /** ID игры */
-  gameId: string;
-  /** Номер игрока */
-  playerNumber: Player;
-}
+export type JoinGameResult = {
+    gameId: GameId;
+    playerNumber: PlayerNumber;
+};
 
 /**
- * Ошибка операции присоединения к игре
+ * Game join operation error
  */
-export interface JoinGameError extends GameError {
-  /** Тип операции */
-  operation: 'join';
-  /** ID игры */
-  gameId: string;
-}
+export type JoinGameError = GameError & {
+    operation: 'join';
+    gameId: GameId;
+};
