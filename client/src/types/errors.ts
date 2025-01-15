@@ -1,63 +1,56 @@
+import type { GameError } from '@ctor-game/shared/src/types/core.js';
 import type { 
     ErrorCode, 
     ErrorSeverity 
 } from '@ctor-game/shared/src/types/network/errors.js';
 
 /**
- * Client-side error type
+ * Client-side error type extending GameError from core
  */
-export interface ClientError {
-    /** Error code from shared types */
-    readonly code: ErrorCode;
-    /** Human-readable error message */
-    readonly message: string;
+export type ClientError = GameError & {
     /** Error severity level */
-    readonly severity: ErrorSeverity;
-    /** Additional error details */
-    readonly details?: Record<string, unknown>;
+    severity: ErrorSeverity;
     /** Stack trace if available */
-    readonly stack?: string;
-}
+    stack?: string;
+};
 
 /**
  * Error handler configuration
  */
-export interface ErrorHandlerConfig {
+export type ErrorHandlerConfig = {
     /** Maximum number of retries */
-    readonly maxRetries: number;
+    maxRetries: number;
     /** Base delay between retries in ms */
-    readonly retryDelay: number;
+    retryDelay: number;
     /** Maximum retry delay in ms */
-    readonly maxRetryDelay: number;
+    maxRetryDelay: number;
     /** Maximum recovery attempts */
-    readonly maxRecoveryAttempts: number;
-}
+    maxRecoveryAttempts: number;
+};
 
 /**
  * Error recovery strategy type
  */
 export type ErrorRecoveryStrategy = {
     /** Error codes that can be handled by this strategy */
-    readonly codes: ErrorCode[];
+    codes: ErrorCode[];
     /** Should retry the operation */
-    readonly shouldRetry: boolean;
+    shouldRetry: boolean;
     /** Should attempt to recover game state */
-    readonly shouldRecover: boolean;
+    shouldRecover: boolean;
     /** Retry configuration */
-    readonly retryConfig?: {
-        /** Maximum number of retries for this strategy */
-        readonly maxRetries?: number;
-        /** Base delay between retries */
-        readonly retryDelay?: number;
+    retryConfig?: {
+        maxRetries?: number;
+        retryDelay?: number;
     };
     /** Recovery handler */
-    readonly recover?: () => Promise<void>;
+    recover?: () => Promise<void>;
 };
 
 /**
  * Default recovery strategies for different error types
  */
-export const defaultRecoveryStrategies: ErrorRecoveryStrategy[] = [
+export const defaultRecoveryStrategies: readonly ErrorRecoveryStrategy[] = [
     {
         codes: [
             ErrorCode.CONNECTION_ERROR,
@@ -88,7 +81,7 @@ export const defaultRecoveryStrategies: ErrorRecoveryStrategy[] = [
         shouldRetry: false,
         shouldRecover: false
     }
-];
+] as const;
 
 /**
  * Type guard for client errors
@@ -116,10 +109,11 @@ export const createClientError = (error: unknown): ClientError => {
         return error;
     }
 
-    const baseError = {
+    const baseError: ClientError = {
         code: ErrorCode.UNKNOWN_ERROR,
         severity: ErrorSeverity.HIGH,
-        message: 'An unknown error occurred'
+        message: 'An unknown error occurred',
+        details: {}
     };
 
     if (error instanceof Error) {
