@@ -2,27 +2,30 @@
  * WebSocket types and interfaces for game communication
  */
 
-import type { IGameState, IGameMove, PlayerNumber, GameStatus } from '../game/types.js';
-import type { ErrorCode, ErrorSeverity, INetworkError } from './errors.js';
-type UUID = string;
+import type {
+    GameState,
+    GameMove,
+    PlayerNumber,
+    GameStatus,
+    Position,
+    Timestamp,
+    UUID
+} from '../primitives.js';
+import type { NetworkError } from './errors.js';
 
+// Basic WebSocket events
 export type WebSocketEvent = 'connect' | 'disconnect' | 'error' | 'message' | 'close';
 
-export interface IWebSocketErrorCode {
-    code: number;
-    description: string;
-}
-
-// WebSocket event types
-export type WebSocketEventType =
-    // Client -> Server events
+// Custom application events
+export type ClientToServerEventType = 
     | 'create_game'
     | 'join_game'
     | 'make_move'
     | 'end_turn'
     | 'disconnect'
-    | 'reconnect'
-    // Server -> Client events
+    | 'reconnect';
+
+export type ServerToClientEventType =
     | 'game_created'
     | 'game_joined'
     | 'game_started'
@@ -34,74 +37,93 @@ export type WebSocketEventType =
     | 'available_replaces'
     | 'error';
 
-// Base event interface
-export interface IWebSocketEvent {
-    readonly eventId: UUID;
-    readonly timestamp: number;
+export type GameEventType = ClientToServerEventType | ServerToClientEventType;
+
+// Error codes
+export enum WebSocketErrorCode {
+    InvalidInput = 'invalid_input',
+    GameNotFound = 'game_not_found',
+    GameFull = 'game_full',
+    NotYourTurn = 'not_your_turn',
+    GameEnded = 'game_ended',
+    InternalError = 'internal_error'
 }
+
+// Base event interface
+export type GameEvent = {
+    readonly eventId: UUID;
+    readonly timestamp: Timestamp;
+    readonly type: GameEventType;
+};
 
 // Server to client events
 export interface ServerToClientEvents {
-    'game_created': (event: IWebSocketEvent & {
+    'game_created': (event: GameEvent & {
         readonly gameId: UUID;
+        readonly code: string;
+        readonly status: GameStatus;
     }) => void;
 
-    'game_joined': (event: IWebSocketEvent & {
+    'game_joined': (event: GameEvent & {
         readonly gameId: UUID;
         readonly status: GameStatus;
     }) => void;
 
-    'game_started': (event: IWebSocketEvent & {
+    'game_started': (event: GameEvent & {
         readonly gameId: UUID;
-        readonly gameState: IGameState;
+        readonly gameState: GameState;
         readonly currentPlayer: PlayerNumber;
     }) => void;
 
-    'game_state_updated': (event: IWebSocketEvent & {
-        readonly gameState: IGameState;
+    'game_state_updated': (event: GameEvent & {
+        readonly gameState: GameState;
         readonly currentPlayer: PlayerNumber;
-        readonly status: GameStatus;
     }) => void;
 
-    'game_over': (event: IWebSocketEvent & {
-        readonly gameState: IGameState;
+    'game_over': (event: GameEvent & {
+        readonly gameState: GameState;
         readonly winner: PlayerNumber | null;
+        readonly finalScores: [number, number];
     }) => void;
 
-    'player_disconnected': (event: IWebSocketEvent & {
+    'player_disconnected': (event: GameEvent & {
+        readonly playerId: UUID;
         readonly playerNumber: PlayerNumber;
     }) => void;
 
-    'player_reconnected': (event: IWebSocketEvent & {
+    'player_reconnected': (event: GameEvent & {
+        readonly playerId: UUID;
         readonly playerNumber: PlayerNumber;
-        readonly gameState: IGameState;
-        readonly currentPlayer: PlayerNumber;
+        readonly gameState: GameState;
     }) => void;
 
-    'game_expired': (event: IWebSocketEvent & {
+    'game_expired': (event: GameEvent & {
         readonly gameId: UUID;
         readonly reason?: string;
     }) => void;
 
-    'available_replaces': (event: IWebSocketEvent & {
-        readonly replacements: Array<[number, number]>;
-        readonly moves: IGameMove[];
+    'available_replaces': (event: GameEvent & {
+        readonly positions: Position[];
+        readonly moves: GameMove[];
     }) => void;
 
-    'error': (event: INetworkError) => void;
+    'error': (event: NetworkError & {
+        readonly eventId?: UUID;
+    }) => void;
 }
 
 // Client to server events
 export interface ClientToServerEvents {
-    'create_game': () => void;
+    'create_game': (data?: { options?: GameOptions }) => void;
 
     'join_game': (data: {
-        readonly gameId: UUID;
+        readonly gameId?: UUID;
+        readonly code?: string;
     }) => void;
 
     'make_move': (data: {
         readonly gameId: UUID;
-        readonly move: IGameMove;
+        readonly move: GameMove;
     }) => void;
 
     'end_turn': (data: {
@@ -112,6 +134,7 @@ export interface ClientToServerEvents {
 
     'reconnect': (data: {
         readonly gameId: UUID;
+        readonly sessionId?: UUID;
     }) => void;
 }
 
@@ -121,14 +144,22 @@ export interface InterServerEvents {
 }
 
 // Socket data
-export interface ISocketData {
-    readonly userId: UUID;
+export type SocketData = {
+    readonly socketId: UUID;
     readonly gameId?: UUID;
     readonly playerNumber?: PlayerNumber;
-}
+    readonly sessionId?: UUID;
+};
+
+// Basic game options
+export type GameOptions = {
+    readonly boardSize?: number;
+    readonly timeLimit?: number;
+    readonly privacy?: 'public' | 'private';
+};
 
 // Server configuration
-export interface IWebSocketServerConfig {
+export type WebSocketServerConfig = {
     readonly cors: {
         readonly origin: string;
         readonly methods: string[];
@@ -138,15 +169,20 @@ export interface IWebSocketServerConfig {
     readonly pingTimeout: number;
     readonly pingInterval: number;
     readonly maxHttpBufferSize: number;
-}
+};
 
-export interface IWebSocketServerOptions {
-    readonly config?: Partial<IWebSocketServerConfig>;
+export type WebSocketServerOptions = {
+    readonly config?: Partial<WebSocketServerConfig>;
     readonly reconnectTimeout?: number;
-}
+    readonly storageService?: any;  // TODO: Replace with proper type
+    readonly eventService?: any;     // TODO: Replace with proper type
+    readonly redisService?: any;     // TODO: Replace with proper type
+};
 
 // Type guards
-export const isGameEvent = (event: unknown): event is IWebSocketEvent => {
+export const validateEvent = (event: unknown): event is GameEvent => {
     return typeof event === 'object' && event !== null &&
-           'eventId' in event && 'timestamp' in event;
+           'eventId' in event &&
+           'timestamp' in event &&
+           'type' in event;
 };
