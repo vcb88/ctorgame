@@ -1,9 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import { useMultiplayerGameNew } from '@/hooks/useMultiplayerGameNew.v2';
-import { Player } from '@ctor-game/shared/types/game';
-import { GameActionType } from '@ctor-game/shared/types/game';
-import { OperationType } from '@ctor-game/shared/types/enums';
-import type { ErrorCode } from '@ctor-game/shared/types/network';
+import type { 
+  IGameState,
+  GameStatus,
+  GameOperationType,
+  OperationType
+} from '@ctor-game/shared/src/types/game/types.js';
+import type {
+  PlayerNumber,
+  CellValue,
+  Position,
+  GameError
+} from '@ctor-game/shared/src/types/core.js';
 import { cn } from '@/lib/utils';
 import { GameCell } from '@/components/GameCell';
 import { logger } from '@/utils/logger';
@@ -74,10 +82,10 @@ export const GameNew: React.FC = () => {
       return;
     }
 
-    if (gameState?.board.cells[row][col] !== null) {
+    if (gameState?.board[row][col] !== null) {
       logger.debug('Cell click ignored - cell not empty', {
         component: 'GameNew',
-        data: { row, col, cellValue: gameState?.board.cells[row][col] }
+        data: { row, col, cellValue: gameState?.board[row][col] }
       });
       return;
     }
@@ -153,12 +161,12 @@ export const GameNew: React.FC = () => {
           <button
             className={cn(
               "bg-blue-500 text-white px-6 py-3 rounded-lg text-xl w-full",
-              loading && operationInProgress === GameActionType.CREATE_GAME && "opacity-50 cursor-not-allowed"
+              loading && operationInProgress === GameOperationType.CREATE_GAME && "opacity-50 cursor-not-allowed"
             )}
             onClick={handleCreateGame}
             disabled={loading}
           >
-            {loading && operationInProgress === GameActionType.CREATE_GAME ? 'Creating...' : 'Create New Game'}
+            {loading && operationInProgress === GameOperationType.CREATE_GAME ? 'Creating...' : 'Create New Game'}
           </button>
           <div className="text-center my-4">- OR -</div>
           <div className="flex flex-col gap-2 w-full">
@@ -173,12 +181,12 @@ export const GameNew: React.FC = () => {
             <button
               className={cn(
                 "bg-green-500 text-white px-6 py-3 rounded-lg text-xl w-full",
-                loading && operationInProgress === GameActionType.JOIN_GAME && "opacity-50 cursor-not-allowed"
+                loading && operationInProgress === GameOperationType.JOIN_GAME && "opacity-50 cursor-not-allowed"
               )}
               onClick={handleJoinGame}
               disabled={loading}
             >
-              {loading && operationInProgress === GameActionType.JOIN_GAME ? 'Joining...' : 'Join Game'}
+              {loading && operationInProgress === GameOperationType.JOIN_GAME ? 'Joining...' : 'Join Game'}
             </button>
           </div>
         </div>
@@ -206,15 +214,15 @@ export const GameNew: React.FC = () => {
         Game ID: <span className="font-mono">{gameId}</span>
       </div>
       <div className="text-xl mb-4">
-        You are {playerNumber === Player.First ? 'First' : 'Second'} Player
+        You are {playerNumber === 1 ? 'First' : 'Second'} Player
       </div>
       <div className="text-xl mb-8">
         {gameState.gameOver
           ? gameState.winner !== null
-            ? `${gameState.winner === Player.First ? 'First' : 'Second'} Player wins!`
+            ? `${gameState.winner === 1 ? 'First' : 'Second'} Player wins!`
             : "It's a draw!"
           : isMyTurn
-          ? loading && operationInProgress === GameActionType.MAKE_MOVE
+          ? loading && operationInProgress === GameOperationType.MAKE_MOVE
             ? "Making move..."
             : "Your turn"
           : "Opponent's turn"}
@@ -224,11 +232,11 @@ export const GameNew: React.FC = () => {
           <div className="flex items-center gap-4">
             <div className="flex items-center gap-2">
               <div className="w-4 h-4 bg-blue-500"></div>
-              <span>First Player: {gameState.scores[Player.First]}</span>
+              <span>First Player: {gameState.scores.player1}</span>
             </div>
             <div className="flex items-center gap-2">
               <div className="w-4 h-4 bg-red-500"></div>
-              <span>Second Player: {gameState.scores[Player.Second]}</span>
+              <span>Second Player: {gameState.scores.player2}</span>
             </div>
           </div>
           <div>
@@ -240,8 +248,9 @@ export const GameNew: React.FC = () => {
           "grid grid-cols-10 gap-1 bg-gray-200 p-2",
           loading && "opacity-50 pointer-events-none"
         )}>
-          {gameState.board.cells.map((row: (Player | null)[], rowIndex: number) =>
-            row.map((cell: Player | null, colIndex: number) => {
+          {gameState.board.map((row: CellValue[], rowIndex: number) =>
+            row.map((cell: CellValue, colIndex: number) => {
+              const position: Position = [colIndex, rowIndex];
               const isDisabled = 
                 !isMyTurn || 
                 cell !== null || 
@@ -251,8 +260,7 @@ export const GameNew: React.FC = () => {
               return (
                 <GameCell
                   key={`${rowIndex}-${colIndex}`}
-                  row={rowIndex}
-                  col={colIndex}
+                  position={position}
                   value={cell}
                   disabled={isDisabled}
                   onClick={() => handleCellClick(rowIndex, colIndex)}
@@ -280,11 +288,11 @@ export const GameNew: React.FC = () => {
                 Winner: 
                 <div className={cn(
                   "w-6 h-6 rounded-full",
-                  gameState.winner === Player.First ? "bg-blue-500" : "bg-red-500"
+                  gameState.winner === 1 ? "bg-blue-500" : "bg-red-500"
                 )}></div>
-                {gameState.winner === Player.First ? 'First' : 'Second'} Player
+                {gameState.winner === 1 ? 'First' : 'Second'} Player
                 <div className="text-gray-600 ml-2">
-                  ({gameState.scores[gameState.winner]} pieces)
+                  ({gameState.scores[`player${gameState.winner}`]} pieces)
                 </div>
               </div>
             )}
