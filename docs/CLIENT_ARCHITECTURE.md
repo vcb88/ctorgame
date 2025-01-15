@@ -10,21 +10,22 @@ The client architecture is built around React with TypeScript, focusing on type 
 
 All core types are imported from the shared package:
 ```typescript
-import type { IGameState, IGameMove, PlayerNumber } from '@ctor-game/shared/src/types/game/types.js';
-import type { INetworkError } from '@ctor-game/shared/src/types/network/errors.js';
-import type { UUID, IWebSocketEvent } from '@ctor-game/shared/src/types/network/websocket.js';
+import { GameState, Player, GameAction } from '@ctor-game/shared/types/game';
+import { Position } from '@ctor-game/shared/types/game/geometry';
+import { OperationType } from '@ctor-game/shared/types/enums';
+import { NetworkError } from '@ctor-game/shared/types/network';
 ```
 
 ### Client-Specific Types
 
-1. Error Handling (using shared INetworkError)
+1. Error Handling (using shared NetworkError)
 ```typescript
-interface INetworkError {
-    readonly code: string;
+interface NetworkError {
+    readonly code: ErrorCode;
     readonly message: string;
-    readonly severity: 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL';
+    readonly severity: ErrorSeverity;
     readonly timestamp: number;
-    readonly recoverable?: boolean;
+    readonly retryable?: boolean;
     readonly retryCount?: number;
     readonly details?: Record<string, unknown>;
 }
@@ -32,11 +33,11 @@ interface INetworkError {
 
 2. Error Recovery Config
 ```typescript
-interface IErrorRecoveryConfig {
+interface ErrorRecoveryConfig {
     readonly maxRetries?: number;
     readonly retryDelay?: number;
     readonly useBackoff?: boolean;
-    readonly recover?: (error: INetworkError) => Promise<void>;
+    readonly recover?: (error: NetworkError) => Promise<void>;
 }
 ```
 ```
@@ -69,17 +70,21 @@ interface UseMultiplayerGameReturn {
     // Game state
     gameId: string | null;
     playerNumber: Player | null;
-    gameState: IGameState | null;
+    gameState: GameState | null;
     currentPlayer: Player;
     isMyTurn: boolean;
 
     // Connection state
     connectionState: ConnectionState;
-    error: ClientError | null;
+    error: NetworkError | null;
 
     // Operation state
     loading: boolean;
     operationInProgress: GameActionType | null;
+
+    // Recovery state
+    canRetry: boolean;
+    canRecover: boolean;
 
     // Actions
     createGame: () => Promise<void>;
@@ -93,37 +98,43 @@ interface UseMultiplayerGameReturn {
 
 ### Game State Manager
 ```typescript
-interface IGameManagerState {
-    readonly phase: 'INITIAL' | 'CONNECTING' | 'WAITING' | 'PLAYING' | 'GAME_OVER';
-    readonly gameId: UUID | null;
-    readonly playerNumber: PlayerNumber | null;
-    readonly error: INetworkError | null;
-    readonly connectionState: 'connected' | 'disconnected' | 'error';
-    readonly gameState: IGameState | null;
-    readonly currentPlayer: PlayerNumber;
-    readonly availableReplaces: IGameMove[];
+interface GameManagerState {
+    readonly phase: GamePhase;
+    readonly gameId: string | null;
+    readonly playerNumber: Player | null;
+    readonly error: NetworkError | null;
+    readonly connectionState: ConnectionState;
+    readonly gameState: GameState | null;
+    readonly currentPlayer: Player;
+    readonly availableMoves: Position[];
     readonly timestamp: number;
 }
 
 class GameStateManager {
     // State management
-    private state: IGameManagerState;
-    private subscribers: Set<(state: IGameManagerState) => void>;
+    private state: GameManagerState;
+    private subscribers: Set<(state: GameManagerState) => void>;
     
-    // Dependencies
-    private socket: GameSocket | null;
-    private storage: StateStorage;
+    // Service dependencies
+    private socket: WebSocketService | null;
+    private storage: StorageService;
     private errorManager: ErrorRecoveryManager;
-    private actionQueue: ActionQueue;
+    private actionQueue: ActionQueueService;
 
     // Methods
-    subscribe(subscriber: (state: IGameManagerState) => void): () => void;
-    getState(): IGameManagerState;
+    subscribe(subscriber: (state: GameManagerState) => void): () => void;
+    getState(): GameManagerState;
     createGame(): Promise<void>;
-    joinGame(gameId: UUID): Promise<IJoinGameResult>;
-    makeMove(move: IGameMove): Promise<void>;
+    joinGame(gameId: string): Promise<JoinGameResult>;
+    makeMove(position: Position, type: OperationType): Promise<void>;
     endTurn(): Promise<void>;
     disconnect(): void;
+    
+    // State recovery
+    canRetryOperation(error: NetworkError): boolean;
+    canRecoverState(): boolean;
+    retryLastOperation(): Promise<void>;
+    recoverState(): Promise<void>;
 }
 ```
 
@@ -161,33 +172,43 @@ type GameSocket = Socket<ServerToClientEvents, ClientToServerEvents>;
 
 // Server to client events
 interface ServerToClientEvents {
-    'game_created': (event: IWebSocketEvent & {
-        readonly gameId: UUID;
+    'game_created': (event: GameEvent & {
+        readonly gameId: string;
+        readonly initialState: GameState;
     }) => void;
 
-    'game_joined': (event: IWebSocketEvent & {
-        readonly gameId: UUID;
-        readonly status: GameStatus;
+    'game_joined': (event: GameEvent & {
+        readonly gameId: string;
+        readonly state: GameState;
+        readonly player: Player;
     }) => void;
 
-    'game_started': (event: IWebSocketEvent & {
-        readonly gameId: UUID;
-        readonly gameState: IGameState;
-        readonly currentPlayer: PlayerNumber;
+    'game_updated': (event: GameEvent & {
+        readonly gameId: string;
+        readonly state: GameState;
+        readonly action?: GameAction;
     }) => void;
 
-    // ... other events
+    'game_error': (event: GameEvent & {
+        readonly gameId: string;
+        readonly error: NetworkError;
+    }) => void;
 }
 
 // Client to server events
 interface ClientToServerEvents {
     'create_game': () => void;
-    'join_game': (data: { readonly gameId: UUID }) => void;
+    'join_game': (data: { readonly gameId: string }) => void;
     'make_move': (data: {
-        readonly gameId: UUID;
-        readonly move: IGameMove;
+        readonly gameId: string;
+        readonly position: Position;
+        readonly type: OperationType;
     }) => void;
-    'end_turn': (data: { readonly gameId: UUID }) => void;
+    'end_turn': (data: { readonly gameId: string }) => void;
+    'retry_operation': (data: { 
+        readonly gameId: string;
+        readonly actionId: string;
+    }) => void;
 }
 ```
 
