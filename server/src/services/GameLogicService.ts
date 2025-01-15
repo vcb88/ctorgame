@@ -1,16 +1,16 @@
 import { logger } from '../utils/logger.js';
 import { create2DArrayCopy, update2DArrayValue } from '../utils/array.js';
 import type { IPosition } from '@ctor-game/shared/types/geometry/types.js';
-import type { IGameState } from '../types/game-state.js';
-import {
+import type {
+    IGameState,
     IGameMove,
     PlayerNumber,
     GameStatus,
-    ISize,
-    getAdjacentPositions,
-    getOpponent,
-    createScores
-} from '../types/shared.js';
+    IGameScores,
+} from '@ctor-game/shared/types/game/types.js';
+import type { ISize } from '@ctor-game/shared/types/geometry/types.js';
+import { getAdjacentPositions } from '../utils/geometry.js';
+import { getOpponent } from '../utils/game.js';
 
 // Constants
 const BOARD_SIZE = 8;
@@ -31,13 +31,22 @@ export class GameLogicService {
    * @returns Начальное состояние игры
    */
   static createInitialState(): IGameState {
+    // Создаем пустую доску
+    const board: ReadonlyArray<ReadonlyArray<number | null>> = Object.freeze(
+      Array(BOARD_SIZE).fill(null).map(() => Object.freeze(Array(BOARD_SIZE).fill(null)))
+    );
+
+    // Определяем размер доски и создаем начальные очки
+    const size: ISize = { width: BOARD_SIZE, height: BOARD_SIZE };
+    const scores: IGameScores = { player1: 0, player2: 0 };
+
     return {
       id: crypto.randomUUID(),
-      board: Array(BOARD_SIZE).fill(null).map(() => Array(BOARD_SIZE).fill(null)),
-      size: { width: BOARD_SIZE, height: BOARD_SIZE },
+      board,
+      size,
       currentPlayer: 1 as PlayerNumber,
       status: 'playing',
-      scores: createScores(0, 0),
+      scores,
       timestamp: Date.now()
     };
   }
@@ -163,27 +172,29 @@ export class GameLogicService {
     // Сохраняем ход
     newState.lastMove = move;
 
-    // Обновляем счет
-    this.updateScores(newState);
+    // Обновляем счет и состояние
+    const scores = this.calculateScores(newState.board);
+    const isGameOver = this.checkGameOver(newState.board);
+    const status: GameStatus = isGameOver ? 'finished' : 'playing';
 
-    // Проверяем окончание игры
-    const gameOver = this.checkGameOver(newState.board);
-    if (gameOver) {
-      newState.gameOver = true;
-      newState.winner = this.determineWinner(newState.scores);
-    }
+    // Создаем новое состояние
+    const finalState = {
+        ...newState,
+        scores,
+        status,
+        lastMove: move
+    };
 
     const duration = Date.now() - startTime;
     logger.game.performance('apply_move', duration, {
-      move,
-      playerNumber,
-      replacements: newState.currentTurn.moves.length - state.currentTurn.moves.length - 1,
-      gameOver: newState.gameOver,
-      winner: newState.winner,
-      duration
+        move,
+        playerNumber,
+        gameOver: isGameOver,
+        status,
+        duration
     });
 
-    return newState;
+    return finalState;
   }
 
   /**
@@ -214,22 +225,23 @@ export class GameLogicService {
   }
 
   /**
-   * Обновляет счет в игре
+   * Вычисляет текущий счет игры
    */
-  private static updateScores(state: IGameState): void {
-    let firstPlayerCount = 0;
-    let secondPlayerCount = 0;
-    const { width, height } = state.size;
+  private static calculateScores(board: ReadonlyArray<ReadonlyArray<number | null>>): IGameScores {
+    let player1Count = 0;
+    let player2Count = 0;
 
-    for (let y = 0; y < height; y++) {
-      for (let x = 0; x < width; x++) {
-        const cell = state.board[y][x];
-        if (cell === 1) firstPlayerCount++;
-        else if (cell === 2) secondPlayerCount++;
+    for (const row of board) {
+      for (const cell of row) {
+        if (cell === 1) player1Count++;
+        else if (cell === 2) player2Count++;
       }
     }
 
-    state.scores = createScores(firstPlayerCount, secondPlayerCount);
+    return {
+      player1: player1Count,
+      player2: player2Count
+    };
   }
 
   /**
