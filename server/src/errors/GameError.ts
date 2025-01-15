@@ -1,4 +1,33 @@
-import { ErrorCode, ErrorCategory, ErrorSeverity } from '@ctor-game/shared/types/network/errors';
+import type { ErrorCode, ErrorCategory, ErrorSeverity } from '@ctor-game/shared/types/network/errors';
+
+// Error categories
+const ErrorCategories = {
+    Network: 'network' as const,
+    Game: 'game' as const,
+    Validation: 'validation' as const,
+    System: 'system' as const,
+} as const;
+
+// Error severity levels
+const ErrorSeverities = {
+    Info: 'info' as const,
+    Warning: 'warning' as const,
+    Error: 'error' as const,
+    Critical: 'critical' as const,
+} as const;
+
+// Error codes
+const ErrorCodes = {
+    InvalidState: 'invalid_state' as const,
+    InvalidMove: 'invalid_move' as const,
+    InvalidPosition: 'invalid_position' as const,
+    NotYourTurn: 'not_your_turn' as const,
+    GameEnded: 'game_ended' as const,
+    GameNotFound: 'game_not_found' as const,
+    GameFull: 'game_full' as const,
+    GameExpired: 'game_expired' as const,
+    StorageError: 'storage_error' as const,
+} as const;
 
 /**
  * Base class for all game-related errors
@@ -20,8 +49,8 @@ export class GameError extends Error {
     ) {
         super(message);
         this.code = code;
-        this.category = options.category ?? ErrorCategory.Game;
-        this.severity = options.severity ?? ErrorSeverity.Error;
+        this.category = options.category ?? ErrorCategories.Game;
+        this.severity = options.severity ?? ErrorSeverities.Error;
         this.details = options.details;
         this.name = 'GameError';
     }
@@ -46,9 +75,9 @@ export class GameError extends Error {
  */
 export class InvalidStateError extends GameError {
     constructor(message: string, details?: Record<string, unknown>) {
-        super(ErrorCode.InvalidState, message, {
-            category: ErrorCategory.Validation,
-            severity: ErrorSeverity.Error,
+        super(ErrorCodes.InvalidState, message, {
+            category: ErrorCategories.Validation,
+            severity: ErrorSeverities.Error,
             details
         });
         this.name = 'InvalidStateError';
@@ -60,9 +89,9 @@ export class InvalidStateError extends GameError {
  */
 export class InvalidMoveError extends GameError {
     constructor(message: string, details?: Record<string, unknown>) {
-        super(ErrorCode.InvalidMove, message, {
-            category: ErrorCategory.Validation,
-            severity: ErrorSeverity.Warning,
+        super(ErrorCodes.InvalidMove, message, {
+            category: ErrorCategories.Validation,
+            severity: ErrorSeverities.Warning,
             details
         });
         this.name = 'InvalidMoveError';
@@ -74,9 +103,9 @@ export class InvalidMoveError extends GameError {
  */
 export class InvalidPositionError extends GameError {
     constructor(message: string = "Invalid position", details?: Record<string, unknown>) {
-        super(ErrorCode.InvalidPosition, message, {
-            category: ErrorCategory.Validation,
-            severity: ErrorSeverity.Warning,
+        super(ErrorCodes.InvalidPosition, message, {
+            category: ErrorCategories.Validation,
+            severity: ErrorSeverities.Warning,
             details
         });
         this.name = 'InvalidPositionError';
@@ -88,9 +117,9 @@ export class InvalidPositionError extends GameError {
  */
 export class NotYourTurnError extends GameError {
     constructor(message: string = "Not your turn", details?: Record<string, unknown>) {
-        super(ErrorCode.NotYourTurn, message, {
-            category: ErrorCategory.Game,
-            severity: ErrorSeverity.Warning,
+        super(ErrorCodes.NotYourTurn, message, {
+            category: ErrorCategories.Game,
+            severity: ErrorSeverities.Warning,
             details
         });
         this.name = 'NotYourTurnError';
@@ -102,9 +131,9 @@ export class NotYourTurnError extends GameError {
  */
 export class GameEndedError extends GameError {
     constructor(message: string = "Game has ended", details?: Record<string, unknown>) {
-        super(ErrorCode.GameEnded, message, {
-            category: ErrorCategory.Game,
-            severity: ErrorSeverity.Info,
+        super(ErrorCodes.GameEnded, message, {
+            category: ErrorCategories.Game,
+            severity: ErrorSeverities.Info,
             details
         });
         this.name = 'GameEndedError';
@@ -116,9 +145,9 @@ export class GameEndedError extends GameError {
  */
 export class GameNotFoundError extends GameError {
     constructor(message: string = "Game not found", details?: Record<string, unknown>) {
-        super(ErrorCode.GameNotFound, message, {
-            category: ErrorCategory.Game,
-            severity: ErrorSeverity.Error,
+        super(ErrorCodes.GameNotFound, message, {
+            category: ErrorCategories.Game,
+            severity: ErrorSeverities.Error,
             details
         });
         this.name = 'GameNotFoundError';
@@ -130,9 +159,9 @@ export class GameNotFoundError extends GameError {
  */
 export class GameFullError extends GameError {
     constructor(message: string = "Game is full", details?: Record<string, unknown>) {
-        super(ErrorCode.GameFull, message, {
-            category: ErrorCategory.Game,
-            severity: ErrorSeverity.Warning,
+        super(ErrorCodes.GameFull, message, {
+            category: ErrorCategories.Game,
+            severity: ErrorSeverities.Warning,
             details
         });
         this.name = 'GameFullError';
@@ -144,9 +173,9 @@ export class GameFullError extends GameError {
  */
 export class GameExpiredError extends GameError {
     constructor(message: string = "Game has expired", details?: Record<string, unknown>) {
-        super(ErrorCode.GameExpired, message, {
-            category: ErrorCategory.Game,
-            severity: ErrorSeverity.Info,
+        super(ErrorCodes.GameExpired, message, {
+            category: ErrorCategories.Game,
+            severity: ErrorSeverities.Info,
             details
         });
         this.name = 'GameExpiredError';
@@ -158,9 +187,9 @@ export class GameExpiredError extends GameError {
  */
 export class StorageError extends GameError {
     constructor(message: string, details?: Record<string, unknown>) {
-        super(ErrorCode.StorageError, message, {
-            category: ErrorCategory.System,
-            severity: ErrorSeverity.Error,
+        super(ErrorCodes.StorageError, message, {
+            category: ErrorCategories.System,
+            severity: ErrorSeverities.Error,
             details
         });
         this.name = 'StorageError';

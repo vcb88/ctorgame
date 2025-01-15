@@ -10,6 +10,12 @@ import type {
     GameMove,
     CellValue
 } from '@ctor-game/shared/types/primitives';
+
+const GameStatuses = {
+    WAITING: 'waiting' as const,
+    ACTIVE: 'playing' as const,
+    FINISHED: 'finished' as const
+} as const;
 import { getAdjacentPositions } from '../utils/geometry.js';
 import { getOpponent } from '../utils/game.js';
 
@@ -47,7 +53,7 @@ export class GameLogicService {
       board: Object.freeze(board),
       scores,
       currentPlayer: 1,
-      status: GameStatus.ACTIVE,
+      status: GameStatuses.ACTIVE,
       timestamp: Date.now()
     };
   }
@@ -61,7 +67,7 @@ export class GameLogicService {
    */
   static isValidMove(state: GameState, move: GameMove, playerNumber: PlayerNumber): boolean {
     // Нельзя делать ходы, если игра завершена
-    if (state.status === GameStatus.FINISHED) {
+    if (state.status === GameStatuses.FINISHED) {
       return false;
     }
 
