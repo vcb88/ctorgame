@@ -1,21 +1,23 @@
 import { ErrorRecoveryManager } from './ErrorRecoveryManager';
-import type { GameActionType } from '@ctor-game/shared/types/enums.js';
-import type { GameMove } from '@ctor-game/shared/types/game/moves.js';
-import type { ErrorCode, ErrorSeverity, IErrorResponse } from '@ctor-game/shared/types/network/types.js';
+import type { GameAction } from '@ctor-game/shared/src/types/game/actions.js';
+import type { IGameMove } from '@ctor-game/shared/src/types/game/types.js';
+import type { INetworkError } from '@ctor-game/shared/src/types/network/errors.js';
+import type { UUID } from '@ctor-game/shared/src/types/network/websocket.js';
 
 /**
  * Game action types supported by the queue
  */
 export type QueuedGameAction = 
-    | { type: GameActionType.CREATE_GAME; timestamp: number; }
-    | { type: GameActionType.JOIN_GAME; gameId: string; timestamp: number; }
-    | { type: GameActionType.MAKE_MOVE; gameId: string; move: GameMove; timestamp: number; }
-    | { type: GameActionType.END_TURN; gameId: string; timestamp: number; };
+    | { type: 'CREATE_GAME'; timestamp: number; }
+    | { type: 'JOIN_GAME'; gameId: UUID; timestamp: number; }
+    | { type: 'MAKE_MOVE'; gameId: UUID; move: IGameMove; timestamp: number; }
+    | { type: 'END_TURN'; gameId: UUID; timestamp: number; };
 
 interface QueuedAction<T = unknown> {
     readonly action: QueuedGameAction;
     readonly resolve: (value: T) => void;
-    readonly reject: (error: IErrorResponse) => void;
+    readonly reject: (error: INetworkError) => void;
+    readonly timestamp: number;
 }
 
 /**
@@ -42,12 +44,14 @@ export class ActionQueue {
      * Add action to queue
      */
     public enqueue<T>(action: QueuedGameAction): Promise<T> {
+        const timestamp = action.timestamp || Date.now();
         return new Promise<T>((resolve, reject) => {
             // Add action to queue
             this.queue.push({
                 action,
                 resolve,
-                reject
+                reject,
+                timestamp
             });
 
             // Try to process queue
@@ -73,14 +77,14 @@ export class ActionQueue {
         // Check for conflicting actions
         const conflicts = this.queue.some(qa => {
             // Can't have multiple moves in queue
-            if (qa.action.type === GameActionType.MAKE_MOVE && 
-                action.type === GameActionType.MAKE_MOVE) {
+            if (qa.action.type === 'MAKE_MOVE' && 
+                action.type === 'MAKE_MOVE') {
                 return true;
             }
 
             // Can't end turn while move is pending
-            if (qa.action.type === GameActionType.MAKE_MOVE && 
-                action.type === GameActionType.END_TURN) {
+            if (qa.action.type === 'MAKE_MOVE' && 
+                action.type === 'END_TURN') {
                 return true;
             }
 
@@ -100,17 +104,18 @@ export class ActionQueue {
         }
 
         this.processing = true;
-        const { action, resolve, reject } = this.queue[0];
+        const { action, resolve, reject, timestamp } = this.queue[0];
 
         try {
             // Check if action can be processed
             if (!this.canProcessAction(action)) {
                 throw {
-                    code: ErrorCode.OPERATION_FAILED,
+                    code: 'OPERATION_FAILED',
                     message: 'Conflicting operation in progress',
-                    severity: ErrorSeverity.MEDIUM,
-                    details: { action }
-                } satisfies IErrorResponse;
+                    severity: 'MEDIUM',
+                    details: { action },
+                    timestamp
+                } as INetworkError;
             }
 
             // Process action (in MVP we just resolve immediately)
@@ -120,12 +125,13 @@ export class ActionQueue {
             this.queue.shift();
         } catch (error) {
             // Handle error
-            const clientError = {
-                code: ErrorCode.OPERATION_FAILED,
+            const clientError: INetworkError = {
+                code: 'OPERATION_FAILED',
                 message: error instanceof Error ? error.message : 'Operation failed',
-                severity: ErrorSeverity.MEDIUM,
-                details: { error, action }
-            } satisfies IErrorResponse;
+                severity: 'MEDIUM',
+                details: { error, action },
+                timestamp
+            };
 
             this.errorManager.handleError(clientError);
             reject(clientError);
@@ -146,12 +152,14 @@ export class ActionQueue {
      * Clear all pending actions
      */
     public clear(): void {
+        const timestamp = Date.now();
         this.queue.forEach(({ reject }) => {
             reject({
-                code: ErrorCode.OPERATION_CANCELLED,
+                code: 'OPERATION_CANCELLED',
                 message: 'Operation cancelled - queue cleared',
-                severity: ErrorSeverity.LOW
-            } satisfies IErrorResponse);
+                severity: 'LOW',
+                timestamp
+            });
         });
         this.queue = [];
         this.processing = false;
@@ -167,7 +175,7 @@ export class ActionQueue {
     /**
      * Check if specific action type is pending
      */
-    public isActionPending(type: GameActionType): boolean {
+    public isActionPending(type: string): boolean {
         return this.queue.some(qa => qa.action.type === type);
     }
 }
