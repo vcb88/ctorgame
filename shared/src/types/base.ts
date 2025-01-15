@@ -1,98 +1,43 @@
-import {
-    IPhase,
-    IOperationType,
-    IErrorCode,
-    IMessage,
-    IErrorDetails,
-    ITimestamp,
-    IConnectionStatus
-} from './core.js';
+import { GamePhase, MoveType, GameError as CoreGameError } from './core.js';
 
-// Game phase interfaces
-export interface IGamePhaseBase extends IPhase {}
+// Game outcomes
+export type GameOutcome = 'WIN' | 'LOSS' | 'DRAW' | 'FORFEIT' | 'TIMEOUT';
 
-export enum GameOutcome {
-    WIN = 'WIN',
-    LOSS = 'LOSS',
-    DRAW = 'DRAW',
-    FORFEIT = 'FORFEIT',
-    TIMEOUT = 'TIMEOUT'
-}
+// Recovery strategies
+export type RecoveryStrategy = 'RETRY' | 'ROLLBACK' | 'IGNORE' | 'ABORT';
 
-export enum RecoveryStrategy {
-    RETRY = 'RETRY',
-    ROLLBACK = 'ROLLBACK',
-    IGNORE = 'IGNORE',
-    ABORT = 'ABORT'
-}
+// Operation types
+export type OperationType = 'place' | 'replace' | 'end_turn';
 
-// Operation type interfaces
-export interface IOperationTypeBase extends IOperationType {}
-
-export enum OperationType {
-    PLACE = 'place',
-    REPLACE = 'replace',
-    END_TURN = 'end_turn'
-}
-
-// Game constants have been moved to constants.ts
-
-// Error interfaces
-export interface IErrorBase extends IErrorCode, IMessage {}
-
-export enum ErrorCode {
+// Error codes
+export type ErrorCode = 
     // Connection errors
-    CONNECTION_ERROR = 'CONNECTION_ERROR',
-    CONNECTION_TIMEOUT = 'CONNECTION_TIMEOUT',
-    CONNECTION_LOST = 'CONNECTION_LOST',
-    
+    | 'CONNECTION_ERROR'
+    | 'CONNECTION_TIMEOUT'
+    | 'CONNECTION_LOST'
     // Operation errors
-    OPERATION_FAILED = 'OPERATION_FAILED',
-    OPERATION_TIMEOUT = 'OPERATION_TIMEOUT',
-    OPERATION_CANCELLED = 'OPERATION_CANCELLED',
-    
+    | 'OPERATION_FAILED'
+    | 'OPERATION_TIMEOUT'
+    | 'OPERATION_CANCELLED'
     // Game errors
-    INVALID_MOVE = 'INVALID_MOVE',
-    INVALID_STATE = 'INVALID_STATE',
-    GAME_NOT_FOUND = 'GAME_NOT_FOUND',
-    GAME_FULL = 'GAME_FULL',
-    
+    | 'INVALID_MOVE'
+    | 'INVALID_STATE'
+    | 'GAME_NOT_FOUND'
+    | 'GAME_FULL'
     // State errors
-    STATE_VALIDATION_ERROR = 'STATE_VALIDATION_ERROR',
-    STATE_TRANSITION_ERROR = 'STATE_TRANSITION_ERROR',
-    
+    | 'STATE_VALIDATION_ERROR'
+    | 'STATE_TRANSITION_ERROR'
     // Storage errors
-    STORAGE_ERROR = 'STORAGE_ERROR',
-    
+    | 'STORAGE_ERROR'
     // Unknown error
-    UNKNOWN_ERROR = 'UNKNOWN_ERROR'
-}
+    | 'UNKNOWN_ERROR';
 
-export enum ErrorSeverity {
-    LOW = 'LOW',
-    MEDIUM = 'MEDIUM',
-    HIGH = 'HIGH',
-    CRITICAL = 'CRITICAL'
-}
+export type ErrorSeverity = 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL';
 
-export interface IGameErrorBase extends IErrorBase {
+export type GameError = CoreGameError & {
     readonly severity: ErrorSeverity;
-}
-
-export interface GameError extends IGameErrorBase, IErrorDetails, ITimestamp {
     readonly recoverable?: boolean;
     readonly retryCount?: number;
-}
+};
 
-// Connection interfaces
-export interface IConnectionStateBase extends IConnectionStatus {}
-
-export enum ConnectionState {
-    CONNECTING = 'CONNECTING',
-    CONNECTED = 'CONNECTED',
-    DISCONNECTED = 'DISCONNECTED',
-    RECONNECTING = 'RECONNECTING',
-    ERROR = 'ERROR'
-}
-
-// WebSocket error interfaces have been moved to base/enums.ts
+export type ConnectionState = 'CONNECTING' | 'CONNECTED' | 'DISCONNECTED' | 'RECONNECTING' | 'ERROR';

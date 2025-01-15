@@ -1,37 +1,24 @@
-import {
-    IOperationType,
-    IValidationResult,
-    ITimestamp
-} from './core.js';
-import { IPositionBase } from './basic-types.js';".js"
-import { Player } from './basic-types.js';".js"
+import { MoveType, Position, ValidationResult } from './core.js';
+import type { Player } from './basic-types.js';
 
-// Move interfaces
-export interface IMoveBase extends IOperationType {
-    readonly type: 'place' | 'replace' | 'end_turn';
-}
+// Basic move type
+export type Move = {
+    readonly type: MoveType;
+    readonly position?: Position;
+};
 
-export interface IPositionedMoveBase extends IMoveBase {
-    readonly position: IPositionBase;
-}
+// Server move type
+export type ServerMove = Move & {
+    readonly replacements?: ReadonlyArray<Position>;
+};
 
-export interface IBasicMove extends IPositionedMoveBase {}
-
-// Server move interfaces
-export interface IServerMoveBase extends IBasicMove {
-    readonly replacements?: ReadonlyArray<[number, number]>;
-}
-
-export interface IServerMove extends IServerMoveBase {}
-
-// Game move interfaces
-export interface IGameMoveBase extends IServerMoveBase {
+// Game move type
+export type GameMove = ServerMove & {
     readonly player: Player;
-}
+    readonly timestamp: number;
+};
 
-export interface GameMove extends IGameMoveBase, ITimestamp {}
-
-// Replace validation interfaces
-export interface IReplaceValidationBase extends IValidationResult {
-    readonly replacements?: ReadonlyArray<[number, number]>;
-}
+// Replace validation type
+export type ReplaceValidation = ValidationResult & {
+    readonly replacements?: ReadonlyArray<Position>;
+};

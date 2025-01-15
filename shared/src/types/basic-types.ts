@@ -1,33 +1,13 @@
-import {
-    IXCoordinate,
-    IYCoordinate,
-    IWidth,
-    IHeight,
-    IPlayerNumber,
-    IGameStatus
-} from './core.js';
+import { PlayerNumber, Position, Size, GameStatus } from './core.js';
 
-// Player enum and interfaces
-export enum Player {
-    None = 0,
-    First = 1,
-    Second = 2
-}
+// Player type
+export type Player = 0 | PlayerNumber;  // 0 for None, 1 or 2 for players
 
-export interface IPlayerBase extends IPlayerNumber {
-    readonly player: Player;
-}
+// Position type (reexporting from core)
+export type { Position };
 
-// Position interfaces
-export interface IPositionBase extends IXCoordinate, IYCoordinate {}
+// Board size type (reexporting from core)
+export type BoardSize = Size;
 
-export interface IPosition extends IPositionBase {}
-
-// Board size interfaces
-export interface IBoardSizeBase extends IWidth, IHeight {}
-
-export interface IBoardSize extends IBoardSizeBase {}
-
-// Game status interfaces
-export interface IGameStatusBase extends IGameStatus {}
-
+// Game status type (reexporting from core)
+export type { GameStatus };
