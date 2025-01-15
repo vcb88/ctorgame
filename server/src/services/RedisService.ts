@@ -13,10 +13,10 @@ import type {
     IRedisPlayerSession,
     IRedisGameRoom,
     IRedisGameEvent
-} from '@ctor-game/shared/types/storage/redis.js';
+} from '@ctor-game/shared/types/storage/redis';
 
-import { redisClient, REDIS_KEYS, REDIS_EVENTS, withLock, ttlConfig } from '../config/redis.js';
-import { GameLogicService } from './GameLogicService.js';
+import { redisClient, REDIS_KEYS, REDIS_EVENTS, withLock, ttlConfig } from '../config/redis';
+import { GameLogicService } from './GameLogicService';
 
 export class RedisService {
     /**

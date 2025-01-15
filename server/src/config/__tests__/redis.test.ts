@@ -1,4 +1,4 @@
-import { redisClient, REDIS_KEYS, acquireLock, releaseLock, withLock } from '../redis.js';
+import { redisClient, REDIS_KEYS, acquireLock, releaseLock, withLock } from '../redis';
 import Redis from 'ioredis';
 import { describe, it, expect, beforeEach, jest } from '@jest/globals';
 

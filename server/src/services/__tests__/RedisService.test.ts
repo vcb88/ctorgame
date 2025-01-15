@@ -1,16 +1,16 @@
 import { describe, it, expect, beforeEach, jest } from '@jest/globals';
-import { RedisService } from '../RedisService.new.js';
-import { redisClient, REDIS_KEYS, REDIS_EVENTS } from '../../config/redis.js';
-import { GameLogicService } from '../GameLogicService.js';
+import { RedisService } from '../RedisService.new';
+import { redisClient, REDIS_KEYS, REDIS_EVENTS } from '../../config/redis';
+import { GameLogicService } from '../GameLogicService';
 import type { 
     IGameState, 
     PlayerNumber, 
     IPlayer,
     GameStatus
-} from '@ctor-game/shared/types/game/types.js';
+} from '@ctor-game/shared/types/game/types';
 
 // Mock Redis client
-jest.mock('../../config/redis.js', () => ({
+jest.mock('../../config/redis', () => ({
     redisClient: {
         get: jest.fn(),
         set: jest.fn(),

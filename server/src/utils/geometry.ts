@@ -1,4 +1,4 @@
-import type { IPosition, ISize } from '../types/shared.js';
+import type { IPosition, ISize } from '../types/shared';
 
 /**
  * Gets all adjacent positions for a given position on a toroidal board

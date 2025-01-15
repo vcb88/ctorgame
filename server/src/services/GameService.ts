@@ -13,11 +13,11 @@ import type {
     GameDetails
 } from '@ctor-game/shared/types/storage/metadata';
 
-import { GameLogicService } from './GameLogicService.js';
-import { GameStorageService } from './GameStorageService.js';
-import { EventService } from './EventService.js';
-import { RedisService } from './RedisService.js';
-import { logger } from '../utils/logger.js';
+import { GameLogicService } from './GameLogicService';
+import { GameStorageService } from './GameStorageService';
+import { EventService } from './EventService';
+import { RedisService } from './RedisService';
+import { logger } from '../utils/logger';
 import { toErrorWithStack } from '@ctor-game/shared/utils/errors';
 
 export class GameServiceError extends Error {

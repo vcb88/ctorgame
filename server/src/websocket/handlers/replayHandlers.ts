@@ -1,6 +1,6 @@
 import { Socket } from 'socket.io';
-import { GameService } from '../../services/GameService.js';
-import type { IGameState } from '@ctor-game/shared/types/game/state';
+import { GameService } from '../../services/GameService';
+import type { IGameState } from '@ctor-game/shared/types/game/types';
 import type { 
     IReplayState, 
     IReplayClientEvents, 
@@ -36,7 +36,7 @@ export function registerReplayHandlers(
     gameService: GameService
 ) {
     // Начать воспроизведение
-    socket.on('START_REPLAY', async ({ gameCode }) => {
+    socket.on('START_REPLAY', async ({ gameCode }: { gameCode: string }) => {
         try {
             // Получаем количество ходов
             const totalMoves = await gameService.getGameHistory(gameCode);
@@ -73,7 +73,7 @@ export function registerReplayHandlers(
     });
 
     // Приостановить воспроизведение
-    socket.on('PAUSE_REPLAY', ({ gameCode }) => {
+    socket.on('PAUSE_REPLAY', ({ gameCode }: { gameCode: string }) => {
         try {
             const newState = updateReplayState(gameCode, { isPlaying: false });
             socket.emit('REPLAY_PAUSED', { moveIndex: newState.currentMoveIndex });
@@ -85,7 +85,7 @@ export function registerReplayHandlers(
     });
 
     // Возобновить воспроизведение
-    socket.on('RESUME_REPLAY', ({ gameCode }) => {
+    socket.on('RESUME_REPLAY', ({ gameCode }: { gameCode: string }) => {
         try {
             const newState = updateReplayState(gameCode, { isPlaying: true });
             socket.emit('REPLAY_RESUMED', { moveIndex: newState.currentMoveIndex });
@@ -98,7 +98,7 @@ export function registerReplayHandlers(
     });
 
     // Следующий ход
-    socket.on('NEXT_MOVE', async ({ gameCode }) => {
+    socket.on('NEXT_MOVE', async ({ gameCode }: { gameCode: string }) => {
         try {
             const state = replayStates.get(gameCode);
             if (state && state.currentMoveIndex < state.totalMoves) {
@@ -121,7 +121,7 @@ export function registerReplayHandlers(
     });
 
     // Предыдущий ход
-    socket.on('PREV_MOVE', async ({ gameCode }) => {
+    socket.on('PREV_MOVE', async ({ gameCode }: { gameCode: string }) => {
         try {
             const state = replayStates.get(gameCode);
             if (state && state.currentMoveIndex > 0) {
@@ -144,7 +144,7 @@ export function registerReplayHandlers(
     });
 
     // Перейти к определенному ходу
-    socket.on('GOTO_MOVE', async ({ gameCode, moveIndex }) => {
+    socket.on('GOTO_MOVE', async ({ gameCode, moveIndex }: { gameCode: string, moveIndex: number }) => {
         try {
             const state = replayStates.get(gameCode);
             if (!state) {
@@ -169,7 +169,7 @@ export function registerReplayHandlers(
     });
 
     // Изменить скорость воспроизведения
-    socket.on('SET_PLAYBACK_SPEED', ({ gameCode, speed }) => {
+    socket.on('SET_PLAYBACK_SPEED', ({ gameCode, speed }: { gameCode: string, speed: number }) => {
         try {
             const state = replayStates.get(gameCode);
             if (!state) {
@@ -189,7 +189,7 @@ export function registerReplayHandlers(
     });
 
     // Закончить воспроизведение
-    socket.on('END_REPLAY', ({ gameCode }) => {
+    socket.on('END_REPLAY', ({ gameCode }: { gameCode: string }) => {
         replayStates.delete(gameCode);
         socket.emit('REPLAY_ENDED', { gameCode });
     });

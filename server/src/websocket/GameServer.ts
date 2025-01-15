@@ -3,35 +3,25 @@ import { Server as HttpServer } from 'http';
 import { Socket } from 'socket.io';
 
 // Game types
-import type {
-    IGameState,
-    IGameMove,
-    PlayerNumber,
-    GameStatus,
-    IGameScores
-} from '@ctor-game/shared/src/types/game/types';
+import type { IGameState, IGameMove, PlayerNumber, IGameScores } from '@ctor-game/shared/types/game/types';
+import { GameStatus } from '@ctor-game/shared/types/game/types';
 
 // Event types
-import type {
-    GameEvent,
-    validateGameEvent
-} from '@ctor-game/shared/src/types/network/events';
+import type { GameEvent } from '@ctor-game/shared/types/network/events';
+import { validateGameEvent } from '@ctor-game/shared/validation/network';
 
 // Socket types
-import type {
-    WebSocketEvent,
-    WebSocketErrorCode,
-    ServerToClientEvents,
-    ClientToServerEvents
-} from '@ctor-game/shared/src/types/network/websocket';
+import type { WebSocketEvent, ServerToClientEvents, ClientToServerEvents } from '@ctor-game/shared/types/network/websocket';
+import { WebSocketErrorCode } from '@ctor-game/shared/types/network/websocket';
 
 // Services
-import { GameService } from '../services/GameService.js';
-import { GameLogicService } from '../services/GameLogicService.js';
-import { EventService } from '../services/EventService.js';
-import { redisService } from '../services/RedisService.js';
-import { logger } from '../utils/logger.js';
-import { toErrorWithStack } from '@ctor-game/shared/src/utils/errors.js';
+import { GameService } from '../services/GameService';
+import { GameLogicService } from '../services/GameLogicService';
+import { EventService } from '../services/EventService';
+import { redisService } from '../services/RedisService';
+import { GameStorageService } from '../services/GameStorageService';
+import { logger } from '../utils/logger';
+import { toErrorWithStack } from '@ctor-game/shared/src/utils/errors';
 
 const DEFAULT_CONFIG = {
     cors: {
@@ -84,8 +74,9 @@ export class GameServer {
         }
 
         this.io = new Server(httpServer, DEFAULT_CONFIG);
-        this.gameService = options.gameService || new GameService();
-        this.eventService = options.eventService || new EventService();
+        const mongoService = new GameStorageService();
+        this.eventService = options.eventService || new EventService(redisService);
+        this.gameService = options.gameService || new GameService(mongoService, this.eventService, redisService);
 
         (global as any).io = this.io;
         this.setupEventHandlers();

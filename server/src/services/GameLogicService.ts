@@ -1,16 +1,16 @@
-import { logger } from '../utils/logger.js';
-import { create2DArrayCopy, update2DArrayValue } from '../utils/array.js';
-import type { IPosition } from '@ctor-game/shared/types/geometry/types.js';
+import { logger } from '../utils/logger';
+import { create2DArrayCopy, update2DArrayValue } from '../utils/array';
+import type { IPosition } from '@ctor-game/shared/types/geometry/types';
 import type {
     IGameState,
     IGameMove,
     PlayerNumber,
     GameStatus,
     IGameScores,
-} from '@ctor-game/shared/types/game/types.js';
-import type { ISize } from '@ctor-game/shared/types/geometry/types.js';
-import { getAdjacentPositions } from '../utils/geometry.js';
-import { getOpponent } from '../utils/game.js';
+} from '@ctor-game/shared/types/game/types';
+import type { ISize } from '@ctor-game/shared/types/geometry/types';
+import { getAdjacentPositions } from '../utils/geometry';
+import { getOpponent } from '../utils/game';
 
 /**
  * Board size and validation constants

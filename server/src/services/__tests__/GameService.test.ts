@@ -1,13 +1,13 @@
 import { describe, it, expect, beforeEach, jest } from '@jest/globals';
-import { GameService } from '../GameService.new.js';
-import { GameLogicService } from '../GameLogicService.js';
+import { GameService } from '../GameService.new';
+import { GameLogicService } from '../GameLogicService';
 import type { 
     IGameState, 
     PlayerNumber, 
     IPlayer,
     GameMove,
     GameStatus 
-} from '@ctor-game/shared/types/game/types.js';
+} from '@ctor-game/shared/types/game/types';
 
 // Mock MongoDB
 jest.mock('mongodb', () => {

@@ -1,5 +1,5 @@
 import { Socket } from 'socket.io';
-import { GameService } from '../../services/GameService.js';
+import { GameService } from '../../services/GameService';
 import type { IHistoryClientEvents, IHistoryServerEvents } from '@ctor-game/shared/types/network/history';
 import { createErrorResponse } from '@ctor-game/shared/utils/errors';
 import { isGameHistoryEntry } from '@ctor-game/shared/utils/validation/replay';

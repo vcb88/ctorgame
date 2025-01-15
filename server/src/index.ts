@@ -4,10 +4,10 @@ console.log('Loading index.ts module at:', new Date().toISOString(), '| Module p
 import 'reflect-metadata';
 import express from 'express';
 import http from 'http';
-import { GameServer } from './websocket/GameServer.js';
+import { GameServer } from './websocket/GameServer';
 import cors from 'cors';
 import path from 'path';
-import { logger } from './utils/logger.js';
+import { logger } from './utils/logger';
 import { toErrorWithStack } from '@ctor-game/shared/utils/errors';
 
 logger.info('Starting server initialization', {
