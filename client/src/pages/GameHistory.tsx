@@ -1,10 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import type { 
-    PlayerNumber,
-    GameError
-} from '@ctor-game/shared/src/types/core.js';
+import type { PlayerNumber } from '@ctor-game/shared/src/types/core.js';
 import type { IGameSummary } from '@ctor-game/shared/src/types/game.js';
+import { 
+    type IGameError, 
+    isNetworkError,
+    isDataError,
+    isGameStateError,
+    createGameError 
+} from '@ctor-game/shared/src/types/errors.js';
 import { getSocket } from '../services/socket';
 import { ReplayView } from '../components/Replay/ReplayView';
 import { CyberButton } from '@/components/ui/cyber-button';
@@ -16,7 +20,7 @@ const ARCHIVE_VERSION = 'v1.0.1';
 export function GameHistory() {
     const [games, setGames] = useState<IGameSummary[]>([]);
     const [loading, setLoading] = useState(true);
-    const [error, setError] = useState<GameError | null>(null);
+    const [error, setError] = useState<IGameError | null>(null);
     const [selectedGame, setSelectedGame] = useState<string | null>(null);
     const navigate = useNavigate();
 
@@ -31,9 +35,20 @@ export function GameHistory() {
             setLoading(false);
         };
 
-        const handleError = (error: GameError) => {
+        const handleError = (error: IGameError) => {
             setError(error);
             setLoading(false);
+            
+            // Log different types of errors appropriately
+            if (isNetworkError(error)) {
+                console.error('Network error:', error.details?.statusCode, error.message);
+            } else if (isDataError(error)) {
+                console.error('Data error:', error.details?.field, error.message);
+            } else if (isGameStateError(error)) {
+                console.error('Game state error:', error.details?.gameId, error.message);
+            } else {
+                console.error('Unknown error:', error.message);
+            }
         };
 
         socket.on('SAVED_GAMES', handleGames);
@@ -78,8 +93,17 @@ export function GameHistory() {
             return (
                 <div className="flex flex-col items-center justify-center min-h-screen p-6 text-center">
                     <div className="bg-red-900/30 text-red-400 p-6 rounded-lg mb-6 border border-red-700/50 backdrop-blur-sm">
-                        <div className="text-lg font-mono mb-2">ERROR://</div>
-                        {error.message}
+                        <div className="text-lg font-mono mb-2">ERROR://{error.code}</div>
+                        <div className="mb-2">{error.message}</div>
+                        {error.details && (
+                            <div className="text-sm opacity-80">
+                                {Object.entries(error.details).map(([key, value]) => (
+                                    <div key={key} className="font-mono">
+                                        {key}: {String(value)}
+                                    </div>
+                                ))}
+                            </div>
+                        )}
                     </div>
                     <CyberButton
                         onClick={() => navigate('/')}
