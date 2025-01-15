@@ -1,17 +1,17 @@
 // Re-export types from game module
 export type {
-    IGameState,
-    IGameMove,
+    GameState,
+    GameMove,
     PlayerNumber,
     GameStatus,
-    IPlayer,
-    IGameScores
+    Player,
+    GameScores
 } from '@ctor-game/shared/types/game/types.js';
 
 // Re-export types from geometry module
 export type {
-    IPosition,
-    ISize
+    Position,
+    Size
 } from '@ctor-game/shared/types/geometry/types.js';
 
 // Re-export network types
@@ -37,20 +37,20 @@ export type {
 
 // Re-export storage types
 export type {
-    IRedisGameState,
-    IRedisPlayerSession,
-    IRedisGameRoom,
-    IRedisGameEvent
+    RedisGameState,
+    RedisPlayerSession,
+    RedisGameRoom,
+    RedisGameEvent
 } from '@ctor-game/shared/types/storage/redis.js';
 
 export type {
-    IGameMetadata,
-    IGameHistory
+    GameMetadata,
+    GameHistory
 } from '@ctor-game/shared/types/storage/metadata.js';
 
 export type {
-    IHistoryEntry,
-    IGameHistory as IGameHistoryRecord
+    HistoryEntry,
+    GameHistory as GameHistoryRecord
 } from '@ctor-game/shared/types/storage/history.js';
 
 // Re-export validation functions
@@ -70,7 +70,7 @@ export {
 
 // Re-export error utils
 export type { 
-    IErrorWithStack
+    ErrorWithStack
 } from '@ctor-game/shared/utils/errors.js';
 
 export { 
