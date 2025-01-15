@@ -15,6 +15,22 @@ import {
 // Состояние replay для каждой игры
 const replayStates = new Map<string, IReplayState>();
 
+// Helper function to update replay state
+function updateReplayState(gameCode: string, updates: Partial<IReplayState>): IReplayState {
+    const currentState = replayStates.get(gameCode);
+    if (!currentState) {
+        throw new Error('Replay session not found');
+    }
+    
+    const newState: IReplayState = {
+        ...currentState,
+        ...updates
+    };
+    
+    replayStates.set(gameCode, newState);
+    return newState;
+}
+
 export function registerReplayHandlers(
     socket: Socket<IReplayClientEvents, IReplayServerEvents>,
     gameService: GameService
@@ -58,53 +74,71 @@ export function registerReplayHandlers(
 
     // Приостановить воспроизведение
     socket.on('PAUSE_REPLAY', ({ gameCode }) => {
-        const state = replayStates.get(gameCode);
-        if (state) {
-            state.isPlaying = false;
-            replayStates.set(gameCode, state);
-            socket.emit('REPLAY_PAUSED', { moveIndex: state.currentMoveIndex });
+        try {
+            const newState = updateReplayState(gameCode, { isPlaying: false });
+            socket.emit('REPLAY_PAUSED', { moveIndex: newState.currentMoveIndex });
+        } catch (error) {
+            socket.emit('REPLAY_ERROR', { 
+                message: error instanceof Error ? error.message : 'Failed to pause replay'
+            });
         }
     });
 
     // Возобновить воспроизведение
     socket.on('RESUME_REPLAY', ({ gameCode }) => {
-        const state = replayStates.get(gameCode);
-        if (state) {
-            state.isPlaying = true;
-            replayStates.set(gameCode, state);
-            socket.emit('REPLAY_RESUMED', { moveIndex: state.currentMoveIndex });
+        try {
+            const newState = updateReplayState(gameCode, { isPlaying: true });
+            socket.emit('REPLAY_RESUMED', { moveIndex: newState.currentMoveIndex });
             playNextMove(socket, gameService, gameCode);
+        } catch (error) {
+            socket.emit('REPLAY_ERROR', { 
+                message: error instanceof Error ? error.message : 'Failed to resume replay'
+            });
         }
     });
 
     // Следующий ход
     socket.on('NEXT_MOVE', async ({ gameCode }) => {
-        const state = replayStates.get(gameCode);
-        if (state && state.currentMoveIndex < state.totalMoves) {
-            state.currentMoveIndex++;
-            replayStates.set(gameCode, state);
-            
-            const gameState = await gameService.getGameStateAtMove(gameCode, state.currentMoveIndex);
-            socket.emit('REPLAY_STATE_UPDATED', { 
-                state: gameState, 
-                moveIndex: state.currentMoveIndex,
-                totalMoves: state.totalMoves
+        try {
+            const state = replayStates.get(gameCode);
+            if (state && state.currentMoveIndex < state.totalMoves) {
+                const newState = updateReplayState(gameCode, { 
+                    currentMoveIndex: state.currentMoveIndex + 1 
+                });
+                
+                const gameState = await gameService.getGameStateAtMove(gameCode, newState.currentMoveIndex);
+                socket.emit('REPLAY_STATE_UPDATED', { 
+                    state: gameState, 
+                    moveIndex: newState.currentMoveIndex,
+                    totalMoves: newState.totalMoves
+                });
+            }
+        } catch (error) {
+            socket.emit('REPLAY_ERROR', { 
+                message: error instanceof Error ? error.message : 'Failed to move to next state'
             });
         }
     });
 
     // Предыдущий ход
     socket.on('PREV_MOVE', async ({ gameCode }) => {
-        const state = replayStates.get(gameCode);
-        if (state && state.currentMoveIndex > 0) {
-            state.currentMoveIndex--;
-            replayStates.set(gameCode, state);
-            
-            const gameState = await gameService.getGameStateAtMove(gameCode, state.currentMoveIndex);
-            socket.emit('REPLAY_STATE_UPDATED', { 
-                state: gameState, 
-                moveIndex: state.currentMoveIndex,
-                totalMoves: state.totalMoves
+        try {
+            const state = replayStates.get(gameCode);
+            if (state && state.currentMoveIndex > 0) {
+                const newState = updateReplayState(gameCode, { 
+                    currentMoveIndex: state.currentMoveIndex - 1 
+                });
+                
+                const gameState = await gameService.getGameStateAtMove(gameCode, newState.currentMoveIndex);
+                socket.emit('REPLAY_STATE_UPDATED', { 
+                    state: gameState, 
+                    moveIndex: newState.currentMoveIndex,
+                    totalMoves: newState.totalMoves
+                });
+            }
+        } catch (error) {
+            socket.emit('REPLAY_ERROR', { 
+                message: error instanceof Error ? error.message : 'Failed to move to previous state'
             });
         }
     });
@@ -120,14 +154,12 @@ export function registerReplayHandlers(
             // Validate move index
             validateMoveIndex(moveIndex, state.totalMoves);
             
-            state.currentMoveIndex = moveIndex;
-            replayStates.set(gameCode, state);
-            
-            const gameState = await gameService.getGameStateAtMove(gameCode, moveIndex);
+            const newState = updateReplayState(gameCode, { currentMoveIndex: moveIndex });
+            const gameState = await gameService.getGameStateAtMove(gameCode, newState.currentMoveIndex);
             socket.emit('REPLAY_STATE_UPDATED', { 
                 state: gameState, 
-                moveIndex: state.currentMoveIndex,
-                totalMoves: state.totalMoves
+                moveIndex: newState.currentMoveIndex,
+                totalMoves: newState.totalMoves
             });
         } catch (error) {
             socket.emit('REPLAY_ERROR', { 
@@ -147,9 +179,8 @@ export function registerReplayHandlers(
             // Validate playback speed
             validatePlaybackSpeed(speed);
             
-            state.playbackSpeed = speed;
-            replayStates.set(gameCode, state);
-            socket.emit('PLAYBACK_SPEED_UPDATED', { speed });
+            const newState = updateReplayState(gameCode, { playbackSpeed: speed });
+            socket.emit('PLAYBACK_SPEED_UPDATED', { speed: newState.playbackSpeed });
         } catch (error) {
             socket.emit('REPLAY_ERROR', { 
                 message: error instanceof Error ? error.message : 'Invalid playback speed'
@@ -176,19 +207,21 @@ async function playNextMove(
     }
 
     // Получаем состояние для следующего хода
-    state.currentMoveIndex++;
-    const gameState = await gameService.getGameStateAtMove(gameCode, state.currentMoveIndex);
+    const newState = updateReplayState(gameCode, { 
+        currentMoveIndex: state.currentMoveIndex + 1 
+    });
+    const gameState = await gameService.getGameStateAtMove(gameCode, newState.currentMoveIndex);
     
     // Отправляем обновление состояния
     socket.emit('REPLAY_STATE_UPDATED', {
         state: gameState,
-        moveIndex: state.currentMoveIndex,
-        totalMoves: state.totalMoves
+        moveIndex: newState.currentMoveIndex,
+        totalMoves: newState.totalMoves
     });
 
     // Планируем следующий ход, если воспроизведение продолжается
-    if (state.currentMoveIndex < state.totalMoves) {
-        const delay = 1000 / state.playbackSpeed; // Базовая задержка 1 секунда, модифицированная скоростью
+    if (newState.currentMoveIndex < newState.totalMoves) {
+        const delay = 1000 / newState.playbackSpeed; // Базовая задержка 1 секунда, модифицированная скоростью
         setTimeout(() => playNextMove(socket, gameService, gameCode), delay);
     } else {
         // Достигнут конец игры
