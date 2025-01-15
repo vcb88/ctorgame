@@ -1,32 +1,35 @@
 import { Socket } from 'socket.io-client';
-import type { 
-    IGameMove, 
-    IGameState, 
-    PlayerNumber 
-} from '@ctor-game/shared/src/types/game/types.js';
+import type {
+    GameState,
+    PlayerNumber,
+    GameMove,
+    Timestamp
+} from '@ctor-game/shared/src/types/core.js';
 
-export interface ITurnState {
-  readonly placeOperations: number;
-  readonly replaceOperations: number;
-  readonly playerNumber: PlayerNumber;
-}
+// Client-specific game types
+export type TurnState = {
+    placeOperations: number;
+    replaceOperations: number;
+    player: PlayerNumber;
+};
 
-export interface IGameStateWithTurn extends IGameState {
-  readonly currentTurn: ITurnState;
-  readonly isFirstTurn: boolean;
-}
+export type GameStateWithTurn = GameState & {
+    currentTurn: TurnState;
+    isFirstTurn: boolean;
+};
 
-export interface MockedSocket extends Socket {
-  readonly mockEmit: jest.Mock;
-  readonly mockOn: jest.Mock;
-  readonly mockOff: jest.Mock;
-  readonly mockClose: jest.Mock;
-  simulateEvent: (event: string, data: unknown) => Promise<void>;
-}
+// Mock types for testing
+export type MockedSocket = Socket & {
+    mockEmit: jest.Mock;
+    mockOn: jest.Mock;
+    mockOff: jest.Mock;
+    mockClose: jest.Mock;
+    simulateEvent: (event: string, data: unknown) => Promise<void>;
+};
 
-export interface IGameHistoryEntry {
-  readonly moveNumber: number;
-  readonly playerNumber: PlayerNumber;
-  readonly move: IGameMove;
-  readonly timestamp: Date;
-}
+export type GameHistoryEntry = {
+    moveNumber: number;
+    player: PlayerNumber;
+    move: GameMove;
+    timestamp: Timestamp;
+};
