@@ -1,10 +1,15 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
+import type { PlayerNumber, GamePhase } from '@ctor-game/shared/src/types/core.js';
 import { useMultiplayerGame } from '@/hooks/useMultiplayerGame';
 import { NeonBillboard } from '@/components/display/NeonBillboard';
 import { NeonGridBackground } from '@/components/backgrounds/NeonGridBackground';
 import { logger } from '@/utils/logger';
+
+const VERSION = '13.5.89';
+const PROTOCOL = 'TCP/QUANTUM';
+const SECURITY = 'RSA-4096';
 
 export const WaitingRoom: React.FC = () => {
   const navigate = useNavigate();
@@ -30,7 +35,8 @@ export const WaitingRoom: React.FC = () => {
       }
     });
 
-    if (gameState) {
+    const shouldNavigateToGame = gameState?.phase === 'play';
+    if (shouldNavigateToGame) {
       logger.info('Game started, navigating to game board', {
         component: 'WaitingRoom',
         data: { 
@@ -61,7 +67,7 @@ export const WaitingRoom: React.FC = () => {
     }
   }, [error]);
 
-  // Use a ref for the animation frame to avoid re-renders
+  // Animation frame handling
   const animationFrameRef = React.useRef<number>();
   const lastUpdateRef = React.useRef<number>(Date.now());
   const progressRef = React.useRef<number>(100);
@@ -97,6 +103,9 @@ export const WaitingRoom: React.FC = () => {
     navigate('/');
   };
 
+  const formatPlayerNumber = (num: PlayerNumber | null) => 
+    num ? String(num) : '...';
+
   return (
     <div className="relative min-h-screen text-white overflow-hidden font-['Orbitron']">
       <NeonGridBackground />
@@ -113,7 +122,9 @@ export const WaitingRoom: React.FC = () => {
                 <span className="text-cyan-400">SYSTEM ACTIVE</span>
               </div>
               <div className="text-white/30">|</div>
-              <div className="text-white/50">ID: {playerNumber + 1}</div>
+              <div className="text-white/50">
+                ID: {playerNumber ? formatPlayerNumber(playerNumber) : '...'}
+              </div>
             </div>
             <div className="flex items-center gap-2 text-pink-400">
               <span>UPTIME:</span>
@@ -153,7 +164,7 @@ export const WaitingRoom: React.FC = () => {
                 <div className="flex items-center gap-3">
                   <div className="w-1.5 h-1.5 rounded-full bg-cyan-500" />
                   <span className="text-cyan-400 text-sm tracking-wider">
-                    PLAYER {playerNumber + 1}
+                    PLAYER {playerNumber ? formatPlayerNumber(playerNumber) : '...'}
                   </span>
                 </div>
                 <span className="text-xs text-cyan-400/50 tracking-wider">READY</span>
@@ -164,7 +175,7 @@ export const WaitingRoom: React.FC = () => {
                 <div className="flex items-center gap-3">
                   <div className="w-1.5 h-1.5 rounded-full bg-pink-500 animate-pulse" />
                   <span className="text-pink-400 text-sm tracking-wider">
-                    PLAYER 2
+                    PLAYER {playerNumber ? (playerNumber === 1 ? '2' : '1') : '...'}
                   </span>
                 </div>
                 <span className="text-xs text-pink-400/50 tracking-wider animate-pulse">
@@ -207,9 +218,9 @@ export const WaitingRoom: React.FC = () => {
         {/* Bottom Section - System Info */}
         <div className="absolute bottom-4 left-4 right-4">
           <div className="flex justify-between items-center text-xs font-mono text-white/30">
-            <div>VERSION: 13.5.89</div>
-            <div>PROTOCOL: TCP/QUANTUM</div>
-            <div>SECURITY: RSA-4096</div>
+            <div>VERSION: {VERSION}</div>
+            <div>PROTOCOL: {PROTOCOL}</div>
+            <div>SECURITY: {SECURITY}</div>
           </div>
         </div>
       </div>
