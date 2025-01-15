@@ -10,36 +10,35 @@ The client architecture is built around React with TypeScript, focusing on type 
 
 All core types are imported from the shared package:
 ```typescript
-import type { Player, OperationType } from '@ctor-game/shared/types/base/enums';
-import type { IGameState } from '@ctor-game/shared/types/game';
-import type { ConnectionState } from '@ctor-game/shared/types/network';
+import type { IGameState, IGameMove, PlayerNumber } from '@ctor-game/shared/src/types/game/types.js';
+import type { INetworkError } from '@ctor-game/shared/src/types/network/errors.js';
+import type { UUID, IWebSocketEvent } from '@ctor-game/shared/src/types/network/websocket.js';
 ```
 
 ### Client-Specific Types
 
-1. Error Handling
+1. Error Handling (using shared INetworkError)
 ```typescript
-interface ClientError {
-    readonly code: ErrorCode;
+interface INetworkError {
+    readonly code: string;
     readonly message: string;
-    readonly severity: ErrorSeverity;
+    readonly severity: 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL';
+    readonly timestamp: number;
+    readonly recoverable?: boolean;
+    readonly retryCount?: number;
     readonly details?: Record<string, unknown>;
-    readonly stack?: string;
 }
 ```
 
-2. Error Recovery
+2. Error Recovery Config
 ```typescript
-interface ErrorRecoveryStrategy {
-    readonly codes: ErrorCode[];
-    readonly shouldRetry: boolean;
-    readonly shouldRecover: boolean;
-    readonly retryConfig?: {
-        readonly maxRetries?: number;
-        readonly retryDelay?: number;
-    };
-    readonly recover?: () => Promise<void>;
+interface IErrorRecoveryConfig {
+    readonly maxRetries?: number;
+    readonly retryDelay?: number;
+    readonly useBackoff?: boolean;
+    readonly recover?: (error: INetworkError) => Promise<void>;
 }
+```
 ```
 
 ## Component Architecture
@@ -94,20 +93,37 @@ interface UseMultiplayerGameReturn {
 
 ### Game State Manager
 ```typescript
+interface IGameManagerState {
+    readonly phase: 'INITIAL' | 'CONNECTING' | 'WAITING' | 'PLAYING' | 'GAME_OVER';
+    readonly gameId: UUID | null;
+    readonly playerNumber: PlayerNumber | null;
+    readonly error: INetworkError | null;
+    readonly connectionState: 'connected' | 'disconnected' | 'error';
+    readonly gameState: IGameState | null;
+    readonly currentPlayer: PlayerNumber;
+    readonly availableReplaces: IGameMove[];
+    readonly timestamp: number;
+}
+
 class GameStateManager {
-    private state: {
-        gameId: string | null;
-        gameState: IGameState | null;
-        playerNumber: Player | null;
-        connectionState: ConnectionState;
-        error: ClientError | null;
-    }
+    // State management
+    private state: IGameManagerState;
+    private subscribers: Set<(state: IGameManagerState) => void>;
+    
+    // Dependencies
+    private socket: GameSocket | null;
+    private storage: StateStorage;
+    private errorManager: ErrorRecoveryManager;
+    private actionQueue: ActionQueue;
 
     // Methods
+    subscribe(subscriber: (state: IGameManagerState) => void): () => void;
+    getState(): IGameManagerState;
     createGame(): Promise<void>;
-    joinGame(gameId: string): Promise<void>;
-    makeMove(move: GameMove): Promise<void>;
+    joinGame(gameId: UUID): Promise<IJoinGameResult>;
+    makeMove(move: IGameMove): Promise<void>;
     endTurn(): Promise<void>;
+    disconnect(): void;
 }
 ```
 
@@ -138,26 +154,77 @@ const defaultRecoveryStrategies: ErrorRecoveryStrategy[] = [
 
 ## WebSocket Integration
 
-### Socket Management
+### Socket Types
 ```typescript
-class SocketManager {
-    connect(): Promise<void>;
-    disconnect(): Promise<void>;
-    emit<T>(event: string, data?: T): Promise<void>;
-    on<T>(event: string, handler: (data: T) => void): void;
-    reconnect(): Promise<void>;
+// Strongly typed socket
+type GameSocket = Socket<ServerToClientEvents, ClientToServerEvents>;
+
+// Server to client events
+interface ServerToClientEvents {
+    'game_created': (event: IWebSocketEvent & {
+        readonly gameId: UUID;
+    }) => void;
+
+    'game_joined': (event: IWebSocketEvent & {
+        readonly gameId: UUID;
+        readonly status: GameStatus;
+    }) => void;
+
+    'game_started': (event: IWebSocketEvent & {
+        readonly gameId: UUID;
+        readonly gameState: IGameState;
+        readonly currentPlayer: PlayerNumber;
+    }) => void;
+
+    // ... other events
+}
+
+// Client to server events
+interface ClientToServerEvents {
+    'create_game': () => void;
+    'join_game': (data: { readonly gameId: UUID }) => void;
+    'make_move': (data: {
+        readonly gameId: UUID;
+        readonly move: IGameMove;
+    }) => void;
+    'end_turn': (data: { readonly gameId: UUID }) => void;
 }
 ```
 
-### Event Handling
+### Socket Configuration
 ```typescript
-interface WebSocketHandlers {
-    onConnect: () => void;
-    onDisconnect: () => void;
-    onError: (error: ClientError) => void;
-    onGameState: (state: IGameState) => void;
-    onGameEvent: (event: GameEvent) => void;
+interface IWebSocketServerConfig {
+    readonly cors: {
+        readonly origin: string;
+        readonly methods: string[];
+    };
+    readonly path: string;
+    readonly transports: string[];
+    readonly pingTimeout: number;
+    readonly pingInterval: number;
+    readonly maxHttpBufferSize: number;
 }
+
+// Client socket config extends server config
+export const socketConfig: Partial<IWebSocketServerConfig> & {
+    autoConnect: boolean;
+    reconnection: boolean;
+    reconnectionAttempts: number;
+    reconnectionDelay: number;
+    reconnectionDelayMax: number;
+    forceNew: boolean;
+} = {
+    transports: ['websocket', 'polling'],
+    autoConnect: true,
+    reconnection: true,
+    reconnectionAttempts: 5,
+    reconnectionDelay: 1000,
+    reconnectionDelayMax: 5000,
+    path: '/socket.io/',
+    forceNew: true,
+    pingTimeout: 10000,
+    pingInterval: 5000
+};
 ```
 
 ## Validation
@@ -175,28 +242,49 @@ interface WebSocketHandlers {
 ## Best Practices
 
 ### Type Safety
-1. Use shared types when available
-2. Add client-specific type extensions
-3. Implement type guards
-4. Validate network data
+1. Use shared types from @ctor-game/shared
+2. Leverage TypeScript's strict mode
+3. Implement proper type guards for runtime checks
+4. Validate all incoming network data
+5. Use UUID type for all identifiers
 
 ### Error Handling
-1. Convert all errors to ClientError
-2. Use appropriate error recovery strategies
-3. Provide user feedback
-4. Log errors for debugging
+1. Use INetworkError for all errors
+2. Include timestamps in all error objects
+3. Implement proper error recovery strategies
+4. Track error recovery attempts
+5. Provide detailed error context
+6. Handle both recoverable and non-recoverable errors
 
 ### State Management
-1. Keep state immutable
-2. Use type-safe state updates
-3. Validate state transitions
-4. Handle race conditions
+1. Keep all state immutable using readonly properties
+2. Implement proper state validation
+3. Use type-safe state updates via GameStateManager
+4. Handle all state transitions atomically
+5. Maintain state consistency during errors
+6. Use proper cleanup for subscriptions
+
+### Action Queue Management
+1. Handle operation conflicts properly
+2. Implement proper action validation
+3. Maintain action order consistency
+4. Track action timestamps
+5. Handle action timeouts gracefully
+
+### WebSocket Communication
+1. Use strongly typed events
+2. Implement proper reconnection handling
+3. Maintain socket state consistency
+4. Handle all socket events properly
+5. Include proper error context in events
+6. Track event timestamps
 
 ### Performance
-1. Optimize re-renders
-2. Use memoization
-3. Implement debouncing
-4. Handle cleanup
+1. Optimize state updates
+2. Handle cleanup properly
+3. Implement efficient event handling
+4. Use proper socket connection management
+5. Implement proper state storage strategy
 
 ## Testing
 
