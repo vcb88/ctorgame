@@ -32,14 +32,14 @@ enum GameErrorCode {
     // ... other error codes
 }
 
-interface IGameError {
+interface GameError {
     code: GameErrorCode;
     message: string;
     details?: Record<string, unknown>;
 }
 
 // Specialized error types
-interface INetworkError extends IGameError {
+interface NetworkError extends GameError {
     code: GameErrorCode.NETWORK_ERROR | GameErrorCode.CONNECTION_LOST;
     details?: {
         statusCode?: number;
@@ -55,19 +55,19 @@ interface INetworkError extends IGameError {
 Types for game data structures:
 
 ```typescript
-interface IPlayer {
+interface Player {
     id: string;
-    number: Player;
+    number: PlayerNumber;
 }
 
-interface IGameRoom {
+interface GameRoom {
     gameId: string;
-    players: IPlayer[];
-    currentState: IGameState;
-    currentPlayer: Player;
+    players: Player[];
+    currentState: GameState;
+    currentPlayer: PlayerNumber;
 }
 
-interface IGameSummary {
+interface GameSummary {
     gameCode: string;
     createdAt: Timestamp;
     completedAt: Timestamp | null;
@@ -81,15 +81,16 @@ interface IGameSummary {
 The system includes type guards for runtime type checking:
 
 ```typescript
-function isNetworkError(error: IGameError): error is INetworkError;
-function isDataError(error: IGameError): error is IDataError;
-function isGameStateError(error: IGameError): error is IGameStateError;
+function isNetworkError(error: GameError): error is NetworkError;
+function isDataError(error: GameError): error is DataError;
+function isGameStateError(error: GameError): error is GameStateError;
 ```
 
 ## Recent Updates
 
 ### January 2025
-- Added IGameSummary interface for game history
+- Refactored type names to remove 'I' prefix for better consistency
+- Updated GameSummary and related interfaces
 - Enhanced error handling with specific error types
 - Improved type guards for error handling
 - Added factory functions for creating typed errors
@@ -107,11 +108,11 @@ function isGameStateError(error: IGameError): error is IGameStateError;
 All database models should align with the shared types. Key collections:
 
 1. Games Collection
-   - Uses IGameRoom interface
+   - Uses GameRoom interface
    - Adds MongoDB-specific fields (_id, timestamps)
 
 2. Game History
-   - Based on IGameSummary
+   - Based on GameSummary
    - Includes additional metadata for querying
 
 ## Future Improvements
