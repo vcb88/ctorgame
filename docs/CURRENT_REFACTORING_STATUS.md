@@ -63,7 +63,7 @@
       a. Обновление компонентов:
       - [✓] GameControls.tsx - обновлен для использования PlayerNumber
       - [✓] GameBoard.tsx - обновлен для использования Position и PlayerNumber
-      - [ ] GameOverScreen.tsx - в процессе обновления
+      - [✓] GameOverScreen.tsx - обновлен для использования PlayerNumber и Scores
       - [ ] Обновить оставшиеся компоненты
 
       b. Проблемы с типами:
