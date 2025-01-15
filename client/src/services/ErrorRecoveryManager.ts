@@ -2,14 +2,16 @@ import {
   ErrorCode,
   ErrorSeverity,
   RecoveryStrategy,
-  INetworkError,
-  IErrorRecoveryConfig
-} from '@ctor-game/shared/src/types/network/errors.js';
+  NetworkError,
+  ErrorRecoveryConfig,
+  ErrorDetails
+} from '@ctor-game/shared/types/network';
+import { logger } from '@/utils/logger';
 
 /**
  * Default recovery configurations for different error types
  */
-const DEFAULT_RECOVERY_CONFIGS: Record<ErrorCode, IErrorRecoveryConfig> = {
+const DEFAULT_RECOVERY_CONFIGS: Record<ErrorCode, ErrorRecoveryConfig> = {
   'CONNECTION_ERROR': {
     maxRetries: 3,
     retryDelay: 1000,
@@ -47,8 +49,8 @@ const DEFAULT_RECOVERY_CONFIGS: Record<ErrorCode, IErrorRecoveryConfig> = {
 
 export class ErrorRecoveryManager {
   private static instance: ErrorRecoveryManager;
-  private errorListeners: Set<(error: INetworkError) => void> = new Set();
-  private recoveryConfigs: Record<ErrorCode, IErrorRecoveryConfig>;
+  private errorListeners: Set<(error: NetworkError) => void> = new Set();
+  private recoveryConfigs: Record<ErrorCode, ErrorRecoveryConfig>;
   
   private constructor() {
     this.recoveryConfigs = { ...DEFAULT_RECOVERY_CONFIGS };
@@ -64,25 +66,38 @@ export class ErrorRecoveryManager {
   /**
    * Handle an error and determine recovery strategy
    */
-  public async handleError(error: INetworkError): Promise<void> {
+  public async handleError(error: NetworkError): Promise<void> {
+    logger.error('Handling error', {
+      code: error.code,
+      message: error.message,
+      severity: error.severity,
+      details: error.details
+    });
+
     // Ensure error has correct attributes
     const timestamp = Date.now();
-    const normalizedError: INetworkError = {
+    const normalizedError: NetworkError = {
       ...error,
       timestamp: error.timestamp || timestamp,
-      recoverable: error.recoverable ?? this.isErrorRecoverable(error),
-      retryCount: error.retryCount || 0
+      retryable: error.retryable ?? this.isErrorRecoverable(error),
+      retryCount: error.retryCount || 0,
+      details: error.details || {}
     };
 
     // Notify listeners
     this.notifyListeners(normalizedError);
 
     // Skip recovery for low severity errors or non-recoverable errors
-    if (normalizedError.severity === 'LOW' || !normalizedError.recoverable) {
+    if (normalizedError.severity === 'LOW' || !normalizedError.retryable) {
+      logger.debug('Skipping error recovery', {
+        severity: normalizedError.severity,
+        retryable: normalizedError.retryable
+      });
       return;
     }
 
     const strategy = this.getRecoveryStrategy(normalizedError);
+    logger.debug('Selected recovery strategy', { strategy, errorCode: normalizedError.code });
     
     switch (strategy) {
       case 'RETRY':
@@ -111,27 +126,50 @@ export class ErrorRecoveryManager {
   /**
    * Check if error is recoverable based on its code
    */
-  private isErrorRecoverable(error: INetworkError): boolean {
-    return !['OPERATION_CANCELLED', 'GAME_NOT_FOUND', 'GAME_FULL', 'INVALID_STATE'].includes(error.code);
+  private isErrorRecoverable(error: NetworkError): boolean {
+    const nonRecoverableErrors = [
+      'OPERATION_CANCELLED',
+      'GAME_NOT_FOUND',
+      'GAME_FULL',
+      'INVALID_STATE'
+    ];
+    const isRecoverable = !nonRecoverableErrors.includes(error.code);
+    logger.debug('Checking error recoverability', {
+      errorCode: error.code,
+      isRecoverable
+    });
+    return isRecoverable;
   }
 
   /**
    * Determine if error should be retried
    */
-  public shouldRetry(error: INetworkError): boolean {
+  public shouldRetry(error: NetworkError): boolean {
     const config = this.recoveryConfigs[error.code];
     if (!config || !config.maxRetries) {
+      logger.debug('Error not eligible for retry', {
+        errorCode: error.code,
+        hasConfig: !!config,
+        maxRetries: config?.maxRetries
+      });
       return false;
     }
 
     const retryCount = error.retryCount || 0;
-    return retryCount < config.maxRetries;
+    const shouldRetry = retryCount < config.maxRetries;
+    logger.debug('Checking retry eligibility', {
+      errorCode: error.code,
+      retryCount,
+      maxRetries: config.maxRetries,
+      shouldRetry
+    });
+    return shouldRetry;
   }
 
   /**
    * Get recovery strategy for error
    */
-  public getRecoveryStrategy(error: INetworkError): RecoveryStrategy {
+  public getRecoveryStrategy(error: NetworkError): RecoveryStrategy {
     // Handle critical errors that need user action
     if (error.severity === 'CRITICAL') {
       return 'USER_ACTION';
@@ -162,35 +200,58 @@ export class ErrorRecoveryManager {
   /**
    * Add error listener
    */
-  public addErrorListener(listener: (error: INetworkError) => void): () => void {
+  public addErrorListener(listener: (error: NetworkError) => void): () => void {
     this.errorListeners.add(listener);
+    logger.debug('Error listener added');
     return () => {
       this.errorListeners.delete(listener);
+      logger.debug('Error listener removed');
     };
   }
 
   /**
    * Configure recovery options for error type
    */
-  public configureRecovery(code: ErrorCode, config: IErrorRecoveryConfig): void {
+  public configureRecovery(code: ErrorCode, config: ErrorRecoveryConfig): void {
+    logger.debug('Configuring error recovery', {
+      errorCode: code,
+      config
+    });
     this.recoveryConfigs[code] = {
       ...DEFAULT_RECOVERY_CONFIGS[code],
       ...config
     };
   }
 
-  private notifyListeners(error: INetworkError): void {
-    this.errorListeners.forEach(listener => listener(error));
+  private notifyListeners(error: NetworkError): void {
+    logger.debug('Notifying error listeners', {
+      listenerCount: this.errorListeners.size,
+      errorCode: error.code
+    });
+    this.errorListeners.forEach(listener => {
+      try {
+        listener(error);
+      } catch (listenerError) {
+        logger.error('Error in listener', {
+          errorCode: error.code,
+          listenerError
+        });
+      }
+    });
   }
 
-  private async handleRetry(error: INetworkError): Promise<void> {
+  private async handleRetry(error: NetworkError): Promise<void> {
     const config = this.recoveryConfigs[error.code];
     if (!this.shouldRetry(error)) {
+      logger.debug('Maximum retry attempts exceeded', {
+        errorCode: error.code,
+        retryCount: error.retryCount
+      });
       this.notifyListeners({
         ...error,
         message: 'Maximum retry attempts exceeded',
         severity: 'HIGH',
-        recoverable: false,
+        retryable: false,
         timestamp: Date.now()
       });
       return;
@@ -201,54 +262,104 @@ export class ErrorRecoveryManager {
       ? config.retryDelay * Math.pow(2, retryCount - 1)
       : config.retryDelay || 1000;
 
+    logger.debug('Attempting retry', {
+      errorCode: error.code,
+      retryCount,
+      delay,
+      useBackoff: config.useBackoff
+    });
+
     await new Promise(resolve => setTimeout(resolve, delay));
 
     if (config.recover) {
-      await config.recover({
-        ...error,
-        retryCount,
-        recoverable: true,
-        timestamp: Date.now()
-      });
+      try {
+        await config.recover({
+          ...error,
+          retryCount,
+          retryable: true,
+          timestamp: Date.now()
+        });
+        logger.debug('Recovery action successful', {
+          errorCode: error.code,
+          retryCount
+        });
+      } catch (recoverError) {
+        logger.error('Recovery action failed', {
+          errorCode: error.code,
+          retryCount,
+          error: recoverError
+        });
+        throw recoverError;
+      }
     }
   }
 
-  private async handleReconnect(error: INetworkError): Promise<void> {
+  private async handleReconnect(error: NetworkError): Promise<void> {
     // В MVP просто уведомляем о необходимости переподключения
     const timestamp = Date.now();
+    logger.warn('Connection error occurred', {
+      errorCode: error.code,
+      message: error.message,
+      details: error.details
+    });
+
     this.notifyListeners({
       ...error,
       message: error.message || 'Connection lost. Please refresh the page to reconnect.',
       severity: 'HIGH',
-      recoverable: true,
+      retryable: true,
       timestamp,
-      retryCount: error.retryCount || 0
+      retryCount: error.retryCount || 0,
+      details: {
+        ...error.details,
+        reconnectAttempt: (error.retryCount || 0) + 1
+      }
     });
   }
 
-  private async handleReset(error: INetworkError): Promise<void> {
+  private async handleReset(error: NetworkError): Promise<void> {
     // В MVP просто уведомляем о необходимости сброса
     const timestamp = Date.now();
+    logger.warn('State error occurred', {
+      errorCode: error.code,
+      message: error.message,
+      details: error.details
+    });
+
     this.notifyListeners({
       ...error,
       message: error.message || 'Game state error. Please refresh the page to reset.',
       severity: 'HIGH',
-      recoverable: true,
+      retryable: true,
       timestamp,
-      retryCount: error.retryCount || 0
+      retryCount: error.retryCount || 0,
+      details: {
+        ...error.details,
+        resetAttempt: (error.retryCount || 0) + 1
+      }
     });
   }
 
-  private handleUserAction(error: INetworkError): void {
+  private handleUserAction(error: NetworkError): void {
     // В MVP просто показываем сообщение пользователю
     const timestamp = Date.now();
+    logger.warn('User action required', {
+      errorCode: error.code,
+      message: error.message,
+      details: error.details
+    });
+
     this.notifyListeners({
       ...error,
       message: error.message ? `${error.message} Please take appropriate action.` : 'Action required from user',
       severity: 'CRITICAL',
-      recoverable: false,
+      retryable: false,
       timestamp,
-      retryCount: error.retryCount || 0
+      retryCount: error.retryCount || 0,
+      details: {
+        ...error.details,
+        requiresUserAction: true
+      }
     });
   }
 }
