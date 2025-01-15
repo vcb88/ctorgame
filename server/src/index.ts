@@ -8,7 +8,7 @@ import { GameServer } from './websocket/GameServer.js';
 import cors from 'cors';
 import path from 'path';
 import { logger } from './utils/logger.js';
-import { toErrorWithStack } from '@ctor-game/shared/src/utils/errors.js';
+import { toErrorWithStack } from '@ctor-game/shared/utils/errors';
 
 logger.info('Starting server initialization', {
   component: 'Server',

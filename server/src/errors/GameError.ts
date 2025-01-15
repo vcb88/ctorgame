@@ -1,14 +1,24 @@
-import { WebSocketErrorCode } from '@ctor-game/shared/types/network/websocket.js';
-import type { ErrorCode } from '@ctor-game/shared/types/network/errors.js';
+import type { IWebSocketErrorCode } from '@ctor-game/shared/types/network/websocket';
+import type { ErrorCode } from '@ctor-game/shared/types/network/errors';
+
+// Определяем WebSocketErrorCode как константы, так как они используются как значения
+export const WebSocketErrorCode = {
+    InvalidState: 'INVALID_STATE',
+    InvalidMove: 'INVALID_MOVE',
+    NotYourTurn: 'NOT_YOUR_TURN',
+    GameEnded: 'GAME_ENDED',
+    GameNotFound: 'GAME_NOT_FOUND',
+    GameFull: 'GAME_FULL'
+} as const;
 
 /**
  * Base class for all game-related errors
  */
 export class GameError extends Error {
-    readonly code: WebSocketErrorCode;
+    readonly code: (typeof WebSocketErrorCode)[keyof typeof WebSocketErrorCode];
     readonly details?: unknown;
 
-    constructor(code: WebSocketErrorCode, message: string, details?: unknown) {
+    constructor(code: (typeof WebSocketErrorCode)[keyof typeof WebSocketErrorCode], message: string, details?: unknown) {
         super(message);
         this.code = code;
         this.details = details;

@@ -1,6 +1,6 @@
 import { logger } from '../utils/logger.js';
 import { GameError } from '../errors/GameError.js';
-import type { WebSocketErrorCode } from '@ctor-game/shared/src/types/network/websocket';
+import type { IWebSocketErrorCode } from '@ctor-game/shared/types/network/websocket';
 
 /**
  * Service for centralized error handling
@@ -22,7 +22,7 @@ export class ErrorHandlingService {
      * Handles an error and returns formatted error response
      */
     public handleError(error: Error | GameError): {
-        code: WebSocketErrorCode;
+        code: IWebSocketErrorCode;
         message: string;
         details?: unknown;
     } {
