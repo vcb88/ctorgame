@@ -1,9 +1,16 @@
 import { logger } from '../utils/logger.js';
 import { GameError } from '../errors/GameError.js';
-import type { IWebSocketErrorCode } from '@ctor-game/shared/types/network/websocket';
+import {
+    NetworkError,
+    ErrorCode,
+    ErrorCategory,
+    ErrorSeverity,
+    createError,
+    isNetworkError
+} from '@ctor-game/shared/types/network/errors';
 
 /**
- * Service for centralized error handling
+ * Service for centralized error handling and monitoring
  */
 export class ErrorHandlingService {
     private static instance: ErrorHandlingService;
@@ -21,61 +28,121 @@ export class ErrorHandlingService {
     /**
      * Handles an error and returns formatted error response
      */
-    public handleError(error: Error | GameError): {
-        code: IWebSocketErrorCode;
-        message: string;
-        details?: unknown;
-    } {
+    public handleError(error: Error | GameError | NetworkError): NetworkError {
+        // If it's already a NetworkError, just return it
+        if (isNetworkError(error)) {
+            this.logError(error);
+            return error;
+        }
+
+        // If it's a GameError, convert it to NetworkError
         if (error instanceof GameError) {
-            // Log game error
-            logger.error(`Game error: ${error.code} - ${error.message}`, { component: 'ErrorHandler', error: error, details: error.details });
-            return error.toJSON();
+            const networkError = createError(
+                error.code as ErrorCode,
+                error.message,
+                {
+                    category: ErrorCategory.Game,
+                    severity: ErrorSeverity.Error,
+                    details: error.details
+                }
+            );
+            this.logError(networkError);
+            return networkError;
         }
 
         // Handle unknown errors
-        logger.error('Unexpected error', { component: 'ErrorHandler', error: error });
-        return {
-            code: 'server_error',
-            message: 'An unexpected error occurred',
-            details: process.env.NODE_ENV === 'development' ? error.message : undefined
-        };
+        const networkError = createError(
+            ErrorCode.InternalError,
+            'An unexpected error occurred',
+            {
+                category: ErrorCategory.System,
+                severity: ErrorSeverity.Critical,
+                details: process.env.NODE_ENV === 'development' 
+                    ? { originalError: error.message, stack: error.stack }
+                    : undefined
+            }
+        );
+        this.logError(networkError);
+        return networkError;
     }
 
     /**
-     * Handles an error in async context
+     * Handles an error in async context with retries
      */
     public async handleAsyncError<T>(
-        operation: () => Promise<T>
+        operation: () => Promise<T>,
+        options: {
+            maxRetries?: number;
+            retryDelay?: number;
+            category?: ErrorCategory;
+        } = {}
     ): Promise<T> {
-        try {
-            return await operation();
-        } catch (error) {
-            const formattedError = this.handleError(error as Error);
-            throw new GameError(
-                formattedError.code,
-                formattedError.message,
-                formattedError.details
-            );
+        const maxRetries = options.maxRetries ?? 3;
+        const retryDelay = options.retryDelay ?? 1000;
+        let lastError: Error | null = null;
+
+        for (let attempt = 0; attempt <= maxRetries; attempt++) {
+            try {
+                return await operation();
+            } catch (error) {
+                lastError = error as Error;
+                
+                // Don't retry if it's a game logic error
+                if (error instanceof GameError && error.code !== ErrorCode.OperationTimeout) {
+                    throw this.handleError(error);
+                }
+
+                // Last attempt failed
+                if (attempt === maxRetries) {
+                    const networkError = this.handleError(lastError);
+                    throw networkError;
+                }
+
+                // Wait before retry
+                await new Promise(resolve => setTimeout(resolve, retryDelay * (attempt + 1)));
+            }
         }
+
+        // This should never happen due to the loop above
+        throw this.handleError(new Error('Unexpected error in retry loop'));
     }
 
     /**
      * Logs error for monitoring and analytics
      */
     public logError(
-        error: Error | GameError,
+        error: Error | GameError | NetworkError,
         context?: Record<string, unknown>
     ): void {
+        const logContext = {
+            component: 'ErrorHandler',
+            ...context
+        };
+
+        if (isNetworkError(error)) {
+            logger.error(
+                `[${error.category}:${error.code}] ${error.message}`,
+                { 
+                    ...logContext,
+                    severity: error.severity,
+                    details: error.details,
+                    timestamp: error.timestamp
+                }
+            );
+            return;
+        }
+
         if (error instanceof GameError) {
             logger.error(
-                `[${error.code}] ${error.message}`,
-                { component: 'ErrorHandler', ...context, error: error, details: error.details }
+                `[game:${error.code}] ${error.message}`,
+                { ...logContext, details: error.details }
             );
-        } else {
-            logger.error(
-                'Unexpected error',
-                { component: 'ErrorHandler', ...context, error: error }
-            );
+            return;
         }
+
+        logger.error(
+            'Unexpected error',
+            { ...logContext, error: error }
+        );
     }
 }
