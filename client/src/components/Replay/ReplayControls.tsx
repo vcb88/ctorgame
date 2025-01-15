@@ -10,19 +10,21 @@ import {
     FastForward
 } from 'lucide-react';
 
-interface ReplayControlsProps {
+type PlaybackSpeed = 0.5 | 1 | 2;
+
+type ReplayControlsProps = {
     isPlaying: boolean;
     currentMove: number;
     totalMoves: number;
-    playbackSpeed: number;
+    playbackSpeed: PlaybackSpeed;
     onStart: () => void;
     onPause: () => void;
     onResume: () => void;
     onNext: () => void;
     onPrevious: () => void;
     onStop: () => void;
-    onSpeedChange: (speed: number) => void;
-}
+    onSpeedChange: (speed: PlaybackSpeed) => void;
+};
 
 export function ReplayControls({
     isPlaying,
@@ -37,21 +39,21 @@ export function ReplayControls({
     onStop,
     onSpeedChange
 }: ReplayControlsProps) {
-    // Вспомогательные функции
+    // Computed states
     const isFirstMove = currentMove === 0;
     const isLastMove = currentMove === totalMoves;
     const hasStarted = currentMove > 0 || isPlaying;
 
     return (
         <div className="flex flex-col gap-4 p-4 bg-background rounded-lg shadow-md">
-            {/* Прогресс воспроизведения */}
+            {/* Playback progress */}
             <div className="text-center text-sm text-muted-foreground">
                 Move {currentMove} of {totalMoves}
             </div>
 
-            {/* Основные кнопки управления */}
+            {/* Main control buttons */}
             <div className="flex items-center justify-center gap-2">
-                {/* Кнопка старт/стоп */}
+                {/* Start/Stop button */}
                 {!hasStarted ? (
                     <Button onClick={onStart} variant="default">
                         <Play className="w-4 h-4 mr-1" />
@@ -64,7 +66,7 @@ export function ReplayControls({
                     </Button>
                 )}
 
-                {/* Кнопка пауза/продолжить */}
+                {/* Pause/Resume button */}
                 {hasStarted && (
                     <Button
                         onClick={isPlaying ? onPause : onResume}
@@ -79,7 +81,7 @@ export function ReplayControls({
                     </Button>
                 )}
 
-                {/* Навигация по ходам */}
+                {/* Move navigation */}
                 <Button
                     onClick={onPrevious}
                     disabled={isFirstMove}
@@ -99,7 +101,7 @@ export function ReplayControls({
                 </Button>
             </div>
 
-            {/* Управление скоростью */}
+            {/* Speed control */}
             <div className="flex items-center justify-center gap-2">
                 <Button
                     onClick={() => onSpeedChange(0.5)}
