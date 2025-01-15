@@ -1,18 +1,18 @@
-// Game related types
 import type {
-    IGameState,
+    GameState,
     PlayerNumber,
-    IGameMove,
-    IPlayer,
-    GameStatus
-} from '@ctor-game/shared/types/game/types';
+    GameMove,
+    Player,
+    GameStatus,
+    Position
+} from '@ctor-game/shared/types/primitives';
 
 // Redis specific types
 import type {
-    IRedisGameState,
-    IRedisPlayerSession,
-    IRedisGameRoom,
-    IRedisGameEvent
+    RedisGameState,
+    RedisPlayerSession,
+    RedisGameRoom,
+    RedisGameEvent
 } from '@ctor-game/shared/types/storage/redis';
 
 import { redisClient, REDIS_KEYS, REDIS_EVENTS, withLock, ttlConfig } from '../config/redis.js';
@@ -69,8 +69,8 @@ export class RedisService {
     /**
      * Сохраняет состояние игры
      */
-    async setGameState(gameId: string, state: IGameState): Promise<void> {
-        const redisState: IRedisGameState = {
+    async setGameState(gameId: string, state: GameState): Promise<void> {
+        const redisState: RedisGameState = {
             ...state,
             lastUpdate: Date.now(),
             version: Date.now() // Using timestamp as version for optimistic locking
@@ -93,13 +93,13 @@ export class RedisService {
     /**
      * Получает состояние игры
      */
-    async getGameState(gameId: string): Promise<IGameState | null> {
+    async getGameState(gameId: string): Promise<GameState | null> {
         const state = await redisClient.get(REDIS_KEYS.GAME_STATE(gameId));
         if (!state) return null;
 
-        const redisState: IRedisGameState & IGameState = JSON.parse(state);
+        const redisState: RedisGameState = JSON.parse(state);
         // Исключаем служебные поля при возврате
-        const { lastUpdate, ...gameState } = redisState as any;
+        const { lastUpdate, version, ...gameState } = redisState;
         return gameState;
     }
 
@@ -109,9 +109,9 @@ export class RedisService {
     async updateGameState(
         gameId: string,
         playerNumber: PlayerNumber,
-        serverMove: Omit<IGameMove, 'player' | 'timestamp'>,
+        serverMove: Omit<GameMove, 'player' | 'timestamp'>,
         validateMove: boolean = true
-    ): Promise<IGameState> {
+    ): Promise<GameState> {
         return await withLock(gameId, async () => {
             const currentState = await this.getGameState(gameId);
             if (!currentState) {
@@ -145,7 +145,7 @@ export class RedisService {
         gameId: string,
         playerNumber: PlayerNumber
     ): Promise<void> {
-        const session: IRedisPlayerSession = {
+        const session: RedisPlayerSession = {
             gameId,
             playerNumber,
             lastActivity: Date.now()
@@ -161,7 +161,7 @@ export class RedisService {
     /**
      * Получает сессию игрока
      */
-    async getPlayerSession(socketId: string): Promise<IRedisPlayerSession | null> {
+    async getPlayerSession(socketId: string): Promise<RedisPlayerSession | null> {
         const session = await redisClient.get(REDIS_KEYS.PLAYER_SESSION(socketId));
         return session ? JSON.parse(session) : null;
     }
@@ -204,11 +204,11 @@ export class RedisService {
     /**
      * Сохраняет информацию об игровой комнате
      */
-    async setGameRoom(gameId: string, players: IPlayer[]): Promise<void> {
-        const room: IRedisGameRoom = {
+    async setGameRoom(gameId: string, players: Player[]): Promise<void> {
+        const room: RedisGameRoom = {
             gameId,
-            players: players.map(p => ({ id: p.id, number: p.playerNumber })),
-            status: players.length === 2 ? 'playing' as GameStatus : 'waiting' as GameStatus,
+            players: players.map(p => ({ id: p.id, number: p.num })),
+            status: players.length === 2 ? 'active' : 'waiting',
             lastUpdate: Date.now()
         };
 
@@ -222,7 +222,7 @@ export class RedisService {
     /**
      * Получает информацию об игровой комнате
      */
-    async getGameRoom(gameId: string): Promise<IRedisGameRoom | null> {
+    async getGameRoom(gameId: string): Promise<RedisGameRoom | null> {
         const room = await redisClient.get(REDIS_KEYS.GAME_ROOM(gameId));
         return room ? JSON.parse(room) : null;
     }
@@ -230,7 +230,7 @@ export class RedisService {
     /**
      * Добавляет игрока в комнату
      */
-    async addPlayerToRoom(gameId: string, player: IPlayer): Promise<void> {
+    async addPlayerToRoom(gameId: string, player: Player): Promise<void> {
         await withLock(gameId, async () => {
             const room = await this.getGameRoom(gameId);
             if (!room) {
@@ -268,7 +268,7 @@ export class RedisService {
     /**
      * Добавляет событие в историю игры
      */
-    async addGameEvent(event: IRedisGameEvent): Promise<void> {
+    async addGameEvent(event: RedisGameEvent): Promise<void> {
         const key = REDIS_KEYS.GAME_EVENTS(event.gameId);
         await redisClient
             .multi()
@@ -280,7 +280,7 @@ export class RedisService {
     /**
      * Получает последние события игры
      */
-    async getGameEvents(gameId: string, limit: number = 10): Promise<IRedisGameEvent[]> {
+    async getGameEvents(gameId: string, limit: number = 10): Promise<RedisGameEvent[]> {
         const events = await redisClient.lrange(REDIS_KEYS.GAME_EVENTS(gameId), 0, limit - 1);
         return events.map((e: string) => JSON.parse(e));
     }
@@ -346,7 +346,7 @@ export class RedisService {
     /**
      * Создает новую игру
      */
-    async createGame(gameId: string, player: IPlayer, initialState: IGameState): Promise<void> {
+    async createGame(gameId: string, player: Player, initialState: GameState): Promise<void> {
         await Promise.all([
             this.setGameState(gameId, initialState),
             this.setGameRoom(gameId, [player]),
@@ -357,14 +357,14 @@ export class RedisService {
     /**
      * Присоединяет игрока к существующей игре
      */
-    async joinGame(gameId: string, player: IPlayer): Promise<void> {
+    async joinGame(gameId: string, player: Player): Promise<void> {
         await this.addPlayerToRoom(gameId, player);
     }
 
     /**
      * Получает номер текущего игрока из состояния игры
      */
-    getCurrentPlayer(state: IGameState): PlayerNumber {
+    getCurrentPlayer(state: GameState): PlayerNumber {
         return state.currentPlayer;
     }
 
