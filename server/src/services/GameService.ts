@@ -5,13 +5,13 @@ import type {
     PlayerNumber,
     GameStatus,
     IGameScores
-} from '@ctor-game/shared/src/types/game/types';
-import type { IGameHistory, IGameHistorySummary } from '@ctor-game/shared/src/types/storage/history';
+} from '@ctor-game/shared/types/game/types';
+import type { IGameHistory, IGameHistorySummary } from '@ctor-game/shared/types/storage/history';
 
 import type {
     GameMetadata,
     GameDetails
-} from '@ctor-game/shared/src/types/storage/metadata';
+} from '@ctor-game/shared/types/storage/metadata';
 
 import { GameLogicService } from './GameLogicService.js';
 import { GameStorageService } from './GameStorageService.js';
