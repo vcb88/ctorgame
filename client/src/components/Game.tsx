@@ -3,14 +3,16 @@ import { useMultiplayerGame } from '@/hooks/useMultiplayerGame';
 // Game types
 import { 
   Player,
-  IBoard 
+  GameState,
+  Board,
+  Turn
 } from '@ctor-game/shared/types/game';
 
-// Operations
+// Base types
 import { 
   OperationType,
   GameOutcome 
-} from '@ctor-game/shared/types/base/enums';
+} from '@ctor-game/shared/types/enums';
 import { cn } from '@/lib/utils';
 import { GameCell } from '@/components/GameCell';
 import { logger } from '@/utils/logger';

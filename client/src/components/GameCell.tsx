@@ -1,7 +1,7 @@
 import React from 'react';
 import { cn } from '@/lib/utils';
 import { BOARD_SIZE } from '@ctor-game/shared/types/constants';
-import type { Player } from '@ctor-game/shared/types/base/enums';
+import { Player } from '@ctor-game/shared/types/game';
 import { CellAnimationState, AnimationType } from '@/types/animations';
 
 interface GameCellProps {

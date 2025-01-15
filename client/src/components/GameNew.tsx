@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useMultiplayerGameNew } from '@/hooks/useMultiplayerGameNew.v2';
-import type { OperationType, Player } from '@ctor-game/shared/types/base/enums';
-import type { GameActionType } from '@ctor-game/shared/types/game';
+import { Player } from '@ctor-game/shared/types/game';
+import { GameActionType } from '@ctor-game/shared/types/game';
+import { OperationType } from '@ctor-game/shared/types/enums';
 import type { ErrorCode } from '@ctor-game/shared/types/network';
 import { cn } from '@/lib/utils';
 import { GameCell } from '@/components/GameCell';

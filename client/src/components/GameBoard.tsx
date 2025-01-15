@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { GameCell } from './GameCell';
-import type { IPosition } from '@ctor-game/shared/types/base/primitives';
-import type { Player, OperationType } from '@ctor-game/shared/types/base/enums';
+import { Position } from '@ctor-game/shared/types/game/geometry';
+import { Player } from '@ctor-game/shared/types/game';
+import { OperationType } from '@ctor-game/shared/types/enums';
 import { GameError } from '../types/connection';
 import { GameActionType } from '../types/actions';
 import { logger } from '../utils/logger';
@@ -11,14 +12,14 @@ interface GameBoardProps {
   board: (Player | null)[][];
   onCellClick?: (row: number, col: number) => void;
   disabled?: boolean;
-  lastMove?: IPosition;
+  lastMove?: Position;
   error?: GameError;
   loading?: boolean;
   operationInProgress?: GameActionType;
   isValidMove?: (row: number, col: number) => boolean;
   onRetry?: () => void;
   currentPlayer?: Player;
-  highlightedCells?: IPosition[];
+  highlightedCells?: Position[];
 }
 
 export function GameBoard({
@@ -39,7 +40,7 @@ export function GameBoard({
   const animationTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   // Clear completed animations
-  const clearAnimations = useCallback((positions?: IPosition[]) => {
+  const clearAnimations = useCallback((positions?: Position[]) => {
     if (animationTimeoutRef.current) {
       clearTimeout(animationTimeoutRef.current);
     }
@@ -58,7 +59,7 @@ export function GameBoard({
   }, []);
 
   // Handle animation timeouts
-  const scheduleAnimationCleanup = useCallback((positions: IPosition[], duration: number) => {
+  const scheduleAnimationCleanup = useCallback((positions: Position[], duration: number) => {
     if (animationTimeoutRef.current) {
       clearTimeout(animationTimeoutRef.current);
     }
@@ -81,21 +82,24 @@ export function GameBoard({
     });
   }, [loading, operationInProgress, error, currentPlayer, lastMove, highlightedCells]);
 
-  // Log animation states
+  // Log animation states for captured cells
   useEffect(() => {
-    if (Object.keys(capturedCells).length > 0) {
+    const capturedCellKeys = Object.keys(animationStates).filter(
+      key => animationStates[key]?.type === AnimationType.CAPTURE
+    );
+    if (capturedCellKeys.length > 0) {
       logger.animation('capture', {
-        cells: Object.keys(capturedCells),
-        previousBoard,
+        cells: capturedCellKeys,
+        previousBoard: previousBoardRef.current,
         currentBoard: board
       }, 'GameBoard');
     }
-  }, [capturedCells, previousBoard, board]);
+  }, [animationStates, board]);
 
   // Track board changes and manage animations
   useEffect(() => {
-    const capturedPositions: IPosition[] = [];
-    const placedPositions: IPosition[] = [];
+    const capturedPositions: Position[] = [];
+    const placedPositions: Position[] = [];
     
     board.forEach((row, rowIndex) => {
       row.forEach((cell, colIndex) => {
@@ -177,7 +181,7 @@ export function GameBoard({
   const handleCellClick = useCallback((rowIndex: number, colIndex: number) => {
     if (!onCellClick) return;
 
-    const position = { x: colIndex, y: rowIndex };
+    const position: Position = { x: colIndex, y: rowIndex };
     const cellKey = `${rowIndex}-${colIndex}`;
     const isAnimating = animationStates[cellKey]?.isAnimating;
 
@@ -230,7 +234,7 @@ export function GameBoard({
 
   // Special styling for cells based on their state
   const getCellHighlightState = (rowIndex: number, colIndex: number) => {
-    const pos = { x: colIndex, y: rowIndex };
+    const pos: Position = { x: colIndex, y: rowIndex };
     const isHighlighted = highlightedCells.some(cell => cell.x === pos.x && cell.y === pos.y);
     const isLastMove = lastMove && lastMove.x === pos.x && lastMove.y === pos.y;
     

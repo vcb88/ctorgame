@@ -1,6 +1,6 @@
 import React from 'react';
 import { cn } from '@/lib/utils';
-import type { Player } from '@ctor-game/shared/types/base/enums';
+import { Player } from '@ctor-game/shared/types/game';
 
 interface GameOverScreenProps {
   winner: Player | null;
