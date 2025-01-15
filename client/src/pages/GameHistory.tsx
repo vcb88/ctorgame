@@ -22,6 +22,7 @@ export function GameHistory() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<IGameError | null>(null);
     const [selectedGame, setSelectedGame] = useState<string | null>(null);
+    const [loadingReplays, setLoadingReplays] = useState<Set<string>>(new Set());
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -66,6 +67,34 @@ export function GameHistory() {
 
     const formatPlayerNumber = (num: PlayerNumber): string => 
         String(num);
+
+    /**
+     * Start loading replay for specific game
+     */
+    const handleReplayRequest = async (gameCode: string) => {
+        try {
+            // Add game to loading state
+            setLoadingReplays(prev => new Set(prev).add(gameCode));
+            
+            // Request replay data through socket
+            const socket = getSocket();
+            socket.emit('REQUEST_REPLAY', { gameCode });
+            
+            // After successful request, show replay view
+            setSelectedGame(gameCode);
+        } catch (err) {
+            // Handle error
+            const error = err instanceof Error ? err : new Error('Failed to load replay');
+            handleError(createGameError.gameState(error.message, { gameId: gameCode }));
+        } finally {
+            // Remove game from loading state
+            setLoadingReplays(prev => {
+                const next = new Set(prev);
+                next.delete(gameCode);
+                return next;
+            });
+        }
+    };
 
     const formatGameStatus = (game: IGameSummary): string => {
         if (!game.completedAt) return 'IN PROGRESS';
@@ -123,7 +152,15 @@ export function GameHistory() {
                     <ReplayView
                         gameCode={selectedGame}
                         socket={getSocket()}
-                        onClose={() => setSelectedGame(null)}
+                        onClose={() => {
+                            setSelectedGame(null);
+                            // Clear loading state for this game
+                            setLoadingReplays(prev => {
+                                const next = new Set(prev);
+                                if (selectedGame) next.delete(selectedGame);
+                                return next;
+                            });
+                        }}
                     />
                 </div>
             );
@@ -188,11 +225,19 @@ export function GameHistory() {
                                         )}
                                     </div>
                                     <CyberButton
-                                        onClick={() => setSelectedGame(game.gameCode)}
+                                        onClick={() => handleReplayRequest(game.gameCode)}
                                         variant="secondary"
                                         glowing
+                                        disabled={loadingReplays.has(game.gameCode)}
                                     >
-                                        ACCESS REPLAY
+                                        {loadingReplays.has(game.gameCode) ? (
+                                            <span className="inline-flex items-center">
+                                                <span className="w-4 h-4 mr-2 border-t-2 border-r-2 border-cyan-400 rounded-full animate-spin" />
+                                                LOADING...
+                                            </span>
+                                        ) : (
+                                            'ACCESS REPLAY'
+                                        )}
                                     </CyberButton>
                                 </div>
 
