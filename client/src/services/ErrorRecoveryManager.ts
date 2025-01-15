@@ -65,37 +65,40 @@ export class ErrorRecoveryManager {
    * Handle an error and determine recovery strategy
    */
   public async handleError(error: INetworkError): Promise<void> {
-    // Ensure error has timestamp
-    const errorWithTimestamp: INetworkError = {
+    // Ensure error has correct attributes
+    const timestamp = Date.now();
+    const normalizedError: INetworkError = {
       ...error,
-      timestamp: error.timestamp || Date.now()
+      timestamp: error.timestamp || timestamp,
+      recoverable: error.recoverable ?? this.isErrorRecoverable(error),
+      retryCount: error.retryCount || 0
     };
 
     // Notify listeners
-    this.notifyListeners(errorWithTimestamp);
+    this.notifyListeners(normalizedError);
 
-    // Skip recovery for low severity errors
-    if (errorWithTimestamp.severity === 'LOW') {
+    // Skip recovery for low severity errors or non-recoverable errors
+    if (normalizedError.severity === 'LOW' || !normalizedError.recoverable) {
       return;
     }
 
-    const strategy = this.getRecoveryStrategy(errorWithTimestamp);
+    const strategy = this.getRecoveryStrategy(normalizedError);
     
     switch (strategy) {
       case 'RETRY':
-        await this.handleRetry(errorWithTimestamp);
+        await this.handleRetry(normalizedError);
         break;
       
       case 'RECONNECT':
-        await this.handleReconnect(errorWithTimestamp);
+        await this.handleReconnect(normalizedError);
         break;
       
       case 'RESET':
-        await this.handleReset(errorWithTimestamp);
+        await this.handleReset(normalizedError);
         break;
       
       case 'USER_ACTION':
-        this.handleUserAction(errorWithTimestamp);
+        this.handleUserAction(normalizedError);
         break;
       
       case 'NOTIFY':
@@ -103,6 +106,13 @@ export class ErrorRecoveryManager {
         // Just notification was already done
         break;
     }
+  }
+
+  /**
+   * Check if error is recoverable based on its code
+   */
+  private isErrorRecoverable(error: INetworkError): boolean {
+    return !['OPERATION_CANCELLED', 'GAME_NOT_FOUND', 'GAME_FULL', 'INVALID_STATE'].includes(error.code);
   }
 
   /**
@@ -176,6 +186,13 @@ export class ErrorRecoveryManager {
   private async handleRetry(error: INetworkError): Promise<void> {
     const config = this.recoveryConfigs[error.code];
     if (!this.shouldRetry(error)) {
+      this.notifyListeners({
+        ...error,
+        message: 'Maximum retry attempts exceeded',
+        severity: 'HIGH',
+        recoverable: false,
+        timestamp: Date.now()
+      });
       return;
     }
 
@@ -190,6 +207,7 @@ export class ErrorRecoveryManager {
       await config.recover({
         ...error,
         retryCount,
+        recoverable: true,
         timestamp: Date.now()
       });
     }
@@ -197,31 +215,40 @@ export class ErrorRecoveryManager {
 
   private async handleReconnect(error: INetworkError): Promise<void> {
     // В MVP просто уведомляем о необходимости переподключения
+    const timestamp = Date.now();
     this.notifyListeners({
       ...error,
-      message: 'Connection lost. Please refresh the page to reconnect.',
+      message: error.message || 'Connection lost. Please refresh the page to reconnect.',
       severity: 'HIGH',
-      timestamp: Date.now()
+      recoverable: true,
+      timestamp,
+      retryCount: error.retryCount || 0
     });
   }
 
   private async handleReset(error: INetworkError): Promise<void> {
     // В MVP просто уведомляем о необходимости сброса
+    const timestamp = Date.now();
     this.notifyListeners({
       ...error,
-      message: 'Game state error. Please refresh the page to reset.',
+      message: error.message || 'Game state error. Please refresh the page to reset.',
       severity: 'HIGH',
-      timestamp: Date.now()
+      recoverable: true,
+      timestamp,
+      retryCount: error.retryCount || 0
     });
   }
 
   private handleUserAction(error: INetworkError): void {
     // В MVP просто показываем сообщение пользователю
+    const timestamp = Date.now();
     this.notifyListeners({
       ...error,
-      message: `${error.message} Please take appropriate action.`,
+      message: error.message ? `${error.message} Please take appropriate action.` : 'Action required from user',
       severity: 'CRITICAL',
-      timestamp: Date.now()
+      recoverable: false,
+      timestamp,
+      retryCount: error.retryCount || 0
     });
   }
 }
