@@ -1,12 +1,11 @@
 import React from 'react';
 import { cn } from '@/lib/utils';
 import { BOARD_SIZE } from '@ctor-game/shared/src/types/core.js';
-import type { PlayerNumber } from '@ctor-game/shared/src/types/core.js';
-import type { CellAnimationState, AnimationType } from '@/types/animations';
+import type { PlayerNumber, Position } from '@ctor-game/shared/src/types/core.js';
+import type { CellAnimationState } from '@/types/animations';
 
 type GameCellProps = {
-  row: number;
-  col: number;
+  position: Position;
   value: PlayerNumber | null;
   disabled: boolean;
   onClick?: () => void;
@@ -18,8 +17,7 @@ type GameCellProps = {
 };
 
 export const GameCell: React.FC<GameCellProps> = ({
-  row,
-  col,
+  position: [row, col],
   value,
   disabled,
   onClick,

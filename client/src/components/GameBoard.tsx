@@ -262,15 +262,15 @@ export function GameBoard({
   return (
     <div className="grid grid-cols-10 gap-1 bg-gray-200 p-2">
       {board.map((row, rowIndex) =>
-        row.map((cell, colIndex) => {
+        row.map((colIndex, cell) => {
+          const position: Position = [colIndex, rowIndex];
           const { isHighlighted, isLastMove } = getCellHighlightState(rowIndex, colIndex);
           const isValidMoveCell = isValidMove ? isValidMove(rowIndex, colIndex) : (!disabled && cell === null);
           
           return (
             <GameCell
               key={`${rowIndex}-${colIndex}`}
-              row={rowIndex}
-              col={colIndex}
+              position={position}
               value={cell}
               disabled={disabled || loading || animationStates[`${rowIndex}-${colIndex}`]?.isAnimating}
               onClick={() => handleCellClick(rowIndex, colIndex)}
