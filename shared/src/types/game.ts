@@ -1,4 +1,4 @@
-import { Player, PlayerNumber, Timestamp } from './core.js';
+import type { Player, PlayerNumber, Timestamp, IGameState } from './types.js';
 
 export interface IPlayer {
     id: string;
