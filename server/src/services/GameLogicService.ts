@@ -1,31 +1,28 @@
-import { logger } from '../utils/logger';
-import { create2DArrayCopy, update2DArrayValue } from '../utils/array';
-import type { IPosition } from '@ctor-game/shared/types/geometry/types';
+import { logger } from '../utils/logger.js';
+import { create2DArrayCopy, update2DArrayValue } from '../utils/array.js';
 import type {
-    IGameState,
-    IGameMove,
+    Position,
+    Size,
     PlayerNumber,
     GameStatus,
-    IGameScores,
-} from '@ctor-game/shared/types/game/types';
-import type { ISize } from '@ctor-game/shared/types/geometry/types';
-import { getAdjacentPositions } from '../utils/geometry';
-import { getOpponent } from '../utils/game';
+    Scores,
+    GameState,
+    GameMove,
+    CellValue
+} from '@ctor-game/shared/types/primitives';
+import { getAdjacentPositions } from '../utils/geometry.js';
+import { getOpponent } from '../utils/game.js';
 
-/**
- * Board size and validation constants
- */
-const BOARD_SIZE = 8;
-const MIN_ADJACENT_FOR_REPLACE = 2;
+import { BOARD_SIZE, MIN_ADJACENT_FOR_REPLACE } from '../config/constants.js';
 
 /**
  * Custom type for validation result of replacement operation
  */
-interface IReplaceValidation {
+type ReplaceValidation = {
   isValid: boolean;
-  replacements: [number, number][];
+  replacements: Position[];
   message: string;
-}
+};
 
 /**
  * Game logic implementation
@@ -36,24 +33,21 @@ export class GameLogicService {
    * Первый ход в игре особенный - только 1 операция размещения
    * @returns Начальное состояние игры
    */
-  static createInitialState(): IGameState {
+  static createInitialState(): GameState {
     // Создаем пустую доску с null значениями
     const board = Array(BOARD_SIZE)
       .fill(null)
       .map(() => Object.freeze(Array(BOARD_SIZE).fill(null)));
 
-    // Определяем размер доски и создаем начальные очки
-    const size: ISize = { width: BOARD_SIZE, height: BOARD_SIZE };
-    const scores: IGameScores = { player1: 0, player2: 0 };
+    // Создаем начальные очки
+    const scores: Scores = [0, 0];
 
     // Формируем начальное состояние
     return {
-      id: crypto.randomUUID(),
       board: Object.freeze(board),
-      size,
-      currentPlayer: 1 as PlayerNumber,
-      status: 'playing',
       scores,
+      currentPlayer: 1,
+      status: GameStatus.ACTIVE,
       timestamp: Date.now()
     };
   }
@@ -65,18 +59,19 @@ export class GameLogicService {
    * @param playerNumber Номер игрока, делающего ход
    * @returns true если ход допустим
    */
-  static isValidMove(state: IGameState, move: IGameMove, playerNumber: PlayerNumber): boolean {
+  static isValidMove(state: GameState, move: GameMove, playerNumber: PlayerNumber): boolean {
     // Нельзя делать ходы, если игра завершена
-    if (state.status === 'finished') {
+    if (state.status === GameStatus.FINISHED) {
       return false;
     }
 
-    const { type, position } = move;
-    const { x, y } = position;
-    const { width, height } = state.size;
+    const { type, pos } = move;
+    if (!pos) return false;
+    
+    const [x, y] = pos;
 
     // Проверяем базовые условия
-    if (x < 0 || x >= width || y < 0 || y >= height) {
+    if (x < 0 || x >= BOARD_SIZE || y < 0 || y >= BOARD_SIZE) {
       return false;
     }
 
@@ -100,20 +95,22 @@ export class GameLogicService {
    * Проверяет возможность замены фишки
    */
   static validateReplace(
-    board: ReadonlyArray<ReadonlyArray<number | null>>,
-    size: ISize,
-    position: IPosition,
+    board: ReadonlyArray<ReadonlyArray<CellValue>>,
+    position: Position,
     playerNumber: PlayerNumber
-  ): IReplaceValidation {
+  ): ReplaceValidation {
     const startTime = Date.now();
-    const adjacentPositions = getAdjacentPositions(position, size);
+    const adjacentPositions = getAdjacentPositions(position);
     const playerPieces = adjacentPositions.filter(
-      (pos: IPosition) => board[pos.y][pos.x] === playerNumber
+      (pos: Position) => {
+        const [x, y] = pos;
+        return board[y][x] === playerNumber;
+      }
     );
     
     const validation: IReplaceValidation = {
       isValid: playerPieces.length >= MIN_ADJACENT_FOR_REPLACE,
-      replacements: playerPieces.map((pos: IPosition): [number, number] => [pos.x, pos.y]),
+      replacements: playerPieces,
       message: playerPieces.length >= MIN_ADJACENT_FOR_REPLACE ? 
         'Valid replacement' : 
         `Not enough adjacent pieces (${playerPieces.length}/${MIN_ADJACENT_FOR_REPLACE})`
@@ -136,7 +133,7 @@ export class GameLogicService {
   /**
    * Применяет ход к текущему состоянию игры
    */
-  static applyMove(state: IGameState, move: IGameMove, playerNumber: PlayerNumber): IGameState {
+  static applyMove(state: GameState, move: GameMove, playerNumber: PlayerNumber): GameState {
     const startTime = Date.now();
     logger.game.move('applying', move, {
       playerNumber,
@@ -146,8 +143,9 @@ export class GameLogicService {
     });
 
     let newBoard = state.board;
-    const { type, position } = move;
-    const { x, y } = position;
+    const { type, pos } = move;
+    if (!pos) return state;
+    const [x, y] = pos;
 
     if (type === 'place') {
       // Размещаем фишку
@@ -212,21 +210,19 @@ export class GameLogicService {
   /**
    * Проверяет доступные замены после размещения фишки
    */
-  static getAvailableReplaces(state: IGameState, playerNumber: PlayerNumber): IGameMove[] {
-    const availableReplaces: IGameMove[] = [];
-    const { width, height } = state.size;
+  static getAvailableReplaces(state: GameState, playerNumber: PlayerNumber): GameMove[] {
+    const availableReplaces: GameMove[] = [];
 
-    for (let y = 0; y < height; y++) {
-      for (let x = 0; x < width; x++) {
+    for (let y = 0; y < BOARD_SIZE; y++) {
+      for (let x = 0; x < BOARD_SIZE; x++) {
         // Проверяем только фишки противника
         if (state.board[y][x] === getOpponent(playerNumber)) {
-          const position: IPosition = { x, y };
-          const candidate = this.validateReplace(state.board, state.size, position, playerNumber);
+          const position: Position = [x, y];
+          const candidate = this.validateReplace(state.board, position, playerNumber);
           if (candidate.isValid) {
             availableReplaces.push({
               type: 'replace',
-              position,
-              player: playerNumber
+              pos: position
             });
           }
         }
@@ -247,7 +243,7 @@ export class GameLogicService {
   /**
    * Вычисляет текущий счет игры
    */
-  private static calculateScores(board: ReadonlyArray<ReadonlyArray<number | null>>): IGameScores {
+  private static calculateScores(board: ReadonlyArray<ReadonlyArray<CellValue>>): Scores {
     let player1Count = 0;
     let player2Count = 0;
 
@@ -258,9 +254,6 @@ export class GameLogicService {
       }
     }
 
-    return {
-      player1: player1Count,
-      player2: player2Count
-    };
+    return [player1Count, player2Count];
   }
 }

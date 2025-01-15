@@ -1,118 +1,64 @@
-// Basic numeric interfaces
-export interface INumeric {
-    readonly value: number;
-}
+/**
+ * Core primitive types
+ */
 
-// Basic coordinate interfaces
-export interface IXCoordinate {
-    readonly x: number;
-}
+/** Position type [x, y] */
+export type Position = [number, number];
 
-export interface IYCoordinate {
-    readonly y: number;
-}
+/** Size type [width, height] */
+export type Size = [number, number];
 
-// Basic dimension interfaces
-export interface IWidth {
-    readonly width: number;
-}
+/** Player number (1 or 2) */
+export type PlayerNumber = 1 | 2;
 
-export interface IHeight {
-    readonly height: number;
-}
+/** Score type [p1score, p2score] */
+export type Scores = [number, number];
 
-// Basic time interfaces
-export interface ITimestamp {
-    readonly timestamp: number;
-}
+/** Basic timestamp */
+export type Timestamp = number;
 
-export interface IExpiration {
-    readonly expiresAt: number;
-}
+/** Basic validation result */
+export type ValidationResult = {
+    valid: boolean;
+    message?: string;
+};
 
-// Basic identification interfaces
-export interface IIdentifiable {
-    readonly id: string;
-}
+/** Core game types */
+export type Player = {
+    id: string;
+    num: PlayerNumber;
+};
 
-export interface IVersioned {
-    readonly version: string;
-}
+export type GameMove = {
+    type: string;
+    pos?: Position;
+};
 
-// Basic state interfaces
-export interface IValid {
-    readonly valid: boolean;
-}
+/** Game cell value */
+export type CellValue = number | null;
 
-export interface IActive {
-    readonly active: boolean;
-}
+/** Basic error type */
+export type GameError = {
+    code: string;
+    message: string;
+    details?: Record<string, unknown>;
+};
 
-// Basic message interfaces
-export interface IMessage {
-    readonly message: string;
-}
+/** Game connection status */
+export type ConnectionStatus = 'connected' | 'disconnected' | 'error';
 
-// Basic data interfaces
-export interface IData<T> {
-    readonly data: T;
-}
+/** Game phase */
+export type GamePhase = 'setup' | 'play' | 'end';
 
-// Basic collection interfaces
-export interface ICollection<T> {
-    readonly items: ReadonlyArray<T>;
-}
+/** Game status */
+export type GameStatus = 'waiting' | 'active' | 'finished' | 'error';
 
-// Basic player number interface
-export interface IPlayerNumber {
-    readonly playerNumber: number;
-}
+/** Generic type for collections */
+export type Collection<T> = ReadonlyArray<T>;
 
-// Basic score interface
-export interface IScore {
-    readonly score: number;
-}
-
-// Basic operation interfaces
-export interface IOperationType {
-    readonly type: string;
-}
-
-export interface IOperationCount {
-    readonly count: number;
-}
-
-// Basic cell interfaces
-export interface ICell {
-    readonly value: number | null;
-}
-
-// Basic error interfaces
-export interface IErrorCode {
-    readonly code: string;
-}
-
-export interface IErrorDetails {
-    readonly details: Record<string, unknown>;
-}
-
-// Basic connection interfaces
-export interface IConnectionStatus {
-    readonly status: string;
-}
-
-// Basic phase interfaces
-export interface IPhase {
-    readonly phase: string;
-}
-
-// Basic game status interfaces
-export interface IGameStatus {
-    readonly status: string;
-}
-
-// Basic validation interfaces
-export interface IValidationResult {
-    readonly valid: boolean;
-    readonly message?: string;
-}
+/** Generic type for data with metadata */
+export type WithMetadata<T> = {
+    data: T;
+    timestamp: Timestamp;
+    version?: string;
+};

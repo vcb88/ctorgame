@@ -1,14 +1,13 @@
-import type { IPosition, ISize } from '../types/shared';
+import type { Position } from '@ctor-game/shared/types/primitives';
+import { BOARD_SIZE } from '../config/constants.js';
 
 /**
  * Gets all adjacent positions for a given position on a toroidal board
  * @param position Central position
- * @param size Board size
  * @returns Array of adjacent positions
  */
-export function getAdjacentPositions(position: IPosition, size: ISize): IPosition[] {
-    const { x, y } = position;
-    const { width, height } = size;
+export function getAdjacentPositions(position: Position): Position[] {
+    const [x, y] = position;
     
     // All possible relative coordinates of adjacent cells
     const deltas = [
@@ -17,8 +16,8 @@ export function getAdjacentPositions(position: IPosition, size: ISize): IPositio
         [-1,  1], [0,  1], [1,  1]
     ];
     
-    return deltas.map(([dx, dy]) => ({
-        x: (x + dx + width) % width,
-        y: (y + dy + height) % height
-    }));
+    return deltas.map(([dx, dy]) => [
+        (x + dx + BOARD_SIZE) % BOARD_SIZE,
+        (y + dy + BOARD_SIZE) % BOARD_SIZE
+    ]);
 }

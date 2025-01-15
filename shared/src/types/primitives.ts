@@ -1,34 +1,39 @@
-// Basic type definitions that don't depend on other types
-export type Coordinate = number;
-export type Size = number;
-export type Timestamp = number;
-export type Version = number;
+import {
+    Position,
+    Size,
+    PlayerNumber,
+    Scores,
+    Player,
+    GameMove,
+    GameStatus,
+    Timestamp,
+    CellValue
+} from './core.js';
+
+export type {
+    Position,
+    Size,
+    PlayerNumber,
+    Scores,
+    Player,
+    GameMove,
+    GameStatus,
+    Timestamp,
+    CellValue
+};
+
+/** Additional primitive types */
 export type UUID = string;
-export type PlayerNumber = number;
+export type Version = string;
 
-// Basic interfaces
-export interface IPosition {
-    readonly x: Coordinate;
-    readonly y: Coordinate;
-}
+/** Move types */
+export type MoveType = 'place' | 'remove' | 'skip';
 
-export interface IBoardSize {
-    readonly width: Size;
-    readonly height: Size;
-}
-
-// Basic enums
-export enum Player {
-    None = 0,
-    First = 1,
-    Second = 2
-}
-
-export enum GameStatus {
-    CREATED = 'CREATED',
-    WAITING = 'WAITING',
-    IN_PROGRESS = 'IN_PROGRESS',
-    FINISHED = 'FINISHED',
-    ABANDONED = 'ABANDONED',
-    ERROR = 'ERROR'
-}
+/** Game state */
+export type GameState = {
+    board: CellValue[][];
+    scores: Scores;
+    currentPlayer: PlayerNumber;
+    status: GameStatus;
+    winner?: PlayerNumber;
+};
