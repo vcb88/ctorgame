@@ -12,7 +12,8 @@ The project is undergoing active development with focus on:
 - Connection management reliability
 
 For detailed status and roadmap, see:
-- [Type System Documentation](docs/TYPE_SYSTEM.md) - Current type system state and migration status
+- [Type System Documentation](docs/TYPE_SYSTEM.md) - Type system overview
+- [Type System Updates](docs/TYPE_SYSTEM_UPDATES.md) - Latest changes and migration status
 - [Current Status](docs/CURRENT_STATUS.md) - Overall project status
 - [Project Roadmap](ROADMAP.md) - Future development plans
 
