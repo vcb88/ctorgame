@@ -1,26 +1,28 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { GameCell } from './GameCell';
-import { Position } from '@ctor-game/shared/types/game/geometry';
-import { Player } from '@ctor-game/shared/types/game';
-import { OperationType } from '@ctor-game/shared/types/enums';
-import { GameError } from '../types/connection';
-import { GameActionType } from '../types/actions';
+import type { 
+    PlayerNumber,
+    Position,
+    GameError,
+    MoveType 
+} from '@ctor-game/shared/src/types/core.js';
+import type { GameActionType } from '../types/actions';
 import { logger } from '../utils/logger';
-import { AnimationType, CellAnimationState } from '../types/animations';
+import type { CellAnimationState } from '../types/animations';
 
-interface GameBoardProps {
-  board: (Player | null)[][];
-  onCellClick?: (row: number, col: number) => void;
-  disabled?: boolean;
-  lastMove?: Position;
-  error?: GameError;
-  loading?: boolean;
-  operationInProgress?: GameActionType;
-  isValidMove?: (row: number, col: number) => boolean;
-  onRetry?: () => void;
-  currentPlayer?: Player;
-  highlightedCells?: Position[];
-}
+type GameBoardProps = {
+    board: (PlayerNumber | null)[][];
+    onCellClick?: (row: number, col: number) => void;
+    disabled?: boolean;
+    lastMove?: Position;
+    error?: GameError;
+    loading?: boolean;
+    operationInProgress?: GameActionType;
+    isValidMove?: (row: number, col: number) => boolean;
+    onRetry?: () => void;
+    currentPlayer?: PlayerNumber;
+    highlightedCells?: Position[];
+};
 
 export function GameBoard({
   board,
@@ -36,7 +38,7 @@ export function GameBoard({
   lastMove
 }: GameBoardProps) {
   const [animationStates, setAnimationStates] = useState<Record<string, CellAnimationState>>({});
-  const previousBoardRef = useRef<(Player | null)[][]>([]);
+  const previousBoardRef = useRef<(PlayerNumber | null)[][]>([]);
   const animationTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   // Clear completed animations
@@ -51,8 +53,8 @@ export function GameBoard({
       }
 
       const newStates = { ...prevStates };
-      positions.forEach(pos => {
-        delete newStates[`${pos.y}-${pos.x}`];
+      positions.forEach(([x, y]) => {
+        delete newStates[`${y}-${x}`];
       });
       return newStates;
     });
@@ -110,7 +112,7 @@ export function GameBoard({
         
         // Detect changes
         if (cell !== prevValue) {
-          const pos = { x: colIndex, y: rowIndex };
+          const pos: Position = [colIndex, rowIndex];
           
           if (prevValue !== null && cell !== null) {
             // Capture animation
@@ -133,25 +135,25 @@ export function GameBoard({
         
         const now = Date.now();
         
-        capturedPositions.forEach(pos => {
-          newStates[`${pos.y}-${pos.x}`] = {
+        capturedPositions.forEach(([x, y]) => {
+          newStates[`${y}-${x}`] = {
             isAnimating: true,
-            type: AnimationType.CAPTURE,
+            type: 'capture',
             startTime: now,
             data: {
-              previousValue: previousBoardRef.current[pos.y]?.[pos.x],
-              newValue: board[pos.y][pos.x]
+              previousValue: previousBoardRef.current[y]?.[x],
+              newValue: board[y][x]
             }
           };
         });
         
-        placedPositions.forEach(pos => {
-          newStates[`${pos.y}-${pos.x}`] = {
+        placedPositions.forEach(([x, y]) => {
+          newStates[`${y}-${x}`] = {
             isAnimating: true,
-            type: AnimationType.PLACE,
+            type: 'place',
             startTime: now,
             data: {
-              newValue: board[pos.y][pos.x]
+              newValue: board[y][x]
             }
           };
         });
@@ -181,7 +183,7 @@ export function GameBoard({
   const handleCellClick = useCallback((rowIndex: number, colIndex: number) => {
     if (!onCellClick) return;
 
-    const position: Position = { x: colIndex, y: rowIndex };
+    const position: Position = [colIndex, rowIndex];
     const cellKey = `${rowIndex}-${colIndex}`;
     const isAnimating = animationStates[cellKey]?.isAnimating;
 
@@ -234,9 +236,9 @@ export function GameBoard({
 
   // Special styling for cells based on their state
   const getCellHighlightState = (rowIndex: number, colIndex: number) => {
-    const pos: Position = { x: colIndex, y: rowIndex };
-    const isHighlighted = highlightedCells.some(cell => cell.x === pos.x && cell.y === pos.y);
-    const isLastMove = lastMove && lastMove.x === pos.x && lastMove.y === pos.y;
+    const pos: Position = [colIndex, rowIndex];
+    const isHighlighted = highlightedCells.some(cell => cell[0] === pos[0] && cell[1] === pos[1]);
+    const isLastMove = lastMove && lastMove[0] === pos[0] && lastMove[1] === pos[1];
     
     return { isHighlighted, isLastMove };
   };
