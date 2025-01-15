@@ -1,6 +1,6 @@
-import type { ErrorResponse } from '@ctor-game/shared/types/network';
+import type { IErrorResponse } from '@ctor-game/shared/src/types/network/errors';
 
-export type { ErrorResponse };
+export type { IErrorResponse as ErrorResponse };
 
 export interface GameEvent {
   eventId: string;
