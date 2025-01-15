@@ -13,17 +13,17 @@ interface GameLogger {
 
 interface StorageLogger {
   operation: (action: string, data: unknown, context?: Record<string, unknown>) => void;
-  error: (error: ErrorWithStack, context: Record<string, unknown>) => void;
+  error: (error: IErrorWithStack, context: Record<string, unknown>) => void;
 }
 
 interface NetworkLogger {
   socketEvent: (event: string, data: unknown, direction: 'in' | 'out', context: LogOptions['context']) => void;
-  error: (error: ErrorWithStack, context: Record<string, unknown>) => void;
+  error: (error: IErrorWithStack, context: Record<string, unknown>) => void;
 }
 
 interface DBLogger {
   operation: (action: string, data: unknown, context?: Record<string, unknown>) => void;
-  error: (error: ErrorWithStack, context: Record<string, unknown>) => void;
+  error: (error: IErrorWithStack, context: Record<string, unknown>) => void;
 }
 
 interface Logger {
@@ -52,12 +52,12 @@ interface LogOptions {
     timestamp?: string;
     move?: unknown;
     state?: unknown;
-    error?: ErrorWithStack;
+    error?: IErrorWithStack;
     duration?: number;
     [key: string]: any;
   };
   results?: unknown;
-  error?: ErrorWithStack;
+  error?: IErrorWithStack;
   gameState?: unknown;
   connection?: unknown;
   storage?: unknown;
@@ -233,7 +233,7 @@ export const logger: Logger = {
     },
 
     error: (error: unknown, context: Record<string, unknown>) => {
-      const errorWithStack = error as ErrorWithStack;
+      const errorWithStack = error as IErrorWithStack;
       log('error', formatMessage('error', 'Storage error', {
         component: 'Storage',
         context: {
@@ -262,7 +262,7 @@ export const logger: Logger = {
     },
 
     error: (error: unknown, context: Record<string, unknown>) => {
-      const errorWithStack = error as ErrorWithStack;
+      const errorWithStack = error as IErrorWithStack;
       log('error', formatMessage('error', 'Network error', {
         component: 'Network',
         context: {
@@ -290,7 +290,7 @@ export const logger: Logger = {
     },
 
     error: (error: unknown, context: Record<string, unknown>) => {
-      const errorWithStack = error as ErrorWithStack;
+      const errorWithStack = error as IErrorWithStack;
       log('error', formatMessage('error', 'Database error', {
         component: 'Database',
         context: {

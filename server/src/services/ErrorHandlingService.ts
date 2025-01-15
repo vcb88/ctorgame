@@ -1,16 +1,14 @@
-import { Logger } from '../utils/logger.js';
+import { logger } from '../utils/logger.js';
 import { GameError } from '../errors/GameError.js';
-import type { WebSocketErrorCode } from '@ctor-game/shared/src/types/network/websocket.js';
+import type { WebSocketErrorCode } from '@ctor-game/shared/src/types/network/websocket';
 
 /**
  * Service for centralized error handling
  */
 export class ErrorHandlingService {
     private static instance: ErrorHandlingService;
-    private logger: Logger;
-
     private constructor() {
-        this.logger = new Logger('ErrorHandlingService');
+        // Using the global logger instance
     }
 
     public static getInstance(): ErrorHandlingService {
@@ -30,12 +28,12 @@ export class ErrorHandlingService {
     } {
         if (error instanceof GameError) {
             // Log game error
-            this.logger.error(`Game error: ${error.code} - ${error.message}`, error.details);
+            logger.error(`Game error: ${error.code} - ${error.message}`, { component: 'ErrorHandler', error: error, details: error.details });
             return error.toJSON();
         }
 
         // Handle unknown errors
-        this.logger.error('Unexpected error:', error);
+        logger.error('Unexpected error', { component: 'ErrorHandler', error: error });
         return {
             code: 'server_error',
             message: 'An unexpected error occurred',
@@ -69,14 +67,14 @@ export class ErrorHandlingService {
         context?: Record<string, unknown>
     ): void {
         if (error instanceof GameError) {
-            this.logger.error(
+            logger.error(
                 `[${error.code}] ${error.message}`,
-                { ...context, details: error.details }
+                { component: 'ErrorHandler', ...context, error: error, details: error.details }
             );
         } else {
-            this.logger.error(
-                'Unexpected error:',
-                { ...context, error: error.message, stack: error.stack }
+            logger.error(
+                'Unexpected error',
+                { component: 'ErrorHandler', ...context, error: error }
             );
         }
     }

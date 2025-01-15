@@ -143,7 +143,7 @@ export class GameLogicService {
 
     if (type === 'place') {
       // Размещаем фишку
-      const newBoard = newState.board.map(row => [...row]);
+      const newBoard = newState.board.map((row: (PlayerNumber | null)[]) => [...row]);
       newBoard[y][x] = playerNumber;
       newState.board = newBoard;
 
@@ -162,7 +162,7 @@ export class GameLogicService {
           
           for (const replaceMove of availableReplaces) {
             const { x: replaceX, y: replaceY } = replaceMove.position;
-            const newBoardAfterReplace = newState.board.map(row => [...row]);
+            const newBoardAfterReplace = newState.board.map((row: (PlayerNumber | null)[]) => [...row]);
             newBoardAfterReplace[replaceY][replaceX] = playerNumber;
             newState.board = newBoardAfterReplace;
           }
@@ -267,7 +267,7 @@ export class GameLogicService {
   private static cloneGameState(state: IGameState): IGameState {
     return {
       id: state.id,
-      board: state.board.map(row => [...row]),
+      board: state.board.map((row: (PlayerNumber | null)[]) => [...row]),
       size: { ...state.size },
       currentPlayer: state.currentPlayer,
       status: state.status,

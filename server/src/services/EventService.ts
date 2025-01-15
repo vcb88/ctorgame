@@ -12,12 +12,12 @@ import type {
     IGameExpiredEvent,
     IPlayerConnectedEvent,
     IPlayerDisconnectedEvent,
-    IGameErrorEvent,
-    ErrorResponse,
-    validateGameEvent
+    IGameErrorEvent
 } from '@ctor-game/shared/src/types/network/events';
+import type { IErrorResponse } from '@ctor-game/shared/src/types/network/errors';
+import { validateGameEvent } from '@ctor-game/shared/src/validation/network';
 import type { IGameState, PlayerNumber } from '@ctor-game/shared/src/types/game/types';
-import { generateId } from '../utils/id.js';
+import { generateId } from '../utils/id';
 import { logger } from '../utils/logger.js';
 
 export class EventService {
@@ -175,7 +175,7 @@ export class EventService {
 
     async createErrorEvent(
         gameId: string,
-        error: ErrorResponse,
+        error: IErrorResponse,
         playerId?: string
     ): Promise<IGameErrorEvent> {
         return this.createEvent<IGameErrorEvent>({

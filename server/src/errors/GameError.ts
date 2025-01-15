@@ -1,4 +1,5 @@
-import { WebSocketErrorCode } from '@ctor-game/shared/src/types/network/websocket.js';
+import { WebSocketErrorCode } from '@ctor-game/shared/src/types/network/websocket';
+import type { ErrorCode } from '@ctor-game/shared/src/types/network/errors';
 
 /**
  * Base class for all game-related errors
@@ -31,7 +32,7 @@ export class GameError extends Error {
  */
 export class InvalidGameStateError extends GameError {
     constructor(message: string, details?: unknown) {
-        super('invalid_state', message, details);
+        super(WebSocketErrorCode.InvalidState, message, details);
         this.name = 'InvalidGameStateError';
     }
 }
@@ -41,7 +42,7 @@ export class InvalidGameStateError extends GameError {
  */
 export class InvalidMoveError extends GameError {
     constructor(message: string, details?: unknown) {
-        super('invalid_move', message, details);
+        super(WebSocketErrorCode.InvalidMove, message, details);
         this.name = 'InvalidMoveError';
     }
 }
@@ -51,7 +52,7 @@ export class InvalidMoveError extends GameError {
  */
 export class NotYourTurnError extends GameError {
     constructor(message: string = "Not your turn", details?: unknown) {
-        super('not_your_turn', message, details);
+        super(WebSocketErrorCode.NotYourTurn, message, details);
         this.name = 'NotYourTurnError';
     }
 }
@@ -61,7 +62,7 @@ export class NotYourTurnError extends GameError {
  */
 export class GameEndedError extends GameError {
     constructor(message: string = "Game has ended", details?: unknown) {
-        super('game_ended', message, details);
+        super(WebSocketErrorCode.GameEnded, message, details);
         this.name = 'GameEndedError';
     }
 }
@@ -71,7 +72,7 @@ export class GameEndedError extends GameError {
  */
 export class GameNotFoundError extends GameError {
     constructor(message: string = "Game not found", details?: unknown) {
-        super('game_not_found', message, details);
+        super(WebSocketErrorCode.GameNotFound, message, details);
         this.name = 'GameNotFoundError';
     }
 }
@@ -81,7 +82,7 @@ export class GameNotFoundError extends GameError {
  */
 export class GameFullError extends GameError {
     constructor(message: string = "Game is full", details?: unknown) {
-        super('game_full', message, details);
+        super(WebSocketErrorCode.GameFull, message, details);
         this.name = 'GameFullError';
     }
 }

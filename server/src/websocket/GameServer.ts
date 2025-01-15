@@ -259,3 +259,6 @@ export class GameServer {
                     });
                 }
             });
+        });
+    }
+}
