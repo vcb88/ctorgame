@@ -1,10 +1,5 @@
-import type { IErrorResponse } from '@ctor-game/shared/types/network/errors';
+import type { GameEvent as IGameEvent } from '@ctor-game/shared/src/types/network/websocket.js';
+import type { IErrorResponse } from '@ctor-game/shared/src/types/network/errors.js';
 
 export type { IErrorResponse as ErrorResponse };
-
-export interface GameEvent {
-  eventId: string;
-  timestamp: number;
-  type: string;
-  data?: any;
-}
+export type { IGameEvent as GameEvent };

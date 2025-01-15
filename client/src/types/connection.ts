@@ -2,8 +2,8 @@ import type {
     ConnectionState,
     WebSocketErrorCode,
     ErrorResponse
-} from '@ctor-game/shared/types/network/websocket.js';
-import type { ReconnectionData } from '@ctor-game/shared/types/network/events.js';
+} from '@ctor-game/shared/src/types/network/websocket.js';
+import type { ReconnectionData } from '@ctor-game/shared/src/types/network/events.js';
 
 export type {
     ConnectionState,
