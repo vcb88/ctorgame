@@ -1,13 +1,12 @@
 import React, { useEffect } from 'react';
 import { cn } from '@/lib/utils';
-import type { ITurnState } from '@ctor-game/shared/types/game';
-import type { Player, OperationType } from '@ctor-game/shared/types/base/enums';
+import type { PlayerNumber, TurnState, MoveType } from '@ctor-game/shared/src/types/core.js';
 import { GameError } from '@/types/connection';
 import { GameActionType } from '@/types/actions';
 import { logger } from '@/utils/logger';
 
-interface GameControlsProps {
-  currentTurn: ITurnState;
+type GameControlsProps = {
+  currentTurn: TurnState;
   operationInProgress?: GameActionType;
   loading?: boolean;
   error?: GameError;
@@ -15,7 +14,7 @@ interface GameControlsProps {
   onUndoLastMove?: () => Promise<void>;
   canEndTurn: boolean;
   canUndoMove: boolean;
-  currentPlayer?: Player;
+  currentPlayer?: PlayerNumber;
   isFirstTurn?: boolean;
 }
 
@@ -121,10 +120,10 @@ export const GameControls: React.FC<GameControlsProps> = ({
         <div className="flex items-center space-x-2">
           <div className={cn(
             "w-3 h-3 rounded-full",
-            currentPlayer === Player.First ? "bg-cyan-500" : "bg-red-500"
+            currentPlayer === 1 ? "bg-cyan-500" : "bg-red-500"
           )}></div>
           <span className="text-sm">
-            {currentPlayer === Player.First ? "First" : "Second"} Player's Turn
+            {currentPlayer === 1 ? "First" : "Second"} Player's Turn
           </span>
         </div>
       </div>
@@ -138,7 +137,7 @@ export const GameControls: React.FC<GameControlsProps> = ({
               key={i}
               className={cn(
                 "w-2 h-6 rounded",
-                currentPlayer === Player.First ? "bg-cyan-500" : "bg-red-500",
+                currentPlayer === 1 ? "bg-cyan-500" : "bg-red-500",
                 "animate-pulse"
               )}
             ></div>
@@ -155,7 +154,7 @@ export const GameControls: React.FC<GameControlsProps> = ({
             "px-4 py-2 rounded text-sm font-medium transition-all duration-200",
             "border-2",
             canUndoMove && !loading
-              ? (currentPlayer === Player.First
+              ? (currentPlayer === 1
                 ? "border-cyan-500 text-cyan-400 hover:bg-cyan-500/20"
                 : "border-red-500 text-red-400 hover:bg-red-500/20")
               : "border-gray-500 text-gray-400 cursor-not-allowed",
@@ -173,7 +172,7 @@ export const GameControls: React.FC<GameControlsProps> = ({
           className={cn(
             "px-4 py-2 rounded text-sm font-medium transition-all duration-200",
             canEndTurn && !loading
-              ? (currentPlayer === Player.First
+              ? (currentPlayer === 1
                 ? "bg-cyan-500 hover:bg-cyan-600"
                 : "bg-red-500 hover:bg-red-600")
               : "bg-gray-500 cursor-not-allowed",
@@ -196,12 +195,12 @@ export const GameControls: React.FC<GameControlsProps> = ({
                 key={index}
                 className={cn(
                   "px-2 py-1 rounded text-xs",
-                  move.type === OperationType.PLACE
+                  move.type === 'place'
                     ? "bg-green-500/20 text-green-400"
                     : "bg-blue-500/20 text-blue-400"
                 )}
               >
-                {move.type === OperationType.PLACE ? "Place" : "Replace"} at ({move.position.x}, {move.position.y})
+                {move.type === 'place' ? "Place" : "Replace"} at ({move.position[0]}, {move.position[1]})
               </div>
             ))}
           </div>
