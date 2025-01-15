@@ -20,6 +20,40 @@ import { GameLogicService } from './GameLogicService.js';
 
 export class RedisService {
     /**
+     * Set a value with expiration time
+     */
+    async setWithExpiry(key: string, value: string, ttl: number): Promise<void> {
+        await redisClient.setex(key, ttl, value);
+    }
+
+    /**
+     * Add an item to a list
+     */
+    async addToList(key: string, value: string): Promise<void> {
+        await redisClient.lpush(key, value);
+    }
+
+    /**
+     * Get a value
+     */
+    async get(key: string): Promise<string | null> {
+        return redisClient.get(key);
+    }
+
+    /**
+     * Get a list
+     */
+    async getList(key: string): Promise<string[]> {
+        return redisClient.lrange(key, 0, -1);
+    }
+
+    /**
+     * Delete a key
+     */
+    async delete(key: string): Promise<void> {
+        await redisClient.del(key);
+    }
+    /**
      * Сохраняет состояние игры
      */
     async setGameState(gameId: string, state: IGameState): Promise<void> {

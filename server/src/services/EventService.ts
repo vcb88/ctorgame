@@ -13,11 +13,11 @@ import type {
     IPlayerConnectedEvent,
     IPlayerDisconnectedEvent,
     IGameErrorEvent
-} from '@ctor-game/shared/src/types/network/events';
-import type { IErrorResponse } from '@ctor-game/shared/src/types/network/errors';
-import { validateGameEvent } from '@ctor-game/shared/src/validation/network';
-import type { IGameState, PlayerNumber } from '@ctor-game/shared/src/types/game/types';
-import { generateId } from '../utils/id';
+} from '@ctor-game/shared/types/network/events.js';
+import type { IErrorResponse } from '@ctor-game/shared/types/network/errors.js';
+import { validateGameEvent } from '@ctor-game/shared/validation/network.js';
+import type { IGameState, PlayerNumber } from '@ctor-game/shared/types/game/types.js';
+import { generateId } from '../utils/id.js';
 import { logger } from '../utils/logger.js';
 
 export class EventService {

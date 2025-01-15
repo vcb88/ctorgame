@@ -8,7 +8,7 @@ import type {
   OperationType,
   GameStatus,
   ISize
-} from '@ctor-game/shared/src/types/game/types';
+} from '@ctor-game/shared/types/game/types.js';
 
 // Geometry types
 import type { IPosition } from '@ctor-game/shared/types/geometry/types.js';
