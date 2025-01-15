@@ -15,7 +15,7 @@ export interface IHistoryServerEvents {
     /** List of saved games */
     SAVED_GAMES: (data: { games: IGameHistoryEntry[] }) => void;
     /** Error response */
-    ERROR: (error: IErrorResponse) => void;
+    ERROR: (error: ErrorResponse) => void;
 }
 
 /**

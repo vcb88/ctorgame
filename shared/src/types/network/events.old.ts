@@ -74,7 +74,7 @@ export interface IPlayerDisconnectedEvent extends IBaseEvent {
 
 export interface IGameErrorEvent extends IBaseEvent {
     readonly type: 'error';
-    readonly data: IErrorResponse;
+    readonly data: ErrorResponse;
 }
 
 // Union type for all game events

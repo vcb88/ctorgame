@@ -2,7 +2,7 @@
  * Network and game error types
  */
 
-import type { Position, PlayerNumber } from '../core.js';
+import type { Position, PlayerNumber, UUID } from '../core.js';
 
 /** Error categories */
 export type ErrorCategory = 'network' | 'game' | 'validation' | 'system';
