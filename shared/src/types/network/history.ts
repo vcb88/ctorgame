@@ -1,4 +1,4 @@
-import type { IErrorResponse } from './errors.js';
+import type { ErrorResponse } from './errors.js';
 
 /**
  * Client requests for game history

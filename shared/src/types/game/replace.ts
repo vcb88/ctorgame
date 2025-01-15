@@ -1,10 +1,10 @@
-import type { IPosition } from '../base/primitives.js';
+import type { Position } from '../core.js';
 
-export interface ReplaceCandidate {
-    position: IPosition;
+export type ReplaceCandidate = {
+    position: Position;
     isValid: boolean;
     adjacentCount: number;
-    adjacentPositions: IPosition[];
+    adjacentPositions: Position[];
     /** Calculated priority for this replacement (higher means more important) */
     priority: number;
-}
+};

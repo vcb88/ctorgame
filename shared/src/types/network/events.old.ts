@@ -4,7 +4,7 @@
 
 import type { IGameState, IGameMove, GameStatus, PlayerNumber } from '../game/types.js';
 import type { ITimestamped, IIdentifiable } from '../core/primitives.js';
-import type { IErrorResponse } from './errors.js';
+import type { ErrorResponse } from './errors.js';
 
 // Base event interface
 export interface IBaseEvent extends ITimestamped, IIdentifiable {

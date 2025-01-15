@@ -89,16 +89,16 @@ export const isNetworkError = (error: unknown): error is NetworkError => {
 
 /** Error category checks */
 export const isNetworkCategory = (error: NetworkError): boolean => 
-    error.category === ErrorCategory.Network;
+    error.category === 'network';
 
 export const isGameCategory = (error: NetworkError): boolean => 
-    error.category === ErrorCategory.Game;
+    error.category === 'game';
 
 export const isValidationCategory = (error: NetworkError): boolean => 
-    error.category === ErrorCategory.Validation;
+    error.category === 'validation';
 
 export const isSystemCategory = (error: NetworkError): boolean => 
-    error.category === ErrorCategory.System;
+    error.category === 'system';
 
 /** Error factory */
 export const createError = (
@@ -120,26 +120,26 @@ export const createError = (
 
 /** Helper functions */
 const getCategoryFromCode = (code: ErrorCode): ErrorCategory => {
-    if (code.startsWith('connection_')) return ErrorCategory.Network;
-    if (code.startsWith('game_')) return ErrorCategory.Game;
-    if (code.startsWith('invalid_')) return ErrorCategory.Validation;
-    return ErrorCategory.System;
+    if (code.startsWith('connection_')) return 'network';
+    if (code.startsWith('game_')) return 'game';
+    if (code.startsWith('invalid_')) return 'validation';
+    return 'system';
 };
 
 const getSeverityFromCode = (code: ErrorCode): ErrorSeverity => {
     switch (code) {
-        case ErrorCode.ConnectionLost:
-        case ErrorCode.GameEnded:
-        case ErrorCode.InvalidMove:
-        case ErrorCode.NotYourTurn:
-            return ErrorSeverity.Warning;
-        case ErrorCode.StorageError:
-        case ErrorCode.OperationFailed:
-        case ErrorCode.InternalError:
-            return ErrorSeverity.Error;
-        case ErrorCode.UnknownError:
-            return ErrorSeverity.Critical;
+        case 'connection_lost':
+        case 'game_ended':
+        case 'invalid_move':
+        case 'not_your_turn':
+            return 'warning';
+        case 'storage_error':
+        case 'operation_failed':
+        case 'internal_error':
+            return 'error';
+        case 'unknown_error':
+            return 'critical';
         default:
-            return ErrorSeverity.Info;
+            return 'info';
     }
 };

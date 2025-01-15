@@ -82,6 +82,9 @@ export type WithMetadata<T> = {
     version?: string;
 };
 
+/** UUID type */
+export type UUID = string;
+
 /** Game state interface */
 export interface IGameState {
     board: CellValue[][];
