@@ -1,29 +1,21 @@
 import { logger } from '../utils/logger.js';
-// Game state and types
-import type {
-  IGameState,
-  IGameScores,
-  IGameMove,
-  PlayerNumber,
-  OperationType,
-  GameStatus,
-  ISize
-} from '@ctor-game/shared/types/game/types.js';
-
-// Geometry types
+import { create2DArrayCopy, update2DArrayValue } from '../utils/array.js';
 import type { IPosition } from '@ctor-game/shared/types/geometry/types.js';
+import type { IGameState } from '../types/game-state.js';
+import {
+    IGameMove,
+    PlayerNumber,
+    GameStatus,
+    ISize,
+    getAdjacentPositions,
+    getOpponent,
+    createScores
+} from '../types/shared.js';
 
 // Constants
 const BOARD_SIZE = 8;
 const MIN_ADJACENT_FOR_REPLACE = 2;
 const MAX_PLACE_OPERATIONS = 2;
-
-// Utils
-import { getAdjacentPositions } from '@ctor-game/shared/utils/coordinates.js';
-import {
-  getOpponent,
-  createScores
-} from '@ctor-game/shared/utils/game.js';
 
 // Custom type for validation result
 interface IReplaceValidation {
@@ -143,9 +135,8 @@ export class GameLogicService {
 
     if (type === 'place') {
       // Размещаем фишку
-      const newBoard = newState.board.map((row: (PlayerNumber | null)[]) => [...row]);
-      newBoard[y][x] = playerNumber;
-      newState.board = newBoard;
+      const newBoard = update2DArrayValue(state.board, x, y, playerNumber);
+      const updatedState = { ...newState, board: newBoard };
 
       // Автоматически выполняем все возможные замены
       let replacementsFound;
@@ -162,9 +153,8 @@ export class GameLogicService {
           
           for (const replaceMove of availableReplaces) {
             const { x: replaceX, y: replaceY } = replaceMove.position;
-            const newBoardAfterReplace = newState.board.map((row: (PlayerNumber | null)[]) => [...row]);
-            newBoardAfterReplace[replaceY][replaceX] = playerNumber;
-            newState.board = newBoardAfterReplace;
+            const newBoardAfterReplace = update2DArrayValue(newState.board, replaceX, replaceY, playerNumber);
+            newState = { ...newState, board: newBoardAfterReplace };
           }
         }
       } while (replacementsFound);
@@ -267,7 +257,7 @@ export class GameLogicService {
   private static cloneGameState(state: IGameState): IGameState {
     return {
       id: state.id,
-      board: state.board.map((row: (PlayerNumber | null)[]) => [...row]),
+      board: create2DArrayCopy(state.board),
       size: { ...state.size },
       currentPlayer: state.currentPlayer,
       status: state.status,

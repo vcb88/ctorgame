@@ -1,5 +1,5 @@
-import { WebSocketErrorCode } from '@ctor-game/shared/src/types/network/websocket';
-import type { ErrorCode } from '@ctor-game/shared/src/types/network/errors';
+import { WebSocketErrorCode } from '@ctor-game/shared/types/network/websocket.js';
+import type { ErrorCode } from '@ctor-game/shared/types/network/errors.js';
 
 /**
  * Base class for all game-related errors
