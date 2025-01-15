@@ -59,7 +59,11 @@ export function GameHistory() {
             : "STALEMATE DETECTED";
     };
 
-    const renderContent = () => {
+    /**
+     * Renders content based on current state (loading, error, selected game)
+     * @returns JSX.Element | null - Returns either special states or null for default view
+     */
+    const renderContent = (): JSX.Element | null => {
         if (loading) {
             return (
                 <div className="flex items-center justify-center min-h-screen">
@@ -100,6 +104,9 @@ export function GameHistory() {
                 </div>
             );
         }
+
+        // Return null for default view (showing games list)
+        return null;
     };
 
     const content = renderContent();
