@@ -75,7 +75,7 @@
         Компоненты повтора:
         - [✓] Replay/MoveTimeline.tsx - обновлен для использования Position, MoveType и Timestamp
         - [✓] Replay/ReplayControls.tsx - добавлен строгий тип PlaybackSpeed, улучшена типизация
-        - [ ] Replay/ReplayView.tsx
+        - [✓] Replay/ReplayView.tsx - использование GameState и core типов, улучшена обработка событий
         
         Страницы:
         - [ ] pages/GameBoard.tsx - проверить использование обновленных типов

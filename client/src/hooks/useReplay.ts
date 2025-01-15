@@ -1,82 +1,106 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Socket } from 'socket.io-client';
-import type { IGameState } from '@ctor-game/shared/src/types/game/types.js';
-import type {
-    ReplayEvent,
-    IReplayStateUpdate,
-    IReplayError
-} from '@ctor-game/shared/src/types/replay/events.js';
+import type { GameState, PlaybackSpeed } from '@ctor-game/shared/src/types/core.js';
 
-interface UseReplayProps {
+// Event types
+export const ReplayEvent = {
+    START_REPLAY: 'START_REPLAY',
+    PAUSE_REPLAY: 'PAUSE_REPLAY',
+    RESUME_REPLAY: 'RESUME_REPLAY',
+    NEXT_MOVE: 'NEXT_MOVE',
+    PREV_MOVE: 'PREV_MOVE',
+    GOTO_MOVE: 'GOTO_MOVE',
+    SET_PLAYBACK_SPEED: 'SET_PLAYBACK_SPEED',
+    END_REPLAY: 'END_REPLAY',
+    REPLAY_STATE_UPDATED: 'REPLAY_STATE_UPDATED',
+    REPLAY_PAUSED: 'REPLAY_PAUSED',
+    REPLAY_RESUMED: 'REPLAY_RESUMED',
+    REPLAY_COMPLETED: 'REPLAY_COMPLETED',
+    REPLAY_ERROR: 'REPLAY_ERROR',
+    PLAYBACK_SPEED_UPDATED: 'PLAYBACK_SPEED_UPDATED'
+} as const;
+
+type UseReplayProps = {
     socket: Socket;
     gameCode: string;
-}
+};
 
-interface UseReplayReturn {
-    // Состояние
+type ReplayStateUpdate = {
+    state: GameState;
+    moveIndex: number;
+    totalMoves: number;
+};
+
+type ReplayError = {
+    message: string;
+    code?: string;
+};
+
+type UseReplayReturn = {
+    // State
     isPlaying: boolean;
     currentMove: number;
     totalMoves: number;
-    playbackSpeed: number;
-    gameState: IGameState | null;
+    playbackSpeed: PlaybackSpeed;
+    gameState: GameState | null;
     error: string | null;
 
-    // Методы управления
+    // Control methods
     startReplay: () => void;
     pauseReplay: () => void;
     resumeReplay: () => void;
     nextMove: () => void;
     previousMove: () => void;
     goToMove: (moveIndex: number) => void;
-    setSpeed: (speed: number) => void;
+    setSpeed: (speed: PlaybackSpeed) => void;
     stopReplay: () => void;
-}
+};
 
 export function useReplay({ socket, gameCode }: UseReplayProps): UseReplayReturn {
-    // Состояние воспроизведения
+    // Playback state
     const [isPlaying, setIsPlaying] = useState(false);
     const [currentMove, setCurrentMove] = useState(0);
     const [totalMoves, setTotalMoves] = useState(0);
-    const [playbackSpeed, setPlaybackSpeed] = useState(1);
-    const [gameState, setGameState] = useState<IGameState | null>(null);
+    const [playbackSpeed, setPlaybackSpeed] = useState<PlaybackSpeed>(1);
+    const [gameState, setGameState] = useState<GameState | null>(null);
     const [error, setError] = useState<string | null>(null);
 
-    // Обработчики событий от сервера
+    // Server event handlers
     useEffect(() => {
-        // Обновление состояния игры
-        const handleStateUpdate = (data: IReplayStateUpdate) => {
+        // Game state update handler
+        const handleStateUpdate = (data: ReplayStateUpdate) => {
             setGameState(data.state);
             setCurrentMove(data.moveIndex);
             setTotalMoves(data.totalMoves);
         };
 
-        // Обработка паузы
+        // Pause handler
         const handlePaused = () => {
             setIsPlaying(false);
         };
 
-        // Обработка возобновления
+        // Resume handler
         const handleResumed = () => {
             setIsPlaying(true);
         };
 
-        // Обработка завершения
+        // Completion handler
         const handleCompleted = () => {
             setIsPlaying(false);
         };
 
-        // Обработка ошибок
-        const handleError = (data: IReplayError) => {
+        // Error handler
+        const handleError = (data: ReplayError) => {
             setError(data.message);
             setIsPlaying(false);
         };
 
-        // Обновление скорости
-        const handleSpeedUpdate = ({ speed }: { speed: number }) => {
+        // Speed update handler
+        const handleSpeedUpdate = ({ speed }: { speed: PlaybackSpeed }) => {
             setPlaybackSpeed(speed);
         };
 
-        // Подписка на события
+        // Subscribe to events
         socket.on(ReplayEvent.REPLAY_STATE_UPDATED, handleStateUpdate);
         socket.on(ReplayEvent.REPLAY_PAUSED, handlePaused);
         socket.on(ReplayEvent.REPLAY_RESUMED, handleResumed);
@@ -84,7 +108,7 @@ export function useReplay({ socket, gameCode }: UseReplayProps): UseReplayReturn
         socket.on(ReplayEvent.REPLAY_ERROR, handleError);
         socket.on(ReplayEvent.PLAYBACK_SPEED_UPDATED, handleSpeedUpdate);
 
-        // Отписка при размонтировании
+        // Cleanup subscriptions
         return () => {
             socket.off(ReplayEvent.REPLAY_STATE_UPDATED, handleStateUpdate);
             socket.off(ReplayEvent.REPLAY_PAUSED, handlePaused);
@@ -95,7 +119,7 @@ export function useReplay({ socket, gameCode }: UseReplayProps): UseReplayReturn
         };
     }, [socket]);
 
-    // Методы управления воспроизведением
+    // Playback control methods
     const startReplay = useCallback(() => {
         setError(null);
         socket.emit(ReplayEvent.START_REPLAY, { gameCode });
@@ -121,7 +145,7 @@ export function useReplay({ socket, gameCode }: UseReplayProps): UseReplayReturn
         socket.emit(ReplayEvent.GOTO_MOVE, { gameCode, moveIndex });
     }, [socket, gameCode]);
 
-    const setSpeed = useCallback((speed: number) => {
+    const setSpeed = useCallback((speed: PlaybackSpeed) => {
         socket.emit(ReplayEvent.SET_PLAYBACK_SPEED, { gameCode, speed });
     }, [socket, gameCode]);
 

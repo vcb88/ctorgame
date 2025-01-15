@@ -1,5 +1,6 @@
 import React from 'react';
 import { Socket } from 'socket.io-client';
+import type { Position, PlayerNumber, GameState, Scores } from '@ctor-game/shared/src/types/core.js';
 import { useReplay } from '../../hooks/useReplay';
 import { useGameHistory } from '../../hooks/useGameHistory';
 import { ReplayControls } from './ReplayControls';
@@ -7,14 +8,14 @@ import { MoveTimeline } from './MoveTimeline';
 import { GameBoard } from '../GameBoard';
 import { Alert } from '../ui/alert';
 
-interface ReplayViewProps {
+type ReplayViewProps = {
     gameCode: string;
     socket: Socket;
     onClose: () => void;
-}
+};
 
 export function ReplayView({ gameCode, socket, onClose }: ReplayViewProps) {
-    // Получаем состояние replay и методы управления
+    // Get replay state and control methods
     const {
         isPlaying,
         currentMove,
@@ -32,7 +33,7 @@ export function ReplayView({ gameCode, socket, onClose }: ReplayViewProps) {
         stopReplay
     } = useReplay({ socket, gameCode });
 
-    // Получаем историю ходов
+    // Get move history
     const {
         moves,
         loading,
@@ -40,13 +41,13 @@ export function ReplayView({ gameCode, socket, onClose }: ReplayViewProps) {
         formatMoveDescription
     } = useGameHistory({ socket, gameCode });
 
-    // Обработчик закрытия replay
+    // Handle replay close
     const handleClose = () => {
         stopReplay();
         onClose();
     };
 
-    // Если есть ошибки - показываем их
+    // Show errors if any
     if (replayError || historyError) {
         return (
             <Alert variant="destructive">
@@ -55,7 +56,7 @@ export function ReplayView({ gameCode, socket, onClose }: ReplayViewProps) {
         );
     }
 
-    // Если загружаем историю - показываем загрузку
+    // Show loading state
     if (loading) {
         return <div>Loading game history...</div>;
     }
@@ -73,17 +74,17 @@ export function ReplayView({ gameCode, socket, onClose }: ReplayViewProps) {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {/* Игровая доска */}
+                {/* Game board */}
                 <div className="flex flex-col gap-4">
                     {gameState && (
                         <GameBoard
-                            board={gameState.board.cells}
-                            disabled={true} // В режиме replay доска неактивна
-                            lastMove={moves[currentMove - 1]?.move.position}
+                            board={gameState.board}
+                            disabled={true} // Board is inactive in replay mode
+                            lastMove={moves[currentMove - 1]?.move.pos}
                         />
                     )}
 
-                    {/* Элементы управления */}
+                    {/* Replay controls */}
                     <ReplayControls
                         isPlaying={isPlaying}
                         currentMove={currentMove}
@@ -99,7 +100,7 @@ export function ReplayView({ gameCode, socket, onClose }: ReplayViewProps) {
                     />
                 </div>
 
-                {/* История ходов */}
+                {/* Move history */}
                 <MoveTimeline
                     moves={moves}
                     currentMove={currentMove}
@@ -108,21 +109,21 @@ export function ReplayView({ gameCode, socket, onClose }: ReplayViewProps) {
                 />
             </div>
 
-            {/* Информация о текущем состоянии */}
+            {/* Current state info */}
             {gameState && (
                 <div className="mt-4 p-4 bg-background rounded-lg">
                     <div className="grid grid-cols-2 gap-4">
                         <div>
                             <h3 className="font-semibold">Score</h3>
-                            <p>Player 1: {gameState.scores.player1}</p>
-                            <p>Player 2: {gameState.scores.player2}</p>
+                            <p>Player 1: {gameState.scores[0]}</p>
+                            <p>Player 2: {gameState.scores[1]}</p>
                         </div>
-                        {gameState.gameOver && (
+                        {gameState.phase === 'end' && (
                             <div>
                                 <h3 className="font-semibold">Game Result</h3>
                                 <p>
                                     {gameState.winner !== null
-                                        ? `Player ${gameState.winner + 1} won!`
+                                        ? `Player ${gameState.winner} won!`
                                         : "It's a draw!"}
                                 </p>
                             </div>
