@@ -81,7 +81,7 @@
         - [✓] pages/GameBoard.tsx - обновлен для использования Position, CellValue, GamePhase и других типов из core
         - [✓] pages/WaitingRoom.tsx - обновлен для использования PlayerNumber и GamePhase из core, улучшена типизация и безопасность
         - [✓] pages/WaitingRoomNew.tsx - добавлена поддержка GameError, улучшена обработка ошибок и состояний подключения
-        - [ ] pages/GameHistory.tsx - проверить использование типов для истории игр
+        - [✓] pages/GameHistory.tsx - обновлен для использования Timestamp и PlayerNumber, улучшена типизация и форматирование
         - [ ] pages/CreateGame.tsx
         - [ ] pages/JoinGame.tsx
         
