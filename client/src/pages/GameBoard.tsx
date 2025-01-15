@@ -8,6 +8,7 @@ import { DisconnectionOverlay } from '@/components/modals/DisconnectionOverlay';
 import { logger } from '@/utils/logger';
 import { cn } from '@/lib/utils';
 import { GameOverScreen } from '@/components/GameOverScreen';
+import { adaptScores } from '@/utils/adapters';
 
 export const GameBoard: React.FC = () => {
   const navigate = useNavigate();
@@ -229,7 +230,7 @@ export const GameBoard: React.FC = () => {
         {gameState.gameOver && (
           <GameOverScreen
             winner={gameState.winner}
-            scores={gameState.scores}
+            scores={adaptScores(gameState.scores)}
             onReturnToMenu={() => navigate('/')}
           />
         )}
