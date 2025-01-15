@@ -15,7 +15,7 @@ import type {
     IRedisGameEvent
 } from '@ctor-game/shared/types/storage/redis.js';
 
-import { redisClient, REDIS_KEYS, REDIS_EVENTS, withLock, cacheConfig } from '../config/redis.js';
+import { redisClient, REDIS_KEYS, REDIS_EVENTS, withLock, ttlConfig } from '../config/redis.js';
 import { GameLogicService } from './GameLogicService.js';
 
 export class RedisService {
@@ -35,7 +35,7 @@ export class RedisService {
                     REDIS_KEYS.GAME_STATE(gameId),
                     JSON.stringify(redisState),
                     'EX',
-                    cacheConfig.ttl.gameState
+                    ttlConfig.base.gameState
                 )
                 .publish(REDIS_EVENTS.GAME_STATE_UPDATED, JSON.stringify({ gameId, state: redisState }))
                 .exec();
@@ -105,7 +105,7 @@ export class RedisService {
 
         await redisClient.setex(
             REDIS_KEYS.PLAYER_SESSION(socketId),
-            cacheConfig.ttl.playerSession,
+            ttlConfig.base.playerSession,
             JSON.stringify(session)
         );
     }
@@ -165,7 +165,7 @@ export class RedisService {
 
         await redisClient.setex(
             REDIS_KEYS.GAME_ROOM(gameId),
-            cacheConfig.ttl.gameRoom,
+            ttlConfig.base.gameRoom,
             JSON.stringify(room)
         );
     }
@@ -225,7 +225,7 @@ export class RedisService {
         await redisClient
             .multi()
             .lpush(key, JSON.stringify(event))
-            .expire(key, cacheConfig.ttl.gameState)
+            .expire(key, ttlConfig.base.gameState)
             .exec();
     }
 
@@ -283,7 +283,7 @@ export class RedisService {
         await redisClient
             .multi()
             .hset(REDIS_KEYS.GAME_STATS, gameId, JSON.stringify(stats))
-            .expire(REDIS_KEYS.GAME_STATS, cacheConfig.ttl.gameState)
+            .expire(REDIS_KEYS.GAME_STATS, ttlConfig.base.gameState)
             .exec();
     }
 
