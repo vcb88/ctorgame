@@ -1,29 +1,35 @@
 import { useState, useEffect } from 'react';
 import { Socket } from 'socket.io-client';
 import type { 
-    IGameMove,
+    Position,
     PlayerNumber,
-    MoveType
-} from '@ctor-game/shared/src/types/game/types.js';
+    MoveType,
+    Timestamp
+} from '@ctor-game/shared/src/types/core.js';
 
-interface UseGameHistoryProps {
+type UseGameHistoryProps = {
     socket: Socket;
     gameCode: string;
-}
+};
 
-export interface HistoryEntry {
+type GameHistoryMove = {
+    type: MoveType;
+    pos: Position;
+};
+
+export type HistoryEntry = {
     moveNumber: number;
     playerNumber: PlayerNumber;
-    move: IGameMove;
-    timestamp: Date;
-}
+    move: GameHistoryMove;
+    timestamp: Timestamp;
+};
 
-interface UseGameHistoryReturn {
+type UseGameHistoryReturn = {
     moves: HistoryEntry[];
     loading: boolean;
     error: string | null;
     formatMoveDescription: (move: HistoryEntry) => string;
-}
+};
 
 export function useGameHistory({ socket, gameCode }: UseGameHistoryProps): UseGameHistoryReturn {
     const [moves, setMoves] = useState<HistoryEntry[]>([]);
@@ -31,32 +37,32 @@ export function useGameHistory({ socket, gameCode }: UseGameHistoryProps): UseGa
     const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
-        // Запрашиваем историю ходов при монтировании
+        // Request move history on mount
         socket.emit('GET_GAME_HISTORY', { gameCode });
 
-        // Обработчик получения истории
+        // History handler
         const handleHistory = (data: { moves: HistoryEntry[] }) => {
             setMoves(data.moves);
             setLoading(false);
         };
 
-        // Обработчик ошибок
+        // Error handler
         const handleError = (data: { message: string }) => {
             setError(data.message);
             setLoading(false);
         };
 
-        // Обработчик нового хода (для живого обновления истории)
+        // New move handler (for live history updates)
         const handleNewMove = (move: HistoryEntry) => {
             setMoves(prevMoves => [...prevMoves, move]);
         };
 
-        // Подписываемся на события
+        // Subscribe to events
         socket.on('GAME_HISTORY', handleHistory);
         socket.on('ERROR', handleError);
         socket.on('NEW_MOVE', handleNewMove);
 
-        // Отписываемся при размонтировании
+        // Cleanup subscriptions
         return () => {
             socket.off('GAME_HISTORY', handleHistory);
             socket.off('ERROR', handleError);
@@ -64,12 +70,13 @@ export function useGameHistory({ socket, gameCode }: UseGameHistoryProps): UseGa
         };
     }, [socket, gameCode]);
 
-    // Функция для форматирования описания хода
+    // Format move description
     const formatMoveDescription = (entry: HistoryEntry): string => {
         const { playerNumber, move } = entry;
         const playerName = `${playerNumber === 1 ? 'First' : 'Second'} Player`;
-        const position = `(${move.position.x + 1},${move.position.y + 1})`;
-        const operation = move.type === 'PLACE' ? 'placed' : 'replaced';
+        const [x, y] = move.pos;
+        const position = `(${x + 1},${y + 1})`;
+        const operation = move.type === 'place' ? 'placed' : 'replaced';
 
         return `${playerName} ${operation} at ${position}`;
     };

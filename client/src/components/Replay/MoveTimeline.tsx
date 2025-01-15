@@ -1,13 +1,25 @@
 import React from 'react';
-import { HistoryEntry } from '../../hooks/useGameHistory';
+import type { Position, PlayerNumber, MoveType, Timestamp } from '@ctor-game/shared/src/types/core.js';
 import { ScrollArea } from '../ui/scroll-area';
 
-interface MoveTimelineProps {
+type GameHistoryMove = {
+    type: MoveType;
+    pos: Position;
+};
+
+type HistoryEntry = {
+    moveNumber: number;
+    playerNumber: PlayerNumber;
+    move: GameHistoryMove;
+    timestamp: Timestamp;
+};
+
+type MoveTimelineProps = {
     moves: HistoryEntry[];
     currentMove: number;
     onMoveSelect: (index: number) => void;
     formatMoveDescription: (move: HistoryEntry) => string;
-}
+};
 
 export function MoveTimeline({
     moves,
@@ -20,7 +32,7 @@ export function MoveTimeline({
             <h3 className="text-lg font-semibold mb-2">Move History</h3>
             <ScrollArea className="h-[300px] rounded-md border p-4">
                 <div className="space-y-2">
-                    {/* Начальное состояние */}
+                    {/* Initial state */}
                     <div
                         className={`p-2 rounded cursor-pointer transition-colors ${
                             currentMove === 0
@@ -32,7 +44,7 @@ export function MoveTimeline({
                         Initial state
                     </div>
 
-                    {/* Список ходов */}
+                    {/* Move list */}
                     {moves.map((move, index) => (
                         <div
                             key={index}
