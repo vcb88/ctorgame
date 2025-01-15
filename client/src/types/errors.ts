@@ -1,4 +1,7 @@
-import type { ErrorCode, ErrorSeverity } from '@ctor-game/shared/types/enums.js';
+import type { 
+    ErrorCode, 
+    ErrorSeverity 
+} from '@ctor-game/shared/src/types/network/errors.js';
 
 /**
  * Client-side error type

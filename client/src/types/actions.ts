@@ -1,33 +1,17 @@
-export enum GameActionType {
-  CREATE_GAME = 'CREATE_GAME',
-  JOIN_GAME = 'JOIN_GAME',
-  MAKE_MOVE = 'MAKE_MOVE',
-  END_TURN = 'END_TURN',
-  UNDO_MOVE = 'UNDO_MOVE'
-}
+import type {
+    GameActionType,
+    IGameAction,
+    IMoveAction,
+    IEndTurnAction,
+    IUndoMoveAction,
+    GameOperationAction
+} from '@ctor-game/shared/src/types/game/actions.js';
 
-export interface GameAction {
-  type: GameActionType;
-  payload?: any;
-  timestamp: number;
-  id: string;
-}
-
-export interface MoveAction extends GameAction {
-  type: GameActionType.MAKE_MOVE;
-  payload: {
-    row: number;
-    col: number;
-    operationType: OperationType;
-  };
-}
-
-export interface EndTurnAction extends GameAction {
-  type: GameActionType.END_TURN;
-}
-
-export interface UndoMoveAction extends GameAction {
-  type: GameActionType.UNDO_MOVE;
-}
-
-export type GameOperationAction = MoveAction | EndTurnAction | UndoMoveAction;
+export type {
+    GameActionType,
+    IGameAction,
+    IMoveAction,
+    IEndTurnAction,
+    IUndoMoveAction,
+    GameOperationAction
+};

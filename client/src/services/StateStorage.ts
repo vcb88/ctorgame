@@ -1,12 +1,16 @@
-import type { StorageConfig, StoredState, IStateStorage } from '@ctor-game/shared/types/storage';
+import type { 
+    IStorageConfig, 
+    IStoredState, 
+    IStateStorage 
+} from '@ctor-game/shared/src/types/storage/config.js';
 
 /**
  * Implementation of state storage using localStorage
  */
 export class StateStorage implements IStateStorage {
-    private config: StorageConfig;
+    private config: IStorageConfig;
 
-    constructor(config: StorageConfig) {
+    constructor(config: IStorageConfig) {
         this.config = config;
         // Run cleanup on initialization
         this.cleanupExpired();
@@ -16,7 +20,7 @@ export class StateStorage implements IStateStorage {
      * Save state with versioning and TTL
      */
     public saveState(key: string, state: any): void {
-        const storedState: StoredState<any> = {
+        const storedState: IStoredState<any> = {
             version: this.config.version,
             timestamp: Date.now(),
             data: state,
@@ -39,7 +43,7 @@ export class StateStorage implements IStateStorage {
         }
 
         try {
-            const storedState = JSON.parse(item) as StoredState<T>;
+            const storedState = JSON.parse(item) as IStoredState<T>;
             
             // Check if state has expired
             if (Date.now() > storedState.expiresAt) {
@@ -74,7 +78,7 @@ export class StateStorage implements IStateStorage {
             if (!item) return;
 
             try {
-                const storedState = JSON.parse(item) as StoredState<any>;
+                const storedState = JSON.parse(item) as IStoredState<any>;
                 if (now > storedState.expiresAt) {
                     localStorage.removeItem(fullKey);
                 }

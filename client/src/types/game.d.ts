@@ -1,30 +1,32 @@
 import { Socket } from 'socket.io-client';
-import type { GameMove } from '@ctor-game/shared/types/game/moves';
-import type { IGameState } from '@ctor-game/shared/types/game/state';
-import type { Player } from '@ctor-game/shared/types/enums';
+import type { 
+    IGameMove, 
+    IGameState, 
+    PlayerNumber 
+} from '@ctor-game/shared/src/types/game/types.js';
 
 export interface ITurnState {
-  placeOperationsLeft: number;
-  replaceOperationsLeft: number;
-  playerNumber: Player;
+  readonly placeOperations: number;
+  readonly replaceOperations: number;
+  readonly playerNumber: PlayerNumber;
 }
 
 export interface IGameStateWithTurn extends IGameState {
-  currentTurn: ITurnState;
-  isFirstTurn: boolean;
+  readonly currentTurn: ITurnState;
+  readonly isFirstTurn: boolean;
 }
 
 export interface MockedSocket extends Socket {
-  mockEmit: jest.Mock;
-  mockOn: jest.Mock;
-  mockOff: jest.Mock;
-  mockClose: jest.Mock;
+  readonly mockEmit: jest.Mock;
+  readonly mockOn: jest.Mock;
+  readonly mockOff: jest.Mock;
+  readonly mockClose: jest.Mock;
   simulateEvent: (event: string, data: unknown) => Promise<void>;
 }
 
-export interface GameHistoryEntry {
-  moveNumber: number;
-  playerNumber: Player;
-  move: GameMove;
-  timestamp: Date;
+export interface IGameHistoryEntry {
+  readonly moveNumber: number;
+  readonly playerNumber: PlayerNumber;
+  readonly move: IGameMove;
+  readonly timestamp: Date;
 }

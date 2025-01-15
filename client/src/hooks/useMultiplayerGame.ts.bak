@@ -1,41 +1,90 @@
 import { useEffect, useState, useCallback, useRef } from 'react';
-import { io, Socket } from 'socket.io-client';
 import { logger } from '../utils/logger';
-import { 
-  IGameState, 
-  IGameMove, 
-  OperationType,
-  IPosition,
-  WebSocketEvents, 
-  ClientToServerEvents, 
-  ServerToClientEvents,
-  validateGameMove,
-  validateGameState,
-  Player,
-  getOpponent
-} from '../shared';
-import {
-  ConnectionState,
-  GameError,
-  GameErrorType,
-  WebSocketErrorCode,
-  ErrorResponse,
-  ReconnectionData
-} from '../types/connection';
+import { GameStateManager } from '../services/GameStateManager';
+import { type GameSocket } from '../services/socket';
+
+// Shared types
+import type { 
+    IGameState, 
+    IGameMove, 
+    PlayerNumber,
+    GameStatus
+} from '@ctor-game/shared/src/types/game/types.js';
+import type { 
+    IWebSocketEvent, 
+    UUID,
+    ServerToClientEvents,
+    ClientToServerEvents
+} from '@ctor-game/shared/src/types/network/websocket.js';
+import type { 
+    INetworkError
+} from '@ctor-game/shared/src/types/network/errors.js';
+import type {
+    IPosition
+} from '@ctor-game/shared/src/types/geometry/types.js';
 
 import { getSocket } from '../services/socket';
 
+type ConnectionState = 'connected' | 'connecting' | 'reconnecting' | 'disconnected' | 'error';
+
+interface IGameResponse {
+    readonly success: boolean;
+    readonly error?: INetworkError;
+    readonly eventId?: UUID;
+    readonly timestamp: number;
+}
+
+interface IJoinGameResponse extends IGameResponse {
+    readonly gameId?: UUID;
+    readonly playerNumber?: PlayerNumber;
+}
+
+interface IMultiplayerGameState {
+    readonly gameId: UUID | null;
+    readonly playerNumber: PlayerNumber | null;
+    readonly gameState: IGameState | null;
+    readonly currentPlayer: PlayerNumber;
+    readonly connectionState: ConnectionState;
+    readonly error: INetworkError | null;
+    readonly availableReplaces: IGameMove[];
+    readonly timestamp: number;
+}
+
 export const useMultiplayerGame = () => {
-  const [connectionState, setConnectionState] = useState<ConnectionState>(ConnectionState.CONNECTING);
-  const [error, setError] = useState<GameError | null>(null);
-  const socket = getSocket();
+  // Log hook initialization
+  logger.debug('useMultiplayerGame hook initialized', {
+    component: 'useMultiplayerGame',
+    data: {
+      timestamp: Date.now(),
+      existingSocket: !!getSocket()
+    }
+  });
+  // Initialize GameStateManager singleton
+  const gameManager = useRef<GameStateManager>(GameStateManager.getInstance());
+  const socket = useRef<GameSocket>(getSocket());
   
-  // Game state
-  const [gameId, setGameId] = useState<string | null>(null);
-  const [playerNumber, setPlayerNumber] = useState<Player | null>(null);
-  const [gameState, setGameState] = useState<IGameState | null>(null);
-  const [currentPlayer, setCurrentPlayer] = useState<Player>(Player.First);
-  const [availableReplaces, setAvailableReplaces] = useState<IGameMove[]>([]);
+  // Initialize state from GameStateManager
+  const [state, setState] = useState<IMultiplayerGameState>(() => {
+    const managerState = gameManager.current.getState();
+    return {
+      gameId: managerState.gameId,
+      playerNumber: managerState.playerNumber,
+      gameState: managerState.gameState,
+      currentPlayer: managerState.currentPlayer,
+      connectionState: managerState.connectionState as ConnectionState,
+      error: managerState.error,
+      availableReplaces: managerState.availableReplaces,
+      timestamp: managerState.timestamp
+    };
+  });
+
+  // Function to clear game state from localStorage
+  const clearGameState = useCallback(() => {
+    localStorage.removeItem('gameId');
+    localStorage.removeItem('playerNumber');
+    localStorage.removeItem('gameState');
+    localStorage.removeItem('currentPlayer');
+  }, []);
   
   // Reconnection state
   const reconnectionAttempts = useRef<number>(0);
@@ -136,6 +185,7 @@ export const useMultiplayerGame = () => {
         message: 'Max reconnection attempts reached',
         details: { attempts: reconnectionAttempts.current }
       });
+      clearGameState();
       return;
     }
 
@@ -164,6 +214,35 @@ export const useMultiplayerGame = () => {
     };
     socket.connect();
   }, [gameId, playerNumber, handleError]);
+
+  // Save state to localStorage when it changes
+  useEffect(() => {
+    if (gameId === null) {
+      localStorage.removeItem('gameId');
+    } else {
+      localStorage.setItem('gameId', gameId);
+    }
+  }, [gameId]);
+
+  useEffect(() => {
+    if (playerNumber === null) {
+      localStorage.removeItem('playerNumber');
+    } else {
+      localStorage.setItem('playerNumber', String(playerNumber));
+    }
+  }, [playerNumber]);
+
+  useEffect(() => {
+    if (gameState === null) {
+      localStorage.removeItem('gameState');
+    } else {
+      localStorage.setItem('gameState', JSON.stringify(gameState));
+    }
+  }, [gameState]);
+
+  useEffect(() => {
+    localStorage.setItem('currentPlayer', String(currentPlayer));
+  }, [currentPlayer]);
 
   // Initialize socket connection
   useEffect(() => {
@@ -246,272 +325,271 @@ export const useMultiplayerGame = () => {
   useEffect(() => {
     if (!socket) return;
 
-    socket.on(WebSocketEvents.GameCreated, ({ gameId, eventId }: { gameId: string, eventId: string }) => {
-      logger.socketEvent(WebSocketEvents.GameCreated, { gameId, eventId }, 'in');
-      setGameId(gameId);
-      setPlayerNumber(Player.First);
-      lastEventId.current = eventId;
-      setError(null);
-      clearOperationTimeout('createGame');
-    });
+    const handlers = {
+      [WebSocketEvents.GameCreated]: ({ gameId, eventId }: { gameId: string, eventId: string }) => {
+        logger.socketEvent(WebSocketEvents.GameCreated, { gameId, eventId }, 'in');
+        setGameId(gameId);
+        setPlayerNumber(Player.First);
+        lastEventId.current = eventId;
+        setError(null);
+        clearOperationTimeout('createGame');
+      },
 
-    socket.on(WebSocketEvents.GameJoined, ({ gameId, eventId }: { gameId: string, eventId: string }) => {
-      logger.socketEvent(WebSocketEvents.GameJoined, { gameId, eventId }, 'in');
-      setGameId(gameId);
-      setPlayerNumber(Player.Second);
-      lastEventId.current = eventId;
-      setError(null);
-      clearOperationTimeout('joinGame');
-    });
+      [WebSocketEvents.GameJoined]: ({ gameId, eventId }: { gameId: string, eventId: string }) => {
+        logger.socketEvent(WebSocketEvents.GameJoined, { gameId, eventId }, 'in');
+        setGameId(gameId);
+        setPlayerNumber(Player.Second);
+        lastEventId.current = eventId;
+        setError(null);
+        clearOperationTimeout('joinGame');
+      },
 
-    socket.on(WebSocketEvents.GameStarted, ({ gameState, currentPlayer, eventId }: { gameState: IGameState; currentPlayer: Player, eventId: string }) => {
-      logger.socketEvent(WebSocketEvents.GameStarted, { gameState, currentPlayer, eventId }, 'in');
-      if (!validateGameState(gameState)) {
-        handleError({
-          code: WebSocketErrorCode.INVALID_STATE,
-          message: 'Invalid game state received',
-          details: { gameState }
+      [WebSocketEvents.GameStarted]: ({ gameState, currentPlayer, eventId }: { gameState: IGameState; currentPlayer: Player, eventId: string }) => {
+        logger.debug('[GameStarted] Handler called', {
+          component: 'useMultiplayerGame',
+          data: { 
+            gameId,
+            playerNumber,
+            currentGameState: gameState,
+            newCurrentPlayer: currentPlayer,
+            eventId,
+            socketId: socket?.id,
+            listeners: socket.listeners(WebSocketEvents.GameStarted).length,
+            handlerRegistrationTime: Date.now()
+          }
         });
-        return;
-      }
-      setGameState(gameState);
-      setCurrentPlayer(currentPlayer);
-      lastEventId.current = eventId;
-      setError(null);
-    });
+        logger.socketEvent(WebSocketEvents.GameStarted, { gameState, currentPlayer, eventId }, 'in');
+        if (!validateGameState(gameState)) {
+          handleError({
+            code: WebSocketErrorCode.INVALID_STATE,
+            message: 'Invalid game state received',
+            details: { gameState }
+          });
+          return;
+        }
+        setGameState(gameState);
+        setCurrentPlayer(currentPlayer);
+        lastEventId.current = eventId;
+        setError(null);
+      },
 
-    socket.on(WebSocketEvents.GameStateUpdated, ({ gameState, currentPlayer, eventId }: { gameState: IGameState; currentPlayer: Player, eventId: string }) => {
-      logger.socketEvent(WebSocketEvents.GameStateUpdated, { gameState, currentPlayer, eventId }, 'in');
-      if (!validateGameState(gameState)) {
+      [WebSocketEvents.GameStateUpdated]: ({ gameState, currentPlayer, eventId }: { gameState: IGameState; currentPlayer: Player, eventId: string }) => {
+        logger.socketEvent(WebSocketEvents.GameStateUpdated, { gameState, currentPlayer, eventId }, 'in');
+        if (!validateGameState(gameState)) {
+          handleError({
+            code: WebSocketErrorCode.INVALID_STATE,
+            message: 'Invalid game state received',
+            details: { gameState }
+          });
+          return;
+        }
+        setGameState(gameState);
+        setCurrentPlayer(currentPlayer);
+        lastEventId.current = eventId;
+        setError(null);
+        setAvailableReplaces([]);
+        clearOperationTimeout('makeMove');
+      },
+
+      [WebSocketEvents.AvailableReplaces]: ({ moves, eventId }: { moves: GameMove[], eventId: string }) => {
+        logger.socketEvent(WebSocketEvents.AvailableReplaces, { moves, eventId }, 'in');
+        setAvailableReplaces(moves);
+        lastEventId.current = eventId;
+      },
+
+      [WebSocketEvents.GameOver]: ({ gameState, winner, eventId }: { gameState: IGameState; winner: Player | null, eventId: string }) => {
+        logger.socketEvent(WebSocketEvents.GameOver, { gameState, winner, eventId }, 'in');
+        if (!validateGameState(gameState)) {
+          handleError({
+            code: WebSocketErrorCode.INVALID_STATE,
+            message: 'Invalid game state received',
+            details: { gameState }
+          });
+          return;
+        }
+        setGameState(gameState);
+        lastEventId.current = eventId;
         handleError({
-          code: WebSocketErrorCode.INVALID_STATE,
-          message: 'Invalid game state received',
-          details: { gameState }
+          code: WebSocketErrorCode.GAME_ENDED,
+          message: winner === null ? 'Game ended in a draw!' : `${winner === Player.First ? 'First' : 'Second'} player won!`,
+          recoverable: false,
+          retryable: false,
+          details: { winner }
         });
-        return;
-      }
-      setGameState(gameState);
-      setCurrentPlayer(currentPlayer);
-      lastEventId.current = eventId;
-      setError(null);
-      setAvailableReplaces([]);
-      clearOperationTimeout('makeMove');
-    });
+      },
 
-    socket.on(WebSocketEvents.AvailableReplaces, ({ moves, eventId }: { moves: IGameMove[], eventId: string }) => {
-      logger.socketEvent(WebSocketEvents.AvailableReplaces, { moves, eventId }, 'in');
-      setAvailableReplaces(moves);
-      lastEventId.current = eventId;
-    });
+      [WebSocketEvents.Error]: (errorResponse: ErrorResponse) => {
+        logger.socketEvent(WebSocketEvents.Error, { error: errorResponse }, 'in');
+        handleError(errorResponse);
+        if (!errorResponse.retryable) {
+          clearGameState();
+        }
+      },
 
-    socket.on(WebSocketEvents.GameOver, ({ gameState, winner, eventId }: { gameState: IGameState; winner: Player | null, eventId: string }) => {
-      logger.socketEvent(WebSocketEvents.GameOver, { gameState, winner, eventId }, 'in');
-      if (!validateGameState(gameState)) {
+      [WebSocketEvents.PlayerDisconnected]: ({ player, eventId }: { player: Player, eventId: string }) => {
+        logger.socketEvent(WebSocketEvents.PlayerDisconnected, { player, eventId }, 'in');
+        lastEventId.current = eventId;
         handleError({
-          code: WebSocketErrorCode.INVALID_STATE,
-          message: 'Invalid game state received',
-          details: { gameState }
+          code: WebSocketErrorCode.CONNECTION_ERROR,
+          message: `Player ${player} disconnected`,
+          recoverable: true,
+          retryable: true,
+          details: { player }
         });
-        return;
       }
-      setGameState(gameState);
-      lastEventId.current = eventId;
-      handleError({
-        code: WebSocketErrorCode.GAME_ENDED,
-        message: winner === null ? 'Game ended in a draw!' : `${winner === Player.First ? 'First' : 'Second'} player won!`,
-        recoverable: false,
-        retryable: false,
-        details: { winner }
+    };
+
+    // Set up socket event handlers once
+    logger.debug('Current socket event listeners', {
+      component: 'useMultiplayerGame',
+      data: Object.keys(handlers).reduce((acc, event) => ({
+        ...acc,
+        [event]: socket.listeners(event).length
+      }), {})
+    });
+
+    // Remove any existing handlers first
+    Object.keys(handlers).forEach((event) => {
+      socket.removeAllListeners(event);
+    });
+
+    // Add new handlers
+      logger.debug('Setting up socket event handlers', {
+        component: 'useMultiplayerGame',
+        data: {
+          currentHandlers: socket.listeners('GameCreated').length,
+          events: Object.keys(handlers)
+        }
       });
-    });
-
-    socket.on(WebSocketEvents.Error, (errorResponse: ErrorResponse) => {
-      logger.socketEvent(WebSocketEvents.Error, { error: errorResponse }, 'in');
-      handleError(errorResponse);
-    });
-
-    socket.on(WebSocketEvents.PlayerDisconnected, ({ player, eventId }: { player: Player, eventId: string }) => {
-      logger.socketEvent(WebSocketEvents.PlayerDisconnected, { player, eventId }, 'in');
-      lastEventId.current = eventId;
-      handleError({
-        code: WebSocketErrorCode.CONNECTION_ERROR,
-        message: `Player ${player} disconnected`,
-        recoverable: true,
-        retryable: true,
-        details: { player }
+      
+      Object.entries(handlers).forEach(([event, handler]) => {
+        logger.debug(`Registering handler for ${event}`, {
+          component: 'useMultiplayerGame',
+          data: {
+            event,
+            existingHandlers: socket.listeners(event).length
+          }
+        });
+        socket.on(event, handler);
       });
-    });
 
+    // Cleanup on unmount only
     return () => {
-      socket.off(WebSocketEvents.GameCreated);
-      socket.off(WebSocketEvents.GameJoined);
-      socket.off(WebSocketEvents.GameStarted);
-      socket.off(WebSocketEvents.GameStateUpdated);
-      socket.off(WebSocketEvents.GameOver);
-      socket.off(WebSocketEvents.Error);
-      socket.off(WebSocketEvents.PlayerDisconnected);
+      logger.debug('Cleaning up socket event handlers', {
+        component: 'useMultiplayerGame',
+        data: {
+          events: Object.keys(handlers),
+          handlersBeforeCleanup: Object.keys(handlers).map(event => ({
+            event,
+            count: socket.listeners(event).length
+          }))
+        }
+      });
+
+      Object.keys(handlers).forEach((event) => {
+        socket.off(event);
+      });
+
+      logger.debug('Socket event handlers after cleanup', {
+        component: 'useMultiplayerGame',
+        data: {
+          handlersAfterCleanup: Object.keys(handlers).map(event => ({
+            event,
+            count: socket.listeners(event).length
+          }))
+        }
+      });
     };
-  }, [socket]);
+  }, [socket, handleError, validateGameState, clearOperationTimeout]);
 
-  const createGame = useCallback(() => {
-    logger.info('createGame called', {
-      component: 'useMultiplayerGame',
-      data: { 
-        hasSocket: !!socket,
-        socketId: socket?.id,
-        connectionState,
-        currentGameId: gameId
-      }
-    });
-
-    if (!socket) {
-      handleError({
-        code: WebSocketErrorCode.CONNECTION_ERROR,
-        message: 'Cannot create game - socket not initialized',
-        details: { connectionState }
+  const createGame = useCallback(async () => {
+    try {
+      logger.info('Creating new game', {
+        component: 'useMultiplayerGame'
       });
-      return;
+
+      await gameManager.current.createGame();
+      
+      logger.debug('Game created successfully', { 
+        component: 'useMultiplayerGame'
+      });
+    } catch (error) {
+      const networkError = error as INetworkError;
+      logger.error('Failed to create game', { 
+        component: 'useMultiplayerGame',
+        data: { error: networkError }
+      });
     }
+  }, []);
 
-    if (connectionState !== ConnectionState.CONNECTED) {
-      handleError({
-        code: WebSocketErrorCode.CONNECTION_ERROR,
-        message: 'Cannot create game - not connected to server',
-        details: { connectionState }
+  const joinGame = useCallback(async (gameId: UUID): Promise<IJoinGameResult> => {
+    try {
+      logger.info('Joining game', {
+        component: 'useMultiplayerGame',
+        data: { gameId }
       });
-      return;
+
+      const result = await gameManager.current.joinGame(gameId);
+      
+      logger.debug('Game joined successfully', { 
+        component: 'useMultiplayerGame',
+        data: { gameId, playerNumber: result.playerNumber }
+      });
+      
+      return result;
+    } catch (error) {
+      const networkError = error as INetworkError;
+      logger.error('Failed to join game', { 
+        component: 'useMultiplayerGame',
+        data: { error: networkError }
+      });
+      throw error;
     }
+  }, []);
 
-    logger.info('Emitting CreateGame event', {
-      component: 'useMultiplayerGame',
-      data: {
-        socketId: socket.id,
-        socketConnected: socket.connected,
-        transportType: socket.io.engine.transport.name
-      }
-    });
+  const makeMove = useCallback(async (x: number, y: number) => {
+    try {
+      const move: IGameMove = {
+        position: { x, y },
+        timestamp: Date.now()
+      };
 
-    logger.socketEvent(WebSocketEvents.CreateGame, undefined, 'out');
-    socket.emit(WebSocketEvents.CreateGame);
-    setOperationTimeout('createGame', () => {
-      handleError({
-        code: WebSocketErrorCode.TIMEOUT,
-        message: 'Game creation timed out',
-        details: {}
+      // Use GameStateManager to make the move
+      await gameManager.current.makeMove(move);
+      
+      logger.debug('Move made', { 
+        component: 'useMultiplayerGame',
+        data: { move }
       });
-    });
-  }, [socket, connectionState, handleError, setOperationTimeout]);
-
-  const joinGame = useCallback((gameId: string): Promise<boolean> => {
-    return new Promise((resolve) => {
-      if (!socket) {
-        handleError({
-          code: WebSocketErrorCode.CONNECTION_ERROR,
-          message: 'Cannot join game - socket not initialized',
-          details: { connectionState }
-        });
-        resolve(false);
-        return;
-      }
-
-      if (connectionState !== ConnectionState.CONNECTED) {
-        handleError({
-          code: WebSocketErrorCode.CONNECTION_ERROR,
-          message: 'Cannot join game - not connected to server',
-          details: { connectionState }
-        });
-        resolve(false);
-        return;
-      }
-
-      // Set up one-time listener for success
-      socket.once(WebSocketEvents.GameJoined, () => {
-        resolve(true);
+    } catch (error) {
+      const networkError = error as INetworkError;
+      logger.error('Failed to make move', { 
+        component: 'useMultiplayerGame',
+        data: { error: networkError }
       });
-
-      // Set up one-time listener for error
-      socket.once(WebSocketEvents.Error, () => {
-        resolve(false);
-      });
-
-      logger.socketEvent(WebSocketEvents.JoinGame, { gameId }, 'out');
-      socket.emit(WebSocketEvents.JoinGame, { gameId });
-      setOperationTimeout('joinGame', () => {
-        handleError({
-          code: WebSocketErrorCode.TIMEOUT,
-          message: 'Game joining timed out',
-          details: { gameId }
-        });
-        resolve(false);
-      });
-  }, [socket, connectionState, handleError, setOperationTimeout]);
-
-  const makeMove = useCallback((x: number, y: number, type: OperationType = OperationType.PLACE) => {
-    if (!socket || !gameId) {
-      handleError({
-        code: WebSocketErrorCode.CONNECTION_ERROR,
-        message: 'Cannot make move - not in active game',
-        details: { socket: !!socket, gameId }
-      });
-      return;
     }
+  }, []);
 
-    if (connectionState !== ConnectionState.CONNECTED) {
-      handleError({
-        code: WebSocketErrorCode.CONNECTION_ERROR,
-        message: 'Cannot make move - not connected to server',
-        details: { connectionState }
+  const endTurn = useCallback(async () => {
+    try {
+      logger.info('Ending turn', {
+        component: 'useMultiplayerGame'
       });
-      return;
+
+      await gameManager.current.endTurn();
+      
+      logger.debug('Turn ended successfully', { 
+        component: 'useMultiplayerGame'
+      });
+    } catch (error) {
+      const networkError = error as INetworkError;
+      logger.error('Failed to end turn', { 
+        component: 'useMultiplayerGame',
+        data: { error: networkError }
+      });
+      throw error;
     }
-
-    const move: IGameMove = {
-      type,
-      position: { x, y }
-    };
-    
-    // Валидируем ход перед отправкой
-    if (!gameState || !validateGameMove(move, gameState.board.size)) {
-      handleError({
-        code: WebSocketErrorCode.INVALID_MOVE,
-        message: 'Invalid move attempted',
-        details: { move, boardSize: gameState?.board.size }
-      });
-      return;
-    }
-
-      // Проверяем, наш ли сейчас ход
-    if (playerNumber !== currentPlayer) {
-      handleError({
-        code: WebSocketErrorCode.NOT_YOUR_TURN,
-        message: 'Cannot make move - not your turn',
-        details: { currentPlayer, playerNumber }
-      });
-      return;
-    }
-    
-    logger.socketEvent(WebSocketEvents.MakeMove, { gameId, move }, 'out');
-    socket.emit(WebSocketEvents.MakeMove, { gameId, move });
-    setOperationTimeout('makeMove', () => {
-      handleError({
-        code: WebSocketErrorCode.TIMEOUT,
-        message: 'Move operation timed out',
-        details: { move }
-      });
-    });
-  }, [socket, gameId, gameState, connectionState, currentPlayer, playerNumber, handleError, setOperationTimeout]);
-
-  const endTurn = useCallback(() => {
-    if (!socket || !gameId) {
-      handleError({
-        code: WebSocketErrorCode.CONNECTION_ERROR,
-        message: 'Cannot end turn - not in active game',
-        details: { socket: !!socket, gameId }
-      });
-      return;
-    }
-
-    if (connectionState !== ConnectionState.CONNECTED) {
+  }, []);
       handleError({
         code: WebSocketErrorCode.CONNECTION_ERROR,
         message: 'Cannot end turn - not connected to server',

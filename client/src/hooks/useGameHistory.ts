@@ -1,7 +1,10 @@
 import { useState, useEffect } from 'react';
 import { Socket } from 'socket.io-client';
-import type { GameMove } from '@ctor-game/shared/types/game/moves';
-import type { OperationType, Player } from '@ctor-game/shared/types/enums';
+import type { 
+    IGameMove,
+    PlayerNumber,
+    MoveType
+} from '@ctor-game/shared/src/types/game/types.js';
 
 interface UseGameHistoryProps {
     socket: Socket;
@@ -10,8 +13,8 @@ interface UseGameHistoryProps {
 
 export interface HistoryEntry {
     moveNumber: number;
-    playerNumber: Player;
-    move: GameMove;
+    playerNumber: PlayerNumber;
+    move: IGameMove;
     timestamp: Date;
 }
 
@@ -64,9 +67,9 @@ export function useGameHistory({ socket, gameCode }: UseGameHistoryProps): UseGa
     // Функция для форматирования описания хода
     const formatMoveDescription = (entry: HistoryEntry): string => {
         const { playerNumber, move } = entry;
-        const playerName = `${playerNumber === Player.First ? 'First' : 'Second'} Player`;
+        const playerName = `${playerNumber === 1 ? 'First' : 'Second'} Player`;
         const position = `(${move.position.x + 1},${move.position.y + 1})`;
-        const operation = move.type === OperationType.PLACE ? 'placed' : 'replaced';
+        const operation = move.type === 'PLACE' ? 'placed' : 'replaced';
 
         return `${playerName} ${operation} at ${position}`;
     };
