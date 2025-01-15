@@ -1,220 +1,137 @@
 /**
- * Game event types and type guards
+ * Simplified game event types
  */
 
-import type { IGameState, IGameMove, GameStatus, PlayerNumber } from '../game/types.js';
-import type { ITimestamped, IIdentifiable } from '../core/primitives.js';
-import type { IErrorResponse } from './errors.js';
+import type { GameState, GameMove, PlayerNumber } from '../primitives.js';
+import type { GameError } from '../core.js';
 
-// Base event interface
-export interface IBaseEvent extends ITimestamped, IIdentifiable {
-    readonly gameId: string;
-    readonly playerId?: string;
-}
-
-// Game event types
-export interface IGameCreatedEvent extends IBaseEvent {
-    readonly type: 'game_created';
-    readonly data: {
-        readonly gameId: string;
-        readonly status: GameStatus;
-        readonly createdAt: number;
-    };
-}
-
-export interface IGameStartedEvent extends IBaseEvent {
-    readonly type: 'game_started';
-    readonly data: {
-        readonly state: IGameState;
-        readonly startedAt: number;
-    };
-}
-
-export interface IGameMoveEvent extends IBaseEvent {
-    readonly type: 'game_move';
-    readonly data: {
-        readonly move: IGameMove;
-        readonly state: IGameState;
-    };
-}
-
-export interface IGameEndedEvent extends IBaseEvent {
-    readonly type: 'game_ended';
-    readonly data: {
-        readonly winner: PlayerNumber | null;
-        readonly finalState: IGameState;
-        readonly endedAt: number;
-    };
-}
-
-export interface IGameExpiredEvent extends IBaseEvent {
-    readonly type: 'game_expired';
-    readonly data: {
-        readonly expiredAt: number;
-    };
-}
-
-export interface IPlayerConnectedEvent extends IBaseEvent {
-    readonly type: 'player_connected';
-    readonly data: {
-        readonly playerId: string;
-        readonly playerNumber: PlayerNumber;
-        readonly connectedAt: number;
-    };
-}
-
-export interface IPlayerDisconnectedEvent extends IBaseEvent {
-    readonly type: 'player_disconnected';
-    readonly data: {
-        readonly playerId: string;
-        readonly playerNumber: PlayerNumber;
-        readonly disconnectedAt: number;
-    };
-}
-
-export interface IGameErrorEvent extends IBaseEvent {
-    readonly type: 'error';
-    readonly data: IErrorResponse;
-}
-
-// Union type for all game events
-export type GameEvent =
-    | IGameCreatedEvent
-    | IGameStartedEvent
-    | IGameMoveEvent 
-    | IGameEndedEvent
-    | IGameExpiredEvent
-    | IPlayerConnectedEvent
-    | IPlayerDisconnectedEvent
-    | IGameErrorEvent;
-
-// Type guards
-export const isGameCreatedEvent = (event: GameEvent): event is IGameCreatedEvent => {
-    return event.type === 'game_created';
+/** Basic event metadata */
+type EventMeta = {
+    id: string;
+    gameId: string;
+    timestamp: number;
+    playerId?: string;
 };
 
-export const isGameStartedEvent = (event: GameEvent): event is IGameStartedEvent => {
-    return event.type === 'game_started';
+/** Event types */
+export type EventType = 
+    | 'game_created' 
+    | 'game_started' 
+    | 'game_move'
+    | 'game_ended'
+    | 'game_expired'
+    | 'player_connected'
+    | 'player_disconnected'
+    | 'error';
+
+/** Event payloads */
+type GameCreatedPayload = {
+    status: 'waiting';
 };
 
-export const isGameMoveEvent = (event: GameEvent): event is IGameMoveEvent => {
-    return event.type === 'game_move';
+type GameStartedPayload = {
+    state: GameState;
 };
 
-export const isGameEndedEvent = (event: GameEvent): event is IGameEndedEvent => {
-    return event.type === 'game_ended';
+type GameMovePayload = {
+    move: GameMove;
+    state: GameState;
 };
 
-export const isGameExpiredEvent = (event: GameEvent): event is IGameExpiredEvent => {
-    return event.type === 'game_expired';
+type GameEndedPayload = {
+    winner: PlayerNumber | null;
+    finalState: GameState;
 };
 
-export const isPlayerConnectedEvent = (event: GameEvent): event is IPlayerConnectedEvent => {
-    return event.type === 'player_connected';
+type GameExpiredPayload = {
+    reason?: string;
 };
 
-export const isPlayerDisconnectedEvent = (event: GameEvent): event is IPlayerDisconnectedEvent => {
-    return event.type === 'player_disconnected';
+type PlayerEventPayload = {
+    playerId: string;
+    playerNum: PlayerNumber;
 };
 
-export const isGameErrorEvent = (event: GameEvent): event is IGameErrorEvent => {
-    return event.type === 'error';
+/** Combined game event type */
+export type GameEvent = EventMeta & (
+    | { type: 'game_created'; data: GameCreatedPayload }
+    | { type: 'game_started'; data: GameStartedPayload }
+    | { type: 'game_move'; data: GameMovePayload }
+    | { type: 'game_ended'; data: GameEndedPayload }
+    | { type: 'game_expired'; data: GameExpiredPayload }
+    | { type: 'player_connected'; data: PlayerEventPayload }
+    | { type: 'player_disconnected'; data: PlayerEventPayload }
+    | { type: 'error'; data: GameError }
+);
+
+/** Type guards */
+const isEventType = (type: string): type is EventType => {
+    return [
+        'game_created',
+        'game_started',
+        'game_move',
+        'game_ended',
+        'game_expired',
+        'player_connected',
+        'player_disconnected',
+        'error'
+    ].includes(type);
 };
 
-/**
- * Validation helpers
- */
+/** Basic event validation */
+export const validateEvent = (event: unknown): event is GameEvent => {
+    // Basic structure check
+    if (!event || typeof event !== 'object') return false;
+    const e = event as any;
 
-// Event validators
-export const validateGameCreatedEvent = (event: IGameCreatedEvent): boolean => {
-    return (
-        typeof event.gameId === 'string' &&
-        typeof event.data.gameId === 'string' &&
-        typeof event.data.status === 'string' &&
-        typeof event.data.createdAt === 'number' &&
-        ['waiting', 'playing', 'finished'].includes(event.data.status)
-    );
-};
+    // Validate metadata
+    if (
+        typeof e.id !== 'string' ||
+        typeof e.gameId !== 'string' ||
+        typeof e.timestamp !== 'number' ||
+        !isEventType(e.type) ||
+        typeof e.data !== 'object'
+    ) return false;
 
-export const validateGameStartedEvent = (event: IGameStartedEvent): boolean => {
-    return (
-        typeof event.gameId === 'string' &&
-        typeof event.data.startedAt === 'number' &&
-        event.data.state !== undefined
-    );
-};
+    // Optional playerId
+    if (e.playerId !== undefined && typeof e.playerId !== 'string') return false;
 
-export const validateGameMoveEvent = (event: IGameMoveEvent): boolean => {
-    return (
-        typeof event.gameId === 'string' &&
-        event.data.move !== undefined &&
-        event.data.state !== undefined
-    );
-};
-
-export const validateGameEndedEvent = (event: IGameEndedEvent): boolean => {
-    return (
-        typeof event.gameId === 'string' &&
-        (event.data.winner === null || [1, 2].includes(event.data.winner)) &&
-        typeof event.data.endedAt === 'number' &&
-        event.data.finalState !== undefined
-    );
-};
-
-export const validateGameExpiredEvent = (event: IGameExpiredEvent): boolean => {
-    return (
-        typeof event.gameId === 'string' &&
-        typeof event.data.expiredAt === 'number'
-    );
-};
-
-export const validatePlayerEvent = (
-    event: IPlayerConnectedEvent | IPlayerDisconnectedEvent
-): boolean => {
-    if (event.type === 'player_connected') {
-        return (
-            typeof event.gameId === 'string' &&
-            typeof event.data.playerId === 'string' &&
-            [1, 2].includes(event.data.playerNumber) &&
-            typeof event.data.connectedAt === 'number'
-        );
-    } else {
-        return (
-            typeof event.gameId === 'string' &&
-            typeof event.data.playerId === 'string' &&
-            [1, 2].includes(event.data.playerNumber) &&
-            typeof event.data.disconnectedAt === 'number'
-        );
-    }
-};
-
-export const validateGameErrorEvent = (event: IGameErrorEvent): boolean => {
-    return (
-        typeof event.gameId === 'string' &&
-        typeof event.data.code === 'number' &&
-        typeof event.data.message === 'string'
-    );
-};
-
-// Main validation function
-export const validateGameEvent = (event: GameEvent): boolean => {
-    switch (event.type) {
+    // Validate specific event types
+    switch (e.type) {
         case 'game_created':
-            return validateGameCreatedEvent(event);
+            return e.data.status === 'waiting';
+
         case 'game_started':
-            return validateGameStartedEvent(event);
+            return e.data.state !== undefined;
+
         case 'game_move':
-            return validateGameMoveEvent(event);
+            return (
+                e.data.move !== undefined && 
+                e.data.state !== undefined
+            );
+
         case 'game_ended':
-            return validateGameEndedEvent(event);
+            return (
+                e.data.finalState !== undefined &&
+                (e.data.winner === null || [1, 2].includes(e.data.winner))
+            );
+
         case 'game_expired':
-            return validateGameExpiredEvent(event);
+            return e.data !== undefined;
+
         case 'player_connected':
         case 'player_disconnected':
-            return validatePlayerEvent(event);
+            return (
+                typeof e.data.playerId === 'string' &&
+                [1, 2].includes(e.data.playerNum)
+            );
+
         case 'error':
-            return validateGameErrorEvent(event);
-        default:
-            return false;
+            return (
+                typeof e.data.code === 'string' &&
+                typeof e.data.message === 'string'
+            );
     }
+
+    return false;
 };

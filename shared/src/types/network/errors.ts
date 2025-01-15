@@ -1,65 +1,57 @@
 /**
- * Network error types and interfaces
+ * Simplified network error types
  */
 
-/** Error severity levels */
-export type ErrorSeverity = 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL';
+/** Error codes with built-in category */
+export type ErrorCode =
+    // Connection errors (1xx)
+    | 'ERR_100_CONNECTION_ERROR'
+    | 'ERR_101_CONNECTION_TIMEOUT'
+    | 'ERR_102_CONNECTION_LOST'
+    // Game errors (2xx)
+    | 'ERR_200_GAME_NOT_FOUND'
+    | 'ERR_201_GAME_FULL'
+    | 'ERR_202_INVALID_MOVE'
+    | 'ERR_203_INVALID_STATE'
+    // System errors (3xx)
+    | 'ERR_300_STORAGE_ERROR'
+    | 'ERR_301_OPERATION_FAILED'
+    | 'ERR_302_OPERATION_TIMEOUT'
+    | 'ERR_999_UNKNOWN_ERROR';
 
-/** Error recovery strategies */
-export type RecoveryStrategy = 'RETRY' | 'RECONNECT' | 'RESET' | 'USER_ACTION' | 'NOTIFY';
+/** Simple error type */
+export type GameError = {
+    code: ErrorCode;
+    message: string;
+    details?: Record<string, unknown>;
+};
 
-/** Error codes */
-export type ErrorCode = 
-    // Connection errors
-    | 'CONNECTION_ERROR'
-    | 'CONNECTION_TIMEOUT'
-    | 'CONNECTION_LOST'
-    // Operation errors
-    | 'OPERATION_FAILED'
-    | 'OPERATION_TIMEOUT'
-    | 'OPERATION_CANCELLED'
-    // Validation errors
-    | 'INVALID_MOVE'
-    | 'INVALID_STATE'
-    | 'STATE_VALIDATION_ERROR'
-    | 'STATE_TRANSITION_ERROR'
-    // Game errors
-    | 'GAME_NOT_FOUND'
-    | 'GAME_FULL'
-    // System errors
-    | 'STORAGE_ERROR'
-    | 'UNKNOWN_ERROR';
+/** Error recovery configuration */
+export type ErrorRecovery = {
+    maxRetries: number;
+    retryDelay: number;
+    useBackoff: boolean;
+};
 
-/** Base network error interface */
-export interface INetworkError {
-    readonly code: ErrorCode;
-    readonly message: string;
-    readonly severity: ErrorSeverity;
-    readonly recoverable?: boolean;
-    readonly retryCount?: number;
-    readonly timestamp?: number;
-    readonly details?: Record<string, unknown>;
-}
+/** Default error recovery config */
+export const DEFAULT_ERROR_RECOVERY: ErrorRecovery = {
+    maxRetries: 3,
+    retryDelay: 1000,
+    useBackoff: true,
+};
 
-/** Configuration for error recovery */
-export interface IErrorRecoveryConfig {
-    readonly maxRetries?: number;
-    readonly retryDelay?: number;
-    readonly useBackoff?: boolean;
-    readonly recover?: (error: INetworkError) => Promise<void>;
-}
+/** Error utilities */
+export const isNetworkError = (code: ErrorCode): boolean => code.startsWith('ERR_1');
+export const isGameError = (code: ErrorCode): boolean => code.startsWith('ERR_2');
+export const isSystemError = (code: ErrorCode): boolean => code.startsWith('ERR_3');
 
-/** Error response from server */
-export interface IErrorResponse {
-    readonly code: number;
-    readonly message: string;
-    readonly details?: Record<string, unknown>;
-}
-
-/** Base validation error class */
-export class ValidationError extends Error {
-    constructor(message: string) {
-        super(message);
-        this.name = 'ValidationError';
-    }
-}
+/** Error factory */
+export const createError = (
+    code: ErrorCode,
+    message: string,
+    details?: Record<string, unknown>
+): GameError => ({
+    code,
+    message,
+    details
+});
