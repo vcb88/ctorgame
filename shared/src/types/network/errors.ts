@@ -2,49 +2,46 @@
  * Network and game error types
  */
 
-import type { UUID, Position, PlayerNumber } from '../primitives.js';
+import type { Position, PlayerNumber } from '../core.js';
 
 /** Error categories */
-export enum ErrorCategory {
-    Network = 'network',
-    Game = 'game',
-    Validation = 'validation',
-    System = 'system'
-}
+export type ErrorCategory = 'network' | 'game' | 'validation' | 'system';
 
 /** Specific error codes */
-export enum ErrorCode {
+export type ErrorCode = 
     // Network errors
-    ConnectionError = 'connection_error',
-    ConnectionTimeout = 'connection_timeout',
-    ConnectionLost = 'connection_lost',
-    
+    | 'connection_error'
+    | 'connection_timeout'
+    | 'connection_lost'
     // Game errors
-    GameNotFound = 'game_not_found',
-    GameFull = 'game_full',
-    GameEnded = 'game_ended',
-    GameExpired = 'game_expired',
-    
+    | 'game_not_found'
+    | 'game_full'
+    | 'game_ended'
+    | 'game_expired'
     // Validation errors
-    InvalidMove = 'invalid_move',
-    InvalidState = 'invalid_state',
-    InvalidPosition = 'invalid_position',
-    NotYourTurn = 'not_your_turn',
-    
+    | 'invalid_move'
+    | 'invalid_state'
+    | 'invalid_position'
+    | 'not_your_turn'
     // System errors
-    StorageError = 'storage_error',
-    OperationFailed = 'operation_failed',
-    OperationTimeout = 'operation_timeout',
-    InternalError = 'internal_error',
-    UnknownError = 'unknown_error'
-}
+    | 'storage_error'
+    | 'operation_failed'
+    | 'operation_timeout'
+    | 'internal_error'
+    | 'unknown_error';
 
 /** Error severity levels */
-export enum ErrorSeverity {
-    Info = 'info',
-    Warning = 'warning',
-    Error = 'error',
-    Critical = 'critical'
+export type ErrorSeverity = 'info' | 'warning' | 'error' | 'critical';
+
+/** Error response type */
+export type ErrorResponse = NetworkError;
+
+/** Validation error class */
+export class ValidationError extends Error {
+    constructor(message: string) {
+        super(message);
+        this.name = 'ValidationError';
+    }
 }
 
 /** Network error type with detailed information */

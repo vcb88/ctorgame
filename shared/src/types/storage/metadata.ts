@@ -1,7 +1,11 @@
 /**
  * Simplified game metadata types
  */
-import type { GameStatus, PlayerNumber, GameMove, Scores } from '../primitives.js';
+import type { GameStatus, PlayerNumber, GameMove, Scores } from '../core.js';
+
+// Aliases for backwards compatibility
+export type GameMetadata = GameMeta;
+export type GameDetails = GameMeta & GameStats;
 
 // TODO: Move back to constants when module system is fixed
 const BOARD_SIZE = 10;
