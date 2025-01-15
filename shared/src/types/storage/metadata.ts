@@ -1,4 +1,5 @@
-import type { GameStatus, PlayerNumber, IGameMove, IBoardSize } from '../game/types.js';
+import type { GameStatus, PlayerNumber, IGameMove } from '../game/types.js';
+import type { ISize } from '../geometry/types.js';
 
 /**
  * Core game metadata without state information
@@ -22,7 +23,7 @@ export interface GameMetadata {
     };
 
     // Game configuration
-    boardSize: IBoardSize;      // Board dimensions
+    boardSize: ISize;          // Board dimensions
 
     // Statistics
     totalTurns: number;         // Total number of turns played

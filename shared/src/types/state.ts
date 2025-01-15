@@ -1,20 +1,20 @@
 import type {
-    ITimestamp,
+    ITimestamped,
     IVersioned,
     IExpiration,
     IData
 } from './core/primitives.js';
 
 import type {
-    IBoardSize,
     PlayerNumber,
     GameStatus,
     IGameMove
 } from './game/types.js';
+import type { ISize } from './geometry/types.js';
 
 // Board interfaces
 export interface IBoardBase {
-    readonly size: IBoardSize;
+    readonly size: ISize;
     cells: Array<Array<number>>; // Simplified cell type
 }
 
@@ -58,14 +58,14 @@ export interface IGameManagerBase {
     readonly connectionState: string;
 }
 
-export interface GameManagerState extends IGameManagerBase, ITimestamp {
+export interface GameManagerState extends IGameManagerBase, ITimestamped {
     readonly gameId: string | null;
     readonly playerNumber: PlayerNumber | null;
     readonly lastUpdated: number;
 }
 
 // Stored state interfaces
-export interface IStoredStateBase<T> extends IVersioned, ITimestamp, IData<T> {}
+export interface IStoredStateBase<T> extends IVersioned, ITimestamped, IData<T> {}
 
 export interface StoredState<T> extends IStoredStateBase<T>, IExpiration {}
 

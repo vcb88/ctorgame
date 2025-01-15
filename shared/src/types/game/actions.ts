@@ -2,7 +2,8 @@
  * Game action types and interfaces
  */
 import type { IGameMove } from './types.js';
-import type { GameActionType } from './types.js';
+// Action type literals
+export type GameActionType = 'CREATE_GAME' | 'JOIN_GAME' | 'MAKE_MOVE' | 'END_TURN';
 
 /** Base interface for all game actions */
 export interface IGameAction {

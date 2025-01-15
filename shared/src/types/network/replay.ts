@@ -56,3 +56,15 @@ export interface IReplayServerEvents {
     /** Error occurred during replay */
     REPLAY_ERROR: (data: { message: string }) => void;
 }
+
+/**
+ * Game history entry
+ */
+export interface IGameHistoryEntry {
+    readonly gameCode: string;
+    readonly startTime: string;
+    readonly endTime?: string;
+    readonly players: readonly string[];
+    readonly winner?: string;
+    readonly totalMoves: number;
+}

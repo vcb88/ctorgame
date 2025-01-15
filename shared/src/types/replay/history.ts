@@ -1,9 +1,9 @@
 import { GameMetadata, GameDetails } from '../storage/metadata.js';
-import { GameMove } from '../game/moves.js';
+import type { IGameMove } from '../game/moves.js';
 
 export interface GameHistory {
     metadata: GameMetadata;
-    moves: GameMove[];
+    moves: IGameMove[];
     details: GameDetails;
 }
 

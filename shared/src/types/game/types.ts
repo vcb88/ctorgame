@@ -22,6 +22,12 @@ export interface IGameMove {
     readonly player: PlayerNumber;
 }
 
+export interface IGameMoveComplete extends IGameMove {
+    readonly timestamp: number;
+    readonly gameId: string;
+    readonly moveNumber: number;
+}
+
 export interface IGameScores {
     readonly player1: number;
     readonly player2: number;

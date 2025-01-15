@@ -1,8 +1,7 @@
 import type { IPosition } from '../geometry/types.js';
 import type { 
-    MoveType,
+    OperationType as MoveType,
     IGameMove,
-    IGameMoveComplete,
     PlayerNumber 
 } from './types.js';
 
@@ -22,9 +21,6 @@ export interface IReplaceValidation {
     readonly error?: string;
 }
 
-// Re-export type guards and move types
-export { 
-    isGameMove,
-    isGameMoveComplete,
-    isMoveType
-} from './types.js';
+// Re-export type and interface
+export type { MoveType };
+export type { IGameMove };

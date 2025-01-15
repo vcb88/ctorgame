@@ -18,6 +18,14 @@ export interface IVersioned {
     readonly version: string;
 }
 
+export interface IExpiration {
+    readonly expiresAt: number;
+}
+
+export interface IData<T> {
+    readonly data: T;
+}
+
 // Basic validation interfaces
 export interface IValidatable {
     readonly valid: boolean;

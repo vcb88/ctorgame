@@ -5,8 +5,8 @@
 import type { 
     IReplayState,
     IGameHistoryEntry
-} from '../../types/network/replay';
-import { ValidationError } from '../../types/network/errors';
+} from '../../types/network/replay.js';
+import { ValidationError } from '../../types/network/errors.js';
 
 /**
  * Validates replay state object

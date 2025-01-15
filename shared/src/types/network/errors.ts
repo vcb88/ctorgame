@@ -48,3 +48,18 @@ export interface IErrorRecoveryConfig {
     readonly useBackoff?: boolean;
     readonly recover?: (error: INetworkError) => Promise<void>;
 }
+
+/** Error response from server */
+export interface IErrorResponse {
+    readonly code: number;
+    readonly message: string;
+    readonly details?: Record<string, unknown>;
+}
+
+/** Base validation error class */
+export class ValidationError extends Error {
+    constructor(message: string) {
+        super(message);
+        this.name = 'ValidationError';
+    }
+}

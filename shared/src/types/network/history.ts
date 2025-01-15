@@ -1,5 +1,4 @@
-import type { IGameSummary } from '../game/state';
-import type { IErrorResponse } from './errors';
+import type { IErrorResponse } from './errors.js';
 
 /**
  * Client requests for game history
@@ -14,7 +13,7 @@ export interface IHistoryClientEvents {
  */
 export interface IHistoryServerEvents {
     /** List of saved games */
-    SAVED_GAMES: (data: { games: IGameSummary[] }) => void;
+    SAVED_GAMES: (data: { games: IGameHistoryEntry[] }) => void;
     /** Error response */
     ERROR: (error: IErrorResponse) => void;
 }

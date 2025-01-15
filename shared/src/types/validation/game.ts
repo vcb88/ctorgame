@@ -1,4 +1,4 @@
-import type { IPosition, IBoardSize } from '../geometry/types.js';
+import type { IPosition, ISize } from '../geometry/types.js';
 import type { 
     PlayerNumber,
     IGameState,
@@ -25,7 +25,7 @@ export interface IGameMoveValidation extends IValidationResult {
  */
 export interface IBoardValidation extends IValidationResult {
     readonly position: IPosition;
-    readonly size: IBoardSize;
+    readonly size: ISize;
 }
 
 /**
@@ -51,7 +51,7 @@ export function isValidationResult(value: unknown): value is IValidationResult {
 // Re-export types needed for validation
 export type {
     IPosition,
-    IBoardSize,
+    ISize as IBoardSize,
     IGameMoveComplete,
     IGameState,
     PlayerNumber
