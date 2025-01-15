@@ -1,11 +1,11 @@
-import type { IGameState as IBaseGameState, IGameMove, PlayerNumber, GameStatus, ISize } from './shared.js';
+import type { GameState as BaseGameState, GameMove, PlayerNumber, GameStatus, Size } from './shared.js';
 
-// Расширенная версия IGameState для нашего приложения
-export interface IGameState extends IBaseGameState {
+// Extended version of GameState for our application
+export interface GameState extends BaseGameState {
     gameOver?: boolean;
     winner?: PlayerNumber | null;
     currentTurn?: {
-        moves: IGameMove[];
+        moves: GameMove[];
     };
     scores: {
         player1: number;

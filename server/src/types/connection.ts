@@ -1,5 +1,5 @@
-import type { GameEvent as IGameEvent } from '@ctor-game/shared/src/types/network/websocket.js';
-import type { IErrorResponse } from '@ctor-game/shared/src/types/network/errors.js';
+import type { GameEvent } from '@ctor-game/shared/types/network/websocket';
+import type { ErrorResponse } from '@ctor-game/shared/types/network/errors';
 
-export type { IErrorResponse as ErrorResponse };
-export type { IGameEvent as GameEvent };
+export type { ErrorResponse };
+export type { GameEvent };
