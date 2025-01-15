@@ -5,18 +5,18 @@
 import { RedisService } from './RedisService.js';
 import type {
     GameEvent,
-    GameCreatedEvent,
-    GameStartedEvent,
-    GameMoveEvent,
-    GameEndedEvent,
-    GameExpiredEvent,
-    PlayerConnectedEvent,
-    PlayerDisconnectedEvent,
-    ErrorEvent
-} from '@ctor-game/shared/types/network/events';
-import type { GameError } from '@ctor-game/shared/types/primitives';
-import type { GameState, PlayerNumber, GameMove } from '@ctor-game/shared/types/primitives';
-import { validateEvent } from '@ctor-game/shared/validation/events';
+    GameEventType,
+    GameCreatedPayload,
+    GameStartedPayload,
+    GameMovePayload,
+    GameEndedPayload,
+    PlayerConnectedPayload,
+    PlayerDisconnectedPayload,
+    GameErrorPayload
+} from '@ctor-game/shared/types/network/websocket';
+import type { GameState, GameMove, PlayerNumber } from '@ctor-game/shared/types/game/types';
+import type { GameError } from '@ctor-game/shared/types/network/errors';
+import { validateEvent } from '@ctor-game/shared/types/network/websocket';
 import { generateId } from '../utils/id.js';
 import { logger } from '../utils/logger.js';
 
@@ -70,9 +70,9 @@ export class EventService {
     /**
      * Game events
      */
-    async createGameCreatedEvent(gameId: string, status: 'waiting'): Promise<GameCreatedEvent> {
-        return this.createEvent<GameCreatedEvent>({
-            type: 'game_created',
+    async createGameCreatedEvent(gameId: string, status: 'waiting'): Promise<GameEvent & GameCreatedPayload> {
+        return this.createEvent<GameEvent & GameCreatedPayload>({
+            type: 'game_created' as GameEventType,
             gameId,
             data: {
                 gameId,
@@ -82,13 +82,13 @@ export class EventService {
         });
     }
 
-    async createGameStartedEvent(gameId: string, state: GameState): Promise<GameStartedEvent> {
-        return this.createEvent<GameStartedEvent>({
-            type: 'game_started',
+    async createGameStartedEvent(gameId: string, state: GameState): Promise<GameEvent & GameStartedPayload> {
+        return this.createEvent<GameEvent & GameStartedPayload>({
+            type: 'game_started' as GameEventType,
             gameId,
             data: {
-                state,
-                startedAt: Date.now(),
+                gameState: state,
+                currentPlayer: state.currentPlayer,
             },
         });
     }
@@ -98,14 +98,14 @@ export class EventService {
         playerId: string,
         move: GameMove,
         state: GameState
-    ): Promise<GameMoveEvent> {
-        return this.createEvent<GameMoveEvent>({
-            type: 'game_move',
+    ): Promise<GameEvent & GameMovePayload> {
+        return this.createEvent<GameEvent & GameMovePayload>({
+            type: 'game_state_updated' as GameEventType,
             gameId,
             playerId,
             data: {
-                move,
-                state,
+                gameState: state,
+                currentPlayer: state.currentPlayer,
             },
         });
     }
@@ -114,21 +114,21 @@ export class EventService {
         gameId: string,
         winner: PlayerNumber | null,
         finalState: GameState
-    ): Promise<GameEndedEvent> {
-        return this.createEvent<GameEndedEvent>({
-            type: 'game_ended',
+    ): Promise<GameEvent & GameEndedPayload> {
+        return this.createEvent<GameEvent & GameEndedPayload>({
+            type: 'game_over' as GameEventType,
             gameId,
             data: {
+                gameState: finalState,
                 winner,
-                finalState,
-                endedAt: Date.now(),
+                finalScores: finalState.scores,
             },
         });
     }
 
-    async createGameExpiredEvent(gameId: string): Promise<GameExpiredEvent> {
-        return this.createEvent<GameExpiredEvent>({
-            type: 'game_expired',
+    async createGameExpiredEvent(gameId: string): Promise<GameEvent> {
+        return this.createEvent<GameEvent>({
+            type: 'game_expired' as GameEventType,
             gameId,
             data: {
                 expiredAt: Date.now(),
@@ -143,15 +143,14 @@ export class EventService {
         gameId: string,
         playerId: string,
         playerNumber: PlayerNumber
-    ): Promise<PlayerConnectedEvent> {
-        return this.createEvent<PlayerConnectedEvent>({
-            type: 'player_connected',
+    ): Promise<GameEvent & PlayerConnectedPayload> {
+        return this.createEvent<GameEvent & PlayerConnectedPayload>({
+            type: 'player_connected' as GameEventType,
             gameId,
             playerId,
             data: {
                 playerId,
                 playerNumber,
-                connectedAt: Date.now(),
             },
         });
     }
@@ -160,15 +159,14 @@ export class EventService {
         gameId: string,
         playerId: string,
         playerNumber: PlayerNumber
-    ): Promise<PlayerDisconnectedEvent> {
-        return this.createEvent<PlayerDisconnectedEvent>({
-            type: 'player_disconnected',
+    ): Promise<GameEvent & PlayerDisconnectedPayload> {
+        return this.createEvent<GameEvent & PlayerDisconnectedPayload>({
+            type: 'player_disconnected' as GameEventType,
             gameId,
             playerId,
             data: {
                 playerId,
                 playerNumber,
-                disconnectedAt: Date.now(),
             },
         });
     }
@@ -177,9 +175,9 @@ export class EventService {
         gameId: string,
         error: GameError,
         playerId?: string
-    ): Promise<ErrorEvent> {
-        return this.createEvent<ErrorEvent>({
-            type: 'error',
+    ): Promise<GameEvent & GameErrorPayload> {
+        return this.createEvent<GameEvent & GameErrorPayload>({
+            type: 'error' as GameEventType,
             gameId,
             playerId,
             data: error,
