@@ -9,9 +9,9 @@ import type {
     ISocketData,
     IWebSocketServerConfig,
     IWebSocketServerOptions
-} from '@ctor-game/shared/src/types/network/websocket';
-import { GameError, GameNotFoundError, NotYourTurnError, GameEndedError } from '../errors/GameError';
-import { ErrorHandlingService } from '../services/ErrorHandlingService';
+} from '@ctor-game/shared/types/network/websocket';
+import { GameError, GameNotFoundError, NotYourTurnError, GameEndedError } from '../errors/GameError.js';
+import { ErrorHandlingService } from '../services/ErrorHandlingService.js';
 
 // Define socket types using imported interfaces
 type GameSocket = Socket<ClientToServerEvents, ServerToClientEvents, InterServerEvents, ISocketData>;
@@ -22,14 +22,14 @@ import type {
     IGameMove,
     PlayerNumber,
     GameStatus
-} from '@ctor-game/shared/src/types/game/types';
+} from '@ctor-game/shared/types/game/types';
 
 // Services
-import { redisService } from '../services/RedisService';
-import { GameService } from '../services/GameService';
-import { GameLogicService } from '../services/GameLogicService';
-import { EventService } from '../services/EventService';
-import { logger } from '../utils/logger';
+import { redisService } from '../services/RedisService.js';
+import { GameService } from '../services/GameService.js';
+import { GameLogicService } from '../services/GameLogicService.js';
+import { EventService } from '../services/EventService.js';
+import { logger } from '../utils/logger.js';
 
 const DEFAULT_CONFIG: IWebSocketServerConfig = {
     cors: {

@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach, jest } from '@jest/globals';
-import { RedisService } from '../RedisService.new';
-import { redisClient, REDIS_KEYS, REDIS_EVENTS } from '../../config/redis';
-import { GameLogicService } from '../GameLogicService';
+import { RedisService } from '../RedisService.new.js';
+import { redisClient, REDIS_KEYS, REDIS_EVENTS } from '../../config/redis.js';
+import { GameLogicService } from '../GameLogicService.js';
 import type { 
     IGameState, 
     PlayerNumber, 

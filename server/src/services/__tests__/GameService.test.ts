@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, jest } from '@jest/globals';
-import { GameService } from '../GameService.new';
-import { GameLogicService } from '../GameLogicService';
+import { GameService } from '../GameService.new.js';
+import { GameLogicService } from '../GameLogicService.js';
 import type { 
     IGameState, 
     PlayerNumber, 

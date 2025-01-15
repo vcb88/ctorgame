@@ -1,6 +1,6 @@
 import { Server as HTTPServer } from 'http';
-import { GameServer } from './GameServer';
-import { logger } from '../utils/logger';
+import { GameServer } from './GameServer.js';
+import { logger } from '../utils/logger.js';
 
 export function initializeWebSocket(httpServer: HTTPServer) {
     logger.info('Initializing WebSocket server', {

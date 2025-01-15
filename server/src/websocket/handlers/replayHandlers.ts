@@ -1,5 +1,5 @@
 import { Socket } from 'socket.io';
-import { GameService } from '../../services/GameService';
+import { GameService } from '../../services/GameService.js';
 import type { IGameState } from '@ctor-game/shared/types/game/types';
 import type { 
     IReplayState, 

@@ -1,4 +1,4 @@
-import { IErrorWithStack } from '@ctor-game/shared/src/utils/errors';
+import { IErrorWithStack } from '@ctor-game/shared/utils/errors';
 
 const DEBUG = true;
 

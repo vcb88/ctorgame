@@ -1,4 +1,4 @@
-import type { IErrorResponse } from '@ctor-game/shared/src/types/network/errors';
+import type { IErrorResponse } from '@ctor-game/shared/types/network/errors';
 
 export type { IErrorResponse as ErrorResponse };
 

@@ -2,7 +2,7 @@
  * Service for handling game events
  */
 
-import { RedisService } from './RedisService';
+import { RedisService } from './RedisService.js';
 import type {
     GameEvent,
     IGameCreatedEvent,
@@ -17,8 +17,8 @@ import type {
 import type { IErrorResponse } from '@ctor-game/shared/types/network/errors';
 import { validateGameEvent } from '@ctor-game/shared/validation/network';
 import type { IGameState, PlayerNumber } from '@ctor-game/shared/types/game/types';
-import { generateId } from '../utils/id';
-import { logger } from '../utils/logger';
+import { generateId } from '../utils/id.js';
+import { logger } from '../utils/logger.js';
 
 export class EventService {
     private readonly redis: RedisService;

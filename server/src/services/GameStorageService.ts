@@ -1,6 +1,6 @@
-import type { IGameMove, GameStatus, IGameScores } from '@ctor-game/shared/src/types/game/types';
-import type { GameMetadata, GameDetails } from '@ctor-game/shared/src/types/storage/metadata';
-import type { IGameHistory } from '@ctor-game/shared/src/types/storage/history';
+import type { IGameMove, GameStatus, IGameScores } from '@ctor-game/shared/types/game/types';
+import type { GameMetadata, GameDetails } from '@ctor-game/shared/types/storage/metadata';
+import type { IGameHistory } from '@ctor-game/shared/types/storage/history';
 import { validateGameHistoryEntry } from '@ctor-game/shared/utils/validation/replay';
 import { ValidationError } from '@ctor-game/shared/types/network/errors';
 import { mkdirSync, existsSync, readFileSync, writeFileSync } from 'fs';

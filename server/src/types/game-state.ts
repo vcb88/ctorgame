@@ -1,4 +1,4 @@
-import type { IGameState as IBaseGameState, IGameMove, PlayerNumber, GameStatus, ISize } from './shared';
+import type { IGameState as IBaseGameState, IGameMove, PlayerNumber, GameStatus, ISize } from './shared.js';
 
 // Расширенная версия IGameState для нашего приложения
 export interface IGameState extends IBaseGameState {

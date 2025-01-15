@@ -6,6 +6,13 @@ import type { IGameState, IGameMove, PlayerNumber, GameStatus } from '../game/ty
 import type { ErrorCode, ErrorSeverity, INetworkError } from './errors.js';
 type UUID = string;
 
+export type WebSocketEvent = 'connect' | 'disconnect' | 'error' | 'message' | 'close';
+
+export interface IWebSocketErrorCode {
+    code: number;
+    description: string;
+}
+
 // WebSocket event types
 export type WebSocketEventType =
     // Client -> Server events

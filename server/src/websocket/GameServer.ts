@@ -15,13 +15,13 @@ import type { WebSocketEvent, ServerToClientEvents, ClientToServerEvents } from 
 import { WebSocketErrorCode } from '@ctor-game/shared/types/network/websocket';
 
 // Services
-import { GameService } from '../services/GameService';
-import { GameLogicService } from '../services/GameLogicService';
-import { EventService } from '../services/EventService';
-import { redisService } from '../services/RedisService';
-import { GameStorageService } from '../services/GameStorageService';
-import { logger } from '../utils/logger';
-import { toErrorWithStack } from '@ctor-game/shared/src/utils/errors';
+import { GameService } from '../services/GameService.js';
+import { GameLogicService } from '../services/GameLogicService.js';
+import { EventService } from '../services/EventService.js';
+import { redisService } from '../services/RedisService.js';
+import { GameStorageService } from '../services/GameStorageService.js';
+import { logger } from '../utils/logger.js';
+import { toErrorWithStack } from '@ctor-game/shared/utils/errors';
 
 const DEFAULT_CONFIG = {
     cors: {

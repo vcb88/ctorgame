@@ -1,5 +1,5 @@
-import { logger } from '../utils/logger';
-import { GameError } from '../errors/GameError';
+import { logger } from '../utils/logger.js';
+import { GameError } from '../errors/GameError.js';
 import type { IWebSocketErrorCode } from '@ctor-game/shared/types/network/websocket';
 
 /**

@@ -1,4 +1,4 @@
-import type { PlayerNumber, IGameScores } from '../types/shared';
+import type { PlayerNumber, IGameScores } from '../types/shared.js';
 
 /**
  * Returns the opponent's player number

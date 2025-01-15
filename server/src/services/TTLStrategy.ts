@@ -1,6 +1,6 @@
 import type { TTLConfig, TTLStrategy, GameStatus } from '@ctor-game/shared/types/redis/ttl';
-import { redisClient, REDIS_KEYS } from '../config/redis';
-import { logger } from '../utils/logger';
+import { redisClient, REDIS_KEYS } from '../config/redis.js';
+import { logger } from '../utils/logger.js';
 
 /**
  * Default TTL values in seconds

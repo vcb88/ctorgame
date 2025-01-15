@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach } from '@jest/globals';
-import { GameLogicService } from '../GameLogicService.new';
+import { GameLogicService } from '../GameLogicService.new.js';
 import type { IGameState, GameMove, PlayerNumber } from '@ctor-game/shared/types/game/types';
 import type { IPosition } from '@ctor-game/shared/types/geometry/types';
 
