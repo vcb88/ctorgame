@@ -25,7 +25,8 @@ export class RedisService {
     async setGameState(gameId: string, state: IGameState): Promise<void> {
         const redisState: IRedisGameState = {
             ...state,
-            lastUpdate: Date.now()
+            lastUpdate: Date.now(),
+            version: Date.now() // Using timestamp as version for optimistic locking
         };
 
         await withLock(gameId, async () => {
@@ -158,7 +159,8 @@ export class RedisService {
      */
     async setGameRoom(gameId: string, players: IPlayer[]): Promise<void> {
         const room: IRedisGameRoom = {
-            players,
+            gameId,
+            players: players.map(p => ({ id: p.id, number: p.playerNumber })),
             status: players.length === 2 ? 'playing' as GameStatus : 'waiting' as GameStatus,
             lastUpdate: Date.now()
         };
@@ -188,10 +190,9 @@ export class RedisService {
                 // Создаем новую комнату
                 await this.setGameRoom(gameId, [player]);
             } else if (room.players.length < 2) {
-                // Добавляем игрока в существующую комнату
-                room.players.push(player);
-                room.status = 'playing';
-                await this.setGameRoom(gameId, room.players);
+                // Создаем новый массив игроков
+                const updatedPlayers = [...room.players, { id: player.id, number: player.playerNumber }];
+                await this.setGameRoom(gameId, updatedPlayers.map(p => ({ id: p.id, playerNumber: p.number })));
             } else {
                 throw new Error('Room is full');
             }
@@ -205,13 +206,13 @@ export class RedisService {
         await withLock(gameId, async () => {
             const room = await this.getGameRoom(gameId);
             if (room) {
-                room.players = room.players.filter((p: IPlayer) => p.id !== socketId);
-                if (room.players.length === 0) {
+                const updatedPlayers = room.players.filter(p => p.id !== socketId);
+                if (updatedPlayers.length === 0) {
                     // Если комната пустая, удаляем её
                     await redisClient.del(REDIS_KEYS.GAME_ROOM(gameId));
                 } else {
-                    room.status = 'waiting';
-                    await this.setGameRoom(gameId, room.players);
+                    // Обновляем комнату с новым списком игроков
+                    await this.setGameRoom(gameId, updatedPlayers.map(p => ({ id: p.id, playerNumber: p.number })));
                 }
             }
         });
