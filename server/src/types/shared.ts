@@ -6,13 +6,13 @@ export type {
     GameStatus,
     IPlayer,
     IGameScores
-} from '@ctor-game/shared/dist/types/game/types.js';
+} from '@ctor-game/shared/types/game/types';
 
 // Re-export types from geometry module
 export type {
     IPosition,
     ISize
-} from '@ctor-game/shared/dist/types/geometry/types.js';
+} from '@ctor-game/shared/types/geometry/types';
 
 // Re-export network types
 export type {
@@ -20,12 +20,12 @@ export type {
     IWebSocketEvent as WebSocketEvent,
     IClientToServerEvents as ClientToServerEvents,
     IServerToClientEvents as ServerToClientEvents
-} from '@ctor-game/shared/dist/types/network/websocket.js';
+} from '@ctor-game/shared/types/network/websocket';
 
 export type {
     IErrorResponse,
     ErrorCode
-} from '@ctor-game/shared/dist/types/network/errors.js';
+} from '@ctor-game/shared/types/network/errors';
 
 export type {
     GameEvent as IGameEvent,
@@ -37,7 +37,7 @@ export type {
     IPlayerConnectedEvent,
     IPlayerDisconnectedEvent,
     IGameErrorEvent
-} from '@ctor-game/shared/dist/types/network/events.js';
+} from '@ctor-game/shared/types/network/events';
 
 // Re-export storage types
 export type {
@@ -45,40 +45,40 @@ export type {
     IRedisPlayerSession,
     IRedisGameRoom,
     IRedisGameEvent
-} from '@ctor-game/shared/dist/types/storage/redis.js';
+} from '@ctor-game/shared/types/storage/redis';
 
 export type {
     GameMetadata as IGameMetadata,
     GameHistory as IGameHistory
-} from '@ctor-game/shared/dist/types/storage/metadata.js';
+} from '@ctor-game/shared/types/storage/metadata';
 
 export type {
     HistoryEntry as IHistoryEntry,
     IGameHistory as IGameHistoryRecord
-} from '@ctor-game/shared/dist/types/storage/history.js';
+} from '@ctor-game/shared/types/storage/history';
 
 // Re-export validation functions
 export { 
     validateGameEvent,
     isGameEvent 
-} from '@ctor-game/shared/dist/validation/network.js';
+} from '@ctor-game/shared/validation/network';
 
 // Re-export geometry utils
 export { 
     getAdjacentPositions 
-} from '@ctor-game/shared/dist/utils/geometry.js';
+} from '@ctor-game/shared/utils/geometry';
 
 // Re-export game utils
 export { 
     getOpponent
-} from '@ctor-game/shared/dist/utils/game.js';
+} from '@ctor-game/shared/utils/game';
 
 // Re-export error utils
 export type { 
     IErrorWithStack
-} from '@ctor-game/shared/dist/utils/errors.js';
+} from '@ctor-game/shared/utils/errors';
 
 export { 
     toErrorWithStack,
     createErrorResponse
-} from '@ctor-game/shared/dist/utils/errors.js';
+} from '@ctor-game/shared/utils/errors';
