@@ -12,18 +12,24 @@ import type { ISize } from '@ctor-game/shared/types/geometry/types.js';
 import { getAdjacentPositions } from '../utils/geometry.js';
 import { getOpponent } from '../utils/game.js';
 
-// Constants
+/**
+ * Board size and validation constants
+ */
 const BOARD_SIZE = 8;
 const MIN_ADJACENT_FOR_REPLACE = 2;
-const MAX_PLACE_OPERATIONS = 2;
 
-// Custom type for validation result
+/**
+ * Custom type for validation result of replacement operation
+ */
 interface IReplaceValidation {
   isValid: boolean;
   replacements: [number, number][];
   message: string;
 }
 
+/**
+ * Game logic implementation
+ */
 export class GameLogicService {
   /**
    * Создает начальное состояние игры
@@ -31,18 +37,19 @@ export class GameLogicService {
    * @returns Начальное состояние игры
    */
   static createInitialState(): IGameState {
-    // Создаем пустую доску
-    const board: ReadonlyArray<ReadonlyArray<number | null>> = Object.freeze(
-      Array(BOARD_SIZE).fill(null).map(() => Object.freeze(Array(BOARD_SIZE).fill(null)))
-    );
+    // Создаем пустую доску с null значениями
+    const board = Array(BOARD_SIZE)
+      .fill(null)
+      .map(() => Object.freeze(Array(BOARD_SIZE).fill(null)));
 
     // Определяем размер доски и создаем начальные очки
     const size: ISize = { width: BOARD_SIZE, height: BOARD_SIZE };
     const scores: IGameScores = { player1: 0, player2: 0 };
 
+    // Формируем начальное состояние
     return {
       id: crypto.randomUUID(),
-      board,
+      board: Object.freeze(board),
       size,
       currentPlayer: 1 as PlayerNumber,
       status: 'playing',
@@ -100,8 +107,8 @@ export class GameLogicService {
   ): IReplaceValidation {
     const startTime = Date.now();
     const adjacentPositions = getAdjacentPositions(position, size);
-    const playerPieces = adjacentPositions.filter((pos: IPosition) => 
-      board[pos.y][pos.x] === playerNumber
+    const playerPieces = adjacentPositions.filter(
+      (pos: IPosition) => board[pos.y][pos.x] === playerNumber
     );
     
     const validation: IReplaceValidation = {
@@ -138,20 +145,23 @@ export class GameLogicService {
       }
     });
 
-    const newState = this.cloneGameState(state);
+    let newBoard = state.board;
     const { type, position } = move;
     const { x, y } = position;
 
     if (type === 'place') {
       // Размещаем фишку
-      const newBoard = update2DArrayValue(state.board, x, y, playerNumber);
-      const updatedState = { ...newState, board: newBoard };
+      newBoard = update2DArrayValue(state.board, x, y, playerNumber);
 
       // Автоматически выполняем все возможные замены
       let replacementsFound;
       do {
         replacementsFound = false;
-        const availableReplaces = this.getAvailableReplaces(newState, playerNumber);
+        const tempState = {
+          ...state,
+          board: newBoard
+        };
+        const availableReplaces = this.getAvailableReplaces(tempState, playerNumber);
         
         if (availableReplaces.length > 0) {
           replacementsFound = true;
@@ -162,36 +172,38 @@ export class GameLogicService {
           
           for (const replaceMove of availableReplaces) {
             const { x: replaceX, y: replaceY } = replaceMove.position;
-            const newBoardAfterReplace = update2DArrayValue(newState.board, replaceX, replaceY, playerNumber);
-            newState = { ...newState, board: newBoardAfterReplace };
+            newBoard = update2DArrayValue(newBoard, replaceX, replaceY, playerNumber);
           }
         }
       } while (replacementsFound);
     }
 
-    // Сохраняем ход
-    newState.lastMove = move;
+    // Создаем новое состояние с обновленными значениями
+    const newState = {
+      ...state,
+      board: newBoard,
+      lastMove: move
+    };
 
-    // Обновляем счет и состояние
-    const scores = this.calculateScores(newState.board);
-    const isGameOver = this.checkGameOver(newState.board);
-    const status: GameStatus = isGameOver ? 'finished' : 'playing';
+    // Проверяем окончание игры и обновляем статус
+    const isGameOver = this.checkGameOver(newBoard);
+    const scores = this.calculateScores(newBoard);
+    const status = isGameOver ? 'finished' : state.status;
 
-    // Создаем новое состояние
     const finalState = {
-        ...newState,
-        scores,
-        status,
-        lastMove: move
+      ...newState,
+      scores,
+      status
     };
 
     const duration = Date.now() - startTime;
     logger.game.performance('apply_move', duration, {
-        move,
-        playerNumber,
-        gameOver: isGameOver,
-        status,
-        duration
+      move,
+      playerNumber,
+      status,
+      isGameOver,
+      scores,
+      duration
     });
 
     return finalState;
@@ -225,6 +237,14 @@ export class GameLogicService {
   }
 
   /**
+   * Проверяет, закончилась ли игра
+   */
+  private static checkGameOver(board: ReadonlyArray<ReadonlyArray<number | null>>): boolean {
+    // Игра заканчивается, когда все клетки заняты
+    return board.every(row => row.every(cell => cell !== null));
+  }
+
+  /**
    * Вычисляет текущий счет игры
    */
   private static calculateScores(board: ReadonlyArray<ReadonlyArray<number | null>>): IGameScores {
@@ -241,44 +261,6 @@ export class GameLogicService {
     return {
       player1: player1Count,
       player2: player2Count
-    };
-  }
-
-  /**
-   * Проверяет, закончилась ли игра
-   */
-  private static checkGameOver(board: ReadonlyArray<ReadonlyArray<number | null>>): boolean {
-    // Игра заканчивается, когда все клетки заняты
-    return board.every(row => row.every(cell => cell !== null));
-  }
-
-  /**
-   * Определяет победителя по очкам
-   */
-  private static determineWinner(scores: IGameScores): PlayerNumber | null {
-    if (scores.player1 > scores.player2) return 1;
-    if (scores.player2 > scores.player1) return 2;
-    return null;
-  }
-
-  /**
-   * Создает глубокую копию состояния игры
-   * Все поля состояния копируются, включая флаг isFirstTurn,
-   * который важен для правильной обработки порядка ходов
-   */
-  private static cloneGameState(state: IGameState): IGameState {
-    return {
-      id: state.id,
-      board: create2DArrayCopy(state.board),
-      size: { ...state.size },
-      currentPlayer: state.currentPlayer,
-      status: state.status,
-      scores: createScores(
-        state.scores.player1,
-        state.scores.player2
-      ),
-      timestamp: state.timestamp,
-      lastMove: state.lastMove
     };
   }
 }
