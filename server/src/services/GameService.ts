@@ -3,9 +3,9 @@ import type {
     IPlayer,
     IGameMove,
     PlayerNumber,
-    GameStatus,
     IGameScores
 } from '@ctor-game/shared/types/game/types';
+import { GameStatus } from '@ctor-game/shared/types/game/types';
 import type { IGameHistory, IGameHistorySummary } from '@ctor-game/shared/types/storage/history';
 
 import type {
@@ -18,7 +18,7 @@ import { GameStorageService } from './GameStorageService.js';
 import { EventService } from './EventService.js';
 import { RedisService } from './RedisService.js';
 import { logger } from '../utils/logger.js';
-import { toErrorWithStack } from '@ctor-game/shared/src/utils/errors.js';
+import { toErrorWithStack } from '@ctor-game/shared/utils/errors';
 
 export class GameServiceError extends Error {
     constructor(message: string) {
@@ -82,7 +82,7 @@ export class GameService {
             const initialState = GameLogicService.createInitialState();
             
             // Create game in storage with code
-            const game = await this.storageService.createGame(playerId, gameId, code);
+            const game = await this.storageService.createGame(playerId, gameId);
             
             // Store state in Redis
             await this.redisService.setGameState(gameId, initialState);
@@ -90,7 +90,7 @@ export class GameService {
             // Create game event
             await this.eventService.createGameCreatedEvent(gameId, GameStatus.WAITING);
 
-            logger.game.info('game_created', {
+            logger.info('game_created', {
                 component: 'GameService',
                 gameId,
                 playerId,
@@ -107,13 +107,14 @@ export class GameService {
                 playerId,
                 duration: Date.now() - startTime
             });
-            throw new GameServiceError(`Failed to create game: ${error.message}`);
+            const errMsg = error instanceof Error ? error.message : 'Unknown error';
+            throw new GameServiceError(`Failed to create game: ${errMsg}`);
         }
     }
 
     async findGame(gameIdOrCode: string): Promise<GameMetadata | null> {
         await this.ensureInitialized();
-        return this.storageService.findGame(gameIdOrCode);
+        return this.storageService.findGameByCode(gameIdOrCode);
     }
 
     async joinGame(gameId: string, playerId: string): Promise<GameMetadata> {
@@ -138,7 +139,7 @@ export class GameService {
                 await this.eventService.createGameStartedEvent(gameId, state);
             }
 
-            logger.game.info('game_joined', {
+            logger.info('game_joined', {
                 component: 'GameService',
                 gameId,
                 playerId,
@@ -154,7 +155,8 @@ export class GameService {
                 playerId,
                 duration: Date.now() - startTime
             });
-            throw new GameServiceError(`Failed to join game: ${error.message}`);
+            const errMsg = error instanceof Error ? error.message : 'Unknown error';
+            throw new GameServiceError(`Failed to join game: ${errMsg}`);
         }
     }
 
@@ -194,7 +196,7 @@ export class GameService {
                 await this.finishGame(gameId, newState.winner as PlayerNumber, scores);
             }
 
-            logger.game.info('move_made', {
+            logger.info('move_made', {
                 component: 'GameService',
                 gameId,
                 playerNumber,
@@ -212,7 +214,8 @@ export class GameService {
                 move,
                 duration: Date.now() - startTime
             });
-            throw new GameServiceError(`Failed to make move: ${error.message}`);
+            const errMsg = error instanceof Error ? error.message : 'Unknown error';
+            throw new GameServiceError(`Failed to make move: ${errMsg}`);
         }
     }
 
@@ -235,7 +238,7 @@ export class GameService {
             // Clean up Redis state (keep for a while for potential analysis)
             await this.redisService.expireGameState(gameId, 3600); // 1 hour
 
-            logger.game.info('game_finished', {
+            logger.info('game_finished', {
                 component: 'GameService',
                 gameId,
                 winner,
@@ -251,7 +254,8 @@ export class GameService {
                 scores,
                 duration: Date.now() - startTime
             });
-            throw new GameServiceError(`Failed to finish game: ${error.message}`);
+            const errMsg = error instanceof Error ? error.message : 'Unknown error';
+            throw new GameServiceError(`Failed to finish game: ${errMsg}`);
         }
     }
 
@@ -301,7 +305,7 @@ export class GameService {
             // Update storage status
             await this.storageService.markGameExpired(gameId);
 
-            logger.game.info('game_expired', {
+            logger.info('game_expired', {
                 component: 'GameService',
                 gameId,
                 state,
@@ -314,7 +318,8 @@ export class GameService {
                 gameId,
                 duration: Date.now() - startTime
             });
-            throw new GameServiceError(`Failed to expire game: ${error.message}`);
+            const errMsg = error instanceof Error ? error.message : 'Unknown error';
+            throw new GameServiceError(`Failed to expire game: ${errMsg}`);
         }
     }
 

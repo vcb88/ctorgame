@@ -20,6 +20,19 @@ import { GameLogicService } from './GameLogicService.js';
 
 export class RedisService {
     /**
+     * Connect to Redis server
+     */
+    async connect(): Promise<void> {
+        await redisClient.connect();
+    }
+
+    /**
+     * Disconnect from Redis server
+     */
+    async disconnect(): Promise<void> {
+        await redisClient.disconnect();
+    }
+    /**
      * Set a value with expiration time
      */
     async setWithExpiry(key: string, value: string, ttl: number): Promise<void> {
