@@ -1,21 +1,23 @@
 import React, { useState, useEffect } from 'react';
 import { useMultiplayerGame } from '@/hooks/useMultiplayerGame';
 // Game types
-import { 
-  Player,
-  GameState,
-  Board,
-  Turn
-} from '@ctor-game/shared/types/game';
+import type { 
+  IGameState,
+  IGameScores,
+  GameStatus,
+  OperationType as GameOperationType
+} from '@ctor-game/shared/src/types/game/types.js';
+import type {
+  PlayerNumber,
+  CellValue,
+  Position,
+  Scores
+} from '@ctor-game/shared/src/types/core.js';
 
-// Base types
-import { 
-  OperationType,
-  GameOutcome 
-} from '@ctor-game/shared/types/enums';
 import { cn } from '@/lib/utils';
 import { GameCell } from '@/components/GameCell';
 import { logger } from '@/utils/logger';
+import { adaptScores } from '@/utils/adapters';
 
 export const Game: React.FC = () => {
   const {
@@ -64,10 +66,10 @@ export const Game: React.FC = () => {
       return;
     }
 
-    if (gameState?.board.cells[row][col] !== null) {
+    if (gameState?.board[row][col] !== null) {
       logger.debug('Cell click ignored - cell not empty', {
         component: 'Game',
-        data: { row, col, cellValue: gameState?.board.cells[row][col] }
+        data: { row, col, cellValue: gameState?.board[row][col] }
       });
       return;
     }
@@ -88,8 +90,8 @@ export const Game: React.FC = () => {
       return;
     }
 
-    logger.userAction('makeMove', { row, col, type: OperationType.PLACE });
-    makeMove(row, col, OperationType.PLACE);
+    logger.userAction('makeMove', { row, col, type: GameOperationType.PLACE });
+    makeMove(row, col, GameOperationType.PLACE);
   };
 
   if (error) {
@@ -156,12 +158,12 @@ export const Game: React.FC = () => {
         Game ID: <span className="font-mono">{gameId}</span>
       </div>
       <div className="text-xl mb-4">
-        You are {playerNumber === Player.First ? 'First' : 'Second'} Player
+        You are {playerNumber === 1 ? 'First' : 'Second'} Player
       </div>
       <div className="text-xl mb-8">
         {gameState.gameOver
           ? gameState.winner !== null
-            ? `${gameState.winner === Player.First ? 'First' : 'Second'} Player wins!`
+            ? `${gameState.winner === 1 ? 'First' : 'Second'} Player wins!`
             : "It's a draw!"
           : isMyTurn
           ? "Your turn"
@@ -172,11 +174,11 @@ export const Game: React.FC = () => {
           <div className="flex items-center gap-4">
             <div className="flex items-center gap-2">
               <div className="w-4 h-4 bg-blue-500"></div>
-              <span>First Player: {gameState.scores[Player.First]}</span>
+              <span>First Player: {gameState.scores.player1}</span>
             </div>
             <div className="flex items-center gap-2">
               <div className="w-4 h-4 bg-red-500"></div>
-              <span>Second Player: {gameState.scores[Player.Second]}</span>
+              <span>Second Player: {gameState.scores.player2}</span>
             </div>
           </div>
           <div>
@@ -185,14 +187,14 @@ export const Game: React.FC = () => {
         </div>
 
         <div className="grid grid-cols-10 gap-1 bg-gray-200 p-2">
-          {gameState.board.cells.map((row: (Player | null)[], rowIndex: number) =>
-            row.map((cell: Player | null, colIndex: number) => {
+          {gameState.board.map((row: CellValue[], rowIndex: number) =>
+            row.map((cell: CellValue, colIndex: number) => {
+              const position: Position = [colIndex, rowIndex];
               const isDisabled = !isMyTurn || cell !== null || gameState.gameOver || gameState.currentTurn.placeOperationsLeft <= 0;
               return (
                 <GameCell
                   key={`${rowIndex}-${colIndex}`}
-                  row={rowIndex}
-                  col={colIndex}
+                  position={position}
                   value={cell}
                   disabled={isDisabled}
                   onClick={() => handleCellClick(rowIndex, colIndex)}
@@ -220,11 +222,11 @@ export const Game: React.FC = () => {
                 Winner: 
                 <div className={cn(
                   "w-6 h-6 rounded-full",
-                  gameState.winner === Player.First ? "bg-blue-500" : "bg-red-500"
+                  gameState.winner === 1 ? "bg-blue-500" : "bg-red-500"
                 )}></div>
-                {gameState.winner === Player.First ? 'First' : 'Second'} Player
+                {gameState.winner === 1 ? 'First' : 'Second'} Player
                 <div className="text-gray-600 ml-2">
-                  ({gameState.scores[gameState.winner]} pieces)
+                  ({gameState.scores[`player${gameState.winner}`]} pieces)
                 </div>
               </div>
             )}
