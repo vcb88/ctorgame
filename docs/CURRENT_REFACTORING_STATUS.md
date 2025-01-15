@@ -70,7 +70,7 @@
         - [✓] GameCell.tsx - обновлен для использования Position и PlayerNumber
         - [✓] Game.tsx - обновлен для использования типов из core
         - [✓] GameNew.tsx - обновлен для использования типов из core
-        - [ ] TurnTimer.tsx - требует проверки использования типов
+        - [✓] TurnTimer.tsx - обновлен с использованием Timestamp и улучшенной типизацией
         
         Компоненты повтора:
         - [ ] Replay/MoveTimeline.tsx
