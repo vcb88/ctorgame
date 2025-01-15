@@ -1,8 +1,14 @@
 import React from 'react';
 import { cn } from '@/lib/utils';
+import type { Timestamp } from '@ctor-game/shared/src/types/core.js';
+
+// Custom CSS properties type
+type TimerStyle = {
+  '--timer-duration': string;
+};
 
 interface TurnTimerProps {
-  duration: number; // Duration in seconds
+  duration: Timestamp; // Duration in seconds
   isActive: boolean;
   className?: string;
 }
@@ -12,7 +18,14 @@ export const TurnTimer: React.FC<TurnTimerProps> = ({
   isActive,
   className
 }) => {
-  const circumference = 2 * Math.PI * 18; // radius = 18
+  // Constants
+  const RADIUS = 18;
+  const circumference = 2 * Math.PI * RADIUS;
+  
+  // CSS variables
+  const timerStyle: TimerStyle = {
+    '--timer-duration': `${duration}s`,
+  };
 
   return (
     <div className={cn(
@@ -22,6 +35,7 @@ export const TurnTimer: React.FC<TurnTimerProps> = ({
       <svg
         className="transform -rotate-90 absolute inset-0"
         viewBox="0 0 40 40"
+        aria-label={`Timer for ${duration} seconds`}
       >
         {/* Background circle */}
         <circle
@@ -29,9 +43,10 @@ export const TurnTimer: React.FC<TurnTimerProps> = ({
           strokeWidth="4"
           stroke="currentColor"
           fill="transparent"
-          r="18"
+          r={RADIUS}
           cx="20"
           cy="20"
+          aria-hidden="true"
         />
         {/* Timer circle */}
         <circle
@@ -48,12 +63,14 @@ export const TurnTimer: React.FC<TurnTimerProps> = ({
           strokeDasharray={circumference}
           stroke="currentColor"
           fill="transparent"
-          r="18"
+          r={RADIUS}
           cx="20"
           cy="20"
-          style={{
-            '--timer-duration': `${duration}s`,
-          } as React.CSSProperties}
+          style={timerStyle}
+          role="progressbar"
+          aria-valuemin={0}
+          aria-valuemax={duration}
+          aria-valuenow={isActive ? duration : 0}
         />
       </svg>
       {/* Timer text */}
@@ -63,7 +80,10 @@ export const TurnTimer: React.FC<TurnTimerProps> = ({
           "text-cyan-400": isActive,
           "text-red-400": !isActive
         }
-      )}>
+      )}
+        role="timer"
+        aria-live="polite"
+      >
         {duration}s
       </span>
     </div>
