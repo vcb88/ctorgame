@@ -78,7 +78,7 @@
         - [✓] Replay/ReplayView.tsx - использование GameState и core типов, улучшена обработка событий
         
         Страницы:
-        - [ ] pages/GameBoard.tsx - проверить использование обновленных типов
+        - [✓] pages/GameBoard.tsx - обновлен для использования Position, CellValue, GamePhase и других типов из core
         - [ ] pages/WaitingRoom.tsx - проверить GameState и Player types
         - [ ] pages/WaitingRoomNew.tsx
         - [ ] pages/GameHistory.tsx - проверить использование типов для истории игр
