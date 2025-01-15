@@ -1,4 +1,12 @@
 import { io, Socket } from 'socket.io-client';
+import type {
+    IWebSocketServerConfig,
+    ServerToClientEvents,
+    ClientToServerEvents,
+    InterServerEvents,
+    ISocketData
+} from '@ctor-game/shared/src/types/network/websocket.js';
+import type { INetworkError } from '@ctor-game/shared/src/types/network/errors.js';
 
 interface ImportMetaEnv {
   VITE_WS_URL: string;
@@ -14,49 +22,87 @@ declare global {
   }
 }
 
-let socket: Socket | null = null;
+type GameSocket = Socket<ServerToClientEvents, ClientToServerEvents>;
+let socket: GameSocket | null = null;
 
-export const socketConfig = {
-  transports: ['websocket', 'polling'],
-  autoConnect: true,
-  reconnection: true,
-  reconnectionAttempts: 5,
-  reconnectionDelay: 1000,
-  reconnectionDelayMax: 5000,
-  timeout: 10000,
-  path: '/socket.io/',
-  forceNew: true
+export const socketConfig: Partial<IWebSocketServerConfig> & {
+    autoConnect: boolean;
+    reconnection: boolean;
+    reconnectionAttempts: number;
+    reconnectionDelay: number;
+    reconnectionDelayMax: number;
+    forceNew: boolean;
+} = {
+    transports: ['websocket', 'polling'],
+    autoConnect: true,
+    reconnection: true,
+    reconnectionAttempts: 5,
+    reconnectionDelay: 1000,
+    reconnectionDelayMax: 5000,
+    path: '/socket.io/',
+    forceNew: true,
+    pingTimeout: 10000,
+    pingInterval: 5000,
+    maxHttpBufferSize: 1e6,
+    cors: {
+        origin: '*',
+        methods: ['GET', 'POST']
+    }
 };
 
-export function createSocket(config = socketConfig): Socket {
+export function createSocket(config = socketConfig): GameSocket {
   if (!socket) {
     // В режиме разработки используем текущий хост, так как Vite проксирует запросы
     const wsUrl = window.location.origin;
+    const timestamp = Date.now();
     
-    console.log('Creating socket connection to:', wsUrl);
-    console.log('Socket configuration:', config);
+    console.log('[Socket] Creating connection to:', wsUrl);
+    console.log('[Socket] Configuration:', config);
 
-    socket = io(wsUrl, config);
+    socket = io(wsUrl, config) as GameSocket;
 
     // Логирование событий сокета
-    socket.on('connect', () => console.log('Socket connected:', socket?.id));
-    socket.on('connect_error', (err) => console.error('Socket connection error:', err));
-    socket.on('disconnect', (reason) => console.log('Socket disconnected:', reason));
-    socket.on('reconnect', (attempt) => console.log('Socket reconnected after attempt:', attempt));
+    socket.on('connect', () => {
+      console.log('[Socket] Connected, id:', socket?.id);
+    });
+
+    socket.on('connect_error', (error: INetworkError) => {
+      console.error('[Socket] Connection error:', {
+        code: error.code,
+        message: error.message,
+        severity: error.severity,
+        timestamp: error.timestamp || timestamp
+      });
+    });
+
+    socket.on('disconnect', (reason) => {
+      console.log('[Socket] Disconnected:', reason);
+    });
+
+    socket.on('error', (error: INetworkError) => {
+      console.error('[Socket] Error:', {
+        code: error.code,
+        message: error.message,
+        severity: error.severity,
+        timestamp: error.timestamp || timestamp
+      });
+    });
   }
   return socket;
 }
 
 // Экспортируем getSocket для обратной совместимости
-export function getSocket(): Socket {
+export function getSocket(): GameSocket {
   return createSocket();
 }
 
-// Экспортируем socket для использования в тестах
-export { socket };
+// Экспортируем socket и типы для использования в тестах и компонентах
+export { socket, type GameSocket };
 
-export function closeSocket() {
+export function closeSocket(): void {
   if (socket) {
+    const timestamp = Date.now();
+    console.log('[Socket] Closing connection, timestamp:', timestamp);
     socket.close();
     socket = null;
   }
