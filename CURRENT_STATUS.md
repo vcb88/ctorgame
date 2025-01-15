@@ -196,6 +196,13 @@ Nginx       | ✅     | Latest
    - Document essential parts
    - Test critical paths
 
+2. Type System Principles
+   - Use simple TypeScript types instead of interfaces where possible
+   - Prefer union types (type A = 'value1' | 'value2') over enums
+   - Keep types in core.ts as the single source of truth
+   - Minimize type inheritance and complexity
+   - Avoid creating base/abstract types without clear necessity
+
 2. Known Limitations
    - Manual type synchronization required
    - Basic error handling only
