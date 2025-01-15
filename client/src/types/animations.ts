@@ -1,29 +1,41 @@
-import type { IPosition } from '@ctor-game/shared/types/base/primitives';
-import type { Player } from '@ctor-game/shared/types/enums';
+import type { 
+    Position, 
+    PlayerNumber, 
+    MoveType, 
+    Timestamp 
+} from '@ctor-game/shared/src/types/core.js';
 
-export interface AnimationState {
-  type: AnimationType;
-  startTime: number;
-  duration: number;
-  positions: IPosition[];
-  data?: AnimationData;
-}
+/**
+ * Animation types derived from game move types
+ */
+export type AnimationType = MoveType | 'capture';
 
-export enum AnimationType {
-  CAPTURE = 'CAPTURE',
-  PLACE = 'PLACE',
-  REPLACE = 'REPLACE'
-}
+/**
+ * Core animation state type
+ */
+export type AnimationState = {
+    type: AnimationType;
+    startTime: Timestamp;
+    duration: number;
+    positions: Position[];
+    data?: AnimationData;
+};
 
-export interface AnimationData {
-  previousValue?: Player | null;
-  newValue?: Player | null;
-  captureChain?: IPosition[];
-}
+/**
+ * Animation metadata
+ */
+export type AnimationData = {
+    previousValue?: PlayerNumber | null;
+    newValue?: PlayerNumber | null;
+    captureChain?: Position[];
+};
 
-export interface CellAnimationState {
-  isAnimating: boolean;
-  type?: AnimationType;
-  startTime?: number;
-  data?: AnimationData;
-}
+/**
+ * Cell-specific animation state
+ */
+export type CellAnimationState = {
+    isAnimating: boolean;
+    type?: AnimationType;
+    startTime?: Timestamp;
+    data?: AnimationData;
+};
