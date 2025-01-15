@@ -1,29 +1,20 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import type { 
-    PlayerNumber, 
-    Player,
-    GameError, 
-    Timestamp 
+    PlayerNumber,
+    GameError
 } from '@ctor-game/shared/src/types/core.js';
+import type { IGameSummary } from '@ctor-game/shared/src/types/game.js';
 import { getSocket } from '../services/socket';
 import { ReplayView } from '../components/Replay/ReplayView';
 import { CyberButton } from '@/components/ui/cyber-button';
 import { NeonGridBackground } from '@/components/backgrounds/NeonGridBackground';
 import { cn } from '@/lib/utils';
 
-type GameSummary = {
-    gameCode: string;
-    createdAt: Timestamp;
-    completedAt: Timestamp | null;
-    winner: PlayerNumber | null;
-    players: Player[];
-};
-
 const ARCHIVE_VERSION = 'v1.0.1';
 
 export function GameHistory() {
-    const [games, setGames] = useState<GameSummary[]>([]);
+    const [games, setGames] = useState<IGameSummary[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<GameError | null>(null);
     const [selectedGame, setSelectedGame] = useState<string | null>(null);
@@ -35,7 +26,7 @@ export function GameHistory() {
         // Request saved games list
         socket.emit('GET_SAVED_GAMES');
 
-        const handleGames = (data: { games: GameSummary[] }) => {
+        const handleGames = (data: { games: IGameSummary[] }) => {
             setGames(data.games);
             setLoading(false);
         };
@@ -61,7 +52,7 @@ export function GameHistory() {
     const formatPlayerNumber = (num: PlayerNumber): string => 
         String(num);
 
-    const formatGameStatus = (game: GameSummary): string => {
+    const formatGameStatus = (game: IGameSummary): string => {
         if (!game.completedAt) return 'IN PROGRESS';
         return game.winner !== null
             ? `VICTORY ACHIEVED - PLAYER ${formatPlayerNumber(game.winner)}`
