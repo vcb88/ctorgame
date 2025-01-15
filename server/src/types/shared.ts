@@ -37,21 +37,21 @@ export type {
 
 // Re-export storage types
 export type {
-    RedisGameState,
-    RedisPlayerSession,
-    RedisGameRoom,
-    RedisGameEvent
+    IRedisGameState,
+    IRedisPlayerSession,
+    IRedisGameRoom,
+    IRedisGameEvent
 } from '@ctor-game/shared/types/storage/redis.js';
 
 export type {
-    GameMetadata,
-    GameMeta,
-    GameHistory,
-    GameStats,
-    GameHistoryEntry
+    IGameMetadata,
+    IGameHistory
 } from '@ctor-game/shared/types/storage/metadata.js';
 
-export type GameHistoryRecord = GameHistory;
+export type {
+    IHistoryEntry,
+    IGameHistory as IGameHistoryRecord
+} from '@ctor-game/shared/types/storage/history.js';
 
 // Re-export validation functions
 export { 
@@ -70,9 +70,10 @@ export {
 
 // Re-export error utils
 export type { 
-    ErrorWithStack
-} from '@ctor-game/shared/types/network/errors.js';
+    IErrorWithStack
+} from '@ctor-game/shared/utils/errors.js';
 
 export { 
-    toErrorWithStack
-} from '@ctor-game/shared/types/network/errors.js';
+    toErrorWithStack,
+    createErrorResponse
+} from '@ctor-game/shared/utils/errors.js';
