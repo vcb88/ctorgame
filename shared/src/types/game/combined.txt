@@ -1,0 +1,102 @@
+import type { IPosition } from '../geometry/types.js';
+import type { 
+    OperationType as MoveType,
+    IGameMove,
+    PlayerNumber 
+} from './types.js';
+
+/**
+ * Server-side move with replacement information
+ */
+export interface IServerMove extends IGameMove {
+    readonly replacements?: ReadonlyArray<[number, number]>;
+}
+
+/**
+ * Replacement validation result
+ */
+export interface IReplaceValidation {
+    readonly valid: boolean;
+    readonly replacements?: ReadonlyArray<[number, number]>;
+    readonly error?: string;
+}
+
+// Re-export type and interface
+export type { MoveType };
+export type { IGameMove };import type { IPlayer, PlayerNumber, IGameState } from './types.js';
+
+/**
+ * Game room information with current state
+ */
+export interface IGameRoom {
+    readonly gameId: string;
+    readonly players: ReadonlyArray<IPlayer>;
+    readonly currentState: IGameState;
+    readonly currentPlayer: PlayerNumber;
+}
+
+// Type guards
+export const isPlayer = (value: unknown): value is IPlayer => {
+    if (!value || typeof value !== 'object') return false;
+    const player = value as IPlayer;
+    return (
+        typeof player.id === 'string' &&
+        (player.number === 1 || player.number === 2) &&
+        typeof player.connected === 'boolean'
+    );
+};
+
+export const isPlayerNumber = (value: unknown): value is PlayerNumber => {
+    return typeof value === 'number' && (value === 1 || value === 2);
+};/**
+ * Game action types and interfaces
+ */
+import type { IGameMove } from './types.js';
+import type { Timestamp } from '../core.js';
+
+// Action type literals
+export type GameActionType = 'CREATE_GAME' | 'JOIN_GAME' | 'MAKE_MOVE' | 'END_TURN';
+
+/** Base type for all game actions */
+export type GameActionBase = {
+    readonly type: GameActionType;
+    readonly timestamp: Timestamp;
+};
+
+/** Create game action */
+export type CreateGameAction = GameActionBase & {
+    readonly type: 'CREATE_GAME';
+};
+
+/** Join game action */
+export type JoinGameAction = GameActionBase & {
+    readonly type: 'JOIN_GAME';
+    readonly gameId: string;
+};
+
+/** Make move action */
+export type MakeMoveAction = GameActionBase & {
+    readonly type: 'MAKE_MOVE';
+    readonly gameId: string;
+    readonly move: IGameMove;
+};
+
+/** End turn action */
+export type EndTurnAction = GameActionBase & {
+    readonly type: 'END_TURN';
+    readonly gameId: string;
+};
+
+/** Union type for all game actions */
+export type GameAction = 
+    | CreateGameAction
+    | JoinGameAction
+    | MakeMoveAction
+    | EndTurnAction;
+
+// Re-export old interface names for backwards compatibility
+export type IGameAction = GameActionBase;
+export type ICreateGameAction = CreateGameAction;
+export type IJoinGameAction = JoinGameAction;
+export type IMakeMoveAction = MakeMoveAction;
+export type IEndTurnAction = EndTurnAction;

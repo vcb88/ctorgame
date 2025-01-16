@@ -1,3 +1,6 @@
-export * from './moves.js';
-export * from './players.js';
-export * from './actions.js';
+/**
+ * Game domain types and enums
+ */
+
+export * from './types.js';
+export * from './enums.js';
