@@ -1,92 +1,49 @@
-/** Error codes enum for type safety */
+import type { GameError } from './core.js';
+
 export enum GameErrorCode {
-    // Network related
-    NETWORK_ERROR = 'NETWORK_ERROR',
-    CONNECTION_LOST = 'CONNECTION_LOST',
-    
-    // Game state related
+    INVALID_OPERATION = 'INVALID_OPERATION',
+    INVALID_STATE = 'INVALID_STATE',
     GAME_NOT_FOUND = 'GAME_NOT_FOUND',
     INVALID_GAME_STATE = 'INVALID_GAME_STATE',
-    
-    // Auth related
-    UNAUTHORIZED = 'UNAUTHORIZED',
-    FORBIDDEN = 'FORBIDDEN',
-    
-    // Data related
-    INVALID_DATA = 'INVALID_DATA',
-    DATA_NOT_FOUND = 'DATA_NOT_FOUND',
-    
-    // Generic
-    UNKNOWN_ERROR = 'UNKNOWN_ERROR'
+    DATA_ERROR = 'DATA_ERROR'
 }
 
-/** Base error interface */
-export interface IGameError {
-    code: GameErrorCode;
-    message: string;
-    details?: Record<string, unknown>;
-}
-
-/** Network specific error interface */
-export interface INetworkError extends IGameError {
-    code: GameErrorCode.NETWORK_ERROR | GameErrorCode.CONNECTION_LOST;
+export type DataError = GameError & {
+    code: GameErrorCode.DATA_ERROR;
     details?: {
-        statusCode?: number;
-        endpoint?: string;
-    };
-}
-
-/** Data related error interface */
-export interface IDataError extends IGameError {
-    code: GameErrorCode.INVALID_DATA | GameErrorCode.DATA_NOT_FOUND;
-    details?: {
-        field?: string;
+        path?: string;
         value?: unknown;
     };
-}
+};
 
-/** Game state error interface */
-export interface IGameStateError extends IGameError {
+export type GameStateError = GameError & {
     code: GameErrorCode.GAME_NOT_FOUND | GameErrorCode.INVALID_GAME_STATE;
     details?: {
         gameId?: string;
-        currentState?: string;
+        state?: string;
     };
-}
-
-/** Type guard to check if error is network related */
-export function isNetworkError(error: IGameError): error is INetworkError {
-    return error.code === GameErrorCode.NETWORK_ERROR || 
-           error.code === GameErrorCode.CONNECTION_LOST;
-}
+};
 
 /** Type guard to check if error is data related */
-export function isDataError(error: IGameError): error is IDataError {
-    return error.code === GameErrorCode.INVALID_DATA || 
-           error.code === GameErrorCode.DATA_NOT_FOUND;
+export function isDataError(error: GameError): error is DataError {
+    return error.code === GameErrorCode.DATA_ERROR;
 }
 
 /** Type guard to check if error is game state related */
-export function isGameStateError(error: IGameError): error is IGameStateError {
+export function isGameStateError(error: GameError): error is GameStateError {
     return error.code === GameErrorCode.GAME_NOT_FOUND || 
            error.code === GameErrorCode.INVALID_GAME_STATE;
 }
 
-/** Error factory for creating typed errors */
+/** Helper to create error objects */
 export const createGameError = {
-    network: (message: string, details?: INetworkError['details']): INetworkError => ({
-        code: GameErrorCode.NETWORK_ERROR,
+    data: (message: string, details?: DataError['details']): DataError => ({
+        code: GameErrorCode.DATA_ERROR,
         message,
         details
     }),
     
-    data: (message: string, details?: IDataError['details']): IDataError => ({
-        code: GameErrorCode.INVALID_DATA,
-        message,
-        details
-    }),
-    
-    gameState: (message: string, details?: IGameStateError['details']): IGameStateError => ({
+    gameState: (message: string, details?: GameStateError['details']): GameStateError => ({
         code: GameErrorCode.GAME_NOT_FOUND,
         message,
         details

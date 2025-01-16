@@ -1,59 +1,27 @@
-// Basic interfaces
-export interface INumeric {
+import type { GameStatus, PlayerNumber, Position, GameMove, GameState, ValidationResult } from './core.js';
+
+export type Numeric = {
     value: number;
-}
+};
 
-export interface ITimestamp {
-    timestamp: number;
-}
-
-export interface IIdentifiable {
-    id: string;
-}
-
-export interface IVersioned {
-    version: string;
-}
-
-export interface IValid {
+export type Valid = {
     valid: boolean;
-}
+};
 
-export interface IMessage {
+export type Message = {
     message: string;
-}
+};
 
-// Basic coordinate interfaces
-export interface IPosition {
-    x: number;
-    y: number;
-}
+export type Error = {
+    error: string;
+};
 
-// Basic dimension interfaces
-export interface IBoardSize {
-    width: number;
-    height: number;
-}
-
-// Basic game status
-export type GameStatus = 'waiting' | 'playing' | 'finished';
-
-// Basic operation types
-export type OperationType = 'place' | 'replace';
-
-// Basic move interface
-export interface IGameMove {
-    type: OperationType;
-    position: IPosition;
-}
-
-// Basic game state
-export interface IGameState {
-    board: number[][];
-    currentPlayer: number;
-    status: GameStatus;
-    scores: {
-        player1: number;
-        player2: number;
-    };
-}
+// Re-export core types
+export type {
+    GameStatus,
+    PlayerNumber,
+    Position,
+    GameMove,
+    GameState,
+    ValidationResult,
+};
