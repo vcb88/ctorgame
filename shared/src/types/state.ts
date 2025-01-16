@@ -14,7 +14,7 @@ import type { ISize } from './geometry/types.js';
 
 // Board interfaces
 export interface IBoardBase {
-    readonly size: ISize;
+    size: ISize;
     cells: Array<Array<number>>; // Simplified cell type
 }
 
@@ -22,46 +22,46 @@ export interface IBoard extends IBoardBase {}
 
 // Score interfaces
 export interface IGameScores {
-    readonly player1: number;
-    readonly player2: number;
+    player1: number;
+    player2: number;
 }
 
 // Turn state interfaces
 export interface ITurnStateBase {
-    readonly placeOperationsLeft: number;
-    readonly replaceOperationsLeft: number;
+    placeOperationsLeft: number;
+    replaceOperationsLeft: number;
 }
 
 export interface ITurnState extends ITurnStateBase {
-    readonly moves: ReadonlyArray<IGameMove>;
-    readonly count: number; // Total moves count for validation
+    moves: Array<IGameMove>;
+    count: number; // Total moves count for validation
 }
 
 // Game state interfaces
 export interface IGameStateBase {
-    readonly board: IBoard;
-    readonly gameOver: boolean;
-    readonly winner: PlayerNumber | null;
-    readonly currentPlayer: PlayerNumber;
-    readonly isFirstTurn: boolean;
+    board: IBoard;
+    gameOver: boolean;
+    winner: PlayerNumber | null;
+    currentPlayer: PlayerNumber;
+    isFirstTurn: boolean;
 }
 
 export interface IGameState extends IGameStateBase {
-    readonly currentTurn: ITurnState;
-    readonly scores: IGameScores;
+    currentTurn: ITurnState;
+    scores: IGameScores;
 }
 
 // Game manager state interfaces
 export interface IGameManagerBase {
-    readonly status: GameStatus;
-    readonly error: Error | null;
-    readonly connectionState: string;
+    status: GameStatus;
+    error: Error | null;
+    connectionState: string;
 }
 
 export interface GameManagerState extends IGameManagerBase, ITimestamped {
-    readonly gameId: string | null;
-    readonly playerNumber: PlayerNumber | null;
-    readonly lastUpdated: number;
+    gameId: string | null;
+    playerNumber: PlayerNumber | null;
+    lastUpdated: number;
 }
 
 // Stored state interfaces
@@ -71,7 +71,7 @@ export interface StoredState<T> extends IStoredStateBase<T>, IExpiration {}
 
 // State storage interfaces
 export interface IStateStorageBase {
-    getKeys(prefix?: string): ReadonlyArray<string>;
+    getKeys(prefix?: string): Array<string>;
 }
 
 export interface IStateStorage extends IStateStorageBase {
