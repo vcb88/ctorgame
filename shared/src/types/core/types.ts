@@ -2,8 +2,11 @@
  * Core game types
  */
 
-import type { UUID, PlayerNumber, Position, Timestamp, CellValue, Scores } from './primitives.js';
-import { GameStatusEnum, MoveTypeEnum, ConnectionStatusEnum } from './enums.js';
+import type { 
+    UUID, PlayerNumber, Position, Timestamp, CellValue, Scores,
+    GameStatus, MoveType, ValidationResult 
+} from '../base/primitives.js';
+import type { Board } from './board.js';
 
 /** Player information */
 export interface Player {
@@ -14,7 +17,7 @@ export interface Player {
 
 /** Basic game move */
 export interface GameMove {
-    type: MoveTypeEnum;
+    type: MoveType;
     pos?: Position;
 }
 
@@ -27,10 +30,10 @@ export interface GameMoveComplete extends GameMove {
 
 /** Game state */
 export interface GameState {
-    board: Array<Array<CellValue>>;
+    board: Board;
     scores: Scores;
     currentPlayer: PlayerNumber;
-    status: GameStatusEnum;
+    status: GameStatus;
     winner?: PlayerNumber;
     lastMove?: GameMove;
     timestamp: Timestamp;
@@ -42,11 +45,9 @@ export interface GameHistoryEntry {
     move: GameMoveComplete;
 }
 
-/** Move validation result */
-export interface MoveValidation {
-    valid: boolean;
-    message?: string;
-    captures?: Array<Position>;
+/** Move validation result with capture positions */
+export interface MoveValidation extends ValidationResult {
+    captures?: Position[];
 }
 
 /** Game error */
