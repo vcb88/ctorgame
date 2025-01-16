@@ -1,5 +1,5 @@
 import type {
-    ITimestamped,
+    Timestamped,
     IVersioned,
     IExpiration,
     IData
@@ -38,7 +38,7 @@ export interface ITurnState extends ITurnStateBase {
 }
 
 // Game state interfaces
-export interface IGameStateBase {
+export interface GameStateBase {
     board: IBoard;
     gameOver: boolean;
     winner: PlayerNumber | null;
@@ -46,7 +46,7 @@ export interface IGameStateBase {
     isFirstTurn: boolean;
 }
 
-export interface IGameState extends IGameStateBase {
+export interface GameState extends GameStateBase {
     currentTurn: ITurnState;
     scores: IGameScores;
 }
@@ -58,14 +58,14 @@ export interface IGameManagerBase {
     connectionState: string;
 }
 
-export interface GameManagerState extends IGameManagerBase, ITimestamped {
+export interface GameManagerState extends IGameManagerBase, Timestamped {
     gameId: string | null;
     playerNumber: PlayerNumber | null;
     lastUpdated: number;
 }
 
 // Stored state interfaces
-export interface IStoredStateBase<T> extends IVersioned, ITimestamped, IData<T> {}
+export interface IStoredStateBase<T> extends IVersioned, Timestamped, IData<T> {}
 
 export interface StoredState<T> extends IStoredStateBase<T>, IExpiration {}
 

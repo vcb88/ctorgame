@@ -2,12 +2,12 @@
  * Game event types and type guards
  */
 
-import type { IGameState, IGameMove, GameStatus, PlayerNumber } from '../game/types.js';
-import type { ITimestamped, IIdentifiable } from '../core/primitives.js';
+import type { GameState, IGameMove, GameStatus, PlayerNumber } from '../game/types.js';
+import type { Timestamped, IIdentifiable } from '../core/primitives.js';
 import type { ErrorResponse } from './errors.js';
 
 // Base event interface
-export interface IBaseEvent extends ITimestamped, IIdentifiable {
+export interface IBaseEvent extends Timestamped, IIdentifiable {
     gameId: string;
     playerId?: string;
 }
@@ -25,7 +25,7 @@ export interface IGameCreatedEvent extends IBaseEvent {
 export interface IGameStartedEvent extends IBaseEvent {
     type: 'game_started';
     data: {
-        state: IGameState;
+        state: GameState;
         startedAt: number;
     };
 }
@@ -34,7 +34,7 @@ export interface IGameMoveEvent extends IBaseEvent {
     type: 'game_move';
     data: {
         move: IGameMove;
-        state: IGameState;
+        state: GameState;
     };
 }
 
@@ -42,7 +42,7 @@ export interface IGameEndedEvent extends IBaseEvent {
     type: 'game_ended';
     data: {
         winner: PlayerNumber | null;
-        finalState: IGameState;
+        finalState: GameState;
         endedAt: number;
     };
 }

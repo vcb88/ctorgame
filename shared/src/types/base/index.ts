@@ -43,7 +43,7 @@ import type {
 // Legacy exports
 export type {
     BaseError as IError,
-    MessagePayload as IMessagePayload,
+    MessagePayload as stringPayload,
     ErrorPayload as IErrorPayload,
     EventPayload as IEventPayload,
     CommandPayload as ICommandPayload,

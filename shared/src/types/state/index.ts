@@ -24,7 +24,7 @@ export type {
     Move as IMove,
     GameMove as IGameMove,
     TurnState as ITurnState,
-    GameState as IGameState,
+    GameState as GameState,
     GameScores as IGameScores,
     GameSettings as IGameSettings,
     StoredState as IStoredState,

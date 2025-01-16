@@ -1,4 +1,4 @@
-import type { IGameState } from '../game/state';
+import type { GameState } from '../game/state';
 
 /**
  * Current state of replay playback
@@ -39,7 +39,7 @@ export interface IReplayClientEvents {
 export interface IReplayServerEvents {
     /** Current game state and replay progress */
     REPLAY_STATE_UPDATED: (data: {
-        state: IGameState;
+        state: GameState;
         moveIndex: number;
         totalMoves: number;
     }) => void;

@@ -1,4 +1,4 @@
-import type { Player, PlayerNumber, Timestamp, IGameState } from './types.js';
+import type { Player, PlayerNumber, Timestamp, GameState } from './types.js';
 
 export interface IPlayer {
     id: string;
@@ -8,7 +8,7 @@ export interface IPlayer {
 export interface IGameRoom {
     gameId: string;
     players: IPlayer[];
-    currentState: IGameState;
+    currentState: GameState;
     currentPlayer: Player;
 }
 

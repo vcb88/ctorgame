@@ -2,8 +2,8 @@
  * Storage related types
  */
 
-import type { IGameState, IGameMove } from '../game/types.js';
-import type { ITimestamped, IIdentifiable } from '../core/primitives.js';
+import type { GameState, IGameMove } from '../game/types.js';
+import type { Timestamped, IIdentifiable } from '../core/primitives.js';
 import type { StorageErrorEnum, StorageOperationEnum, StorageTypeEnum } from './enums.js';
 import type { IStorageError } from './errors.js';
 
@@ -16,20 +16,20 @@ export interface ICacheConfig {
 }
 
 /** Redis specific types using composition */
-export interface IRedisGameState extends IGameState {
+export interface IRedisGameState extends GameState {
     lastUpdate: number;
     expiresAt: number;
 }
 
 /** Game history record */
-export interface IGameHistoryRecord extends ITimestamped, IIdentifiable {
+export interface IGameHistoryRecord extends Timestamped, IIdentifiable {
     gameId: string;
     move: IGameMove;
-    resultingState: IGameState;
+    resultingState: GameState;
 }
 
 /** Storage metadata */
-export interface IStorageMetadata extends ITimestamped {
+export interface IStorageMetadata extends Timestamped {
     version: string;
     totalGames: number;
     activePlayers: number;
@@ -47,7 +47,7 @@ export interface IOperationResult<T = unknown> {
 }
 
 /** Backup metadata */
-export interface IBackupMetadata extends ITimestamped {
+export interface IBackupMetadata extends Timestamped {
     id: string;
     version: string;
     itemCount: number;

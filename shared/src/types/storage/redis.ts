@@ -1,4 +1,4 @@
-import type { IGameState, IGameMove, PlayerNumber, GameStatus } from '../game/types.js';
+import type { GameState, IGameMove, PlayerNumber, GameStatus } from '../game/types.js';
 type UUID = string;
 
 /**
@@ -29,7 +29,7 @@ export interface IRedisTTL {
 /**
  * Redis cached game state
  */
-export interface IRedisGameState extends IGameState {
+export interface IRedisGameState extends GameState {
     lastUpdate: number;    // Last update timestamp
     version: number;       // State version for optimistic locking
 }
@@ -68,7 +68,7 @@ export interface IRedisGameEvent {
     playerNumber: PlayerNumber;
     data: {
         move?: IGameMove;
-        state?: IGameState;
+        state?: GameState;
     };
 }
 
