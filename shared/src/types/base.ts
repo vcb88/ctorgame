@@ -35,9 +35,9 @@ export type ErrorCode =
 export type ErrorSeverity = 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL';
 
 export type GameError = CoreGameError & {
-    readonly severity: ErrorSeverity;
-    readonly recoverable?: boolean;
-    readonly retryCount?: number;
+    severity: ErrorSeverity;
+    recoverable?: boolean;
+    retryCount?: number;
 };
 
 export type ConnectionState = 'CONNECTING' | 'CONNECTED' | 'DISCONNECTED' | 'RECONNECTING' | 'ERROR';

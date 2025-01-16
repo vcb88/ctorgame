@@ -22,10 +22,10 @@ export interface IHistoryServerEvents {
  * Basic game summary for listing in history
  */
 export interface IGameHistoryEntry {
-    readonly gameCode: string;
-    readonly startTime: string;
-    readonly endTime?: string;
-    readonly players: readonly string[];
-    readonly winner?: string;
-    readonly totalMoves: number;
+    gameCode: string;
+    startTime: string;
+    endTime?: string;
+    players: Array<string>;
+    winner?: string;
+    totalMoves: number;
 }

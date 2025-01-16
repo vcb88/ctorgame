@@ -3,22 +3,22 @@ import type { Player } from './basic-types.js';
 
 // Basic move type
 export type Move = {
-    readonly type: MoveType;
-    readonly position?: Position;
+    type: MoveType;
+    position?: Position;
 };
 
 // Server move type
 export type ServerMove = Move & {
-    readonly replacements?: ReadonlyArray<Position>;
+    replacements?: Array<Position>;
 };
 
 // Game move type
 export type GameMove = ServerMove & {
-    readonly player: Player;
-    readonly timestamp: number;
+    player: Player;
+    timestamp: number;
 };
 
 // Replace validation type
 export type ReplaceValidation = ValidationResult & {
-    readonly replacements?: ReadonlyArray<Position>;
+    replacements?: Array<Position>;
 };

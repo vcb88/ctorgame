@@ -4,10 +4,10 @@ import type { IGameState } from '../game/state';
  * Current state of replay playback
  */
 export interface IReplayState {
-    readonly currentMoveIndex: number;
-    readonly totalMoves: number;
-    readonly isPlaying: boolean;
-    readonly playbackSpeed: number;
+    currentMoveIndex: number;
+    totalMoves: number;
+    isPlaying: boolean;
+    playbackSpeed: number;
     readonly gameCode: string;
 }
 
@@ -61,10 +61,10 @@ export interface IReplayServerEvents {
  * Game history entry
  */
 export interface IGameHistoryEntry {
-    readonly gameCode: string;
-    readonly startTime: string;
-    readonly endTime?: string;
-    readonly players: readonly string[];
-    readonly winner?: string;
-    readonly totalMoves: number;
+    gameCode: string;
+    startTime: string;
+    endTime?: string;
+    players: Array<string>;
+    winner?: string;
+    totalMoves: number;
 }

@@ -8,73 +8,73 @@ import type { ErrorResponse } from './errors.js';
 
 // Base event interface
 export interface IBaseEvent extends ITimestamped, IIdentifiable {
-    readonly gameId: string;
-    readonly playerId?: string;
+    gameId: string;
+    playerId?: string;
 }
 
 // Game event types
 export interface IGameCreatedEvent extends IBaseEvent {
-    readonly type: 'game_created';
-    readonly data: {
-        readonly gameId: string;
-        readonly status: GameStatus;
-        readonly createdAt: number;
+    type: 'game_created';
+    data: {
+        gameId: string;
+        status: GameStatus;
+        createdAt: number;
     };
 }
 
 export interface IGameStartedEvent extends IBaseEvent {
-    readonly type: 'game_started';
-    readonly data: {
-        readonly state: IGameState;
-        readonly startedAt: number;
+    type: 'game_started';
+    data: {
+        state: IGameState;
+        startedAt: number;
     };
 }
 
 export interface IGameMoveEvent extends IBaseEvent {
-    readonly type: 'game_move';
-    readonly data: {
-        readonly move: IGameMove;
-        readonly state: IGameState;
+    type: 'game_move';
+    data: {
+        move: IGameMove;
+        state: IGameState;
     };
 }
 
 export interface IGameEndedEvent extends IBaseEvent {
-    readonly type: 'game_ended';
-    readonly data: {
-        readonly winner: PlayerNumber | null;
-        readonly finalState: IGameState;
-        readonly endedAt: number;
+    type: 'game_ended';
+    data: {
+        winner: PlayerNumber | null;
+        finalState: IGameState;
+        endedAt: number;
     };
 }
 
 export interface IGameExpiredEvent extends IBaseEvent {
-    readonly type: 'game_expired';
-    readonly data: {
-        readonly expiredAt: number;
+    type: 'game_expired';
+    data: {
+        expiredAt: number;
     };
 }
 
 export interface IPlayerConnectedEvent extends IBaseEvent {
-    readonly type: 'player_connected';
-    readonly data: {
-        readonly playerId: string;
-        readonly playerNumber: PlayerNumber;
-        readonly connectedAt: number;
+    type: 'player_connected';
+    data: {
+        playerId: string;
+        playerNumber: PlayerNumber;
+        connectedAt: number;
     };
 }
 
 export interface IPlayerDisconnectedEvent extends IBaseEvent {
-    readonly type: 'player_disconnected';
-    readonly data: {
-        readonly playerId: string;
-        readonly playerNumber: PlayerNumber;
-        readonly disconnectedAt: number;
+    type: 'player_disconnected';
+    data: {
+        playerId: string;
+        playerNumber: PlayerNumber;
+        disconnectedAt: number;
     };
 }
 
 export interface IGameErrorEvent extends IBaseEvent {
-    readonly type: 'error';
-    readonly data: ErrorResponse;
+    type: 'error';
+    data: ErrorResponse;
 }
 
 // Union type for all game events

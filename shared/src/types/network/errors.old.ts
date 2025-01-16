@@ -32,28 +32,28 @@ export type ErrorCode =
 
 /** Base network error interface */
 export interface INetworkError {
-    readonly code: ErrorCode;
-    readonly message: string;
-    readonly severity: ErrorSeverity;
-    readonly recoverable?: boolean;
-    readonly retryCount?: number;
-    readonly timestamp?: number;
-    readonly details?: Record<string, unknown>;
+    code: ErrorCode;
+    message: string;
+    severity: ErrorSeverity;
+    recoverable?: boolean;
+    retryCount?: number;
+    timestamp?: number;
+    details?: Record<string, unknown>;
 }
 
 /** Configuration for error recovery */
 export interface IErrorRecoveryConfig {
-    readonly maxRetries?: number;
-    readonly retryDelay?: number;
-    readonly useBackoff?: boolean;
-    readonly recover?: (error: INetworkError) => Promise<void>;
+    maxRetries?: number;
+    retryDelay?: number;
+    useBackoff?: boolean;
+    recover?: (error: INetworkError) => Promise<void>;
 }
 
 /** Error response from server */
 export interface IErrorResponse {
-    readonly code: number;
-    readonly message: string;
-    readonly details?: Record<string, unknown>;
+    code: number;
+    message: string;
+    details?: Record<string, unknown>;
 }
 
 /** Base validation error class */

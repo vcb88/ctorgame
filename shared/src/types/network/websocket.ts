@@ -51,64 +51,64 @@ export enum WebSocketErrorCode {
 
 // Base event interface
 export type GameEvent = {
-    readonly eventId: UUID;
-    readonly timestamp: Timestamp;
-    readonly type: GameEventType;
+    eventId: UUID;
+    timestamp: Timestamp;
+    type: GameEventType;
 };
 
 // Server to client events
 export interface ServerToClientEvents {
     'game_created': (event: GameEvent & {
-        readonly gameId: UUID;
-        readonly code: string;
-        readonly status: GameStatus;
+        gameId: UUID;
+        code: string;
+        status: GameStatus;
     }) => void;
 
     'game_joined': (event: GameEvent & {
-        readonly gameId: UUID;
-        readonly status: GameStatus;
+        gameId: UUID;
+        status: GameStatus;
     }) => void;
 
     'game_started': (event: GameEvent & {
-        readonly gameId: UUID;
-        readonly gameState: GameState;
-        readonly currentPlayer: PlayerNumber;
+        gameId: UUID;
+        gameState: GameState;
+        currentPlayer: PlayerNumber;
     }) => void;
 
     'game_state_updated': (event: GameEvent & {
-        readonly gameState: GameState;
-        readonly currentPlayer: PlayerNumber;
+        gameState: GameState;
+        currentPlayer: PlayerNumber;
     }) => void;
 
     'game_over': (event: GameEvent & {
-        readonly gameState: GameState;
-        readonly winner: PlayerNumber | null;
-        readonly finalScores: [number, number];
+        gameState: GameState;
+        winner: PlayerNumber | null;
+        finalScores: [number, number];
     }) => void;
 
     'player_disconnected': (event: GameEvent & {
-        readonly playerId: UUID;
-        readonly playerNumber: PlayerNumber;
+        playerId: UUID;
+        playerNumber: PlayerNumber;
     }) => void;
 
     'player_reconnected': (event: GameEvent & {
-        readonly playerId: UUID;
-        readonly playerNumber: PlayerNumber;
-        readonly gameState: GameState;
+        playerId: UUID;
+        playerNumber: PlayerNumber;
+        gameState: GameState;
     }) => void;
 
     'game_expired': (event: GameEvent & {
-        readonly gameId: UUID;
-        readonly reason?: string;
+        gameId: UUID;
+        reason?: string;
     }) => void;
 
     'available_replaces': (event: GameEvent & {
-        readonly positions: Position[];
-        readonly moves: GameMove[];
+        positions: Position[];
+        moves: GameMove[];
     }) => void;
 
     'error': (event: NetworkError & {
-        readonly eventId?: UUID;
+        eventId?: UUID;
     }) => void;
 }
 
@@ -117,24 +117,24 @@ export interface ClientToServerEvents {
     'create_game': (data?: { options?: GameOptions }) => void;
 
     'join_game': (data: {
-        readonly gameId?: UUID;
-        readonly code?: string;
+        gameId?: UUID;
+        code?: string;
     }) => void;
 
     'make_move': (data: {
-        readonly gameId: UUID;
-        readonly move: GameMove;
+        gameId: UUID;
+        move: GameMove;
     }) => void;
 
     'end_turn': (data: {
-        readonly gameId: UUID;
+        gameId: UUID;
     }) => void;
 
     'disconnect': () => void;
 
     'reconnect': (data: {
-        readonly gameId: UUID;
-        readonly sessionId?: UUID;
+        gameId: UUID;
+        sessionId?: UUID;
     }) => void;
 }
 
@@ -145,38 +145,38 @@ export interface InterServerEvents {
 
 // Socket data
 export type SocketData = {
-    readonly socketId: UUID;
-    readonly gameId?: UUID;
-    readonly playerNumber?: PlayerNumber;
-    readonly sessionId?: UUID;
+    socketId: UUID;
+    gameId?: UUID;
+    playerNumber?: PlayerNumber;
+    sessionId?: UUID;
 };
 
 // Basic game options
 export type GameOptions = {
-    readonly boardSize?: number;
-    readonly timeLimit?: number;
-    readonly privacy?: 'public' | 'private';
+    boardSize?: number;
+    timeLimit?: number;
+    privacy?: 'public' | 'private';
 };
 
 // Server configuration
 export type WebSocketServerConfig = {
-    readonly cors: {
-        readonly origin: string;
-        readonly methods: string[];
+    cors: {
+        origin: string;
+        methods: string[];
     };
-    readonly path: string;
-    readonly transports: string[];
-    readonly pingTimeout: number;
-    readonly pingInterval: number;
-    readonly maxHttpBufferSize: number;
+    path: string;
+    transports: string[];
+    pingTimeout: number;
+    pingInterval: number;
+    maxHttpBufferSize: number;
 };
 
 export type WebSocketServerOptions = {
-    readonly config?: Partial<WebSocketServerConfig>;
-    readonly reconnectTimeout?: number;
-    readonly storageService?: any;  // TODO: Replace with proper type
-    readonly eventService?: any;     // TODO: Replace with proper type
-    readonly redisService?: any;     // TODO: Replace with proper type
+    config?: Partial<WebSocketServerConfig>;
+    reconnectTimeout?: number;
+    storageService?: any;  // TODO: Replace with proper type
+    eventService?: any;     // TODO: Replace with proper type
+    redisService?: any;     // TODO: Replace with proper type
 };
 
 // Type guards
