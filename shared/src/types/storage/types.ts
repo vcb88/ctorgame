@@ -1,70 +1,58 @@
-/**
- * Storage related types
- */
-
-import type { IGameState, IGameMove } from '../game/types.js';
-import type { ITimestamped, IIdentifiable } from '../core/primitives.js';
-import type { StorageErrorEnum, StorageOperationEnum, StorageTypeEnum } from './enums.js';
-import type { IStorageError } from './errors.js';
+import type { GameState, GameMove, Position, Timestamp } from '../core.js';
 
 /** Cache configuration */
-export interface ICacheConfig {
-    ttl: number; // Time to live in seconds
-    cleanupInterval?: number;
-    maxSize?: number; // Maximum number of items
-    strategy?: 'lru' | 'fifo'; // Eviction strategy
-}
+export type CacheConfig = {
+    enabled: boolean;
+    ttl: number;
+    maxSize?: number;
+};
 
-/** Redis specific types using composition */
-export interface IRedisGameState extends IGameState {
+/** Redis specific game state */
+export type RedisGameState = GameState & {
     lastUpdate: number;
     expiresAt: number;
-}
+};
 
 /** Game history record */
-export interface IGameHistoryRecord extends ITimestamped, IIdentifiable {
+export type GameHistoryRecord = {
+    id: string;
+    timestamp: Timestamp;
     gameId: string;
-    move: IGameMove;
-    resultingState: IGameState;
-}
+    move: GameMove;
+    resultingState: GameState;
+};
 
 /** Storage metadata */
-export interface IStorageMetadata extends ITimestamped {
+export type StorageMetadata = {
+    timestamp: Timestamp;
     version: string;
     totalGames: number;
     activePlayers: number;
-    storageType: StorageTypeEnum;
-    size?: number;
-}
+    successfulMoves: number;
+    failedMoves: number;
+};
 
 /** Operation result */
-export interface IOperationResult<T = unknown> {
+export type OperationResult<T = unknown> = {
     success: boolean;
-    operation: StorageOperationEnum;
-    timestamp: number;
     data?: T;
-    error?: IStorageError;
-}
+    error?: string;
+    timestamp: Timestamp;
+};
 
 /** Backup metadata */
-export interface IBackupMetadata extends ITimestamped {
+export type BackupMetadata = {
     id: string;
+    timestamp: Timestamp;
     version: string;
     itemCount: number;
-    size: number;
-    checksum: string;
-}
+};
 
 /** Storage options */
-export interface IStorageOptions {
-    type: StorageTypeEnum;
-    prefix?: string;
-    ttl?: number;
-    cache?: ICacheConfig;
+export type StorageOptions = {
+    cache?: CacheConfig;
     backup?: {
         enabled: boolean;
-        interval?: number;
-        maxBackups?: number;
-        path?: string;
+        path: string;
     };
-}
+};

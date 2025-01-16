@@ -5,55 +5,55 @@ import { type GameSocket } from '../services/socket';
 
 // Shared types
 import type { 
-    IGameState, 
-    IGameMove, 
+    GameState, 
+    GameMove, 
     PlayerNumber,
     GameStatus
-} from '@ctor-game/shared/src/types/game/types.js';
+} from '@ctor-game/shared/src/types/core.js';
 import type { 
-    IWebSocketEvent, 
+    WebSocketEvent, 
     UUID,
     ServerToClientEvents,
     ClientToServerEvents
 } from '@ctor-game/shared/src/types/network/websocket.js';
 import type { 
-    INetworkError
+    NetworkError
 } from '@ctor-game/shared/src/types/network/errors.js';
 import type {
-    IPosition
-} from '@ctor-game/shared/src/types/geometry/types.js';
+    Position
+} from '@ctor-game/shared/src/types/core.js';
 
 type ConnectionState = 'connected' | 'connecting' | 'reconnecting' | 'disconnected' | 'error';
 
-interface IGameResponse {
+type GameResponse = {
     readonly success: boolean;
-    readonly error?: INetworkError;
+    readonly error?: NetworkError;
     readonly eventId?: UUID;
     readonly timestamp: number;
-}
+};
 
-interface IJoinGameResponse extends IGameResponse {
+type JoinGameResponse = GameResponse & {
     readonly gameId?: UUID;
     readonly playerNumber?: PlayerNumber;
-}
+};
 
-interface IMultiplayerGameState {
+type MultiplayerGameState = {
     readonly gameId: UUID | null;
     readonly playerNumber: PlayerNumber | null;
-    readonly gameState: IGameState | null;
+    readonly gameState: GameState | null;
     readonly currentPlayer: PlayerNumber;
     readonly connectionState: ConnectionState;
-    readonly error: INetworkError | null;
-    readonly availableReplaces: IGameMove[];
+    readonly error: NetworkError | null;
+    readonly availableReplaces: GameMove[];
     readonly timestamp: number;
-}
+};
 
 export const useMultiplayerGame = () => {
     // Initialize GameStateManager singleton
     const gameManager = useRef<GameStateManager>(GameStateManager.getInstance());
 
     // Initialize state from GameStateManager
-    const [state, setState] = useState<IMultiplayerGameState>(() => {
+    const [state, setState] = useState<MultiplayerGameState>(() => {
         const managerState = gameManager.current.getState();
         return {
             gameId: managerState.gameId,
@@ -96,7 +96,7 @@ export const useMultiplayerGame = () => {
                 component: 'useMultiplayerGame'
             });
         } catch (error) {
-            const networkError = error as INetworkError;
+            const networkError = error as NetworkError;
             logger.error('Failed to create game', { 
                 component: 'useMultiplayerGame',
                 data: { error: networkError }
@@ -105,7 +105,7 @@ export const useMultiplayerGame = () => {
         }
     }, []);
 
-    const joinGame = useCallback(async (gameId: UUID): Promise<IJoinGameResult> => {
+    const joinGame = useCallback(async (gameId: UUID): Promise<JoinGameResult> => {
         try {
             logger.info('Joining game', {
                 component: 'useMultiplayerGame',
@@ -121,7 +121,7 @@ export const useMultiplayerGame = () => {
             
             return result;
         } catch (error) {
-            const networkError = error as INetworkError;
+            const networkError = error as NetworkError;
             logger.error('Failed to join game', { 
                 component: 'useMultiplayerGame',
                 data: { error: networkError }
@@ -130,10 +130,10 @@ export const useMultiplayerGame = () => {
         }
     }, []);
 
-    const makeMove = useCallback(async (x: number, y: number) => {
+    const makeMove = useCallback(async (pos: Position) => {
         try {
-            const move: IGameMove = {
-                position: { x, y },
+            const move: GameMove = {
+                position: pos,
                 timestamp: Date.now()
             };
 
@@ -144,7 +144,7 @@ export const useMultiplayerGame = () => {
                 data: { move }
             });
         } catch (error) {
-            const networkError = error as INetworkError;
+            const networkError = error as NetworkError;
             logger.error('Failed to make move', { 
                 component: 'useMultiplayerGame',
                 data: { error: networkError }
@@ -165,7 +165,7 @@ export const useMultiplayerGame = () => {
                 component: 'useMultiplayerGame'
             });
         } catch (error) {
-            const networkError = error as INetworkError;
+            const networkError = error as NetworkError;
             logger.error('Failed to end turn', { 
                 component: 'useMultiplayerGame',
                 data: { error: networkError }
