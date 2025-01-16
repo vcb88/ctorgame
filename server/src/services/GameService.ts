@@ -5,15 +5,15 @@ import type {
     PlayerNumber,
     Scores,
     GameStatus,
-    GameMoveComplete,
-    GameHistoryEntry
-} from '@ctor-game/shared/types/primitives';
+    GameId,
+    Position
+} from '@ctor-game/shared/src/types/core.js';
 
 import type {
     GameMeta,
     GameHistory,
     GameHistorySummary
-} from '@ctor-game/shared/types/storage/metadata';
+} from '@ctor-game/shared/src/types/storage.js';
 
 import { GameLogicService } from './GameLogicService.js';
 import { GameStorageService } from './GameStorageService.js';
@@ -67,7 +67,7 @@ export class GameService {
         }
     }
 
-    async createGame(playerId: string, gameId: string): Promise<GameMeta> {
+    async createGame(playerId: string, gameId: GameId): Promise<GameMeta> {
         const startTime = Date.now();
         await this.ensureInitialized();
 
@@ -114,12 +114,12 @@ export class GameService {
         }
     }
 
-    async findGame(gameIdOrCode: string): Promise<GameMeta | null> {
+    async findGame(gameIdOrCode: GameId): Promise<GameMeta | null> {
         await this.ensureInitialized();
         return this.storageService.findGameByCode(gameIdOrCode);
     }
 
-    async joinGame(gameId: string, playerId: string): Promise<GameMeta> {
+    async joinGame(gameId: GameId, playerId: string): Promise<GameMeta> {
         const startTime = Date.now();
         await this.ensureInitialized();
 
@@ -162,7 +162,7 @@ export class GameService {
         }
     }
 
-    async makeMove(gameId: string, playerNumber: PlayerNumber, move: GameMove): Promise<GameState> {
+    async makeMove(gameId: GameId, playerNumber: PlayerNumber, move: GameMove): Promise<GameState> {
         const startTime = Date.now();
         await this.ensureInitialized();
 
@@ -218,7 +218,7 @@ export class GameService {
     }
 
     async finishGame(
-        gameId: string,
+        gameId: GameId,
         winner: PlayerNumber,
         scores: Scores
     ): Promise<void> {
@@ -262,12 +262,12 @@ export class GameService {
         return this.storageService.getSavedGames();
     }
 
-    async getGameHistory(gameId: string): Promise<GameHistory> {
+    async getGameHistory(gameId: GameId): Promise<GameHistory> {
         await this.ensureInitialized();
         return this.storageService.getGameHistory(gameId);
     }
 
-    async getGameStateAtMove(gameId: string, moveNumber: number): Promise<GameState | null> {
+    async getGameStateAtMove(gameId: GameId, moveNumber: number): Promise<GameState | null> {
         await this.ensureInitialized();
         const history = await this.getGameHistory(gameId);
         
@@ -286,7 +286,7 @@ export class GameService {
         return state;
     }
 
-    async expireGame(gameId: string): Promise<void> {
+    async expireGame(gameId: GameId): Promise<void> {
         const startTime = Date.now();
         await this.ensureInitialized();
 

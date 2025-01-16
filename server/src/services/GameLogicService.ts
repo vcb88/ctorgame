@@ -8,14 +8,9 @@ import type {
     Scores,
     GameState,
     GameMove,
-    CellValue
-} from '@ctor-game/shared/types/primitives';
-
-const GameStatuses = {
-    WAITING: 'waiting' as const,
-    ACTIVE: 'playing' as const,
-    FINISHED: 'finished' as const
-} as const;
+    CellValue,
+    Board
+} from '@ctor-game/shared/src/types/core.js';
 import { getAdjacentPositions } from '../utils/geometry.js';
 import { getOpponent } from '../utils/game.js';
 
@@ -40,20 +35,20 @@ export class GameLogicService {
    * @returns Начальное состояние игры
    */
   static createInitialState(): GameState {
-    // Создаем пустую доску с null значениями
-    const board = Array(BOARD_SIZE)
-      .fill(null)
-      .map(() => Object.freeze(Array(BOARD_SIZE).fill(null)));
+    // Create empty board with 0 values (empty cells)
+    const board: Board = Array(BOARD_SIZE)
+      .fill(0)
+      .map(() => Object.freeze(Array(BOARD_SIZE).fill(0)));
 
-    // Создаем начальные очки
+    // Set initial scores
     const scores: Scores = [0, 0];
 
-    // Формируем начальное состояние
+    // Create initial state
     return {
       board: Object.freeze(board),
       scores,
-      currentPlayer: 1,
-      status: GameStatuses.ACTIVE,
+      currentPlayer: 1 as PlayerNumber,
+      status: 'playing' as GameStatus,
       timestamp: Date.now()
     };
   }
@@ -76,18 +71,18 @@ export class GameLogicService {
     
     const [x, y] = pos;
 
-    // Проверяем базовые условия
+    // Check basic conditions
     if (x < 0 || x >= BOARD_SIZE || y < 0 || y >= BOARD_SIZE) {
       return false;
     }
 
     if (type === 'place') {
-      // Для операции размещения проверяем, свободна ли клетка
-      return state.board[y][x] === null;
+      // For placement operation check if cell is empty
+      return state.board[y][x] === 0;
     } else if (type === 'replace') {
-      // Для операции замены проверяем:
-      // 1. Находится ли в клетке фишка противника
-      // 2. Достаточно ли своих фишек вокруг
+      // For replacement operation check:
+      // 1. If cell contains opponent's piece
+      // 2. If there are enough player's pieces around
       return (
         state.board[y][x] === getOpponent(playerNumber) &&
         this.validateReplace(state.board, pos, playerNumber).isValid
@@ -243,9 +238,9 @@ export class GameLogicService {
   /**
    * Проверяет, закончилась ли игра
    */
-  private static checkGameOver(board: ReadonlyArray<ReadonlyArray<number | null>>): boolean {
-    // Игра заканчивается, когда все клетки заняты
-    return board.every(row => row.every(cell => cell !== null));
+  private static checkGameOver(board: ReadonlyArray<ReadonlyArray<CellValue>>): boolean {
+    // Game ends when there are no empty cells
+    return board.every(row => row.every(cell => cell !== 0));
   }
 
   /**
