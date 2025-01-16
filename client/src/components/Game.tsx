@@ -2,16 +2,17 @@ import React, { useState, useEffect } from 'react';
 import { useMultiplayerGame } from '@/hooks/useMultiplayerGame';
 // Game types
 import type { 
-  IGameState,
-  IGameScores,
+  GameState,
   GameStatus,
-  OperationType as GameOperationType
-} from '@ctor-game/shared/src/types/game/types.js';
+  MoveType,
+  GameMove
+} from '@ctor-game/shared/src/types/core.js';
 import type {
   PlayerNumber,
   CellValue,
   Position,
-  Scores
+  Scores,
+  GameId
 } from '@ctor-game/shared/src/types/core.js';
 
 import { cn } from '@/lib/utils';
@@ -56,20 +57,22 @@ export const Game: React.FC = () => {
   const [joinGameId, setJoinGameId] = useState('');
 
   const handleCellClick = (row: number, col: number) => {
-    logger.userAction('cellClick', { row, col });
+    // Convert to [x, y] position format
+    const position: Position = [col, row];
+    logger.userAction('cellClick', { position });
 
     if (!isMyTurn) {
       logger.debug('Cell click ignored - not player\'s turn', {
         component: 'Game',
-        data: { row, col, currentPlayer: gameState?.currentPlayer }
+        data: { position, currentPlayer: gameState?.currentPlayer }
       });
       return;
     }
 
-    if (gameState?.board[row][col] !== null) {
+    if (gameState?.board[row][col] !== 0) {  // Using CellValue (0 = empty)
       logger.debug('Cell click ignored - cell not empty', {
         component: 'Game',
-        data: { row, col, cellValue: gameState?.board[row][col] }
+        data: { position, cellValue: gameState?.board[row][col] }
       });
       return;
     }
@@ -77,7 +80,7 @@ export const Game: React.FC = () => {
     if (gameState?.gameOver) {
       logger.debug('Cell click ignored - game is over', {
         component: 'Game',
-        data: { row, col }
+        data: { position }
       });
       return;
     }
@@ -85,13 +88,13 @@ export const Game: React.FC = () => {
     if (gameState?.currentTurn.placeOperationsLeft <= 0) {
       logger.debug('Cell click ignored - no operations left', {
         component: 'Game',
-        data: { row, col, operationsLeft: gameState?.currentTurn.placeOperationsLeft }
+        data: { position, operationsLeft: gameState?.currentTurn.placeOperationsLeft }
       });
       return;
     }
 
-    logger.userAction('makeMove', { row, col, type: GameOperationType.PLACE });
-    makeMove(row, col, GameOperationType.PLACE);
+    logger.userAction('makeMove', { position, type: 'place' as MoveType });
+    makeMove(position);  // Using position in [x, y] format
   };
 
   if (error) {
@@ -189,8 +192,8 @@ export const Game: React.FC = () => {
         <div className="grid grid-cols-10 gap-1 bg-gray-200 p-2">
           {gameState.board.map((row: CellValue[], rowIndex: number) =>
             row.map((cell: CellValue, colIndex: number) => {
-              const position: Position = [colIndex, rowIndex];
-              const isDisabled = !isMyTurn || cell !== null || gameState.gameOver || gameState.currentTurn.placeOperationsLeft <= 0;
+              const position: Position = [colIndex, rowIndex];  // [x, y] format
+              const isDisabled = !isMyTurn || cell !== 0 || gameState.gameOver || gameState.currentTurn.placeOperationsLeft <= 0;
               return (
                 <GameCell
                   key={`${rowIndex}-${colIndex}`}
@@ -198,7 +201,7 @@ export const Game: React.FC = () => {
                   value={cell}
                   disabled={isDisabled}
                   onClick={() => handleCellClick(rowIndex, colIndex)}
-                  isValidMove={!isDisabled && cell === null && gameState.currentTurn.placeOperationsLeft > 0}
+                  isValidMove={!isDisabled && cell === 0 && gameState.currentTurn.placeOperationsLeft > 0}
                 />
               );
             })
