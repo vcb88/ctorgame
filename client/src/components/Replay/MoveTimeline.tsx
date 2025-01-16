@@ -1,16 +1,17 @@
 import React from 'react';
-import type { Position, PlayerNumber, MoveType, Timestamp } from '@ctor-game/shared/src/types/core.js';
+import type { 
+    Position, 
+    PlayerNumber, 
+    MoveType, 
+    Timestamp, 
+    GameMove 
+} from '@ctor-game/shared/src/types/core.js';
 import { ScrollArea } from '../ui/scroll-area';
-
-type GameHistoryMove = {
-    type: MoveType;
-    pos: Position;
-};
 
 type HistoryEntry = {
     moveNumber: number;
     playerNumber: PlayerNumber;
-    move: GameHistoryMove;
+    move: GameMove;  // Using core GameMove type
     timestamp: Timestamp;
 };
 
