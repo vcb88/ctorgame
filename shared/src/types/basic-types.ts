@@ -1,13 +1,11 @@
-import { PlayerNumber, Position, Size, GameStatus } from './core.js';
+/**
+ * Basic type aliases and re-exports
+ * @deprecated Use types from base/primitives.js directly
+ */
 
-// Player type
-export type Player = 0 | PlayerNumber;  // 0 for None, 1 or 2 for players
+import { PlayerNumber, Position, Size, GameStatus } from './base/primitives.js';
 
-// Position type (reexporting from core)
-export type { Position };
+export type { Position, Size as BoardSize, GameStatus };
 
-// Board size type (reexporting from core)
-export type BoardSize = Size;
-
-// Game status type (reexporting from core)
-export type { GameStatus };
+// Extended player type including "none" (0)
+export type ExtendedPlayer = 0 | PlayerNumber;  // 0 for None, 1 or 2 for players
