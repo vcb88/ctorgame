@@ -2,51 +2,49 @@
  * Board state types
  */
 
-import type { Position, Size } from '../core/primitives.js';
-import type { PlayerNumber } from '../game/types.js';
+import type { Position, Size, PlayerNumber, Timestamp, ValidationResult, Version } from '../base/primitives.js';
 import { CellStateEnum } from './enums.js';
 
 /** Board cell interface */
 export interface BoardCell {
     position: Position;
     value: CellStateEnum;
-    lastModified?: number;
+    lastModified?: Timestamp;
     placedBy?: PlayerNumber;
 }
 
-/** Board row interface */
-export interface BoardRow {
-    cells: Array<BoardCell>;
+/** Board row */
+export type BoardRow = {
+    cells: BoardCell[];
     y: number;
-}
+};
 
-/** Game board interface */
-export interface Board {
+/** Game board */
+export type Board = {
     size: Size;
-    rows: Array<BoardRow>;
-    lastModified: number;
-    version: string;
-}
+    rows: BoardRow[];
+    lastModified: Timestamp;
+    version: Version;
+};
 
 /** Board region for move validation */
-export interface BoardRegion {
+export type BoardRegion = {
     position: Position;
     size: Size;
-    cells: Array<BoardCell>;
-}
+    cells: BoardCell[];
+};
 
 /** Board statistics */
-export interface BoardStats {
+export type BoardStats = {
     emptyCells: number;
     player1Cells: number;
     player2Cells: number;
     totalMoves: number;
     lastMove?: Position;
-}
+};
 
 /** Board validation result */
-export interface BoardValidation {
-    valid: boolean;
+export interface BoardValidation extends ValidationResult {
     errors: string[];
     warnings: string[];
 }

@@ -2,51 +2,49 @@
  * Move state types
  */
 
-import type { Position } from '../core/primitives.js';
-import type { PlayerNumber } from '../game/types.js';
-import { MoveOperationEnum } from './enums.js';
+import type { Position, PlayerNumber, Timestamp, MoveType, ValidationResult } from '../base/primitives.js';
+import type { GameState } from './game.js';
 
-/** Basic move interface */
-export interface Move {
-    readonly type: MoveOperationEnum;
-    readonly position?: Position;
-}
+/** Basic move */
+export type Move = {
+    type: MoveType;
+    position?: Position;
+};
 
 /** Validated move with replacements */
-export interface ValidatedMove extends Move {
-    readonly replacements?: ReadonlyArray<Position>;
-    readonly affects?: ReadonlyArray<Position>;
-}
+export type ValidatedMove = Move & {
+    replacements?: Position[];
+    affects?: Position[];
+};
 
 /** Game move with player info */
-export interface GameMove extends ValidatedMove {
-    readonly player: PlayerNumber;
-    readonly timestamp: number;
-    readonly moveNumber: number;
-}
+export type GameMove = ValidatedMove & {
+    player: PlayerNumber;
+    timestamp: Timestamp;
+    moveNumber: number;
+};
 
-/** Move validation result */
-export interface MoveValidation {
-    readonly valid: boolean;
-    readonly reason?: string;
-    readonly replacements?: ReadonlyArray<Position>;
-    readonly affects?: ReadonlyArray<Position>;
+/** Move validation result with affected positions */
+export interface MoveValidation extends ValidationResult {
+    reason?: string;
+    replacements?: Position[];
+    affects?: Position[];
 }
 
 /** Turn state */
-export interface TurnState {
-    readonly currentPlayer: PlayerNumber;
-    readonly moves: ReadonlyArray<GameMove>;
-    readonly placeOperationsLeft: number;
-    readonly replaceOperationsLeft: number;
-    readonly moveCount: number;
-    readonly startTime: number;
-    readonly timeLeft?: number;
-}
+export type TurnState = {
+    currentPlayer: PlayerNumber;
+    moves: GameMove[];
+    placeOperationsLeft: number;
+    replaceOperationsLeft: number;
+    moveCount: number;
+    startTime: Timestamp;
+    timeLeft?: number;
+};
 
 /** Move history entry */
-export interface MoveHistoryEntry {
-    readonly move: GameMove;
-    readonly resultingState: GameState;
-    readonly timestamp: number;
-}
+export type MoveHistoryEntry = {
+    move: GameMove;
+    resultingState: GameState;
+    timestamp: Timestamp;
+};
