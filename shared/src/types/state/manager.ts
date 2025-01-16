@@ -9,32 +9,32 @@ import type { StateStorageOptions } from './storage.js';
 
 /** Manager configuration */
 export interface StateManagerConfig {
-    readonly storage: StateStorageOptions;
-    readonly validation: {
-        readonly validateMoves: boolean;
-        readonly validateState: boolean;
-        readonly strict: boolean;
+    storage: StateStorageOptions;
+    validation: {
+        validateMoves: boolean;
+        validateState: boolean;
+        strict: boolean;
     };
-    readonly autoSave: boolean;
-    readonly snapshotting: boolean;
+    autoSave: boolean;
+    snapshotting: boolean;
 }
 
 /** Manager state */
 export interface ManagerState {
-    readonly gameId: UUID;
-    readonly currentState: GameState;
-    readonly lastOperation: string;
-    readonly lastModified: Timestamp;
-    readonly error: Error | null;
+    gameId: UUID;
+    currentState: GameState;
+    lastOperation: string;
+    lastModified: Timestamp;
+    error: Error | null;
 }
 
 /** State transition */
 export interface StateTransition {
-    readonly from: GameState;
-    readonly to: GameState;
-    readonly move?: GameMove;
-    readonly validation?: MoveValidation;
-    readonly timestamp: Timestamp;
+    from: GameState;
+    to: GameState;
+    move?: GameMove;
+    validation?: MoveValidation;
+    timestamp: Timestamp;
 }
 
 /** State manager interface */

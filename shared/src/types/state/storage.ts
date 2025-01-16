@@ -8,37 +8,37 @@ import type { GameState, GameStateSnapshot } from './game.js';
 
 /** Storage options */
 export interface StateStorageOptions {
-    readonly persistence: StatePersistenceEnum;
-    readonly validation: StateValidationEnum;
-    readonly versioning: boolean;
-    readonly snapshotting?: {
-        readonly enabled: boolean;
-        readonly interval?: number;
-        readonly maxSnapshots?: number;
+    persistence: StatePersistenceEnum;
+    validation: StateValidationEnum;
+    versioning: boolean;
+    snapshotting?: {
+        enabled: boolean;
+        interval?: number;
+        maxSnapshots?: number;
     };
 }
 
 /** State metadata */
 export interface StateMetadata {
-    readonly id: UUID;
-    readonly version: Version;
-    readonly created: Timestamp;
-    readonly modified: Timestamp;
-    readonly expires?: Timestamp;
-    readonly snapshotCount?: number;
-    readonly size?: number;
+    id: UUID;
+    version: Version;
+    created: Timestamp;
+    modified: Timestamp;
+    expires?: Timestamp;
+    snapshotCount?: number;
+    size?: number;
 }
 
 /** Stored state */
 export interface StoredState<T = GameState> {
-    readonly data: T;
-    readonly metadata: StateMetadata;
+    data: T;
+    metadata: StateMetadata;
 }
 
 /** State storage interface */
 export interface StateStorage {
     /** Get all state keys with optional prefix */
-    getKeys(prefix?: string): ReadonlyArray<string>;
+    getKeys(prefix?: string): Array<string>;
 
     /** Save state */
     saveState(key: string, state: unknown): void;
@@ -53,7 +53,7 @@ export interface StateStorage {
     loadSnapshot(key: string, version: string): GameStateSnapshot | null;
 
     /** List snapshots */
-    listSnapshots(key: string): ReadonlyArray<GameStateSnapshot>;
+    listSnapshots(key: string): Array<GameStateSnapshot>;
 
     /** Remove state */
     removeState(key: string): void;
