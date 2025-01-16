@@ -1,4 +1,4 @@
-import type { IGameMove, GameStatus, IGameScores } from '@ctor-game/shared/types/game/types';
+import type { GameMove, GameStatus, Scores } from '@ctor-game/shared/types/game/types';
 import type { GameMetadata, GameDetails } from '@ctor-game/shared/types/storage/metadata';
 import type { IGameHistory } from '@ctor-game/shared/types/storage/history';
 import { validateGameHistoryEntry } from '@ctor-game/shared/utils/validation/replay';
@@ -64,7 +64,7 @@ export class GameStorageService {
      * @param path path to the game file
      * @returns game data with moves and metadata
      */
-    private readGameFile(path: string): { moves: IGameMove[], metadata: Record<string, unknown> } {
+    private readGameFile(path: string): { moves: GameMove[], metadata: Record<string, unknown> } {
         try {
             const content = readFileSync(path, 'utf8');
             return JSON.parse(content);
@@ -78,7 +78,7 @@ export class GameStorageService {
      * @param path path to the game file
      * @param data game data to write
      */
-    private writeGameFile(path: string, data: { moves: IGameMove[], metadata: Record<string, unknown> }): void {
+    private writeGameFile(path: string, data: { moves: GameMove[], metadata: Record<string, unknown> }): void {
         writeFileSync(path, JSON.stringify(data, null, 2), 'utf8');
     }
 
@@ -223,7 +223,7 @@ export class GameStorageService {
         return result;
     }
 
-    async recordMove(gameId: string, move: IGameMove): Promise<void> {
+    async recordMove(gameId: string, move: GameMove): Promise<void> {
         const gamePath = this.getGamePath(gameId);
         const gameData = this.readGameFile(gamePath);
         gameData.moves.push(move);
@@ -256,7 +256,7 @@ export class GameStorageService {
     async finishGame(
         gameId: string,
         winner: number,
-        scores: IGameScores
+        scores: Scores
     ): Promise<void> {
         const now = new Date();
         const game = await this.gamesCollection.findOneAndUpdate(

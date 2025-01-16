@@ -1,4 +1,4 @@
-import type { PlayerNumber, IGameScores } from '@ctor-game/shared/types/game/types';
+import type { PlayerNumber, Scores } from '@ctor-game/shared/types/game/types';
 
 /**
  * Returns the opponent's player number
@@ -15,9 +15,6 @@ export function getOpponent(playerNumber: PlayerNumber): PlayerNumber {
  * @param player2 Score for player 2
  * @returns Game scores object
  */
-export function createScores(player1: number, player2: number): IGameScores {
-    return {
-        player1,
-        player2
-    };
+export function createScores(player1: number, player2: number): Scores {
+    return [player1, player2];
 }

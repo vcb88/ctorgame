@@ -1,7 +1,7 @@
 import { logger } from '../utils/logger.js';
 import { GameError } from '../errors/GameError.js';
 import { 
-    INetworkError,
+    NetworkError,
     createError,
     isNetworkError
 } from '@ctor-game/shared/types/network/errors.js';
@@ -30,7 +30,7 @@ export class ErrorHandlingService {
     /**
      * Handles an error and returns formatted error response
      */
-    public handleError(error: Error | GameError | INetworkError): INetworkError {
+    public handleError(error: Error | GameError | NetworkError): NetworkError {
         // If it's already a NetworkError, just return it
         if (isNetworkError(error)) {
             this.logError(error);
@@ -113,7 +113,7 @@ export class ErrorHandlingService {
      * Logs error for monitoring and analytics
      */
     public logError(
-        error: Error | GameError | INetworkError,
+        error: Error | GameError | NetworkError,
         context?: Record<string, unknown>
     ): void {
         const logContext = {

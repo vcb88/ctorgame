@@ -1,4 +1,4 @@
-import { IErrorWithStack } from '@ctor-game/shared/utils/errors';
+import { ErrorWithStack } from '@ctor-game/shared/utils/errors';
 
 const DEBUG = true;
 
@@ -13,17 +13,17 @@ interface GameLogger {
 
 interface StorageLogger {
   operation: (action: string, data: unknown, context?: Record<string, unknown>) => void;
-  error: (error: IErrorWithStack, context: Record<string, unknown>) => void;
+  error: (error: ErrorWithStack, context: Record<string, unknown>) => void;
 }
 
 interface NetworkLogger {
   socketEvent: (event: string, data: unknown, direction: 'in' | 'out', context: LogOptions['context']) => void;
-  error: (error: IErrorWithStack, context: Record<string, unknown>) => void;
+  error: (error: ErrorWithStack, context: Record<string, unknown>) => void;
 }
 
 interface DBLogger {
   operation: (action: string, data: unknown, context?: Record<string, unknown>) => void;
-  error: (error: IErrorWithStack, context: Record<string, unknown>) => void;
+  error: (error: ErrorWithStack, context: Record<string, unknown>) => void;
 }
 
 interface Logger {
@@ -52,12 +52,12 @@ interface LogOptions {
     timestamp?: string;
     move?: unknown;
     state?: unknown;
-    error?: IErrorWithStack;
+    error?: ErrorWithStack;
     duration?: number;
     [key: string]: any;
   };
   results?: unknown;
-  error?: IErrorWithStack;
+  error?: ErrorWithStack;
   gameState?: unknown;
   connection?: unknown;
   storage?: unknown;

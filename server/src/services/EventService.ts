@@ -5,8 +5,8 @@
 import { RedisService } from './RedisService.js';
 import type { GameEvent, EventType } from '@ctor-game/shared/types/network/events';
 import { validateEvent } from '@ctor-game/shared/types/network/events';
-import type { IGameState, IGameMove, PlayerNumber } from '@ctor-game/shared/types/game/types';
-import type { IGameError } from '@ctor-game/shared/types/network/errors';
+import type { GameState, GameMove, PlayerNumber } from '@ctor-game/shared/types/game/types';
+import type { NetworkError } from '@ctor-game/shared/types/network/errors';
 import { generateId } from '../utils/id.js';
 import { logger } from '../utils/logger.js';
 
@@ -70,7 +70,7 @@ export class EventService {
         });
     }
 
-    async createGameStartedEvent(gameId: string, state: IGameState): Promise<GameEvent> {
+    async createGameStartedEvent(gameId: string, state: GameState): Promise<GameEvent> {
         return this.createEvent<GameEvent>({
             type: 'game_started',
             gameId,
@@ -83,8 +83,8 @@ export class EventService {
     async createGameMoveEvent(
         gameId: string,
         playerId: string,
-        move: IGameMove,
-        state: IGameState
+        move: GameMove,
+        state: GameState
     ): Promise<GameEvent> {
         return this.createEvent<GameEvent>({
             type: 'game_move',
@@ -100,7 +100,7 @@ export class EventService {
     async createGameEndedEvent(
         gameId: string,
         winner: PlayerNumber | null,
-        finalState: IGameState
+        finalState: GameState
     ): Promise<GameEvent> {
         return this.createEvent<GameEvent>({
             type: 'game_ended',
@@ -157,7 +157,7 @@ export class EventService {
 
     async createErrorEvent(
         gameId: string,
-        error: IGameError,
+        error: NetworkError,
         playerId?: string
     ): Promise<GameEvent> {
         return this.createEvent<GameEvent>({
