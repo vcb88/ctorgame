@@ -1,12 +1,16 @@
 import React from 'react';
 import { cn } from '@/lib/utils';
-import { BOARD_SIZE } from '@ctor-game/shared/src/types/core.js';
-import type { PlayerNumber, Position } from '@ctor-game/shared/src/types/core.js';
+import { BOARD_SIZE } from '@ctor-game/shared/src/config/constants.js';
+import type { 
+    CellValue,
+    Position,
+    PlayerNumber 
+} from '@ctor-game/shared/src/types/core.js';
 import type { CellAnimationState } from '@/types/animations';
 
 type GameCellProps = {
   position: Position;
-  value: PlayerNumber | null;
+  value: CellValue;
   disabled: boolean;
   onClick?: () => void;
   isValidMove?: boolean;
@@ -17,7 +21,7 @@ type GameCellProps = {
 };
 
 export const GameCell: React.FC<GameCellProps> = ({
-  position: [row, col],
+  position: [x, y],  // Using [x, y] format consistently
   value,
   disabled,
   onClick,
@@ -110,24 +114,24 @@ export const GameCell: React.FC<GameCellProps> = ({
       <div className={cn(
         "absolute inset-0 pointer-events-none",
         {
-          "before:absolute before:left-0 before:right-0 before:h-0.5 before:bg-cyan-400/50 before:shadow-[0_0_5px_rgba(6,182,212,0.5)] before:top-0": row === 0,
-          "after:absolute after:left-0 after:right-0 after:h-0.5 after:bg-cyan-400/50 after:shadow-[0_0_5px_rgba(6,182,212,0.5)] after:bottom-0": row === BOARD_SIZE - 1,
-          "before:absolute before:top-0 before:bottom-0 before:w-0.5 before:bg-cyan-400/50 before:shadow-[0_0_5px_rgba(6,182,212,0.5)] before:left-0": col === 0,
-          "after:absolute after:top-0 after:bottom-0 after:w-0.5 after:bg-cyan-400/50 after:shadow-[0_0_5px_rgba(6,182,212,0.5)] after:right-0": col === BOARD_SIZE - 1
+          "before:absolute before:left-0 before:right-0 before:h-0.5 before:bg-cyan-400/50 before:shadow-[0_0_5px_rgba(6,182,212,0.5)] before:top-0": y === 0,
+          "after:absolute after:left-0 after:right-0 after:h-0.5 after:bg-cyan-400/50 after:shadow-[0_0_5px_rgba(6,182,212,0.5)] after:bottom-0": y === BOARD_SIZE - 1,
+          "before:absolute before:top-0 before:bottom-0 before:w-0.5 before:bg-cyan-400/50 before:shadow-[0_0_5px_rgba(6,182,212,0.5)] before:left-0": x === 0,
+          "after:absolute after:top-0 after:bottom-0 after:w-0.5 after:bg-cyan-400/50 after:shadow-[0_0_5px_rgba(6,182,212,0.5)] after:right-0": x === BOARD_SIZE - 1
         }
       )}></div>
 
       {/* Toroidal connection points with TRON style */}
-      {row === 0 && (
+      {y === 0 && (
         <div className="absolute -top-1 left-1/2 transform -translate-x-1/2 w-1 h-1 bg-cyan-400 shadow-[0_0_5px_rgba(6,182,212,0.8)] rounded-full"></div>
       )}
-      {row === BOARD_SIZE - 1 && (
+      {y === BOARD_SIZE - 1 && (
         <div className="absolute -bottom-1 left-1/2 transform -translate-x-1/2 w-1 h-1 bg-cyan-400 shadow-[0_0_5px_rgba(6,182,212,0.8)] rounded-full"></div>
       )}
-      {col === 0 && (
+      {x === 0 && (
         <div className="absolute -left-1 top-1/2 transform -translate-y-1/2 w-1 h-1 bg-cyan-400 shadow-[0_0_5px_rgba(6,182,212,0.8)] rounded-full"></div>
       )}
-      {col === BOARD_SIZE - 1 && (
+      {x === BOARD_SIZE - 1 && (
         <div className="absolute -right-1 top-1/2 transform -translate-y-1/2 w-1 h-1 bg-cyan-400 shadow-[0_0_5px_rgba(6,182,212,0.8)] rounded-full"></div>
       )}
     </div>

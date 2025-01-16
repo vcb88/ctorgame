@@ -1,17 +1,19 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { GameCell } from './GameCell';
 import type { 
-    PlayerNumber,
+    Board,
+    CellValue,
     Position,
     GameError,
-    MoveType 
+    MoveType,
+    PlayerNumber
 } from '@ctor-game/shared/src/types/core.js';
 import type { GameActionType } from '../types/actions';
 import { logger } from '../utils/logger';
 import type { CellAnimationState } from '../types/animations';
 
 type GameBoardProps = {
-    board: (PlayerNumber | null)[][];
+    board: Board;
     onCellClick?: (row: number, col: number) => void;
     disabled?: boolean;
     lastMove?: Position;
@@ -136,6 +138,7 @@ export function GameBoard({
         const now = Date.now();
         
         capturedPositions.forEach(([x, y]) => {
+          // Using consistent [x, y] Position format
           newStates[`${y}-${x}`] = {
             isAnimating: true,
             type: 'capture',
@@ -148,6 +151,7 @@ export function GameBoard({
         });
         
         placedPositions.forEach(([x, y]) => {
+          // Using consistent [x, y] Position format
           newStates[`${y}-${x}`] = {
             isAnimating: true,
             type: 'place',
@@ -183,7 +187,7 @@ export function GameBoard({
   const handleCellClick = useCallback((rowIndex: number, colIndex: number) => {
     if (!onCellClick) return;
 
-    const position: Position = [colIndex, rowIndex];
+    const position: Position = [colIndex, rowIndex];  // Using [x, y] format
     const cellKey = `${rowIndex}-${colIndex}`;
     const isAnimating = animationStates[cellKey]?.isAnimating;
 
