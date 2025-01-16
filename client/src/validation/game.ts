@@ -1,18 +1,20 @@
 import type { GameMove } from '@ctor-game/shared/types/game/moves';
-import type { IGameState } from '@ctor-game/shared/types/game/state';
-import type { IPosition, IBoardSize } from '@ctor-game/shared/types/base/primitives';
+import type { GameState } from '@ctor-game/shared/types/game';
+import type { Position, Size } from '@ctor-game/shared/types/base/primitives';
 import type { Player } from '@ctor-game/shared/types/enums';
 
-export function validatePosition(pos: IPosition, size: IBoardSize): boolean {
+export function validatePosition(pos: Position, size: Size): boolean {
   return (
-    typeof pos.x === 'number' &&
-    typeof pos.y === 'number' &&
-    pos.x >= 0 && pos.x < size.width &&
-    pos.y >= 0 && pos.y < size.height
+    Array.isArray(pos) &&
+    pos.length === 2 &&
+    typeof pos[0] === 'number' &&
+    typeof pos[1] === 'number' &&
+    pos[0] >= 0 && pos[0] < size[0] &&
+    pos[1] >= 0 && pos[1] < size[1]
   );
 }
 
-export function validateGameMove(move: GameMove, boardSize: IBoardSize): boolean {
+export function validateGameMove(move: GameMove, boardSize: Size): boolean {
   return (
     move &&
     typeof move.type === 'string' &&
@@ -22,12 +24,12 @@ export function validateGameMove(move: GameMove, boardSize: IBoardSize): boolean
   );
 }
 
-export function validateGameState(state: IGameState): boolean {
+export function validateGameState(state: GameState): boolean {
   if (!state || !state.board || !state.board.cells || !state.board.size) {
     return false;
   }
 
-  const { width, height } = state.board.size;
+  const [width, height] = state.board.size;
   const board = state.board.cells;
 
   return (

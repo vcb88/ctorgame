@@ -3,12 +3,12 @@ import { useGame } from './useGame';
 // Base types
 import type { OperationType, Player } from '@ctor-game/shared/types/enums';
 // Game types
-import type { IGameState } from '@ctor-game/shared/types/game';
+import type { GameState } from '@ctor-game/shared/types/game';
 import type { GameActionType } from '@ctor-game/shared/types/game';
 // Network types
 import type { ConnectionState } from '@ctor-game/shared/types/network';
 // Error types
-import type { ErrorCode, ErrorSeverity, IErrorResponse as GameError } from '@ctor-game/shared/types/network/types';
+import type { ErrorCode, ErrorSeverity, NetworkError as GameError } from '@ctor-game/shared/types/network/errors';
 // Services and utils
 import { GameStateManager } from '../services/GameStateManager';
 import { validateGameMove } from '@ctor-game/shared/validation/game';
@@ -18,7 +18,7 @@ export interface UseMultiplayerGameReturn {
   // Game state
   gameId: string | null;
   playerNumber: Player | null;
-  gameState: IGameState | null;
+  gameState: GameState | null;
   currentPlayer: Player;
   isMyTurn: boolean;
   availableReplaces: [];

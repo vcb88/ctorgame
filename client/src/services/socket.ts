@@ -1,12 +1,12 @@
 import { io, Socket } from 'socket.io-client';
 import type {
-    IWebSocketServerConfig,
+    WebSocketServerConfig,
     ServerToClientEvents,
     ClientToServerEvents,
     InterServerEvents,
-    ISocketData
+    SocketData
 } from '@ctor-game/shared/src/types/network/websocket.js';
-import type { INetworkError } from '@ctor-game/shared/src/types/network/errors.js';
+import type { NetworkError } from '@ctor-game/shared/src/types/network/errors.js';
 
 interface ImportMetaEnv {
   VITE_WS_URL: string;
@@ -25,7 +25,7 @@ declare global {
 type GameSocket = Socket<ServerToClientEvents, ClientToServerEvents>;
 let socket: GameSocket | null = null;
 
-export const socketConfig: Partial<IWebSocketServerConfig> & {
+export const socketConfig: Partial<WebSocketServerConfig> & {
     autoConnect: boolean;
     reconnection: boolean;
     reconnectionAttempts: number;
@@ -66,7 +66,7 @@ export function createSocket(config = socketConfig): GameSocket {
       console.log('[Socket] Connected, id:', socket?.id);
     });
 
-    socket.on('connect_error', (error: INetworkError) => {
+    socket.on('connect_error', (error: NetworkError) => {
       console.error('[Socket] Connection error:', {
         code: error.code,
         message: error.message,
@@ -79,7 +79,7 @@ export function createSocket(config = socketConfig): GameSocket {
       console.log('[Socket] Disconnected:', reason);
     });
 
-    socket.on('error', (error: INetworkError) => {
+    socket.on('error', (error: NetworkError) => {
       console.error('[Socket] Error:', {
         code: error.code,
         message: error.message,

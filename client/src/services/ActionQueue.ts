@@ -1,7 +1,7 @@
 import { ErrorRecoveryManager } from './ErrorRecoveryManager';
 import type { GameAction } from '@ctor-game/shared/src/types/game/actions.js';
-import type { IGameMove } from '@ctor-game/shared/src/types/game/types.js';
-import type { INetworkError } from '@ctor-game/shared/src/types/network/errors.js';
+import type { GameMove } from '@ctor-game/shared/src/types/game/types.js';
+import type { NetworkError } from '@ctor-game/shared/src/types/network/errors.js';
 import type { UUID } from '@ctor-game/shared/src/types/network/websocket.js';
 
 /**
@@ -10,13 +10,13 @@ import type { UUID } from '@ctor-game/shared/src/types/network/websocket.js';
 export type QueuedGameAction = 
     | { type: 'CREATE_GAME'; timestamp: number; }
     | { type: 'JOIN_GAME'; gameId: UUID; timestamp: number; }
-    | { type: 'MAKE_MOVE'; gameId: UUID; move: IGameMove; timestamp: number; }
+    | { type: 'MAKE_MOVE'; gameId: UUID; move: GameMove; timestamp: number; }
     | { type: 'END_TURN'; gameId: UUID; timestamp: number; };
 
 interface QueuedAction<T = unknown> {
     readonly action: QueuedGameAction;
     readonly resolve: (value: T) => void;
-    readonly reject: (error: INetworkError) => void;
+    readonly reject: (error: NetworkError) => void;
     readonly timestamp: number;
 }
 
@@ -115,7 +115,7 @@ export class ActionQueue {
                     severity: 'MEDIUM',
                     details: { action },
                     timestamp
-                } as INetworkError;
+                } as NetworkError;
             }
 
             // Process action (in MVP we just resolve immediately)
@@ -125,7 +125,7 @@ export class ActionQueue {
             this.queue.shift();
         } catch (error) {
             // Handle error
-            const clientError: INetworkError = {
+            const clientError: NetworkError = {
                 code: 'OPERATION_FAILED',
                 message: error instanceof Error ? error.message : 'Operation failed',
                 severity: 'MEDIUM',

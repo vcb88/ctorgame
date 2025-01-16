@@ -1,13 +1,12 @@
-import type { IGameAI, IAIConfig } from '@ctor-game/shared/types/ai';
-import type { IMoveEvaluation, IPositionStrength } from '@ctor-game/shared/types/ai';
-import type { IGameState } from '@ctor-game/shared/types/game';
-import type { IBoard } from '@ctor-game/shared/types/board';
-import type { IPosition } from '@ctor-game/shared/types/base/primitives';
+import type { GameAI as IGameAI, AIConfig, MoveEvaluation, PositionStrength } from '@ctor-game/shared/types/core/ai';
+import type { GameState } from '@ctor-game/shared/types/game';
+import type { Board } from '@ctor-game/shared/types/core/board';
+import type { Position } from '@ctor-game/shared/types/base/primitives';
 
 /**
  * Default AI configuration
  */
-const DEFAULT_CONFIG: IAIConfig = {
+const DEFAULT_CONFIG: AIConfig = {
     weights: {
         territory: 1.5,
         replacement: 1.2,
@@ -26,12 +25,12 @@ const DEFAULT_CONFIG: IAIConfig = {
  * Implementation of game AI based on original version
  */
 export class GameAI implements IGameAI {
-    private config: IAIConfig = DEFAULT_CONFIG;
+    private config: AIConfig = DEFAULT_CONFIG;
 
     /**
      * Initialize AI with configuration
      */
-    initialize(config: Partial<IAIConfig>): void {
+    initialize(config: Partial<AIConfig>): void {
         this.config = {
             ...DEFAULT_CONFIG,
             ...config,
@@ -45,9 +44,9 @@ export class GameAI implements IGameAI {
     /**
      * Find best move in current position
      */
-    async findBestMove(state: IGameState): Promise<IMoveEvaluation> {
+    async findBestMove(state: GameState): Promise<MoveEvaluation> {
         const startTime = Date.now();
-        let bestMove: IMoveEvaluation | null = null;
+        let bestMove: MoveEvaluation | null = null;
 
         // Evaluate all possible moves
         for (let x = 0; x < state.board.size.width; x++) {
@@ -57,7 +56,7 @@ export class GameAI implements IGameAI {
                     break;
                 }
 
-                const position: IPosition = { x, y };
+                const position: Position = [x, y];
                 const evaluation = this.analyzeMove(state, position);
 
                 if (!bestMove || evaluation.score > bestMove.score) {
@@ -76,7 +75,7 @@ export class GameAI implements IGameAI {
     /**
      * Evaluate position strength
      */
-    evaluatePosition(board: IBoard, player: number): IPositionStrength {
+    evaluatePosition(board: Board, player: number): PositionStrength {
         let pieces = 0;
         let territory = 0;
         let influence = 0;
@@ -132,7 +131,7 @@ export class GameAI implements IGameAI {
     /**
      * Analyze specific move
      */
-    analyzeMove(state: IGameState, position: IPosition): IMoveEvaluation {
+    analyzeMove(state: GameState, position: Position): MoveEvaluation {
         const evaluation = this.evaluateMove(state, position);
         
         // Apply weights from configuration
@@ -156,7 +155,7 @@ export class GameAI implements IGameAI {
      * Helper method to iterate over neighboring cells
      */
     private forEachNeighbor(
-        board: IBoard,
+        board: Board,
         x: number,
         y: number,
         radius: number,
@@ -178,7 +177,7 @@ export class GameAI implements IGameAI {
     /**
      * Evaluate all components of a move
      */
-    private evaluateMove(state: IGameState, position: IPosition): IMoveEvaluation['components'] {
+    private evaluateMove(state: GameState, position: Position): MoveEvaluation['components'] {
         let territory = 0;
         let replacement = 0;
         let mobility = 0;
