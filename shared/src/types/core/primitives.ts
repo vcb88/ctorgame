@@ -1,33 +1,45 @@
 /**
- * Core primitive interfaces that don't depend on any other types
+ * Core primitive types
  */
 
-export interface INumeric {
-    readonly value: number;
+/** Basic numeric types */
+export type Timestamp = number;
+export type UUID = string;
+export type Version = string;
+
+/** Player number (1 or 2) */
+export type PlayerNumber = 1 | 2;
+
+/** Position coordinates */
+export interface Position {
+    readonly x: number;
+    readonly y: number;
 }
 
-export interface IIdentifiable {
-    readonly id: string;
+/** Size dimensions */
+export interface Size {
+    readonly width: number;
+    readonly height: number;
 }
 
-export interface ITimestamped {
-    readonly timestamp: number;
-}
+/** Scores [player1, player2] */
+export type Scores = readonly [number, number];
 
-export interface IVersioned {
-    readonly version: string;
-}
+/** Game cell value - player number or empty */
+export type CellValue = PlayerNumber | null;
 
-export interface IExpiration {
-    readonly expiresAt: number;
-}
-
-export interface IData<T> {
-    readonly data: T;
-}
-
-// Basic validation interfaces
-export interface IValidatable {
+/** Basic validation result */
+export interface ValidationResult {
     readonly valid: boolean;
     readonly message?: string;
+}
+
+/** Collection type */
+export type Collection<T> = ReadonlyArray<T>;
+
+/** Metadata wrapper */
+export interface WithMetadata<T> {
+    readonly data: T;
+    readonly timestamp: Timestamp;
+    readonly version?: Version;
 }
