@@ -1,6 +1,6 @@
 import Redis from 'ioredis';
 import * as dotenv from 'dotenv';
-import type { TTLConfig } from '@ctor-game/shared/types/redis/config';
+import type { TTLConfig } from '@ctor-game/shared/types/redis';
 import { logger } from '../utils/logger.js';
 import { IErrorWithStack, toErrorWithStack } from '@ctor-game/shared/utils/errors';
 

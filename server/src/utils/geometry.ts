@@ -1,4 +1,4 @@
-import type { Position } from '@ctor-game/shared/types/geometry/types';
+import type { IPosition as Position } from '@ctor-game/shared/types/geometry/types';
 import { BOARD_SIZE } from '../config/constants.js';
 
 /**
