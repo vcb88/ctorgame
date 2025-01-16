@@ -9,62 +9,62 @@ import type { IStorageError } from './errors.js';
 
 /** Cache configuration */
 export interface ICacheConfig {
-    readonly ttl: number; // Time to live in seconds
-    readonly cleanupInterval?: number;
-    readonly maxSize?: number; // Maximum number of items
-    readonly strategy?: 'lru' | 'fifo'; // Eviction strategy
+    ttl: number; // Time to live in seconds
+    cleanupInterval?: number;
+    maxSize?: number; // Maximum number of items
+    strategy?: 'lru' | 'fifo'; // Eviction strategy
 }
 
 /** Redis specific types using composition */
 export interface IRedisGameState extends IGameState {
-    readonly lastUpdate: number;
-    readonly expiresAt: number;
+    lastUpdate: number;
+    expiresAt: number;
 }
 
 /** Game history record */
 export interface IGameHistoryRecord extends ITimestamped, IIdentifiable {
-    readonly gameId: string;
-    readonly move: IGameMove;
-    readonly resultingState: IGameState;
+    gameId: string;
+    move: IGameMove;
+    resultingState: IGameState;
 }
 
 /** Storage metadata */
 export interface IStorageMetadata extends ITimestamped {
-    readonly version: string;
-    readonly totalGames: number;
-    readonly activePlayers: number;
-    readonly storageType: StorageTypeEnum;
-    readonly size?: number;
+    version: string;
+    totalGames: number;
+    activePlayers: number;
+    storageType: StorageTypeEnum;
+    size?: number;
 }
 
 /** Operation result */
 export interface IOperationResult<T = unknown> {
-    readonly success: boolean;
-    readonly operation: StorageOperationEnum;
-    readonly timestamp: number;
-    readonly data?: T;
-    readonly error?: IStorageError;
+    success: boolean;
+    operation: StorageOperationEnum;
+    timestamp: number;
+    data?: T;
+    error?: IStorageError;
 }
 
 /** Backup metadata */
 export interface IBackupMetadata extends ITimestamped {
-    readonly id: string;
-    readonly version: string;
-    readonly itemCount: number;
-    readonly size: number;
-    readonly checksum: string;
+    id: string;
+    version: string;
+    itemCount: number;
+    size: number;
+    checksum: string;
 }
 
 /** Storage options */
 export interface IStorageOptions {
-    readonly type: StorageTypeEnum;
-    readonly prefix?: string;
-    readonly ttl?: number;
-    readonly cache?: ICacheConfig;
-    readonly backup?: {
-        readonly enabled: boolean;
-        readonly interval?: number;
-        readonly maxBackups?: number;
-        readonly path?: string;
+    type: StorageTypeEnum;
+    prefix?: string;
+    ttl?: number;
+    cache?: ICacheConfig;
+    backup?: {
+        enabled: boolean;
+        interval?: number;
+        maxBackups?: number;
+        path?: string;
     };
 }

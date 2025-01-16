@@ -7,17 +7,17 @@ import { StorageErrorEnum } from './enums.js';
 
 /** Storage error details */
 export interface IStorageErrorDetails extends IIdentifiable {
-    readonly key?: string;
-    readonly operation: string;
-    readonly timestamp: number;
-    readonly metadata?: Record<string, unknown>;
+    key?: string;
+    operation: string;
+    timestamp: number;
+    metadata?: Record<string, unknown>;
 }
 
 /** Storage error response */
 export interface IStorageError {
-    readonly code: StorageErrorEnum;
-    readonly message: string;
-    readonly details?: IStorageErrorDetails;
+    code: StorageErrorEnum;
+    message: string;
+    details?: IStorageErrorDetails;
 }
 
 /** Error factory for common storage errors */
