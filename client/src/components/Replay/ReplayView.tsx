@@ -1,6 +1,13 @@
 import React from 'react';
 import { Socket } from 'socket.io-client';
-import type { Position, PlayerNumber, GameState, Scores } from '@ctor-game/shared/src/types/core.js';
+import type { 
+    Position, 
+    PlayerNumber, 
+    GameState, 
+    Scores,
+    GameId,
+    GameMove 
+} from '@ctor-game/shared/src/types/core.js';
 import { useReplay } from '../../hooks/useReplay';
 import { useGameHistory } from '../../hooks/useGameHistory';
 import { ReplayControls } from './ReplayControls';
@@ -9,7 +16,7 @@ import { GameBoard } from '../GameBoard';
 import { Alert } from '../ui/alert';
 
 type ReplayViewProps = {
-    gameCode: string;
+    gameCode: GameId;  // Using GameId type instead of string
     socket: Socket;
     onClose: () => void;
 };
@@ -80,7 +87,7 @@ export function ReplayView({ gameCode, socket, onClose }: ReplayViewProps) {
                         <GameBoard
                             board={gameState.board}
                             disabled={true} // Board is inactive in replay mode
-                            lastMove={moves[currentMove - 1]?.move.pos}
+                            lastMove={moves[currentMove - 1]?.move.position}  // Using position property from GameMove
                         />
                     )}
 
