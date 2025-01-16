@@ -1,13 +1,15 @@
 import { logger } from '../utils/logger.js';
 import { GameError } from '../errors/GameError.js';
-import {
-    NetworkError,
-    ErrorCode,
-    ErrorCategory,
-    ErrorSeverity,
+import { 
+    INetworkError,
     createError,
     isNetworkError
-} from '@ctor-game/shared/types/network/errors';
+} from '@ctor-game/shared/types/network/errors.js';
+import {
+    ErrorCodeEnum,
+    ErrorSeverityEnum,
+    ErrorCategoryEnum
+} from '../types/shared.js';
 
 /**
  * Service for centralized error handling and monitoring
@@ -28,7 +30,7 @@ export class ErrorHandlingService {
     /**
      * Handles an error and returns formatted error response
      */
-    public handleError(error: Error | GameError | NetworkError): NetworkError {
+    public handleError(error: Error | GameError | INetworkError): INetworkError {
         // If it's already a NetworkError, just return it
         if (isNetworkError(error)) {
             this.logError(error);
@@ -38,11 +40,11 @@ export class ErrorHandlingService {
         // If it's a GameError, convert it to NetworkError
         if (error instanceof GameError) {
             const networkError = createError(
-                error.code as ErrorCode,
+                error.code,
                 error.message,
                 {
-                    category: ErrorCategory.Game,
-                    severity: ErrorSeverity.Error,
+                    category: ErrorCategoryEnum.BUSINESS,
+                    severity: ErrorSeverityEnum.HIGH,
                     details: error.details
                 }
             );
@@ -52,11 +54,11 @@ export class ErrorHandlingService {
 
         // Handle unknown errors
         const networkError = createError(
-            ErrorCode.InternalError,
+            ErrorCodeEnum.UNKNOWN_ERROR,
             'An unexpected error occurred',
             {
-                category: ErrorCategory.System,
-                severity: ErrorSeverity.Critical,
+                category: ErrorCategoryEnum.SYSTEM,
+                severity: ErrorSeverityEnum.CRITICAL,
                 details: process.env.NODE_ENV === 'development' 
                     ? { originalError: error.message, stack: error.stack }
                     : undefined
@@ -74,7 +76,7 @@ export class ErrorHandlingService {
         options: {
             maxRetries?: number;
             retryDelay?: number;
-            category?: ErrorCategory;
+            category?: keyof typeof ErrorCategoryEnum;
         } = {}
     ): Promise<T> {
         const maxRetries = options.maxRetries ?? 3;
@@ -88,7 +90,7 @@ export class ErrorHandlingService {
                 lastError = error as Error;
                 
                 // Don't retry if it's a game logic error
-                if (error instanceof GameError && error.code !== ErrorCode.OperationTimeout) {
+                if (error instanceof GameError && error.code !== ErrorCodeEnum.OPERATION_TIMEOUT) {
                     throw this.handleError(error);
                 }
 
@@ -111,7 +113,7 @@ export class ErrorHandlingService {
      * Logs error for monitoring and analytics
      */
     public logError(
-        error: Error | GameError | NetworkError,
+        error: Error | GameError | INetworkError,
         context?: Record<string, unknown>
     ): void {
         const logContext = {
@@ -142,7 +144,7 @@ export class ErrorHandlingService {
 
         logger.error(
             'Unexpected error',
-            { ...logContext, error: error }
+            { ...logContext, error }
         );
     }
 }

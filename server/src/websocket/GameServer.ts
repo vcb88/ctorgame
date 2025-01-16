@@ -2,17 +2,27 @@ import { Server } from 'socket.io';
 import { Server as HttpServer } from 'http';
 import { Socket } from 'socket.io';
 
-// Game types
-import type { IGameState, IGameMove, PlayerNumber, IGameScores } from '@ctor-game/shared/types/game/types';
-import { GameStatus } from '@ctor-game/shared/types/game/types';
+// Import all types from shared types module
+import {
+    IGameState,
+    IGameMove,
+    PlayerNumber,
+    IGameScores,
+    GameStatus,
+    WebSocketEvent,
+    ServerToClientEvents,
+    ClientToServerEvents,
+    WebSocketErrorCode,
+    IGameEvent,
+    validateGameEvent
+} from '../types/shared.js';
 
-// Event types
-import type { GameEvent } from '@ctor-game/shared/types/network/events';
-import { validateGameEvent } from '@ctor-game/shared/validation/network';
-
-// Socket types
-import type { WebSocketEvent, ServerToClientEvents, ClientToServerEvents } from '@ctor-game/shared/types/network/websocket';
-import { WebSocketErrorCode } from '@ctor-game/shared/types/network/websocket';
+// Constants
+const GameStatusValues = {
+    WAITING: 'waiting',
+    PLAYING: 'playing',
+    FINISHED: 'finished'
+} as const;
 
 // Services
 import { GameService } from '../services/GameService.js';
@@ -23,19 +33,21 @@ import { GameStorageService } from '../services/GameStorageService.js';
 import { logger } from '../utils/logger.js';
 import { toErrorWithStack } from '@ctor-game/shared/utils/errors';
 
+import { Transport } from 'socket.io';
+
 const DEFAULT_CONFIG = {
     cors: {
         origin: "*",
         methods: ["GET", "POST"]
     },
     path: '/socket.io/',
-    transports: ['websocket'],
+    transports: ['websocket'] as Transport[],
     serveClient: false,
     pingTimeout: 10000,
     pingInterval: 5000,
     upgradeTimeout: 10000,
     maxHttpBufferSize: 1e6,
-} as const;
+};
 
 const PLAYER_RECONNECT_TIMEOUT = 5 * 60 * 1000; // 5 minutes
 
@@ -103,7 +115,9 @@ export class GameServer {
                 ev: Ev,
                 ...args: Parameters<typeof socket.emit<Ev>>
             ): ReturnType<typeof socket.emit<Ev>> {
-                logger.websocket.message('out', ev, args[0], socket.id);
+                if (args[0]) {
+                    logger.websocket.message('out', ev, args[0] as IGameEvent, socket.id);
+                }
                 return originalEmit.apply(this, [ev, ...args]);
             };
             socket.emit = wrappedEmit;
@@ -118,7 +132,9 @@ export class GameServer {
                     ev: Ev,
                     ...args: Parameters<typeof result.emit<Ev>>
                 ): ReturnType<typeof result.emit<Ev>> {
-                    logger.websocket.message('out', ev, args[0], `room:${room}`);
+                    if (args[0]) {
+                        logger.websocket.message('out', ev, args[0] as IGameEvent, `room:${room}`);
+                    }
                     return originalRoomEmit.apply(this, [ev, ...args]);
                 };
                 return result;
@@ -140,7 +156,7 @@ export class GameServer {
                     const game = await this.gameService.createGame(socket.id, gameId);
                     await socket.join(gameId);
 
-                    const event = await this.eventService.createGameCreatedEvent(gameId, GameStatus.WAITING);
+                    const event = await this.eventService.createGameCreatedEvent(gameId, GameStatusValues.WAITING);
                     if (!validateGameEvent(event)) {
                         throw new Error('Invalid game created event');
                     }
