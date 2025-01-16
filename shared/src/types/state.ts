@@ -1,82 +1,54 @@
-import type {
-    Timestamped,
-    IVersioned,
-    IExpiration,
-    IData
-} from './core/primitives.js';
+import type { PlayerNumber, GameMove, GameError } from './core.js';
 
-import type {
-    PlayerNumber,
-    GameStatus,
-    IGameMove
-} from './game/types.js';
-import type { ISize } from './geometry/types.js';
+/** Board types */
+export type BoardBase = {
+    width: number;
+    height: number;
+    cells: (PlayerNumber | null)[][];
+};
 
-// Board interfaces
-export interface IBoardBase {
-    size: ISize;
-    cells: Array<Array<number>>; // Simplified cell type
-}
+export type Board = BoardBase & {
+    moveHistory: GameMove[];
+};
 
-export interface IBoard extends IBoardBase {}
+/** Score types */
+export type GameScores = {
+    [key in PlayerNumber]: number;
+};
 
-// Score interfaces
-export interface IGameScores {
-    player1: number;
-    player2: number;
-}
+/** Turn state types */
+export type TurnStateBase = {
+    player: PlayerNumber;
+    moves: GameMove[];
+    startTime: number;
+};
 
-// Turn state interfaces
-export interface ITurnStateBase {
-    placeOperationsLeft: number;
-    replaceOperationsLeft: number;
-}
+export type TurnState = TurnStateBase & {
+    placeOperations: number;
+    replaceOperations: number;
+};
 
-export interface ITurnState extends ITurnStateBase {
-    moves: Array<IGameMove>;
-    count: number; // Total moves count for validation
-}
-
-// Game state interfaces
-export interface GameStateBase {
-    board: IBoard;
-    gameOver: boolean;
-    winner: PlayerNumber | null;
-    currentPlayer: PlayerNumber;
-    isFirstTurn: boolean;
-}
-
-export interface GameState extends GameStateBase {
-    currentTurn: ITurnState;
-    scores: IGameScores;
-}
-
-// Game manager state interfaces
-export interface IGameManagerBase {
-    status: GameStatus;
-    error: Error | null;
+/** Game manager types */
+export type GameManagerBase = {
+    currentState: GameState | null;
+    currentPlayer: PlayerNumber | null;
+    error: GameError | null;
     connectionState: string;
-}
+};
 
-export interface GameManagerState extends IGameManagerBase, Timestamped {
-    gameId: string | null;
-    playerNumber: PlayerNumber | null;
-    lastUpdated: number;
-}
+export type StoredStateBase<T> = {
+    data: T;
+    timestamp: number;
+    version: string;
+};
 
-// Stored state interfaces
-export interface IStoredStateBase<T> extends IVersioned, Timestamped, IData<T> {}
+export type StateStorageBase = {
+    get: <T>(key: string) => Promise<T | null>;
+    set: <T>(key: string, value: T) => Promise<void>;
+    delete: (key: string) => Promise<void>;
+};
 
-export interface StoredState<T> extends IStoredStateBase<T>, IExpiration {}
-
-// State storage interfaces
-export interface IStateStorageBase {
-    getKeys(prefix?: string): Array<string>;
-}
-
-export interface IStateStorage extends IStateStorageBase {
-    saveState(key: string, state: unknown): void;
-    loadState<T>(key: string): T | null;
-    cleanupExpired(): void;
-    removeState(key: string): void;
-}
+export type StateStorage = StateStorageBase & {
+    clear: () => Promise<void>;
+    getKeys: () => Promise<string[]>;
+};

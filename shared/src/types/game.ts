@@ -1,27 +1,22 @@
-import type { Player, PlayerNumber, Timestamp, GameState } from './types.js';
+import type { Player, PlayerNumber, Timestamp, GameState } from './core.js';
 
-export interface IPlayer {
+export type Player = {
     id: string;
-    number: Player;
-}
+    num: PlayerNumber;
+    connected: boolean;
+};
 
-export interface IGameRoom {
+export type GameRoom = {
     gameId: string;
-    players: IPlayer[];
+    players: Player[];
     currentState: GameState;
     currentPlayer: Player;
-}
+};
 
-/** Summary of a game for history view */
-export interface IGameSummary {
-    /** Unique game code/identifier */
-    gameCode: string;
-    /** When the game was created */
-    createdAt: Timestamp;
-    /** When the game was completed (null if still in progress) */
-    completedAt: Timestamp | null;
-    /** Winner of the game (null if draw or in progress) */
-    winner: PlayerNumber | null;
-    /** Players who participated in the game */
+export type GameSummary = {
+    gameId: string;
     players: Player[];
-}
+    startTime: Timestamp;
+    endTime?: Timestamp;
+    winner?: PlayerNumber;
+};
