@@ -119,7 +119,7 @@ export class RedisService {
             }
 
             // Create game move from server move
-            const move: IGameMove = {
+            const move: GameMove = {
                 ...serverMove,
                 player: playerNumber
             };

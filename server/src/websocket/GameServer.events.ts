@@ -10,6 +10,7 @@ import type {
     WebSocketServerConfig,
     WebSocketServerOptions
 } from '@ctor-game/shared/types/network/websocket';
+import { validateEvent } from '@ctor-game/shared/types/network/events';
 import { GameError, GameNotFoundError, NotYourTurnError, GameEndedError } from '../errors/GameError.js';
 import { ErrorHandlingService } from '../services/ErrorHandlingService.js';
 
@@ -23,7 +24,7 @@ import type {
     PlayerNumber,
     GameStatus,
     Position
-} from '@ctor-game/shared/types/primitives';
+} from '@ctor-game/shared/types/game/types';
 
 // Services
 import { redisService } from '../services/RedisService.js';
@@ -54,14 +55,14 @@ export class GameServer {
     private errorHandlingService: ErrorHandlingService;
     private reconnectTimeout: number;
 
-    public static getInstance(httpServer: HttpServer, options: IWebSocketServerOptions = {}): GameServer {
+    public static getInstance(httpServer: HttpServer, options: WebSocketServerOptions = {}): GameServer {
         if (!GameServer.instance) {
             GameServer.instance = new GameServer(httpServer, options);
         }
         return GameServer.instance;
     }
 
-    private constructor(httpServer: HttpServer, options: IWebSocketServerOptions) {
+    private constructor(httpServer: HttpServer, options: WebSocketServerOptions) {
         if ((global as any).io) {
             (global as any).io.close();
         }

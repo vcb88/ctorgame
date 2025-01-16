@@ -1,10 +1,10 @@
 import { Socket } from 'socket.io';
 import { GameService } from '../../services/GameService.js';
-import type { IGameState } from '@ctor-game/shared/types/game/types';
+import type { GameState } from '@ctor-game/shared/types/game/types';
 import type { 
-    IReplayState, 
-    IReplayClientEvents, 
-    IReplayServerEvents 
+    ReplayState, 
+    ReplayClientEvents, 
+    ReplayServerEvents 
 } from '@ctor-game/shared/types/network/replay';
 import { 
     validateReplayState,
@@ -13,16 +13,16 @@ import {
 } from '@ctor-game/shared/utils/validation/replay';
 
 // Состояние replay для каждой игры
-const replayStates = new Map<string, IReplayState>();
+const replayStates = new Map<string, ReplayState>();
 
 // Helper function to update replay state
-function updateReplayState(gameCode: string, updates: Partial<IReplayState>): IReplayState {
+function updateReplayState(gameCode: string, updates: Partial<ReplayState>): ReplayState {
     const currentState = replayStates.get(gameCode);
     if (!currentState) {
         throw new Error('Replay session not found');
     }
     
-    const newState: IReplayState = {
+    const newState: ReplayState = {
         ...currentState,
         ...updates
     };
@@ -32,7 +32,7 @@ function updateReplayState(gameCode: string, updates: Partial<IReplayState>): IR
 }
 
 export function registerReplayHandlers(
-    socket: Socket<IReplayClientEvents, IReplayServerEvents>,
+    socket: Socket<ReplayClientEvents, ReplayServerEvents>,
     gameService: GameService
 ) {
     // Начать воспроизведение
@@ -42,7 +42,7 @@ export function registerReplayHandlers(
             const totalMoves = await gameService.getGameHistory(gameCode);
             
             // Создаем состояние воспроизведения
-            const replayState: IReplayState = {
+            const replayState: ReplayState = {
                 currentMoveIndex: 0,
                 totalMoves,
                 isPlaying: true,
@@ -197,7 +197,7 @@ export function registerReplayHandlers(
 
 // Вспомогательная функция для автоматического воспроизведения следующего хода
 async function playNextMove(
-    socket: Socket<IReplayClientEvents, IReplayServerEvents>,
+    socket: Socket<ReplayClientEvents, ReplayServerEvents>,
     gameService: GameService,
     gameCode: string
 ) {
