@@ -6,77 +6,77 @@ import { RedisKeyEnum } from './enums.js';
 
 /** Redis cache TTL configuration */
 export interface RedisTTLConfig {
-    readonly gameState: number;
-    readonly playerSession: number;
-    readonly gameRoom: number;
-    readonly events: number;
+    gameState: number;
+    playerSession: number;
+    gameRoom: number;
+    events: number;
 }
 
 /** Redis key prefix configuration */
 export interface RedisPrefixConfig {
-    readonly [RedisKeyEnum.GAME_STATE]?: string;
-    readonly [RedisKeyEnum.GAME_ROOM]?: string;
-    readonly [RedisKeyEnum.PLAYER_SESSION]?: string;
-    readonly [RedisKeyEnum.EVENT]?: string;
-    readonly [RedisKeyEnum.METADATA]?: string;
+    [RedisKeyEnum.GAME_STATE]?: string;
+    [RedisKeyEnum.GAME_ROOM]?: string;
+    [RedisKeyEnum.PLAYER_SESSION]?: string;
+    [RedisKeyEnum.EVENT]?: string;
+    [RedisKeyEnum.METADATA]?: string;
 }
 
 /** Redis cache options */
 export interface RedisCacheOptions {
-    readonly maxRetries?: number;
-    readonly retryDelay?: number;
-    readonly maxItems?: number;
-    readonly evictionPolicy?: 'lru' | 'lfu' | 'random';
-    readonly compression?: boolean;
+    maxRetries?: number;
+    retryDelay?: number;
+    maxItems?: number;
+    evictionPolicy?: 'lru' | 'lfu' | 'random';
+    compression?: boolean;
 }
 
 /** Redis cache configuration */
 export interface RedisCacheConfig {
-    readonly ttl: RedisTTLConfig;
-    readonly prefix?: RedisPrefixConfig;
-    readonly options?: RedisCacheOptions;
+    ttl: RedisTTLConfig;
+    prefix?: RedisPrefixConfig;
+    options?: RedisCacheOptions;
 }
 
 /** Redis connection security */
 export interface RedisSecurityConfig {
-    readonly tls?: boolean;
-    readonly cert?: string;
-    readonly key?: string;
-    readonly ca?: string;
-    readonly password?: string;
+    tls?: boolean;
+    cert?: string;
+    key?: string;
+    ca?: string;
+    password?: string;
 }
 
 /** Redis connection retry policy */
 export interface RedisRetryConfig {
-    readonly maxAttempts?: number;
-    readonly delay?: number;
-    readonly maxDelay?: number;
-    readonly useExponential?: boolean;
+    maxAttempts?: number;
+    delay?: number;
+    maxDelay?: number;
+    useExponential?: boolean;
 }
 
 /** Redis cluster configuration */
 export interface RedisClusterConfig {
-    readonly enabled: boolean;
-    readonly nodes?: { host: string; port: number; }[];
-    readonly options?: {
-        readonly maxRedirections?: number;
-        readonly retryDelayOnFailover?: number;
-        readonly retryDelayOnClusterDown?: number;
+    enabled: boolean;
+    nodes?: { host: string; port: number; }[];
+    options?: {
+        maxRedirections?: number;
+        retryDelayOnFailover?: number;
+        retryDelayOnClusterDown?: number;
     };
 }
 
 /** Redis connection configuration */
 export interface RedisConfig {
-    readonly host: string;
-    readonly port: number;
-    readonly db?: number;
-    readonly security?: RedisSecurityConfig;
-    readonly retry?: RedisRetryConfig;
-    readonly cluster?: RedisClusterConfig;
-    readonly monitoring?: {
-        readonly enabled?: boolean;
-        readonly interval?: number;
-        readonly slowLogThreshold?: number;
+    host: string;
+    port: number;
+    db?: number;
+    security?: RedisSecurityConfig;
+    retry?: RedisRetryConfig;
+    cluster?: RedisClusterConfig;
+    monitoring?: {
+        enabled?: boolean;
+        interval?: number;
+        slowLogThreshold?: number;
     };
 }
 

@@ -7,51 +7,51 @@ import { RedisTTLStatusEnum } from './enums.js';
 
 /** Base interface for Redis stored objects */
 export interface RedisBase {
-    readonly lastUpdate: Timestamp;
-    readonly version: Version;
-    readonly expiresAt?: Timestamp;
+    lastUpdate: Timestamp;
+    version: Version;
+    expiresAt?: Timestamp;
 }
 
 /** Game state in Redis */
 export interface RedisGameState extends GameState, RedisBase {
-    readonly metadata?: {
-        readonly lastSnapshot?: Timestamp;
-        readonly snapshotInterval?: number;
-        readonly backupCount?: number;
+    metadata?: {
+        lastSnapshot?: Timestamp;
+        snapshotInterval?: number;
+        backupCount?: number;
     };
 }
 
 /** Game room in Redis */
 export interface RedisGameRoom extends RedisBase {
-    readonly id: UUID;
-    readonly players: ReadonlyArray<Player>;
-    readonly status: RedisTTLStatusEnum;
-    readonly maxPlayers: number;
-    readonly settings?: {
-        readonly private?: boolean;
-        readonly password?: string;
-        readonly timeLimit?: number;
-        readonly ranked?: boolean;
+    id: UUID;
+    players: Array<Player>;
+    status: RedisTTLStatusEnum;
+    maxPlayers: number;
+    settings?: {
+        private?: boolean;
+        password?: string;
+        timeLimit?: number;
+        ranked?: boolean;
     };
 }
 
 /** State backup metadata */
 export interface RedisStateBackup extends RedisBase {
-    readonly id: UUID;
-    readonly gameId: UUID;
-    readonly snapshotTime: Timestamp;
-    readonly checksum: string;
-    readonly compressed?: boolean;
+    id: UUID;
+    gameId: UUID;
+    snapshotTime: Timestamp;
+    checksum: string;
+    compressed?: boolean;
 }
 
 /** State migration info */
 export interface RedisMigrationInfo extends RedisBase {
-    readonly fromVersion: Version;
-    readonly toVersion: Version;
-    readonly status: 'pending' | 'in_progress' | 'completed' | 'failed';
-    readonly affectedKeys: number;
-    readonly completedKeys: number;
-    readonly error?: string;
+    fromVersion: Version;
+    toVersion: Version;
+    status: 'pending' | 'in_progress' | 'completed' | 'failed';
+    affectedKeys: number;
+    completedKeys: number;
+    error?: string;
 }
 
 /** Type guards */

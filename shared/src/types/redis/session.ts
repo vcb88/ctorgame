@@ -7,59 +7,59 @@ import type { UUID, Timestamp } from '../core/primitives.js';
 
 /** Connection information */
 export interface RedisConnectionInfo {
-    readonly ip: string;
-    readonly userAgent?: string;
-    readonly platform?: string;
-    readonly browserInfo?: string;
-    readonly lastActivity: Timestamp;
-    readonly connectTime: Timestamp;
-    readonly disconnectTime?: Timestamp;
+    ip: string;
+    userAgent?: string;
+    platform?: string;
+    browserInfo?: string;
+    lastActivity: Timestamp;
+    connectTime: Timestamp;
+    disconnectTime?: Timestamp;
 }
 
 /** Session activity */
 export interface RedisSessionActivity {
-    readonly lastMoveTime?: Timestamp;
-    readonly lastChatTime?: Timestamp;
-    readonly lastPingTime?: Timestamp;
-    readonly idleTime: number;
-    readonly moveCount: number;
-    readonly chatCount: number;
+    lastMoveTime?: Timestamp;
+    lastChatTime?: Timestamp;
+    lastPingTime?: Timestamp;
+    idleTime: number;
+    moveCount: number;
+    chatCount: number;
 }
 
 /** Player session in Redis */
 export interface RedisPlayerSession extends RedisBase {
-    readonly id: UUID;
-    readonly gameId: UUID;
-    readonly playerId: UUID;
-    readonly playerNumber: PlayerNumber;
-    readonly connection: RedisConnectionInfo;
-    readonly activity: RedisSessionActivity;
-    readonly settings?: {
-        readonly notifications?: boolean;
-        readonly sound?: boolean;
-        readonly theme?: string;
+    id: UUID;
+    gameId: UUID;
+    playerId: UUID;
+    playerNumber: PlayerNumber;
+    connection: RedisConnectionInfo;
+    activity: RedisSessionActivity;
+    settings?: {
+        notifications?: boolean;
+        sound?: boolean;
+        theme?: string;
     };
 }
 
 /** Session analytics data */
 export interface RedisSessionAnalytics {
-    readonly totalGames: number;
-    readonly wins: number;
-    readonly losses: number;
-    readonly draws: number;
-    readonly totalPlayTime: number;
-    readonly averageGameDuration: number;
-    readonly preferredGameMode?: string;
+    totalGames: number;
+    wins: number;
+    losses: number;
+    draws: number;
+    totalPlayTime: number;
+    averageGameDuration: number;
+    preferredGameMode?: string;
 }
 
 /** Session metadata */
 export interface RedisSessionMetadata extends RedisBase {
-    readonly sessionId: UUID;
-    readonly userId?: UUID;
-    readonly createdAt: Timestamp;
-    readonly lastRefresh: Timestamp;
-    readonly analytics?: RedisSessionAnalytics;
-    readonly features?: Set<string>;
+    sessionId: UUID;
+    userId?: UUID;
+    createdAt: Timestamp;
+    lastRefresh: Timestamp;
+    analytics?: RedisSessionAnalytics;
+    features?: Set<string>;
 }
 
 /** Type guards */

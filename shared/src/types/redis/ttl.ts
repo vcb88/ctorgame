@@ -8,40 +8,40 @@ import { RedisTTLStatusEnum } from './enums.js';
 
 /** TTL configuration by key type */
 export interface RedisTTLByKey {
-    readonly [RedisKeyEnum.GAME_STATE]: number;
-    readonly [RedisKeyEnum.PLAYER_SESSION]: number;
-    readonly [RedisKeyEnum.GAME_ROOM]: number;
-    readonly [RedisKeyEnum.EVENT]: number;
-    readonly [RedisKeyEnum.METADATA]: number;
+    [RedisKeyEnum.GAME_STATE]: number;
+    [RedisKeyEnum.PLAYER_SESSION]: number;
+    [RedisKeyEnum.GAME_ROOM]: number;
+    [RedisKeyEnum.EVENT]: number;
+    [RedisKeyEnum.METADATA]: number;
 }
 
 /** TTL configuration by game status */
 export interface RedisTTLConfig {
     /** Default TTL values in seconds */
-    readonly base: RedisTTLByKey;
+    base: RedisTTLByKey;
 
     /** Extended TTL values for active games */
-    readonly active: Partial<RedisTTLByKey>;
+    active: Partial<RedisTTLByKey>;
 
     /** Shortened TTL values for finished games */
-    readonly finished: Partial<RedisTTLByKey>;
+    finished: Partial<RedisTTLByKey>;
 
     /** TTL override rules */
-    readonly rules?: {
-        readonly [key: string]: {
-            readonly condition: string;
-            readonly ttl: number;
-            readonly priority: number;
+    rules?: {
+        [key: string]: {
+            condition: string;
+            ttl: number;
+            priority: number;
         };
     };
 }
 
 /** TTL strategy options */
 export interface RedisTTLStrategyOptions {
-    readonly autoExtend?: boolean;
-    readonly extendInterval?: number;
-    readonly maxExtensions?: number;
-    readonly onExpire?: (key: string) => Promise<void>;
+    autoExtend?: boolean;
+    extendInterval?: number;
+    maxExtensions?: number;
+    onExpire?: (key: string) => Promise<void>;
 }
 
 /** TTL strategy interface */
@@ -82,10 +82,10 @@ export interface RedisTTLStrategy {
 
 /** TTL tracking metadata */
 export interface RedisTTLMetadata {
-    readonly key: string;
-    readonly baseValue: number;
-    readonly currentValue: number;
-    readonly expiresAt: number;
-    readonly extensions: number;
-    readonly lastExtension?: number;
+    key: string;
+    baseValue: number;
+    currentValue: number;
+    expiresAt: number;
+    extensions: number;
+    lastExtension?: number;
 }

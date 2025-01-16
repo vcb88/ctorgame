@@ -7,49 +7,49 @@ import { RedisEventEnum, RedisEventStatusEnum } from './enums.js';
 
 /** Game events stored in Redis */
 export interface RedisGameEvent {
-    readonly type: RedisEventEnum;
-    readonly gameId: UUID;
-    readonly playerId: UUID;
-    readonly data: unknown;
-    readonly timestamp: Timestamp;
-    readonly eventId?: UUID;
-    readonly processed?: boolean;
-    readonly metadata?: {
-        readonly priority?: number;
-        readonly retryCount?: number;
-        readonly lastRetry?: Timestamp;
+    type: RedisEventEnum;
+    gameId: UUID;
+    playerId: UUID;
+    data: unknown;
+    timestamp: Timestamp;
+    eventId?: UUID;
+    processed?: boolean;
+    metadata?: {
+        priority?: number;
+        retryCount?: number;
+        lastRetry?: Timestamp;
     };
 }
 
 /** Event processing status */
 export interface RedisEventStatus {
-    readonly eventId: UUID;
-    readonly status: RedisEventStatusEnum;
-    readonly error?: string;
-    readonly processedAt?: Timestamp;
-    readonly attempts?: number;
-    readonly processingTime?: number;
+    eventId: UUID;
+    status: RedisEventStatusEnum;
+    error?: string;
+    processedAt?: Timestamp;
+    attempts?: number;
+    processingTime?: number;
 }
 
 /** Event batch processing */
 export interface RedisEventBatch {
-    readonly batchId: UUID;
-    readonly events: RedisGameEvent[];
-    readonly status: RedisEventStatusEnum;
-    readonly processedCount: number;
-    readonly failedCount: number;
-    readonly createdAt: Timestamp;
-    readonly completedAt?: Timestamp;
+    batchId: UUID;
+    events: RedisGameEvent[];
+    status: RedisEventStatusEnum;
+    processedCount: number;
+    failedCount: number;
+    createdAt: Timestamp;
+    completedAt?: Timestamp;
 }
 
 /** Event subscriber options */
 export interface RedisEventSubscriber {
-    readonly pattern: string;
-    readonly callback: (event: RedisGameEvent) => Promise<void>;
-    readonly options?: {
-        readonly batchSize?: number;
-        readonly maxRetries?: number;
-        readonly retryDelay?: number;
+    pattern: string;
+    callback: (event: RedisGameEvent) => Promise<void>;
+    options?: {
+        batchSize?: number;
+        maxRetries?: number;
+        retryDelay?: number;
     };
 }
 
