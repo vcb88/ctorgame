@@ -5,38 +5,41 @@
 import { ErrorCategoryEnum, ErrorSeverityEnum } from './enums.js';
 
 /** Basic error details */
-export interface ErrorDetails {
-    readonly [key: string]: unknown;
-}
+export type ErrorDetails = {
+    [key: string]: unknown;
+};
 
 /** Common error structure */
-export interface CommonError {
-    readonly code: string;
-    readonly message: string;
-    readonly category: ErrorCategoryEnum;
-    readonly severity: ErrorSeverityEnum;
-    readonly timestamp: number;
-    readonly details?: ErrorDetails;
-    readonly stack?: string;
-}
+export type CommonError = {
+    code: string;
+    message: string;
+    category: ErrorCategoryEnum;
+    severity: ErrorSeverityEnum;
+    timestamp: number;
+    details?: ErrorDetails;
+    stack?: string;
+};
+
+/** Error context */
+export type ErrorContext = {
+    operation: string;
+    component: string;
+    input?: unknown;
+    metadata?: Record<string, unknown>;
+};
 
 /** Error with context */
-export interface ContextualError extends CommonError {
-    readonly context: {
-        readonly operation: string;
-        readonly component: string;
-        readonly input?: unknown;
-        readonly metadata?: Record<string, unknown>;
-    };
-}
+export type ContextualError = CommonError & {
+    context: ErrorContext;
+};
 
 /** Error factory options */
-export interface ErrorOptions {
-    readonly category?: ErrorCategoryEnum;
-    readonly severity?: ErrorSeverityEnum;
-    readonly details?: ErrorDetails;
-    readonly context?: ContextualError['context'];
-}
+export type ErrorOptions = {
+    category?: ErrorCategoryEnum;
+    severity?: ErrorSeverityEnum;
+    details?: ErrorDetails;
+    context?: ErrorContext;
+};
 
 /** Create error with defaults */
 export const createError = (

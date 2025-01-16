@@ -8,79 +8,85 @@ import type { Position, Size } from '../core/primitives.js';
 export type { Position, Size };
 
 /** Time range */
-export interface TimeRange {
-    readonly start: number;
-    readonly end: number;
-}
+export type TimeRange = {
+    start: number;
+    end: number;
+};
 
 /** Identifiable entity */
-export interface Identifiable {
-    readonly id: string;
-}
+export type Identifiable = {
+    id: string;
+};
 
 /** Versioned entity */
-export interface Versioned {
-    readonly version: string;
-}
+export type Versioned = {
+    version: string;
+};
 
 /** Timestamped entity */
-export interface Timestamped {
-    readonly timestamp: number;
-}
+export type Timestamped = {
+    timestamp: number;
+};
 
 /** Metadata container */
-export interface WithMetadata {
-    readonly metadata: Record<string, unknown>;
-}
+export type WithMetadata = {
+    metadata: Record<string, unknown>;
+};
 
 /** Paginated result */
-export interface Paginated<T> {
-    readonly items: T[];
-    readonly total: number;
-    readonly page: number;
-    readonly pageSize: number;
-    readonly hasMore: boolean;
-}
+export type Paginated<T> = {
+    items: T[];
+    total: number;
+    page: number;
+    pageSize: number;
+    hasMore: boolean;
+};
+
+/** Filter operators */
+export type FilterOperator = 'eq' | 'ne' | 'gt' | 'lt' | 'gte' | 'lte' | 'in' | 'nin' | 'like';
 
 /** Filter criteria */
-export interface FilterCriteria {
-    readonly field: string;
-    readonly operator: 'eq' | 'ne' | 'gt' | 'lt' | 'gte' | 'lte' | 'in' | 'nin' | 'like';
-    readonly value: unknown;
-}
+export type FilterCriteria = {
+    field: string;
+    operator: FilterOperator;
+    value: unknown;
+};
+
+/** Sort direction */
+export type SortDirection = 'asc' | 'desc';
 
 /** Sort criteria */
-export interface SortCriteria {
-    readonly field: string;
-    readonly direction: 'asc' | 'desc';
-}
+export type SortCriteria = {
+    field: string;
+    direction: SortDirection;
+};
 
 /** Query options */
-export interface QueryOptions {
-    readonly filters?: FilterCriteria[];
-    readonly sort?: SortCriteria[];
-    readonly page?: number;
-    readonly pageSize?: number;
-    readonly fields?: string[];
-}
+export type QueryOptions = {
+    filters?: FilterCriteria[];
+    sort?: SortCriteria[];
+    page?: number;
+    pageSize?: number;
+    fields?: string[];
+};
 
 /** Cache options */
-export interface CacheOptions {
-    readonly ttl?: number;
-    readonly refresh?: boolean;
-    readonly namespace?: string;
-}
+export type CacheOptions = {
+    ttl?: number;
+    refresh?: boolean;
+    namespace?: string;
+};
 
-/** Board-specific types moved from geometric types */
-export interface BoardPosition {
-    readonly position: Position;
-    readonly valid: boolean; // Indicates if position is within board bounds
-}
+/** Board-specific types */
+export type BoardPosition = {
+    position: Position;
+    valid: boolean; // Indicates if position is within board bounds
+};
 
-export interface BoardCell {
-    readonly position: Position;
-    readonly value: number | null;
-}
+export type BoardCell = {
+    position: Position;
+    value: number | null;
+};
 
 /** Type guards */
 export const isValidPosition = (pos: Position, size: Size): boolean => {
