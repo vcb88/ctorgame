@@ -18,8 +18,9 @@ export const A = {
 export type ActionType = typeof A[keyof typeof A];
 
 export type Board = number[][];
-export type Position = { x: number; y: number };
-export type Move = Position & { 
+export type Position = [number, number];
+export type Move = {
+  pos: Position;
   score?: number;
   s?: number;
 };
@@ -32,23 +33,19 @@ export type GameState = {
 
 export type GameAction = {
   type: ActionType;
-  x?: number;
-  y?: number;
+  pos?: Position;
   p?: PlayerType;
-  fx?: number;
-  fy?: number;
-  tx?: number;
-  ty?: number;
+  from?: Position;
+  to?: Position;
 };
 
-export interface CellProps {
-  x: number;
-  y: number;
+export type CellProps = {
+  pos: Position;
   v: number;
   s: number;
-}
+};
 
-export interface GameEndResult {
+export type GameEndResult = {
   over: boolean;
   winner?: string;
-}
+};

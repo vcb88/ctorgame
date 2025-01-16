@@ -1,3 +1,4 @@
+import type { Position } from './index.js';
 import type {
     GameEvent,
     IGameCreatedEvent,
@@ -14,57 +15,57 @@ import type { IGameState, PlayerNumber } from '@ctor-game/shared/src/types/game/
 import type { WebSocketErrorCode } from '@ctor-game/shared/src/types/network/events.js';
 
 // Base event interface for all socket responses
-export interface SocketEvent {
+export type SocketEvent = {
     eventId: string;
     timestamp: number;
-}
+};
 
 // Event responses
-export interface GameCreatedResponse extends SocketEvent {
+export type GameCreatedResponse = SocketEvent & {
     gameId: string;
     status: 'waiting';
-}
+};
 
-export interface GameJoinedResponse extends SocketEvent {
+export type GameJoinedResponse = SocketEvent & {
     gameId: string;
     status: string;
-}
+};
 
-export interface GameStartedResponse extends SocketEvent {
+export type GameStartedResponse = SocketEvent & {
     gameId: string;
     gameState: IGameState;
     currentPlayer: PlayerNumber;
-}
+};
 
-export interface GameStateUpdatedResponse extends SocketEvent {
+export type GameStateUpdatedResponse = SocketEvent & {
     gameState: IGameState;
     currentPlayer: PlayerNumber;
-}
+};
 
-export interface GameOverResponse extends SocketEvent {
+export type GameOverResponse = SocketEvent & {
     gameState: IGameState;
     winner: PlayerNumber | null;
-}
+};
 
-export interface PlayerDisconnectedResponse extends SocketEvent {
+export type PlayerDisconnectedResponse = SocketEvent & {
     playerId: string;
     playerNumber: PlayerNumber;
-}
+};
 
-export interface PlayerReconnectedResponse extends SocketEvent {
+export type PlayerReconnectedResponse = SocketEvent & {
     playerId: string;
     playerNumber: PlayerNumber;
-}
+};
 
-export interface GameExpiredResponse extends SocketEvent {
+export type GameExpiredResponse = SocketEvent & {
     gameId: string;
-}
+};
 
-export interface ErrorResponse extends SocketEvent {
+export type ErrorResponse = SocketEvent & {
     code: WebSocketErrorCode;
     message: string;
     details?: unknown;
-}
+};
 
 // Socket event map
 export interface ServerToClientEvents {
@@ -83,7 +84,7 @@ export interface ServerToClientEvents {
 export interface ClientToServerEvents {
     'create_game': () => void;
     'join_game': (data: { gameId: string }) => void;
-    'make_move': (data: { gameId: string; move: { type: 'place' | 'replace'; position: { x: number; y: number } } }) => void;
+    'make_move': (data: { gameId: string; move: { type: 'place' | 'replace'; position: Position } }) => void;
     'end_turn': (data: { gameId: string }) => void;
     'reconnect': (data: { gameId: string }) => void;
     'disconnect': () => void;
