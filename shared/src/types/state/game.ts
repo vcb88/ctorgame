@@ -10,57 +10,57 @@ import { StatePhaseEnum } from './enums.js';
 
 /** Game scores */
 export interface GameScores {
-    readonly player1: number;
-    readonly player2: number;
+    player1: number;
+    player2: number;
 }
 
 /** Game settings */
 export interface GameSettings {
-    readonly boardSize: {
-        readonly width: number;
-        readonly height: number;
+    boardSize: {
+        width: number;
+        height: number;
     };
-    readonly timeLimit?: number;
-    readonly maxPlayers: number;
-    readonly turnTimeLimit?: number;
-    readonly maxMoves?: number;
+    timeLimit?: number;
+    maxPlayers: number;
+    turnTimeLimit?: number;
+    maxMoves?: number;
 }
 
 /** Game state */
 export interface GameState {
-    readonly id: UUID;
-    readonly board: Board;
-    readonly players: ReadonlyArray<Player>;
-    readonly scores: GameScores;
-    readonly currentTurn: TurnState;
-    readonly phase: StatePhaseEnum;
-    readonly settings: GameSettings;
-    readonly startTime: Timestamp;
-    readonly lastUpdate: Timestamp;
-    readonly winner?: Player;
+    id: UUID;
+    board: Board;
+    players: Array<Player>;
+    scores: GameScores;
+    currentTurn: TurnState;
+    phase: StatePhaseEnum;
+    settings: GameSettings;
+    startTime: Timestamp;
+    lastUpdate: Timestamp;
+    winner?: Player;
 }
 
 /** Game state snapshot */
 export interface GameStateSnapshot {
-    readonly state: GameState;
-    readonly timestamp: Timestamp;
-    readonly version: string;
-    readonly metadata?: {
-        readonly reason?: string;
-        readonly triggerType?: string;
-        readonly previousVersion?: string;
+    state: GameState;
+    timestamp: Timestamp;
+    version: string;
+    metadata?: {
+        reason?: string;
+        triggerType?: string;
+        previousVersion?: string;
     };
 }
 
 /** Game state validation */
 export interface GameStateValidation {
-    readonly valid: boolean;
-    readonly errors: string[];
-    readonly warnings: string[];
-    readonly details?: {
-        readonly boardValid: boolean;
-        readonly movesValid: boolean;
-        readonly scoresValid: boolean;
-        readonly stateConsistent: boolean;
+    valid: boolean;
+    errors: string[];
+    warnings: string[];
+    details?: {
+        boardValid: boolean;
+        movesValid: boolean;
+        scoresValid: boolean;
+        stateConsistent: boolean;
     };
 }

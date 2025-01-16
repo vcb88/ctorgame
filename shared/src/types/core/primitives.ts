@@ -12,34 +12,34 @@ export type PlayerNumber = 1 | 2;
 
 /** Position coordinates */
 export interface Position {
-    readonly x: number;
-    readonly y: number;
+    x: number;
+    y: number;
 }
 
 /** Size dimensions */
 export interface Size {
-    readonly width: number;
-    readonly height: number;
+    width: number;
+    height: number;
 }
 
 /** Scores [player1, player2] */
-export type Scores = readonly [number, number];
+export type Scores = [number, number];
 
 /** Game cell value - player number or empty */
 export type CellValue = PlayerNumber | null;
 
 /** Basic validation result */
 export interface ValidationResult {
-    readonly valid: boolean;
-    readonly message?: string;
+    valid: boolean;
+    message?: string;
 }
 
 /** Collection type */
-export type Collection<T> = ReadonlyArray<T>;
+export type Collection<T> = Array<T>;
 
 /** Metadata wrapper */
 export interface WithMetadata<T> {
-    readonly data: T;
-    readonly timestamp: Timestamp;
-    readonly version?: Version;
+    data: T;
+    timestamp: Timestamp;
+    version?: Version;
 }

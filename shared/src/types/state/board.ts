@@ -8,45 +8,45 @@ import { CellStateEnum } from './enums.js';
 
 /** Board cell interface */
 export interface BoardCell {
-    readonly position: Position;
-    readonly value: CellStateEnum;
-    readonly lastModified?: number;
-    readonly placedBy?: PlayerNumber;
+    position: Position;
+    value: CellStateEnum;
+    lastModified?: number;
+    placedBy?: PlayerNumber;
 }
 
 /** Board row interface */
 export interface BoardRow {
-    readonly cells: ReadonlyArray<BoardCell>;
-    readonly y: number;
+    cells: Array<BoardCell>;
+    y: number;
 }
 
 /** Game board interface */
 export interface Board {
-    readonly size: Size;
-    readonly rows: ReadonlyArray<BoardRow>;
-    readonly lastModified: number;
-    readonly version: string;
+    size: Size;
+    rows: Array<BoardRow>;
+    lastModified: number;
+    version: string;
 }
 
 /** Board region for move validation */
 export interface BoardRegion {
-    readonly position: Position;
-    readonly size: Size;
-    readonly cells: ReadonlyArray<BoardCell>;
+    position: Position;
+    size: Size;
+    cells: Array<BoardCell>;
 }
 
 /** Board statistics */
 export interface BoardStats {
-    readonly emptyCells: number;
-    readonly player1Cells: number;
-    readonly player2Cells: number;
-    readonly totalMoves: number;
-    readonly lastMove?: Position;
+    emptyCells: number;
+    player1Cells: number;
+    player2Cells: number;
+    totalMoves: number;
+    lastMove?: Position;
 }
 
 /** Board validation result */
 export interface BoardValidation {
-    readonly valid: boolean;
-    readonly errors: string[];
-    readonly warnings: string[];
+    valid: boolean;
+    errors: string[];
+    warnings: string[];
 }

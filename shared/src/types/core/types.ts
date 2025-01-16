@@ -7,51 +7,51 @@ import { GameStatusEnum, MoveTypeEnum, ConnectionStatusEnum } from './enums.js';
 
 /** Player information */
 export interface Player {
-    readonly id: UUID;
-    readonly num: PlayerNumber;
-    readonly connected: boolean;
+    id: UUID;
+    num: PlayerNumber;
+    connected: boolean;
 }
 
 /** Basic game move */
 export interface GameMove {
-    readonly type: MoveTypeEnum;
-    readonly pos?: Position;
+    type: MoveTypeEnum;
+    pos?: Position;
 }
 
 /** Complete move information */
 export interface GameMoveComplete extends GameMove {
-    readonly timestamp: Timestamp;
-    readonly gameId: UUID;
-    readonly moveNumber: number;
+    timestamp: Timestamp;
+    gameId: UUID;
+    moveNumber: number;
 }
 
 /** Game state */
 export interface GameState {
-    readonly board: ReadonlyArray<ReadonlyArray<CellValue>>;
-    readonly scores: Scores;
-    readonly currentPlayer: PlayerNumber;
-    readonly status: GameStatusEnum;
-    readonly winner?: PlayerNumber;
-    readonly lastMove?: GameMove;
-    readonly timestamp: Timestamp;
+    board: Array<Array<CellValue>>;
+    scores: Scores;
+    currentPlayer: PlayerNumber;
+    status: GameStatusEnum;
+    winner?: PlayerNumber;
+    lastMove?: GameMove;
+    timestamp: Timestamp;
 }
 
 /** Game history entry */
 export interface GameHistoryEntry {
-    readonly state: GameState;
-    readonly move: GameMoveComplete;
+    state: GameState;
+    move: GameMoveComplete;
 }
 
 /** Move validation result */
 export interface MoveValidation {
-    readonly valid: boolean;
-    readonly message?: string;
-    readonly captures?: ReadonlyArray<Position>;
+    valid: boolean;
+    message?: string;
+    captures?: Array<Position>;
 }
 
 /** Game error */
 export interface GameError {
-    readonly code: string;
-    readonly message: string;
-    readonly details?: Record<string, unknown>;
+    code: string;
+    message: string;
+    details?: Record<string, unknown>;
 }
