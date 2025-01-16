@@ -2,287 +2,150 @@
 
 ## Overview
 
-The project is in the middle of a major type system refactoring effort. The main goals are:
-- ✅ Simplify type hierarchy
-- ✅ Remove type duplication
-- ✅ Move from inheritance to composition
-- 🔄 Improve type safety (in progress)
-- 🔄 Make the system more maintainable (in progress)
+This document describes the core principles and practices for the type system in our MVP-focused development. The key goals are:
+- Keep the type system simple and maintainable
+- Have a single source of truth for shared types
+- Minimize type complexity and inheritance
+- Support essential functionality without overengineering
 
-## Migration Status
+## Core Principles
 
-### Recent Completions
+1. **Single Source of Truth**
+   - All shared types must be defined in core.ts
+   - Import types from core.ts instead of creating local variants
+   - Only domain-specific types should live outside core.ts
 
-#### Server Components
-- ✅ EventService
-- ✅ RedisService
-- ✅ GameService
-- ✅ GameLogicService
-- ✅ GameStorageService
-- ✅ WebSocket Layer (in progress)
+2. **Simplicity First**
+   - Use simple TypeScript types instead of interfaces where possible
+   - Keep type definitions minimal and close to their usage
+   - Use tuple types where appropriate ([number, number] vs {x: number, y: number})
+   - Avoid adding complexity without clear necessity
 
-#### Shared Types
-- ✅ network/events.ts (migrated from events.new.ts)
-- ✅ storage/metadata.ts (updated to use new types)
+3. **Union Types Over Enums**
+   ```typescript
+   // ❌ Don't use enums
+   enum GameStatus {
+       ACTIVE = 'active',
+       FINISHED = 'finished'
+   }
 
-### Type Dependencies Structure
+   // ✅ Use union types instead
+   type GameStatus = 'active' | 'finished';
+   ```
 
-#### Core Layer
-1. Primitive Types (core/primitives.js)
-   - ITimestamp
-   - IIdentifiable
-   - IVersioned
-   - IExpiration
-   - IData
+4. **Minimal Type Inheritance**
+   - Avoid creating base/abstract types without clear necessity
+   - Prefer composition over inheritance
+   - Keep type hierarchies flat and simple
+   - Use intersection types (&) when needed instead of extends
 
-2. Geometry Types (geometry/types.js)
-   - IBoardSize
-   - IPosition
-   - Dependencies: none
+## Core Types (core.ts)
 
-#### Game Layer
-1. Game Types (game/types.js)
-   - PlayerNumber
-   - GameStatus
-   - MoveType
+These fundamental types serve as the single source of truth:
 
-2. Players (game/players.new.ts)
-   - IPlayer
-   - IGameRoom
-   - Dependencies: IGameState
+### Basic Types
+- `type Size = [number, number]` - Represents width and height
+- `type Position = [number, number]` - Represents x, y coordinates
+- `type UUID = string` - Unique identifier
+- `type Timestamp = number` - Unix timestamp in milliseconds
 
-3. State (game/state.new.ts)
-   - IBoard
-   - IGameScores
-   - ITurnState
-   - IGameState
-   - Dependencies: IBoardSize, PlayerNumber, IGameMove
+### Game Types
+- `type CellValue = 0 | 1 | 2` - Cell state (0 = empty, 1 = player1, 2 = player2)
+- `type PlayerNumber = 1 | 2` - Player identifier
+- `type GameStatus = 'waiting' | 'active' | 'finished'` - Game status
+- `type MoveType = 'place' | 'replace' | 'skip'` - Available move types
 
-4. Moves (game/moves.new.ts)
-   - IGameMove
-   - IGameMoveComplete
-   - Dependencies: IPosition, PlayerNumber, ITimestamp
+## Type Usage Guidelines
 
-### Migration Status Table
+1. **Type Location**
+   - Core/shared types go in core.ts
+   - Domain-specific types stay close to their domain
+   - No duplicate type definitions
 
-| Component | Status | Description |
-|-----------|--------|-------------|
-| Core Types | ✅ Complete | Base types migrated and documented |
-| Event System | ✅ Complete | Full event type system implemented |
-| EventService | ✅ Complete | Service implemented and integrated |
-| GameService | ✅ Complete | Migrated to new type system |
-| WebSocket Handlers | 🔄 90% | Base handlers updated, some pending |
-| Client Integration | ✅ Complete | New hooks and types implemented |
-| Testing | 🔄 10% | Basic structure only |
-| Documentation | 🔄 50% | Core docs updated, details pending |
-| Validation | 🔄 30% | Basic validation implemented |
+2. **Type Definition Style**
+   ```typescript
+   // ✅ Preferred way
+   type GameError = {
+       code: string;
+       message: string;
+   };
 
-### Success Metrics
+   type ErrorCode = 
+       | 'CONNECTION_ERROR'
+       | 'OPERATION_FAILED'
+       | 'GAME_NOT_FOUND';
 
-1. Type Safety
-   - ✅ No any types in new code
-   - ✅ Full type coverage for events
-   - ✅ Runtime type checking in validation
-   - ✅ Comprehensive type guards
+   // ❌ Avoid this
+   interface IGameError {
+       readonly code: string;
+       readonly message: string;
+   }
 
-2. Code Quality
-   - ✅ Clear type hierarchy
-   - ✅ Minimal type duplication
-   - ✅ Consistent patterns
-   - 🔄 Test coverage (pending)
+   enum ErrorCode {
+       CONNECTION_ERROR = 'CONNECTION_ERROR',
+       OPERATION_FAILED = 'OPERATION_FAILED'
+   }
+   ```
 
-3. Developer Experience
-   - ✅ Improved type inference
-   - ✅ Better error messages
-   - 🔄 Documentation (in progress)
-   - 🔄 Development tools (pending)
+3. **Type Composition**
+   ```typescript
+   // ✅ Use type intersection when needed
+   type BaseState = {
+       status: GameStatus;
+   };
 
-## Type System Architecture
+   type GameState = BaseState & {
+       players: Player[];
+   };
+   ```
 
-### Principles
-- Composition over inheritance
-- Immutable interfaces (readonly properties)
-- Domain-driven design
-- Single source of truth for types
-- Clear dependency hierarchy
+## Common Mistakes
 
-### Import Order
-1. core/primitives.js
-2. geometry/types.js
-3. game/types.js
-4. game/moves.js
-5. game/state.js
-6. game/players.js
-7. network/* files
-8. validation/* files
+1. **Creating Unnecessary Interfaces**
+   ```typescript
+   // ❌ Don't do this
+   interface IPosition {
+       x: number;
+       y: number;
+   }
+   ```
 
-## Known Issues and Type Duplications
+2. **Duplicating Core Types**
+   ```typescript
+   // ❌ Don't create variants of core types
+   type PlayerType = 1 | 2; // Already defined as PlayerNumber in core.ts
+   ```
 
-### Critical Issues
+3. **Deep Type Hierarchies**
+   ```typescript
+   // ❌ Avoid inheritance chains
+   interface BaseEntity {
+       id: string;
+   }
+   interface BaseGameEntity extends BaseEntity {
+       timestamp: number;
+   }
+   interface GameMove extends BaseGameEntity {
+       type: MoveType;
+   }
+   ```
 
-1. Type System Compilation
-   - Maximum call stack size exceeded error during compilation
-   - Potential circular dependencies in type resolution
-   - Mixed usage of old and new type systems
-   - Duplicate type definitions causing conflicts
+## When to Update Types
 
-2. Testing Coverage
-   - Limited test coverage for new types
-   - Missing integration tests
-   - Event validation needs testing
+1. When adding new game features that require new data structures
+2. When modifying existing game mechanics
+3. When fixing bugs related to type mismatches
 
-3. Documentation
-   - Some sections need updating
-   - Missing examples for new features
-   - Migration guides incomplete
+## Type Migration Process
 
-4. Validation
-   - Runtime validation incomplete
-   - Missing schema validation
-   - Error messages need improvement
+1. Always check core.ts first for existing types
+2. If a type doesn't exist in core.ts and is needed in multiple places, add it there
+3. Keep domain-specific types close to their domain unless they become widely used
 
-### Type Duplications Being Resolved
+## MVPs and Types
 
-1. Position/Coordinate Types:
-   - Old: IXCoordinate, IYCoordinate (core.ts)
-   - New: IPosition (geometry/types.ts)
-
-2. Dimension Types:
-   - Old: IWidth, IHeight (core.ts)
-   - New: ISize (geometry/types.ts)
-
-3. Game State Types:
-   - Old: IGamePhaseBase extends IPhase (base.ts)
-   - New: Direct union type GameStatus = 'waiting' | 'playing' | 'finished'
-
-4. Operation Types:
-   - Old: IOperationTypeBase extends IOperationType (base.ts)
-   - New: Direct union type OperationType = 'place' | 'replace'
-
-5. Validation Types:
-   - Old: IValidationResult (core.ts)
-   - New: IMoveValidation (game/types.ts)
-
-## Files Status
-
-### Migration Complete
-| File Path | Status | Notes |
-|-----------|--------|-------|
-| /server/src/services/EventService.ts | ✅ Done | Using new type system from events.ts |
-| /server/src/services/RedisService.ts | ✅ Done | Using new types and structures |
-| /server/src/services/GameService.ts | ✅ Done | Migrated to new type system |
-| /server/src/services/GameLogicService.ts | ✅ Done | Updated to use new game state structure |
-| /server/src/services/GameStorageService.ts | ✅ Done | Using new metadata types |
-| /shared/src/types/game/state.ts | ✅ Done | Using types from game/types.ts |
-| /shared/src/types/storage/metadata.ts | ✅ Done | Updated for immutability |
-| /shared/src/types/network/events.ts | ✅ Done | Migrated from events.new.ts |
-
-### Pending Migration
-
-1. WebSocket Layer (Priority: High)
-   - ✅ gameHandlers.new.ts → gameHandlers.ts (completed)
-   - ✅ consolidated in GameServer.events.ts
-   - [ ] replayHandlers.ts
-
-2. Client Types (Priority: High)
-   - 🔄 types/game.d.ts (ready for review)
-     * Created new version with updated imports
-     * Replaced Player with PlayerNumber
-     * Added readonly properties
-     * Renamed interfaces for consistency
-     * Updated operation names
-   - [ ] types/animations.ts (next in queue)
-     * Needs enum to union type conversion
-     * Update imports from base/primitives
-     * Update Player to PlayerNumber
-   - [ ] types/errors.new.ts
-     * New version exists with improvements
-     * Needs merging with errors.ts
-     * Already uses new type system
-   - [ ] types/gameManager.ts
-     * Needs import path updates
-     * Replace Player with PlayerNumber
-     * Use new error types
-
-3. Client Hooks (Priority: Medium)
-   - [ ] useMultiplayerGameNew.ts
-   - [ ] useGame.ts
-   - [ ] useMultiplayerGame.ts
-   - [ ] useReplay.ts
-   - [ ] useGameHistory.ts
-
-4. Client Services (Priority: Medium)
-   - [ ] GameStateManager.ts
-   - [ ] ActionQueue.new.ts
-   - [ ] ActionQueue.ts
-   - [ ] ai/index.ts
-
-## Next Actions
-
-1. Complete Integration
-   - [ ] Update remaining handlers
-   - [ ] Finish WebSocket integration
-   - [ ] Update client components
-   - [ ] Verify type consistency
-
-2. Testing
-   - [ ] Create test plan
-   - [ ] Implement basic tests
-   - [ ] Add integration tests
-   - [ ] Verify type guards
-
-3. Documentation
-   - [ ] Update API docs
-   - [ ] Add usage examples
-   - [ ] Complete migration guides
-
-## Recent Breaking Changes (2025-01-14)
-
-1. WebSocket Layer
-   - Removed old gameHandlers.ts and consolidated in GameServer.events.ts
-   - Event validation added for all WebSocket events
-   - Improved error handling with type-safe codes
-
-2. Game Types
-   - Renamed operation properties:
-     * placeOperationsLeft → placeOperations
-     * replaceOperationsLeft → replaceOperations
-   - Added readonly modifiers to interface properties
-   - Replaced Player enum with PlayerNumber type
-
-3. Imports
-   - Updated import paths to use new type system:
-     * @ctor-game/shared/types/base/* → @ctor-game/shared/src/types/game/types.js
-     * @ctor-game/shared/types/core/* → @ctor-game/shared/src/types/core/*.js
-     * @ctor-game/shared/types/network/* → @ctor-game/shared/src/types/network/*.js
-
-4. Interface Naming
-   - Added 'I' prefix to interfaces for consistency
-   - Updated related type references across the codebase
-
-## Migration Progress (2025-01-14)
-
-Last PR: Consolidated WebSocket handlers (gameHandlers.ts → GameServer.events.ts)
-Current task: Migrating client types, starting with game.d.ts
-
-Dependencies to watch:
-1. game.d.ts updates might affect:
-   - useGame hook
-   - useMultiplayerGame hook
-   - GameStateManager
-   - Game components using turn state
-
-Next steps:
-1. Review and merge game.d.ts changes
-2. Migrate animations.ts (remove enum)
-3. Merge errors.ts files
-4. Update gameManager.ts
-   - [ ] Document type system architecture
-
-## Notes
-
-- When migrating files, always make backups first
-- Test compilation after each file migration
-- Check for circular dependencies
-- Update documentation as you go
-- Keep both old and new versions until testing is complete
+For MVP development:
+- Keep types as simple as possible while maintaining type safety
+- Add complexity only when it provides clear benefits
+- Focus on essential type definitions that support core functionality
+- Avoid premature type system optimization
