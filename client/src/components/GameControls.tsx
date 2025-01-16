@@ -1,7 +1,12 @@
 import React, { useEffect } from 'react';
 import { cn } from '@/lib/utils';
-import type { PlayerNumber, TurnState, MoveType } from '@ctor-game/shared/src/types/core.js';
-import { GameError } from '@/types/connection';
+import type { 
+    PlayerNumber, 
+    TurnState, 
+    MoveType, 
+    GameError,
+    Position 
+} from '@ctor-game/shared/src/types/core.js';
 import { GameActionType } from '@/types/actions';
 import { logger } from '@/utils/logger';
 
@@ -200,7 +205,7 @@ export const GameControls: React.FC<GameControlsProps> = ({
                     : "bg-blue-500/20 text-blue-400"
                 )}
               >
-                {move.type === 'place' ? "Place" : "Replace"} at ({move.position[0]}, {move.position[1]})
+                {move.type === 'place' ? "Place" : "Replace"} at ({move.position[0]}, {move.position[1]})  {/* Position already in [x, y] format */}
               </div>
             ))}
           </div>
