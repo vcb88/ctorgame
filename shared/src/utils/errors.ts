@@ -1,33 +1,39 @@
-/**
- * Error utilities for consistent error handling across the application
- */
+export type ErrorWithStack = Error & {
+    stack: string;
+    cause?: unknown;
+};
 
-/** Extended error interface that includes stack trace */
-export interface IErrorWithStack extends Error {
-    readonly code?: string | number;
-    readonly type?: string;
-    readonly [key: string]: unknown;
-}
+export const isErrorWithStack = (error: unknown): error is ErrorWithStack => {
+    return error instanceof Error && typeof (error as ErrorWithStack).stack === 'string';
+};
 
-/**
- * Convert any error to ErrorWithStack format
- * Used primarily for logging purposes to ensure consistent error structure
- */
-export function toErrorWithStack(error: unknown): IErrorWithStack {
-    if (error instanceof Error) {
+export const getErrorDetails = (error: unknown): {
+    message: string;
+    stack?: string;
+    cause?: unknown;
+} => {
+    if (isErrorWithStack(error)) {
         return {
-            ...error,
             message: error.message,
             stack: error.stack,
-            type: error.constructor.name,
-            toString: () => error.toString()
+            cause: error.cause
         };
     }
+    
+    if (error instanceof Error) {
+        return {
+            message: error.message
+        };
+    }
+    
+    if (typeof error === 'string') {
+        return {
+            message: error
+        };
+    }
+    
     return {
-        name: 'UnknownError',
-        message: String(error),
-        stack: new Error().stack,
-        type: typeof error,
-        toString: () => String(error)
-    } as IErrorWithStack;
-}
+        message: 'Unknown error',
+        cause: error
+    };
+};

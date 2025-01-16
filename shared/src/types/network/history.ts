@@ -1,31 +1,28 @@
-import type { ErrorResponse } from './errors.js';
+import type { GameMove, GameState, PlayerNumber, Timestamp } from '../core.js';
 
-/**
- * Client requests for game history
- */
-export interface IHistoryClientEvents {
-    /** Request list of all saved games */
-    GET_SAVED_GAMES: () => void;
-}
+export type HistoryClientEvents = {
+    'request_history': (gameId: string) => void;
+    'request_move': (gameId: string, moveIndex: number) => void;
+};
 
-/**
- * Server responses for game history
- */
-export interface IHistoryServerEvents {
-    /** List of saved games */
-    SAVED_GAMES: (data: { games: IGameHistoryEntry[] }) => void;
-    /** Error response */
-    ERROR: (error: ErrorResponse) => void;
-}
+export type HistoryServerEvents = {
+    'history_loaded': (data: {
+        moves: GameMove[];
+        states: GameState[];
+        timestamps: Timestamp[];
+        winner?: PlayerNumber;
+    }) => void;
+    'move_loaded': (data: {
+        move: GameMove;
+        state: GameState;
+        timestamp: Timestamp;
+        index: number;
+    }) => void;
+};
 
-/**
- * Basic game summary for listing in history
- */
-export interface IGameHistoryEntry {
-    gameCode: string;
-    startTime: string;
-    endTime?: string;
-    players: Array<string>;
-    winner?: string;
-    totalMoves: number;
-}
+export type GameHistoryEntry = {
+    move: GameMove;
+    state: GameState;
+    timestamp: Timestamp;
+    index: number;
+};
