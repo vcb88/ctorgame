@@ -8,7 +8,7 @@ export interface IReplayState {
     totalMoves: number;
     isPlaying: boolean;
     playbackSpeed: number;
-    readonly gameCode: string;
+    gameCode: string;
 }
 
 /**
