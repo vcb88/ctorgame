@@ -2,47 +2,88 @@
  * Redis configuration types
  */
 
-/**
- * Redis cache configuration
- */
-export interface ICacheConfig {
-    readonly ttl: {
-        readonly gameState: number;
-        readonly playerSession: number;
-        readonly gameRoom: number;
-        readonly events: number;
-    };
-    readonly prefix?: {
-        readonly gameState?: string;
-        readonly playerSession?: string;
-        readonly gameRoom?: string;
-        readonly events?: string;
-    };
+import { RedisKeyEnum } from './enums.js';
+
+/** Redis cache TTL configuration */
+export interface RedisTTLConfig {
+    readonly gameState: number;
+    readonly playerSession: number;
+    readonly gameRoom: number;
+    readonly events: number;
+}
+
+/** Redis key prefix configuration */
+export interface RedisPrefixConfig {
+    readonly [RedisKeyEnum.GAME_STATE]?: string;
+    readonly [RedisKeyEnum.GAME_ROOM]?: string;
+    readonly [RedisKeyEnum.PLAYER_SESSION]?: string;
+    readonly [RedisKeyEnum.EVENT]?: string;
+    readonly [RedisKeyEnum.METADATA]?: string;
+}
+
+/** Redis cache options */
+export interface RedisCacheOptions {
+    readonly maxRetries?: number;
+    readonly retryDelay?: number;
+    readonly maxItems?: number;
+    readonly evictionPolicy?: 'lru' | 'lfu' | 'random';
+    readonly compression?: boolean;
+}
+
+/** Redis cache configuration */
+export interface RedisCacheConfig {
+    readonly ttl: RedisTTLConfig;
+    readonly prefix?: RedisPrefixConfig;
+    readonly options?: RedisCacheOptions;
+}
+
+/** Redis connection security */
+export interface RedisSecurityConfig {
+    readonly tls?: boolean;
+    readonly cert?: string;
+    readonly key?: string;
+    readonly ca?: string;
+    readonly password?: string;
+}
+
+/** Redis connection retry policy */
+export interface RedisRetryConfig {
+    readonly maxAttempts?: number;
+    readonly delay?: number;
+    readonly maxDelay?: number;
+    readonly useExponential?: boolean;
+}
+
+/** Redis cluster configuration */
+export interface RedisClusterConfig {
+    readonly enabled: boolean;
+    readonly nodes?: { host: string; port: number; }[];
     readonly options?: {
-        readonly maxRetries?: number;
-        readonly retryDelay?: number;
-        readonly maxItems?: number;
+        readonly maxRedirections?: number;
+        readonly retryDelayOnFailover?: number;
+        readonly retryDelayOnClusterDown?: number;
     };
 }
 
-/**
- * Redis connection configuration
- */
-export interface IRedisConfig {
+/** Redis connection configuration */
+export interface RedisConfig {
     readonly host: string;
     readonly port: number;
-    readonly password?: string;
     readonly db?: number;
-    readonly tls?: boolean;
-    readonly maxReconnectAttempts?: number;
+    readonly security?: RedisSecurityConfig;
+    readonly retry?: RedisRetryConfig;
+    readonly cluster?: RedisClusterConfig;
+    readonly monitoring?: {
+        readonly enabled?: boolean;
+        readonly interval?: number;
+        readonly slowLogThreshold?: number;
+    };
 }
 
-/**
- * Type guards
- */
-export function isCacheConfig(value: unknown): value is ICacheConfig {
+/** Type guards */
+export function isRedisCacheConfig(value: unknown): value is RedisCacheConfig {
     if (!value || typeof value !== 'object') return false;
-    const config = value as ICacheConfig;
+    const config = value as RedisCacheConfig;
     return (
         config.ttl &&
         typeof config.ttl === 'object' &&
@@ -53,9 +94,9 @@ export function isCacheConfig(value: unknown): value is ICacheConfig {
     );
 }
 
-export function isRedisConfig(value: unknown): value is IRedisConfig {
+export function isRedisConfig(value: unknown): value is RedisConfig {
     if (!value || typeof value !== 'object') return false;
-    const config = value as IRedisConfig;
+    const config = value as RedisConfig;
     return (
         typeof config.host === 'string' &&
         typeof config.port === 'number'

@@ -2,53 +2,76 @@
  * Redis event types
  */
 
-type EventType = 'move' | 'disconnect' | 'reconnect' | 'end_turn';
-type EventStatus = 'pending' | 'processing' | 'completed' | 'failed';
+import { UUID, Timestamp } from '../core/primitives.js';
+import { RedisEventEnum, RedisEventStatusEnum } from './enums.js';
 
-/**
- * Game events stored in Redis
- */
-export interface IRedisGameEvent {
-    readonly type: EventType;
-    readonly gameId: string;
-    readonly playerId: string;
+/** Game events stored in Redis */
+export interface RedisGameEvent {
+    readonly type: RedisEventEnum;
+    readonly gameId: UUID;
+    readonly playerId: UUID;
     readonly data: unknown;
-    readonly timestamp: number;
-    readonly eventId?: string;
+    readonly timestamp: Timestamp;
+    readonly eventId?: UUID;
     readonly processed?: boolean;
+    readonly metadata?: {
+        readonly priority?: number;
+        readonly retryCount?: number;
+        readonly lastRetry?: Timestamp;
+    };
 }
 
-/**
- * Event processing status
- */
-export interface IRedisEventStatus {
-    readonly eventId: string;
-    readonly status: EventStatus;
+/** Event processing status */
+export interface RedisEventStatus {
+    readonly eventId: UUID;
+    readonly status: RedisEventStatusEnum;
     readonly error?: string;
-    readonly processedAt?: number;
+    readonly processedAt?: Timestamp;
+    readonly attempts?: number;
+    readonly processingTime?: number;
 }
 
-/**
- * Type guards
- */
-export function isRedisGameEvent(value: unknown): value is IRedisGameEvent {
+/** Event batch processing */
+export interface RedisEventBatch {
+    readonly batchId: UUID;
+    readonly events: RedisGameEvent[];
+    readonly status: RedisEventStatusEnum;
+    readonly processedCount: number;
+    readonly failedCount: number;
+    readonly createdAt: Timestamp;
+    readonly completedAt?: Timestamp;
+}
+
+/** Event subscriber options */
+export interface RedisEventSubscriber {
+    readonly pattern: string;
+    readonly callback: (event: RedisGameEvent) => Promise<void>;
+    readonly options?: {
+        readonly batchSize?: number;
+        readonly maxRetries?: number;
+        readonly retryDelay?: number;
+    };
+}
+
+/** Type guards */
+export function isRedisGameEvent(value: unknown): value is RedisGameEvent {
     if (!value || typeof value !== 'object') return false;
-    const event = value as IRedisGameEvent;
+    const event = value as RedisGameEvent;
     return (
         typeof event.type === 'string' &&
-        ['move', 'disconnect', 'reconnect', 'end_turn'].includes(event.type) &&
+        Object.values(RedisEventEnum).includes(event.type as RedisEventEnum) &&
         typeof event.gameId === 'string' &&
         typeof event.playerId === 'string' &&
         typeof event.timestamp === 'number'
     );
 }
 
-export function isRedisEventStatus(value: unknown): value is IRedisEventStatus {
+export function isRedisEventStatus(value: unknown): value is RedisEventStatus {
     if (!value || typeof value !== 'object') return false;
-    const status = value as IRedisEventStatus;
+    const status = value as RedisEventStatus;
     return (
         typeof status.eventId === 'string' &&
         typeof status.status === 'string' &&
-        ['pending', 'processing', 'completed', 'failed'].includes(status.status)
+        Object.values(RedisEventStatusEnum).includes(status.status as RedisEventStatusEnum)
     );
 }
