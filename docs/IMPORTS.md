@@ -2,7 +2,27 @@
 
 ## Overview
 
-The project now uses a modular import system for shared types and utilities. Instead of importing everything from the main `@ctor-game/shared` entry point, we use specific domain imports to make dependencies more explicit and reduce the risk of circular dependencies.
+The project uses direct imports from specific shared module paths. We explicitly avoid re-exports to maintain clear dependency paths and prevent potential issues with enums and type exports.
+
+### Direct Imports Policy
+
+We use direct imports from @ctor-game/shared paths for several reasons:
+1. Clear and explicit dependencies
+2. Proper handling of both type and value imports (especially for enums)
+3. Better TypeScript module resolution
+4. Easier debugging and dependency tracking
+
+Example of correct imports:
+```typescript
+// Types only
+import type { IGameState, IGameMove } from '@ctor-game/shared/types/game/types.js';
+
+// Enums (need both type and value)
+import { ErrorCode, ErrorCategory } from '@ctor-game/shared/types/network/errors.js';
+
+// Utilities
+import { validateGameEvent } from '@ctor-game/shared/validation/game.js';
+```
 
 ## Available Import Paths
 
