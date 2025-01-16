@@ -2,50 +2,39 @@
  * Core types exports
  */
 
-export * from './enums.js';
-export * from './primitives.js';
-export * from './types.js';
+// New simplified types
+export * from './board.js';
+export * from './errors.js';
+export * from './moves.js';
 
-// Legacy exports for backward compatibility
-import type { 
-    PlayerNumber,
-    Position,
-    Size,
+// Basic types still used from primitives
+export type {
+    UUID,
     Timestamp,
-    ValidationResult,
-    CellValue
+    Version
 } from './primitives.js';
-import type {
-    Player,
-    GameMove,
-    GameState,
-    GameError
-} from './types.js';
-import {
-    GamePhaseEnum as Phase,
-    GameStatusEnum as Status,
-    MoveTypeEnum as MoveType,
-    ConnectionStatusEnum as ConnectionStatus
+
+// Basic enums still used
+export {
+    GameStatusEnum,
+    ConnectionStatusEnum
 } from './enums.js';
 
-// Exposing legacy types 
-export type {
-    PlayerNumber as IPlayerNumber,
-    Position as IPosition,
-    Size as ISize,
-    Timestamp as ITimestamp,
-    ValidationResult as IValidationResult,
-    CellValue as ICellValue,
-    Player as IPlayer,
-    GameMove as IGameMove,
-    GameState as IGameState,
-    GameError as IGameError
-};
+// Legacy type support
+import type { Board, BoardPosition, CellValue } from './board.js';
+import type { GameError } from './errors.js';
+import type { GameMove, TurnState } from './moves.js';
 
-// Exposing legacy enums
-export type { 
-    Phase as IPhase,
-    Status as IGameStatus,
-    MoveType as IMoveType,
-    ConnectionStatus as IConnectionStatus
+export type {
+    // Board types
+    Board as IBoard,
+    BoardPosition as IPosition,
+    CellValue as ICellValue,
+    
+    // Error types
+    GameError as IError,
+    
+    // Move types
+    GameMove as IMove,
+    TurnState as ITurnState
 };
