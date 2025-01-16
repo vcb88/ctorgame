@@ -2,8 +2,9 @@
  * Network communication types
  */
 
-import type { IGameState, IGameMove, GameStatus } from '../game/types.js';
-import type { ITimestamped, IIdentifiable } from '../core/primitives.js';
+import type { UUID, Timestamp, GameStatus } from '../base/primitives.js';
+import type { GameState } from '../game/types.js';
+import type { GameMove } from '../state/moves.js';
 
 // WebSocket event types
 export type GameEventType =
@@ -14,32 +15,34 @@ export type GameEventType =
     | 'player_connected'
     | 'player_disconnected';
 
-// Event payloads using composition
-export interface IGameEvent extends ITimestamped, IIdentifiable {
-    readonly type: GameEventType;
-    readonly gameId: string;
-    readonly playerId?: string;
-    readonly data: unknown;
-}
+// Base event type
+export type GameEvent = {
+    id: UUID;
+    type: GameEventType;
+    gameId: UUID;
+    playerId?: UUID;
+    timestamp: Timestamp;
+    data: unknown;
+};
 
-// Specific event interfaces using type discrimination
-export interface IGameCreatedEvent extends IGameEvent {
-    readonly type: 'game_created';
-    readonly data: {
-        readonly gameId: string;
-        readonly status: GameStatus;
+// Specific event types using type discrimination
+export type GameCreatedEvent = GameEvent & {
+    type: 'game_created';
+    data: {
+        gameId: UUID;
+        status: GameStatus;
     };
-}
+};
 
-export interface IGameMoveEvent extends IGameEvent {
-    readonly type: 'game_move';
-    readonly data: {
-        readonly move: IGameMove;
-        readonly state: IGameState;
+export type GameMoveEvent = GameEvent & {
+    type: 'game_move';
+    data: {
+        move: GameMove;
+        state: GameState;
     };
-}
+};
 
 // Type guard to check specific event types
-export const isGameMoveEvent = (event: IGameEvent): event is IGameMoveEvent => {
+export const isGameMoveEvent = (event: GameEvent): event is GameMoveEvent => {
     return event.type === 'game_move';
 };
