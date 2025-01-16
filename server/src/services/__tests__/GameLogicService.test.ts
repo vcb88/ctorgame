@@ -1,10 +1,10 @@
 import { describe, it, expect, beforeEach } from '@jest/globals';
 import { GameLogicService } from '../GameLogicService.new.js';
-import type { IGameState, GameMove, PlayerNumber } from '@ctor-game/shared/types/game/types';
-import type { IPosition } from '@ctor-game/shared/types/geometry/types';
+import type { GameState, GameMove, PlayerNumber } from '@ctor-game/shared/types/game/types';
+import type { Position } from '@ctor-game/shared/types/base/primitives';
 
 describe('GameLogicService', () => {
-  let initialState: IGameState;
+  let initialState: GameState;
 
   beforeEach(() => {
     initialState = GameLogicService.createInitialState();
@@ -33,7 +33,7 @@ describe('GameLogicService', () => {
     it('should validate first move placement', () => {
       const move: GameMove = {
         type: 'place',
-        position: { x: 0, y: 0 },
+        position: [0, 0],
         player: 1,
         timestamp: Date.now()
       };
@@ -42,14 +42,14 @@ describe('GameLogicService', () => {
     });
 
     it('should reject move when game is over', () => {
-      const state: IGameState = {
+      const state: GameState = {
         ...initialState,
         gameOver: true
       };
 
       const move: GameMove = {
         type: 'place',
-        position: { x: 0, y: 0 },
+        position: [0, 0],
         player: 1,
         timestamp: Date.now()
       };
@@ -73,7 +73,7 @@ describe('GameLogicService', () => {
     it('should apply valid placement move', () => {
       const move: GameMove = {
         type: 'place',
-        position: { x: 0, y: 0 },
+        position: [0, 0],
         player: 1,
         timestamp: Date.now()
       };
@@ -88,7 +88,7 @@ describe('GameLogicService', () => {
     it('should update scores after move', () => {
       const move: GameMove = {
         type: 'place',
-        position: { x: 0, y: 0 },
+        position: [0, 0],
         player: 1,
         timestamp: Date.now()
       };
@@ -101,7 +101,7 @@ describe('GameLogicService', () => {
     it('should handle first turn correctly', () => {
       const move: GameMove = {
         type: 'place',
-        position: { x: 0, y: 0 },
+        position: [0, 0],
         player: 1,
         timestamp: Date.now()
       };
@@ -115,23 +115,23 @@ describe('GameLogicService', () => {
   describe('validateReplace', () => {
     it('should validate replacement with enough adjacent pieces', () => {
       // Setup board with pieces
-      const state: IGameState = GameLogicService.createInitialState();
+      const state: GameState = GameLogicService.createInitialState();
       state.board.cells[0][0] = 1;
       state.board.cells[0][1] = 1;
       state.board.cells[1][0] = 2; // Opponent piece to replace
 
-      const position: IPosition = { x: 1, y: 0 };
+      const position: Position = [1, 0];
       const validation = GameLogicService.validateReplace(state.board, position, 1);
       expect(validation.isValid).toBe(true);
     });
 
     it('should reject replacement without enough adjacent pieces', () => {
       // Setup board with only one adjacent piece
-      const state: IGameState = GameLogicService.createInitialState();
+      const state: GameState = GameLogicService.createInitialState();
       state.board.cells[0][0] = 1;
       state.board.cells[1][0] = 2; // Opponent piece to replace
 
-      const position: IPosition = { x: 1, y: 0 };
+      const position: Position = [1, 0];
       const validation = GameLogicService.validateReplace(state.board, position, 1);
       expect(validation.isValid).toBe(false);
     });
@@ -140,14 +140,14 @@ describe('GameLogicService', () => {
   describe('getAvailableReplaces', () => {
     it('should find all available replacements', () => {
       // Setup board with potential replacements
-      const state: IGameState = GameLogicService.createInitialState();
+      const state: GameState = GameLogicService.createInitialState();
       state.board.cells[0][0] = 1;
       state.board.cells[0][1] = 1;
       state.board.cells[1][0] = 2; // Can be replaced
 
       const replaces = GameLogicService.getAvailableReplaces(state, 1);
       expect(replaces).toHaveLength(1);
-      expect(replaces[0].position).toEqual({ x: 1, y: 0 });
+      expect(replaces[0].position).toEqual([1, 0]);
     });
 
     it('should return empty array when no replacements available', () => {

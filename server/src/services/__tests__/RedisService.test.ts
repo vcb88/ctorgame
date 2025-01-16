@@ -3,9 +3,9 @@ import { RedisService } from '../RedisService.new.js';
 import { redisClient, REDIS_KEYS, REDIS_EVENTS } from '../../config/redis.js';
 import { GameLogicService } from '../GameLogicService.js';
 import type { 
-    IGameState, 
+    GameState, 
     PlayerNumber, 
-    IPlayer,
+    Player,
     GameStatus
 } from '@ctor-game/shared/types/game/types';
 
@@ -43,8 +43,8 @@ jest.mock('../../config/redis', () => ({
 
 describe('RedisService', () => {
     let service: RedisService;
-    let mockState: IGameState;
-    let mockPlayer: IPlayer;
+    let mockState: GameState;
+    let mockPlayer: Player;
 
     beforeEach(() => {
         service = new RedisService();
@@ -52,7 +52,8 @@ describe('RedisService', () => {
         mockPlayer = {
             id: 'test-socket-id',
             name: 'Test Player',
-            number: 1 as PlayerNumber
+            number: 1 as PlayerNumber,
+            connected: true
         };
         jest.clearAllMocks();
     });
@@ -129,10 +130,11 @@ describe('RedisService', () => {
             };
             (redisClient.get as jest.Mock).mockResolvedValue(JSON.stringify(mockRoom));
 
-            const newPlayer: IPlayer = {
+            const newPlayer: Player = {
                 id: 'player-2',
                 name: 'Player 2',
-                number: 2 as PlayerNumber
+                number: 2 as PlayerNumber,
+                connected: true
             };
 
             await service.addPlayerToRoom('test-game', newPlayer);
@@ -167,10 +169,11 @@ describe('RedisService', () => {
             };
             (redisClient.get as jest.Mock).mockResolvedValue(JSON.stringify(mockRoom));
 
-            const player2: IPlayer = {
+            const player2: Player = {
                 id: 'player-2',
                 name: 'Player 2',
-                number: 2 as PlayerNumber
+                number: 2 as PlayerNumber,
+                connected: true
             };
 
             await service.joinGame('test-game', player2);
@@ -181,7 +184,7 @@ describe('RedisService', () => {
             expect(service.getCurrentPlayer(mockState)).toBe(1);
             mockState.currentTurn.moves.push({
                 type: 'place',
-                position: { x: 0, y: 0 },
+                position: [0, 0],
                 player: 1,
                 timestamp: Date.now()
             });

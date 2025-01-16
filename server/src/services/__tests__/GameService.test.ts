@@ -2,9 +2,9 @@ import { describe, it, expect, beforeEach, jest } from '@jest/globals';
 import { GameService } from '../GameService.new.js';
 import { GameLogicService } from '../GameLogicService.js';
 import type { 
-    IGameState, 
+    GameState, 
     PlayerNumber, 
-    IPlayer,
+    Player,
     GameMove,
     GameStatus 
 } from '@ctor-game/shared/types/game/types';
@@ -37,14 +37,15 @@ jest.mock('mongodb', () => {
 
 describe('GameService', () => {
     let service: GameService;
-    let mockPlayer: IPlayer;
-    let initialState: IGameState;
+    let mockPlayer: Player;
+    let initialState: GameState;
 
     beforeEach(() => {
         service = new GameService('mongodb://test');
         mockPlayer = {
             id: 'test-player',
-            number: 1 as PlayerNumber
+            number: 1 as PlayerNumber,
+            connected: true
         };
         initialState = GameLogicService.createInitialState();
         jest.clearAllMocks();
@@ -74,9 +75,10 @@ describe('GameService', () => {
                 players: { first: 'player1', second: 'player2' }
             };
 
-            const player2: IPlayer = {
+            const player2: Player = {
                 id: 'player2',
-                number: 2 as PlayerNumber
+                number: 2 as PlayerNumber,
+                connected: true
             };
 
             const collection = service['gamesCollection'];
@@ -100,7 +102,7 @@ describe('GameService', () => {
 
             const move: GameMove = {
                 type: 'place',
-                position: { x: 0, y: 0 },
+                position: [0, 0],
                 player: 1,
                 timestamp: Date.now()
             };
@@ -134,7 +136,7 @@ describe('GameService', () => {
 
             const move: GameMove = {
                 type: 'place',
-                position: { x: 0, y: 0 },
+                position: [0, 0],
                 player: 1,
                 timestamp: Date.now()
             };
