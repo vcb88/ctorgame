@@ -8,43 +8,43 @@ import type {
     GameState, 
     GameMove, 
     PlayerNumber,
-    GameStatus
+    GameStatus,
+    Position,
+    GameId,
+    CellValue,
+    GameError
 } from '@ctor-game/shared/src/types/core.js';
 import type { 
     WebSocketEvent, 
-    UUID,
     ServerToClientEvents,
     ClientToServerEvents
 } from '@ctor-game/shared/src/types/network/websocket.js';
 import type { 
     NetworkError
 } from '@ctor-game/shared/src/types/network/errors.js';
-import type {
-    Position
-} from '@ctor-game/shared/src/types/core.js';
 
 type ConnectionState = 'connected' | 'connecting' | 'reconnecting' | 'disconnected' | 'error';
 
 type GameResponse = {
     readonly success: boolean;
     readonly error?: NetworkError;
-    readonly eventId?: UUID;
+    readonly eventId?: GameId;  // Using GameId instead of UUID
     readonly timestamp: number;
 };
 
 type JoinGameResponse = GameResponse & {
-    readonly gameId?: UUID;
+    readonly gameId?: GameId;  // Using GameId instead of UUID
     readonly playerNumber?: PlayerNumber;
 };
 
 type MultiplayerGameState = {
-    readonly gameId: UUID | null;
+    readonly gameId: GameId | null;  // Using GameId instead of UUID
     readonly playerNumber: PlayerNumber | null;
     readonly gameState: GameState | null;
     readonly currentPlayer: PlayerNumber;
     readonly connectionState: ConnectionState;
     readonly error: NetworkError | null;
-    readonly availableReplaces: GameMove[];
+    readonly availableReplaces: GameMove[];  // Already using new GameMove type
     readonly timestamp: number;
 };
 
@@ -105,7 +105,7 @@ export const useMultiplayerGame = () => {
         }
     }, []);
 
-    const joinGame = useCallback(async (gameId: UUID): Promise<JoinGameResult> => {
+    const joinGame = useCallback(async (gameId: GameId): Promise<JoinGameResult> => {
         try {
             logger.info('Joining game', {
                 component: 'useMultiplayerGame',
@@ -132,8 +132,15 @@ export const useMultiplayerGame = () => {
 
     const makeMove = useCallback(async (pos: Position) => {
         try {
+            if (!state.playerNumber || !state.gameState) {
+                throw new Error('Invalid game state for making move');
+            }
+
             const move: GameMove = {
+                type: 'place',  // Default move type
                 position: pos,
+                player: state.playerNumber,
+                turnNumber: state.gameState.currentTurn?.turnNumber ?? 0,
                 timestamp: Date.now()
             };
 

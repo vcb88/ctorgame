@@ -5,7 +5,10 @@ import type {
     GameState, 
     GameMove, 
     PlayerNumber, 
-    GameError 
+    GameError,
+    GameId,
+    Position,
+    CellValue
 } from '@ctor-game/shared/src/types/core.js';
 import type { NetworkError } from '@ctor-game/shared/src/types/network/errors.js';
 
@@ -13,10 +16,12 @@ import type { NetworkError } from '@ctor-game/shared/src/types/network/errors.js
 type GameManagerState = {
     gameState: GameState | null;
     currentPlayer: PlayerNumber | null;
-    availableReplaces: GameMove[];
+    availableReplaces: GameMove[];  // Already using new GameMove type
     isConnected: boolean;
     isLoading: boolean;
     error: GameError | null;
+    gameId: GameId | null;  // Added to track current game
+    timestamp: number;      // Added for state updates tracking
 };
 
 /** State update type */
@@ -24,12 +29,12 @@ type GameManagerStateUpdate = Partial<GameManagerState>;
 
 /** Join game result */
 type JoinGameResult = {
-    gameId: string;
+    gameId: GameId;  // Using GameId type instead of string
     playerNumber: PlayerNumber;
 };
 
 /** Join game error */
 type JoinGameError = NetworkError & {
     operation: 'join';
-    gameId: string;
+    gameId: GameId;  // Using GameId type instead of string
 };
