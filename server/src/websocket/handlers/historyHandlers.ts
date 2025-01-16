@@ -1,11 +1,14 @@
 import { Socket } from 'socket.io';
 import { GameService } from '../../services/GameService.js';
-import type { IHistoryClientEvents, IHistoryServerEvents } from '@ctor-game/shared/types/network/history';
+import type { 
+    HistoryClientEvents, 
+    HistoryServerEvents 
+} from '@ctor-game/shared/src/types/network/history.js';
 import { createErrorResponse } from '@ctor-game/shared/utils/errors';
 import { isGameHistoryEntry } from '@ctor-game/shared/utils/validation/replay';
 
 export function registerHistoryHandlers(
-    socket: Socket<IHistoryClientEvents, IHistoryServerEvents>,
+    socket: Socket<HistoryClientEvents, HistoryServerEvents>,
     gameService: GameService
 ) {
     socket.on('GET_SAVED_GAMES', async () => {
