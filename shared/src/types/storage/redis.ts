@@ -5,24 +5,24 @@ type UUID = string;
  * Redis configuration
  */
 export interface IRedisConfig {
-    readonly host: string;
-    readonly port: number;
-    readonly password?: string;
-    readonly db?: number;
-    readonly keyPrefix?: string;
+    host: string;
+    port: number;
+    password?: string;
+    db?: number;
+    keyPrefix?: string;
 }
 
 /**
  * TTL configuration
  */
 export interface IRedisTTL {
-    readonly gameState: number;    // Game state TTL in seconds
-    readonly playerSession: number; // Player session TTL in seconds
-    readonly gameRoom: number;     // Game room TTL in seconds
-    readonly eventQueue: {         // Event queue configuration
-        readonly default: number;  // Default TTL for events
-        readonly maxAge: number;   // Maximum age for important events
-        readonly cleanupInterval: number; // Cleanup interval in seconds
+    gameState: number;    // Game state TTL in seconds
+    playerSession: number; // Player session TTL in seconds
+    gameRoom: number;     // Game room TTL in seconds
+    eventQueue: {         // Event queue configuration
+        default: number;  // Default TTL for events
+        maxAge: number;   // Maximum age for important events
+        cleanupInterval: number; // Cleanup interval in seconds
     };
 }
 
@@ -30,45 +30,45 @@ export interface IRedisTTL {
  * Redis cached game state
  */
 export interface IRedisGameState extends IGameState {
-    readonly lastUpdate: number;    // Last update timestamp
-    readonly version: number;       // State version for optimistic locking
+    lastUpdate: number;    // Last update timestamp
+    version: number;       // State version for optimistic locking
 }
 
 /**
  * Redis player session
  */
 export interface IRedisPlayerSession {
-    readonly gameId: UUID;
-    readonly playerNumber: PlayerNumber;
-    readonly lastActivity: number;
-    readonly reconnectUntil?: number;
+    gameId: UUID;
+    playerNumber: PlayerNumber;
+    lastActivity: number;
+    reconnectUntil?: number;
 }
 
 /**
  * Redis game room
  */
 export interface IRedisGameRoom {
-    readonly gameId: UUID;
-    readonly status: GameStatus;
-    readonly players: ReadonlyArray<{
-        readonly id: UUID;
-        readonly number: PlayerNumber;
+    gameId: UUID;
+    status: GameStatus;
+    players: Array<{
+        id: UUID;
+        number: PlayerNumber;
     }>;
-    readonly lastUpdate: number;
+    lastUpdate: number;
 }
 
 /**
  * Redis game event
  */
 export interface IRedisGameEvent {
-    readonly id: UUID;
-    readonly gameId: UUID;
-    readonly type: 'move' | 'join' | 'leave' | 'end';
-    readonly timestamp: number;
-    readonly playerNumber: PlayerNumber;
-    readonly data: {
-        readonly move?: IGameMove;
-        readonly state?: IGameState;
+    id: UUID;
+    gameId: UUID;
+    type: 'move' | 'join' | 'leave' | 'end';
+    timestamp: number;
+    playerNumber: PlayerNumber;
+    data: {
+        move?: IGameMove;
+        state?: IGameState;
     };
 }
 

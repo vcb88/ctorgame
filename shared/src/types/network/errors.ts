@@ -46,28 +46,28 @@ export class ValidationError extends Error {
 
 /** Network error type with detailed information */
 export type NetworkError = {
-    readonly code: ErrorCode;
-    readonly category: ErrorCategory;
-    readonly severity: ErrorSeverity;
-    readonly message: string;
-    readonly timestamp: number;
-    readonly details?: {
-        readonly gameId?: UUID;
-        readonly playerId?: UUID;
-        readonly playerNumber?: PlayerNumber;
-        readonly position?: Position;
-        readonly state?: string;
-        readonly [key: string]: unknown;
+    code: ErrorCode;
+    category: ErrorCategory;
+    severity: ErrorSeverity;
+    message: string;
+    timestamp: number;
+    details?: {
+        gameId?: UUID;
+        playerId?: UUID;
+        playerNumber?: PlayerNumber;
+        position?: Position;
+        state?: string;
+        [key: string]: unknown;
     };
 };
 
 /** Error recovery configuration */
 export type ErrorRecovery = {
-    readonly maxRetries: number;
-    readonly retryDelay: number;
-    readonly useBackoff: boolean;
-    readonly backoffMultiplier?: number;
-    readonly maxDelay?: number;
+    maxRetries: number;
+    retryDelay: number;
+    useBackoff: boolean;
+    backoffMultiplier?: number;
+    maxDelay?: number;
 };
 
 /** Default error recovery config */

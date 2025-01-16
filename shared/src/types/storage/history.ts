@@ -6,11 +6,11 @@ import type { GameMetadata, GameDetails } from './metadata.js';
  */
 export interface IGameHistory {
     /** Game metadata from database */
-    readonly metadata: GameMetadata;
+    metadata: GameMetadata;
     /** List of all game moves in chronological order */
-    readonly moves: readonly IGameMove[];
+    moves: Array<IGameMove>;
     /** Additional game details and statistics */
-    readonly details: GameDetails;
+    details: GameDetails;
 }
 
 /**
@@ -18,17 +18,17 @@ export interface IGameHistory {
  */
 export interface IGameHistorySummary {
     /** Unique game identifier */
-    readonly gameId: string;
+    gameId: string;
     /** Game start timestamp */
-    readonly startTime: string;
+    startTime: string;
     /** Game end timestamp if game is finished */
-    readonly endTime?: string;
+    endTime?: string;
     /** Array of player identifiers */
-    readonly players: readonly string[];
+    players: Array<string>;
     /** Identifier of the winning player if game is finished */
-    readonly winner?: string;
+    winner?: string;
     /** Total number of moves made in the game */
-    readonly totalMoves: number;
+    totalMoves: number;
     /** Game current status */
-    readonly status: 'waiting' | 'playing' | 'finished' | 'expired';
+    status: 'waiting' | 'playing' | 'finished' | 'expired';
 }

@@ -40,20 +40,20 @@ export enum BaseErrorEnum {
 
 /** Error with metadata */
 export interface BaseError {
-    readonly code: BaseErrorEnum;
-    readonly message: string;
-    readonly category: ErrorCategoryEnum;
-    readonly severity: ErrorSeverityEnum;
-    readonly timestamp: number;
-    readonly details?: Record<string, unknown>;
-    readonly stack?: string;
+    code: BaseErrorEnum;
+    message: string;
+    category: ErrorCategoryEnum;
+    severity: ErrorSeverityEnum;
+    timestamp: number;
+    details?: Record<string, unknown>;
+    stack?: string;
 }
 
 /** Error factory options */
 export interface ErrorOptions {
-    readonly category?: ErrorCategoryEnum;
-    readonly severity?: ErrorSeverityEnum;
-    readonly details?: Record<string, unknown>;
+    category?: ErrorCategoryEnum;
+    severity?: ErrorSeverityEnum;
+    details?: Record<string, unknown>;
 }
 
 /** Create error with defaults */
