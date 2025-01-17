@@ -155,7 +155,7 @@ export class GameServer {
 
             socket.emit('game_created', {
                 gameId,
-                eventId: event.id,
+                id: event.id,
                 code: game.code,
                 status: event.data.status,
                 timestamp: Date.now(),
@@ -212,7 +212,7 @@ export class GameServer {
 
             socket.emit('game_joined', {
                 gameId: targetGameId,
-                eventId: connectEvent.id,
+                id: connectEvent.id,
                 status: game.status,
                 timestamp: Date.now(),
                 type: 'game_joined'
@@ -227,7 +227,7 @@ export class GameServer {
 
                 this.io.to(targetGameId).emit('game_started', {
                     gameId: targetGameId,
-                    eventId: startEvent.id,
+                    id: startEvent.id,
                     gameState: state,
                     currentPlayer: state.currentPlayer,
                     timestamp: Date.now(),
