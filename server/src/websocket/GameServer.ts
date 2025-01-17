@@ -3,19 +3,19 @@ import { Server as HttpServer } from 'http';
 import { Socket } from 'socket.io';
 
 // Import all types from shared types module
-import {
-    IGameState,
-    IGameMove,
+import type {
+    GameState,
+    GameMove,
     PlayerNumber,
-    IGameScores,
     GameStatus,
     WebSocketEvent,
     ServerToClientEvents,
     ClientToServerEvents,
     WebSocketErrorCode,
-    IGameEvent,
-    validateGameEvent
-} from '../types/shared.js';
+    GameEvent,
+    NetworkError
+} from '@ctor-game/shared/types/core.js';
+import { validateEvent } from '@ctor-game/shared/utils/events.js';
 
 // Constants
 const GameStatusValues = {
@@ -31,9 +31,7 @@ import { EventService } from '../services/EventService.js';
 import { redisService } from '../services/RedisService.js';
 import { GameStorageService } from '../services/GameStorageService.js';
 import { logger } from '../utils/logger.js';
-import { toErrorWithStack } from '@ctor-game/shared/utils/errors';
-
-import { Transport } from 'socket.io';
+import { createGameError } from '@ctor-game/shared/utils/errors.js';
 
 const DEFAULT_CONFIG = {
     cors: {
@@ -41,7 +39,7 @@ const DEFAULT_CONFIG = {
         methods: ["GET", "POST"]
     },
     path: '/socket.io/',
-    transports: ['websocket'] as Transport[],
+    transports: ['websocket'],
     serveClient: false,
     pingTimeout: 10000,
     pingInterval: 5000,
@@ -98,7 +96,7 @@ export class GameServer {
         this.io.engine.on("connection_error", (err) => {
             logger.error("Connection error", {
                 component: 'GameServer',
-                error: toErrorWithStack(err)
+                error: createGameError('WEBSOCKET_ERROR', err.message, err)
             });
         });
 
@@ -116,7 +114,7 @@ export class GameServer {
                 ...args: Parameters<typeof socket.emit<Ev>>
             ): ReturnType<typeof socket.emit<Ev>> {
                 if (args[0]) {
-                    logger.websocket.message('out', ev, args[0] as IGameEvent, socket.id);
+                    logger.websocket.message('out', ev, args[0] as GameEvent, socket.id);
                 }
                 return originalEmit.apply(this, [ev, ...args]);
             };
@@ -133,7 +131,7 @@ export class GameServer {
                     ...args: Parameters<typeof result.emit<Ev>>
                 ): ReturnType<typeof result.emit<Ev>> {
                     if (args[0]) {
-                        logger.websocket.message('out', ev, args[0] as IGameEvent, `room:${room}`);
+                        logger.websocket.message('out', ev, args[0] as GameEvent, `room:${room}`);
                     }
                     return originalRoomEmit.apply(this, [ev, ...args]);
                 };
@@ -157,7 +155,7 @@ export class GameServer {
                     await socket.join(gameId);
 
                     const event = await this.eventService.createGameCreatedEvent(gameId, GameStatusValues.WAITING);
-                    if (!validateGameEvent(event)) {
+                    if (!validateEvent(event)) {
                         throw new Error('Invalid game created event');
                     }
 
@@ -174,7 +172,9 @@ export class GameServer {
                         gameId,
                         code: game.code,
                         eventId: event.id,
-                        status: event.data.status
+                        status: event.data.status,
+                        timestamp: Date.now(),
+                        type: 'game_created'
                     });
 
                 } catch (err) {
@@ -182,10 +182,10 @@ export class GameServer {
                     logger.error('Error creating game', {
                         component: 'GameServer',
                         context: { playerId: socket.id },
-                        error: toErrorWithStack(error)
+                        error: createGameError('WEBSOCKET_ERROR', error.message, error)
                     });
                     socket.emit('error', {
-                        code: WebSocketErrorCode.InternalError,
+                        code: 'INTERNAL_ERROR' as WebSocketErrorCode,
                         message: 'Failed to create game',
                         details: { error: error.message }
                     });
@@ -223,20 +223,22 @@ export class GameServer {
                         2 as PlayerNumber
                     );
 
-                    if (!validateGameEvent(connectEvent)) {
+                    if (!validateEvent(connectEvent)) {
                         throw new Error('Invalid player connected event');
                     }
 
                     socket.emit('game_joined', {
                         gameId: targetGameId,
                         eventId: connectEvent.id,
-                        status: game.status
+                        status: game.status,
+                        timestamp: Date.now(),
+                        type: 'game_joined'
                     });
 
                     // If game is now ready to start
                     if (game.players.first && game.players.second) {
                         const startEvent = await this.eventService.createGameStartedEvent(targetGameId!, state);
-                        if (!validateGameEvent(startEvent)) {
+                        if (!validateEvent(startEvent)) {
                             throw new Error('Invalid game started event');
                         }
 
@@ -244,7 +246,9 @@ export class GameServer {
                             gameId: targetGameId,
                             eventId: startEvent.id,
                             gameState: state,
-                            currentPlayer: state.currentPlayer
+                            currentPlayer: state.currentPlayer,
+                            timestamp: Date.now(),
+                            type: 'game_started'
                         });
                     }
 
@@ -257,10 +261,10 @@ export class GameServer {
                             gameId,
                             code 
                         },
-                        error: toErrorWithStack(error)
+                        error: createGameError('WEBSOCKET_ERROR', error.message, error)
                     });
                     socket.emit('error', {
-                        code: WebSocketErrorCode.InternalError,
+                        code: 'INTERNAL_ERROR' as WebSocketErrorCode,
                         message: 'Failed to join game',
                         details: { error: error.message }
                     });
