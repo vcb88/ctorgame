@@ -36,17 +36,19 @@ export class GameLogicService {
    * @returns Начальное состояние игры
    */
   static createInitialState(): GameState {
-    // Create empty board with 0 values (empty cells)
-    const board: Board = Array(BOARD_SIZE)
-      .fill(0)
-      .map(() => Object.freeze(Array(BOARD_SIZE).fill(0)));
+    // Create empty board
+    const board: CellValue[][] = Array(BOARD_SIZE)
+      .fill(null)
+      .map(() => Array(BOARD_SIZE).fill(null));
 
     // Set initial scores
     const scores: Scores = [0, 0];
 
     // Create initial state
     return {
-      board: Object.freeze(board),
+      id: crypto.randomUUID(),
+      size: [BOARD_SIZE, BOARD_SIZE],
+      board,
       scores,
       currentPlayer: 1 as PlayerNumber,
       status: 'active' as GameStatus,
@@ -79,7 +81,7 @@ export class GameLogicService {
 
     if (type === 'place') {
       // For placement operation check if cell is empty
-      return state.board[y][x] === 0;
+      return state.board[y][x] === null;
     } else if (type === 'replace') {
       // For replacement operation check:
       // 1. If cell contains opponent's piece
@@ -241,7 +243,7 @@ export class GameLogicService {
    */
   private static checkGameOver(board: ReadonlyArray<ReadonlyArray<CellValue>>): boolean {
     // Game ends when there are no empty cells
-    return board.every(row => row.every(cell => cell !== 0));
+    return board.every(row => row.every(cell => cell !== null));
   }
 
   /**

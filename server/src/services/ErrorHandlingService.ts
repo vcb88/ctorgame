@@ -1,25 +1,21 @@
 import { logger } from '../utils/logger.js';
+import type { NetworkError, ErrorCode, ErrorSeverity, ErrorCategory } from '@ctor-game/shared/types/core.js';
+import { isNetworkError } from '@ctor-game/shared/utils/errors.js';
 import { GameError } from '../errors/GameError.js';
-import type { NetworkError } from '@ctor-game/shared/types/core.js';
-import { createGameError, isNetworkError } from '@ctor-game/shared/utils/errors.js';
-// Error enums
-const ErrorCodeEnum = {
-    UNKNOWN_ERROR: 'UNKNOWN_ERROR',
-    OPERATION_TIMEOUT: 'OPERATION_TIMEOUT'
-} as const;
 
-const ErrorSeverityEnum = {
-    LOW: 'low',
-    MEDIUM: 'medium',
-    HIGH: 'high',
-    CRITICAL: 'critical'
-} as const;
-
-const ErrorCategoryEnum = {
-    SYSTEM: 'system',
-    BUSINESS: 'business',
-    NETWORK: 'network'
-} as const;
+const createNetworkError = (
+    code: ErrorCode,
+    message: string,
+    severity: ErrorSeverity = 'error',
+    details?: Record<string, unknown>
+): NetworkError => ({
+    code,
+    message,
+    category: 'network',
+    severity,
+    details,
+    timestamp: Date.now()
+});
 
 /**
  * Service for centralized error handling and monitoring
@@ -40,22 +36,28 @@ export class ErrorHandlingService {
     /**
      * Handles an error and returns formatted error response
      */
-    public handleError(error: Error | GameError | NetworkError): NetworkError {
-        // If it's already a NetworkError, just return it
+    public handleError(error: unknown): NetworkError {
+        // If it's already a NetworkError, return it
         if (isNetworkError(error)) {
             this.logError(error);
             return error;
         }
 
-        // If it's a GameError, convert it to NetworkError
         if (error instanceof GameError) {
-            const networkError = createGameError(
-                error.code,
+            const networkError = convertGameErrorToNetworkError(error);
+            this.logError(networkError);
+            return networkError;
+        }
+
+        // Convert Error objects
+        if (error instanceof Error) {
+            const networkError = createNetworkError(
+                'INTERNAL_ERROR',
                 error.message,
+                'error',
                 {
-                    category: ErrorCategoryEnum.BUSINESS,
-                    severity: ErrorSeverityEnum.HIGH,
-                    details: error.details
+                    stack: error.stack,
+                    cause: error.cause
                 }
             );
             this.logError(networkError);
@@ -63,16 +65,11 @@ export class ErrorHandlingService {
         }
 
         // Handle unknown errors
-        const networkError = createGameError(
-            ErrorCodeEnum.UNKNOWN_ERROR,
+        const networkError = createNetworkError(
+            'INTERNAL_ERROR',
             'An unexpected error occurred',
-            {
-                category: ErrorCategoryEnum.SYSTEM,
-                severity: ErrorSeverityEnum.CRITICAL,
-                details: process.env.NODE_ENV === 'development' 
-                    ? { originalError: error.message, stack: error.stack }
-                    : undefined
-            }
+            'critical',
+            { originalError: error }
         );
         this.logError(networkError);
         return networkError;
@@ -86,28 +83,26 @@ export class ErrorHandlingService {
         options: {
             maxRetries?: number;
             retryDelay?: number;
-            category?: keyof typeof ErrorCategoryEnum;
         } = {}
     ): Promise<T> {
         const maxRetries = options.maxRetries ?? 3;
         const retryDelay = options.retryDelay ?? 1000;
-        let lastError: Error | null = null;
+        let lastError: unknown = null;
 
         for (let attempt = 0; attempt <= maxRetries; attempt++) {
             try {
                 return await operation();
             } catch (error) {
-                lastError = error as Error;
+                lastError = error;
                 
-                // Don't retry if it's a game logic error
-                if (error instanceof GameError && error.code !== ErrorCodeEnum.OPERATION_TIMEOUT) {
-                    throw this.handleError(error);
+                // Don't retry if it's already a NetworkError
+                if (isNetworkError(error)) {
+                    throw error;
                 }
 
                 // Last attempt failed
                 if (attempt === maxRetries) {
-                    const networkError = this.handleError(lastError);
-                    throw networkError;
+                    throw this.handleError(lastError);
                 }
 
                 // Wait before retry
@@ -123,7 +118,7 @@ export class ErrorHandlingService {
      * Logs error for monitoring and analytics
      */
     public logError(
-        error: Error | GameError | NetworkError,
+        error: unknown,
         context?: Record<string, unknown>
     ): void {
         const logContext = {
@@ -144,10 +139,14 @@ export class ErrorHandlingService {
             return;
         }
 
-        if (error instanceof GameError) {
+        if (error instanceof Error) {
             logger.error(
-                `[game:${error.code}] ${error.message}`,
-                { ...logContext, details: error.details }
+                `[error] ${error.message}`,
+                { 
+                    ...logContext,
+                    stack: error.stack,
+                    cause: error.cause
+                }
             );
             return;
         }

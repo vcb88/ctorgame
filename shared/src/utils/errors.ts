@@ -1,3 +1,5 @@
+import type { NetworkError } from '../types/core.js';
+
 export type ErrorWithStack = Error & {
     stack: string;
     cause?: unknown;
@@ -36,4 +38,30 @@ export const getErrorDetails = (error: unknown): {
         message: 'Unknown error',
         cause: error
     };
+};
+
+/**
+ * Creates a standardized game error
+ */
+export const createGameError = (code: string, message: string, cause?: unknown): ErrorWithStack => {
+    const error = new Error(message) as ErrorWithStack;
+    error.name = code;
+    if (cause) {
+        error.cause = cause;
+    }
+    return error;
+};
+
+export const isNetworkError = (error: unknown): error is NetworkError => {
+    return (
+        typeof error === 'object' &&
+        error !== null &&
+        'category' in error &&
+        (error as NetworkError).category === 'network'
+    );
+};
+
+/** @deprecated Use ErrorWithStack type instead */
+export const toErrorWithStack = (error: Error): ErrorWithStack => {
+    return error as ErrorWithStack;
 };

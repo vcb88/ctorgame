@@ -18,15 +18,15 @@ const ErrorSeverities = {
 
 // Error codes
 const ErrorCodes = {
-    InvalidState: 'invalid_state' as const,
-    InvalidMove: 'invalid_move' as const,
-    InvalidPosition: 'invalid_position' as const,
-    NotYourTurn: 'not_your_turn' as const,
-    GameEnded: 'game_ended' as const,
-    GameNotFound: 'game_not_found' as const,
-    GameFull: 'game_full' as const,
-    GameExpired: 'game_expired' as const,
-    StorageError: 'storage_error' as const,
+    InvalidState: 'INVALID_STATE' as const,
+    InvalidMove: 'INVALID_MOVE' as const,
+    InvalidPosition: 'INVALID_POSITION' as const,
+    NotYourTurn: 'NOT_YOUR_TURN' as const,
+    GameEnded: 'GAME_ENDED' as const,
+    GameNotFound: 'GAME_NOT_FOUND' as const,
+    GameFull: 'GAME_FULL' as const,
+    GameExpired: 'GAME_EXPIRED' as const,
+    StorageError: 'STORAGE_ERROR' as const,
 } as const;
 
 /**
@@ -58,15 +58,44 @@ export class GameError extends Error {
     /**
      * Converts error to a format suitable for network transmission
      */
-    toJSON() {
+    toJSON(): GameErrorType {
         return {
             code: this.code,
             category: this.category,
             severity: this.severity,
             message: this.message,
             timestamp: Date.now(),
+            details: this.details,
+            stack: this.stack
+        };
+    }
+
+    /**
+     * Converts error to websocket format
+     */
+    toWebSocketError() {
+        return {
+            code: this.code as ErrorCode,
+            message: this.message,
             details: this.details
         };
+    }
+    
+    /**
+     * Static helper to create GameError from error object
+     */
+    static from(error: unknown, defaultMessage = 'Unknown error'): GameError {
+        if (error instanceof GameError) {
+            return error;
+        }
+
+        const message = error instanceof Error ? error.message : defaultMessage;
+        const details = error instanceof Error ? { stack: error.stack } : { cause: error };
+
+        return new GameError('GAME_ERROR', message, {
+            severity: 'error',
+            details
+        });
     }
 }
 
@@ -193,5 +222,19 @@ export class StorageError extends GameError {
             details
         });
         this.name = 'StorageError';
+    }
+}
+
+/**
+ * Error thrown when server operation fails
+ */
+export class ServerError extends GameError {
+    constructor(message: string, details?: Record<string, unknown>) {
+        super('SERVER_ERROR', message, {
+            category: ErrorCategories.System,
+            severity: ErrorSeverities.Error,
+            details
+        });
+        this.name = 'ServerError';
     }
 }

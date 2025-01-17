@@ -1,33 +1,28 @@
 import { Socket } from 'socket.io';
-import { GameService } from '../../services/GameService.js';
-import type { 
-    HistoryClientEvents, 
-    HistoryServerEvents 
-} from '@ctor-game/shared/src/types/network/history.js';
-import { createErrorResponse } from '@ctor-game/shared/utils/errors';
-import { isGameHistoryEntry } from '@ctor-game/shared/utils/validation/replay';
+import type { ClientToServerEvents, ServerToClientEvents, UUID } from '@ctor-game/shared/types/core.js';
+import { GameStorageService } from '../../services/GameStorageService.js';
+import { createNetworkError } from '../../services/ErrorHandlingService.js';
+import { logger } from '../../utils/logger.js';
 
-export function registerHistoryHandlers(
-    socket: Socket<HistoryClientEvents, HistoryServerEvents>,
-    gameService: GameService
-) {
-    socket.on('GET_SAVED_GAMES', async () => {
-        try {
-            const games = await gameService.getSavedGames();
-            
-            // Validate all game history entries
-            const validGames = games.filter(game => {
-                try {
-                    return isGameHistoryEntry(game);
-                } catch (error) {
-                    console.error('Invalid game history entry:', error);
-                    return false;
-                }
-            });
+type Handler = (socket: Socket<ClientToServerEvents, ServerToClientEvents>, gameId: UUID) => Promise<void>;
 
-            socket.emit('SAVED_GAMES', { games: validGames });
-        } catch (error) {
-            socket.emit('ERROR', createErrorResponse(error, 'Failed to get saved games'));
-        }
-    });
-}
+export const createHistoryHandlers = (storageService: GameStorageService): Record<string, Handler> => ({
+  async getGameHistory(socket, gameId) {
+    try {
+      const history = await storageService.getGameHistory(gameId);
+      socket.emit('game_history', history);
+    } catch (error) {
+      logger.error('Failed to get game history', {
+        component: 'HistoryHandlers',
+        error,
+        context: { gameId }
+      });
+      socket.emit('error', createNetworkError(
+        'STORAGE_ERROR',
+        'Failed to get game history',
+        'error',
+        { gameId }
+      ));
+    }
+  }
+});

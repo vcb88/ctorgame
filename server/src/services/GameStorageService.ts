@@ -140,7 +140,7 @@ export class GameStorageService {
     async createGame(playerId: string, gameId: string): Promise<GameMetadata> {
         // Check active games limit
         const activeCount = await this.gamesCollection.countDocuments({
-            status: { $in: ['waiting', 'playing'] }
+            status: { $in: ['waiting', 'active'] }
         });
 
         if (activeCount >= 50) {
@@ -194,7 +194,7 @@ export class GameStorageService {
             {
                 $set: {
                     'players.second': playerId,
-                    status: 'playing',
+                    status: 'active',
                     lastActivityAt: now.toISOString(),
                     expiresAt: new Date(now.getTime() + 30 * 60 * 1000).toISOString()
                 }
@@ -288,7 +288,7 @@ export class GameStorageService {
     async cleanupExpiredGames(): Promise<number> {
         const now = new Date();
         const result = await this.gamesCollection.deleteMany({
-            status: { $in: ['waiting', 'playing'] },
+            status: { $in: ['waiting', 'active'] },
             expiresAt: { $lte: now.toISOString() }
         });
         return result.deletedCount;
