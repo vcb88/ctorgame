@@ -249,14 +249,21 @@ export type SocketData = {
     playerNumber?: PlayerNumber;
 };
 
-import type { ServerOptions } from 'socket.io';
-
-export interface WebSocketServerConfig extends Partial<ServerOptions> {
+export interface WebSocketServerConfig {
     cors: {
         origin: string;
         methods: string[];
     };
     path: string;
+    pingTimeout?: number;
+    pingInterval?: number;
+    connectTimeout?: number;
+    maxHttpBufferSize?: number;
+    allowRequest?: (req: any, callback: (err: string | null, success: boolean) => void) => void;
+    transports?: string[];
+    allowUpgrades?: boolean;
+    upgradeTimeout?: number;
+    maxPayload?: number;
 }
 
 export interface WebSocketServerOptions {
