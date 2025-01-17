@@ -1,6 +1,6 @@
 import React from 'react';
 import { render, fireEvent, screen } from '@testing-library/react';
-import { ReplayControls } from '../ReplayControls';
+import { ReplayControls } from '../*ReplayControls.js';
 import { vi, describe, it, expect, beforeEach } from 'vitest';
 
 describe('ReplayControls', () => {

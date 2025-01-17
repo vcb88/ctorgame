@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import type { PlayerNumber } from '@ctor-game/shared/types/core.js';
-import type { IGameSummary } from '@ctor-game/shared/types/game.js';
+import type { GameSummary, Timestamp } from '@/types/game-summary.js';
 import { 
-    type IGameError, 
+    type GameError, 
     isNetworkError,
     isDataError,
     isGameStateError,
-    createGameError 
+    createGameStateError 
 } from '@ctor-game/shared/types/errors.js';
 import { getSocket } from '../*services/socket.js';
 import { ReplayView } from '../*components/Replay/ReplayView.js';
@@ -18,9 +18,9 @@ import { cn } from '@/lib/utils.js';
 const ARCHIVE_VERSION = 'v1.0.1';
 
 export function GameHistory() {
-    const [games, setGames] = useState<IGameSummary[]>([]);
+    const [games, setGames] = useState<GameSummary[]>([]);
     const [loading, setLoading] = useState(true);
-    const [error, setError] = useState<IGameError | null>(null);
+    const [error, setError] = useState<GameError | null>(null);
     const [selectedGame, setSelectedGame] = useState<string | null>(null);
     const [loadingReplays, setLoadingReplays] = useState<Set<string>>(new Set());
     const navigate = useNavigate();
@@ -31,12 +31,12 @@ export function GameHistory() {
         // Request saved games list
         socket.emit('GET_SAVED_GAMES');
 
-        const handleGames = (data: { games: IGameSummary[] }) => {
+        const handleGames = (data: { games: GameSummary[] }) => {
             setGames(data.games);
             setLoading(false);
         };
 
-        const handleError = (error: IGameError) => {
+        const handleError = (error: GameError) => {
             setError(error);
             setLoading(false);
             
@@ -96,7 +96,7 @@ export function GameHistory() {
         }
     };
 
-    const formatGameStatus = (game: IGameSummary): string => {
+    const formatGameStatus = (game: GameSummary): string => {
         if (!game.completedAt) return 'IN PROGRESS';
         return game.winner !== null
             ? `VICTORY ACHIEVED - PLAYER ${formatPlayerNumber(game.winner)}`

@@ -4,9 +4,9 @@ import type {
     Position, 
     PlayerNumber, 
     MoveType, 
-    CellValue,
-    GamePhase
+    CellValue
 } from '@ctor-game/shared/types/core.js';
+import type { GameState } from '@/types/game-state.js';
 import { useMultiplayerGame } from '@/hooks/useMultiplayerGame.js';
 import { GameCell } from '@/components/GameCell.js';
 import { TurnTimer } from '@/components/TurnTimer.js';
