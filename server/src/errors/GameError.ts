@@ -5,7 +5,7 @@ const ErrorCategories = {
     Network: 'network' as const,
     Game: 'game' as const,
     Validation: 'validation' as const,
-    System: 'system' as const,
+    Storage: 'storage' as const,
 } as const;
 
 // Error severity levels
@@ -217,7 +217,7 @@ export class GameExpiredError extends GameError {
 export class StorageError extends GameError {
     constructor(message: string, details?: Record<string, unknown>) {
         super(ErrorCodes.StorageError, message, {
-            category: ErrorCategories.System,
+            category: ErrorCategories.Storage,
             severity: ErrorSeverities.Error,
             details
         });
@@ -231,7 +231,7 @@ export class StorageError extends GameError {
 export class ServerError extends GameError {
     constructor(message: string, details?: Record<string, unknown>) {
         super('SERVER_ERROR', message, {
-            category: ErrorCategories.System,
+            category: ErrorCategories.Storage,
             severity: ErrorSeverities.Error,
             details
         });
