@@ -1,8 +1,8 @@
-import type { GameError } from '@ctor-game/shared/src/types/core.js';
 import type { 
-    ErrorCode, 
+    GameError,
+    ErrorCode,
     ErrorSeverity 
-} from '@ctor-game/shared/src/types/network/errors.js';
+} from '@ctor-game/shared/src/types/core.js';
 
 /**
  * Client-side error type extending GameError from core
