@@ -1,7 +1,4 @@
-import type { PlayerNumber, GameStatus } from '../types/core/primitives.js';
-import type { GameState as IGameState } from '../types/core/state.js';
-import type { GameScores as IScores } from '../types/state.js';
-import type { Size as ISize } from '../types/base/primitives.js';
+import type { PlayerNumber, GameStatus, GameState, Size, Scores as GameScores } from '../types/core.js';
 
 type UUID = string;
 
@@ -25,14 +22,14 @@ export function getOpponent(player: PlayerNumber): PlayerNumber {
 /**
  * Score utilities
  */
-export function createScores(player1: number, player2: number): IScores {
+export function createScores(player1: number, player2: number): GameScores {
     return { player1, player2 };
 }
 
 /**
  * Create initial game state
  */
-export function createInitialState(size: ISize): IGameState {
+export function createInitialState(size: Size): GameState {
     return {
         id: crypto.randomUUID(),
         board: Array(size.height).fill(null).map(() => Array(size.width).fill(null)),
@@ -47,7 +44,7 @@ export function createInitialState(size: ISize): IGameState {
 /**
  * Type guards
  */
-export const isValidScores = (scores: unknown): scores is IScores => {
+export const isValidScores = (scores: unknown): scores is GameScores => {
     if (!scores || typeof scores !== 'object') return false;
     const s = scores as Record<string, unknown>;
     return typeof s.player1 === 'number' && typeof s.player2 === 'number';
@@ -65,7 +62,7 @@ export const isValidUUID = (id: unknown): id is UUID =>
 /**
  * Game state validation
  */
-export const isValidGameState = (state: unknown): state is IGameState => {
+export const isValidGameState = (state: unknown): state is GameState => {
     if (!state || typeof state !== 'object') return false;
     
     const s = state as Partial<IGameState>;

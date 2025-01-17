@@ -2,13 +2,12 @@
  * Score management utilities
  */
 
-import type { PlayerNumber } from '../types/core/primitives.js';
-import type { GameScores as IGameScores } from '../types/state.js';
+import type { PlayerNumber, Scores as GameScores } from '../types/core.js';
 
 /**
  * Create empty scores object
  */
-export function createEmptyScores(): IGameScores {
+export function createEmptyScores(): GameScores {
     return {
         player1: 0,
         player2: 0
@@ -18,7 +17,7 @@ export function createEmptyScores(): IGameScores {
 /**
  * Create scores with initial values
  */
-export function createScores(player1Score: number, player2Score: number): IGameScores {
+export function createScores(player1Score: number, player2Score: number): GameScores {
     return {
         player1: player1Score,
         player2: player2Score
@@ -28,7 +27,7 @@ export function createScores(player1Score: number, player2Score: number): IGameS
 /**
  * Update scores for a specific player
  */
-export function updateScores(scores: IGameScores, currentPlayer: PlayerNumber, points: number): IGameScores {
+export function updateScores(scores: GameScores, currentPlayer: PlayerNumber, points: number): GameScores {
     const updatedScores = { ...scores };
     if (currentPlayer === 1) {
         updatedScores.player1 = points;
@@ -41,7 +40,7 @@ export function updateScores(scores: IGameScores, currentPlayer: PlayerNumber, p
 /**
  * Get total score (sum of both players)
  */
-export function getTotalScore(scores: IGameScores): number {
+export function getTotalScore(scores: GameScores): number {
     return scores.player1 + scores.player2;
 }
 
@@ -49,7 +48,7 @@ export function getTotalScore(scores: IGameScores): number {
  * Determine winner based on scores
  * Returns null for a draw
  */
-export function getWinnerFromScores(scores: IGameScores): PlayerNumber | null {
+export function getWinnerFromScores(scores: GameScores): PlayerNumber | null {
     if (scores.player1 > scores.player2) return 1;
     if (scores.player2 > scores.player1) return 2;
     return null;
@@ -58,7 +57,7 @@ export function getWinnerFromScores(scores: IGameScores): PlayerNumber | null {
 /**
  * Type guard for scores object
  */
-export function isValidScores(value: unknown): value is IGameScores {
+export function isValidScores(value: unknown): value is GameScores {
     if (!value || typeof value !== 'object') return false;
     const scores = value as Record<string, unknown>;
     return (
@@ -70,13 +69,13 @@ export function isValidScores(value: unknown): value is IGameScores {
 /**
  * Get score for specific player
  */
-export function getPlayerScore(scores: IGameScores, player: PlayerNumber): number {
+export function getPlayerScore(scores: GameScores, player: PlayerNumber): number {
     return player === 1 ? scores.player1 : scores.player2;
 }
 
 /**
  * Compare scores to determine if they are equal
  */
-export function areScoresEqual(a: IGameScores, b: IGameScores): boolean {
+export function areScoresEqual(a: GameScores, b: GameScores): boolean {
     return a.player1 === b.player1 && a.player2 === b.player2;
 }

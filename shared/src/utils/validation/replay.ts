@@ -3,8 +3,8 @@
  */
 
 import type { 
-    ReplayState as IReplayState,
-    GameHistoryEntry as IGameHistoryEntry
+    ReplayState,
+    GameHistoryEntry
 } from '../../types/network/replay.js';
 import { ValidationError } from '../../types/network/errors.js';
 
@@ -12,7 +12,7 @@ import { ValidationError } from '../../types/network/errors.js';
  * Validates replay state object
  * @throws {ValidationError} if validation fails
  */
-export function validateReplayState(state: unknown): asserts state is IReplayState {
+export function validateReplayState(state: unknown): asserts state is ReplayState {
     if (!state || typeof state !== 'object') {
         throw new ValidationError('Invalid replay state object');
     }
@@ -44,7 +44,7 @@ export function validateReplayState(state: unknown): asserts state is IReplaySta
  * Validates game history entry
  * @throws {ValidationError} if validation fails
  */
-export function validateGameHistoryEntry(entry: unknown): asserts entry is IGameHistoryEntry {
+export function validateGameHistoryEntry(entry: unknown): asserts entry is GameHistoryEntry {
     if (!entry || typeof entry !== 'object') {
         throw new ValidationError('Invalid history entry object');
     }
@@ -83,7 +83,7 @@ export function validateGameHistoryEntry(entry: unknown): asserts entry is IGame
 /**
  * Type guard for replay state
  */
-export function isReplayState(state: unknown): state is IReplayState {
+export function isReplayState(state: unknown): state is ReplayState {
     try {
         validateReplayState(state);
         return true;
@@ -95,7 +95,7 @@ export function isReplayState(state: unknown): state is IReplayState {
 /**
  * Type guard for history entry
  */
-export function isGameHistoryEntry(entry: unknown): entry is IGameHistoryEntry {
+export function isGameHistoryEntry(entry: unknown): entry is GameHistoryEntry {
     try {
         validateGameHistoryEntry(entry);
         return true;

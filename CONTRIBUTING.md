@@ -27,7 +27,11 @@ The project maintains shared types in three locations:
 2. `/client/src/shared.ts` - Client copy
 3. `/server/src/shared.ts` - Server copy
 
-**Important**: During MVP phase, these files must be manually synchronized when making changes to shared types.
+**Important**: 
+1. During MVP phase, these files must be manually synchronized when making changes to shared types.
+2. All types are defined in core.ts and should be imported directly from there.
+3. Do not use type aliases with 'as' keyword in imports unless absolutely necessary (e.g. for resolving name conflicts).
+4. Keep type naming consistent across the codebase.
 
 ### Development Workflow
 
