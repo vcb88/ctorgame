@@ -7,14 +7,14 @@ import type {
 } from '@ctor-game/shared/src/types/core.js';
 
 // Client-specific game types
-export type TurnState = {
+export type TurnOperationsState = {
     placeOperations: number;
     replaceOperations: number;
     player: PlayerNumber;
 };
 
 export type GameStateWithTurn = GameState & {
-    currentTurn: TurnState;
+    currentTurn: TurnOperationsState;
     isFirstTurn: boolean;
 };
 

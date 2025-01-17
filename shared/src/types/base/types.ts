@@ -45,7 +45,8 @@ export type GameState = {
     // Game status
     status: GameStatus;
     phase: GamePhase;
-    winner?: Player;
+    winner?: Player | null;
+    gameOver?: boolean;
 
     // Player turn management
     currentPlayer: PlayerNumber;
@@ -62,6 +63,10 @@ export type GameState = {
     // Action tracking
     lastAction?: GameAction;
     replacements?: Position[];
+
+    // Turn history
+    currentTurnMoves?: GameMove[];
+    isFirstTurn?: boolean;
 };
 
 export type GameMove = {

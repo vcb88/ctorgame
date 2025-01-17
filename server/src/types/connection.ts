@@ -1,8 +1,8 @@
-import type { GameError } from '@ctor-game/shared/src/types/core.js';
 import type { 
+    NetworkError,
     WebSocketEvent,
-    WebSocketErrorResponse 
-} from '@ctor-game/shared/src/types/network/websocket.js';
+    GameEvent
+} from '@ctor-game/shared/src/types/base/types.js';
 
-export type { WebSocketErrorResponse as ErrorResponse };
-export type { WebSocketEvent as GameEvent };
+export type { NetworkError as ErrorResponse };
+export type { GameEvent };
