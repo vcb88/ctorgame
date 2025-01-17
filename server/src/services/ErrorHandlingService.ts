@@ -1,12 +1,25 @@
 import { logger } from '../utils/logger.js';
 import { GameError } from '../errors/GameError.js';
-import type { NetworkError } from '@ctor-game/shared/src/types/core.js';
-import { createError, isNetworkError } from '@ctor-game/shared/src/utils/errors.js';
-import {
-    ErrorCodeEnum,
-    ErrorSeverityEnum,
-    ErrorCategoryEnum
-} from '../types/shared.js';
+import type { NetworkError } from '@ctor-game/shared/types/core.js';
+import { createGameError, isNetworkError } from '@ctor-game/shared/utils/errors.js';
+// Error enums
+const ErrorCodeEnum = {
+    UNKNOWN_ERROR: 'UNKNOWN_ERROR',
+    OPERATION_TIMEOUT: 'OPERATION_TIMEOUT'
+} as const;
+
+const ErrorSeverityEnum = {
+    LOW: 'low',
+    MEDIUM: 'medium',
+    HIGH: 'high',
+    CRITICAL: 'critical'
+} as const;
+
+const ErrorCategoryEnum = {
+    SYSTEM: 'system',
+    BUSINESS: 'business',
+    NETWORK: 'network'
+} as const;
 
 /**
  * Service for centralized error handling and monitoring
@@ -36,7 +49,7 @@ export class ErrorHandlingService {
 
         // If it's a GameError, convert it to NetworkError
         if (error instanceof GameError) {
-            const networkError = createError(
+            const networkError = createGameError(
                 error.code,
                 error.message,
                 {
@@ -50,7 +63,7 @@ export class ErrorHandlingService {
         }
 
         // Handle unknown errors
-        const networkError = createError(
+        const networkError = createGameError(
             ErrorCodeEnum.UNKNOWN_ERROR,
             'An unexpected error occurred',
             {
