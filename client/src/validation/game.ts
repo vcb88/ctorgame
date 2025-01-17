@@ -1,7 +1,12 @@
-import type { GameMove } from '@ctor-game/shared/types/game/moves';
-import type { GameState } from '@ctor-game/shared/types/game';
-import type { Position, Size } from '@ctor-game/shared/types/base/primitives';
-import type { Player } from '@ctor-game/shared/types/enums';
+import type { GameMove } from '@ctor-game/shared/types/game/moves.js';
+import type { GameState } from '@ctor-game/shared/types/game.js';
+import type { Position, Size } from '@ctor-game/shared/types/base/primitives.js';
+
+export enum Player {
+    None = 0,
+    First = 1,
+    Second = 2
+}
 
 export function validatePosition(pos: Position, size: Size): boolean {
   return (

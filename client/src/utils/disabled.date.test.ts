@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { formatDate } from './date';
+import { formatDate } from './date.js';
 
 describe('formatDate', () => {
     it('formats date in US format', () => {

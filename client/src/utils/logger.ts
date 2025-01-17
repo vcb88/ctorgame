@@ -53,7 +53,7 @@ export const logger = {
       ...options,
       data: {
         ...(options.data || {}),
-        stack: options.data?.stack || new Error().stack
+        stack: (options.data && 'stack' in options.data ? options.data.stack : undefined) || new Error().stack
       }
     };
     console.error(formatMessage('error', message, errorData));

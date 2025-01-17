@@ -1,13 +1,34 @@
-import type { 
-    GameError,
-    ErrorCode,
-    ErrorSeverity 
-} from '@ctor-game/shared/types/core.js';
+import type { GameError } from '@ctor-game/shared/types/core.js';
+
+export enum ErrorCode {
+    CONNECTION_ERROR = 'CONNECTION_ERROR',
+    CONNECTION_TIMEOUT = 'CONNECTION_TIMEOUT',
+    OPERATION_TIMEOUT = 'OPERATION_TIMEOUT',
+    CONNECTION_LOST = 'CONNECTION_LOST',
+    STATE_VALIDATION_ERROR = 'STATE_VALIDATION_ERROR',
+    INVALID_MOVE = 'INVALID_MOVE',
+    NOT_YOUR_TURN = 'NOT_YOUR_TURN',
+    GAME_ENDED = 'GAME_ENDED',
+    UNKNOWN_ERROR = 'UNKNOWN_ERROR'
+}
+
+export enum ErrorSeverity {
+    LOW = 'LOW',
+    MEDIUM = 'MEDIUM',
+    HIGH = 'HIGH'
+}
 
 /**
  * Client-side error type extending GameError from core
  */
-export type ClientError = GameError & {
+export interface BaseError {
+    code: ErrorCode;
+    message: string;
+    details: Record<string, unknown>;
+    category: string;
+}
+
+export type ClientError = BaseError & {
     /** Error severity level */
     severity: ErrorSeverity;
     /** Stack trace if available */
@@ -113,7 +134,8 @@ export const createClientError = (error: unknown): ClientError => {
         code: ErrorCode.UNKNOWN_ERROR,
         severity: ErrorSeverity.HIGH,
         message: 'An unknown error occurred',
-        details: {}
+        details: {},
+        category: 'client'
     };
 
     if (error instanceof Error) {
