@@ -13,6 +13,41 @@ export type GameValidationResult = ValidationResult & {
 /**
  * Validates a game move
  */
+export const validateGameState = (state: GameState): GameValidationResult => {
+    // Basic validation
+    if (!state) {
+        return {
+            isValid: false,
+            errors: [],
+            message: 'Invalid state',
+            details: {
+                reason: 'INVALID_STATE'
+            }
+        };
+    }
+
+    // Required fields validation
+    if (!state.id || !state.board || !state.players || !state.scores || !state.size) {
+        return {
+            isValid: false,
+            errors: ['Missing required fields'],
+            message: 'State is missing required fields',
+            state,
+            details: {
+                reason: 'MISSING_FIELDS'
+            }
+        };
+    }
+
+    // Add more validation rules as needed...
+
+    return {
+        isValid: true,
+        errors: [],
+        state
+    };
+};
+
 export const validateMove = (move: GameMove, state: GameState): GameValidationResult => {
     // Basic validation
     if (!move || !state) {
