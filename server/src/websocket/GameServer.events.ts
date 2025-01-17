@@ -253,7 +253,7 @@ export class GameServer {
             // Create and emit move event
             const moveEvent = await this.eventService.createGameMoveEvent(
                 gameId,
-                session.playerNumber,
+                session.playerId,
                 move,
                 updatedState
             );
@@ -316,7 +316,7 @@ export class GameServer {
 
             const moveEvent = await this.eventService.createGameMoveEvent(
                 gameId,
-                session.playerNumber,
+                session.playerId,
                 endTurnMove,
                 updatedState
             );
