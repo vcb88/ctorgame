@@ -293,7 +293,7 @@ export class GameServer {
 
                         this.io.to(data.gameId).emit('game_ended', {
                             ...endEvent,
-                            winner: state.winner.toString(),
+                            winner: state.winner,
                             finalState: state
                         });
                     }

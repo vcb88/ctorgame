@@ -277,7 +277,7 @@ export class GameServer {
                 }
 
                 this.io.to(gameId).emit('game_over', {
-                    winner: winner.toString(),
+                    winner,
                     finalState: updatedState
                 });
             }
