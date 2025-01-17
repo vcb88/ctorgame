@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useMultiplayerGame } from '@/hooks/useMultiplayerGame';
+import { useMultiplayerGame } from '@/hooks/useMultiplayerGame.js';
 // Game types
 import type { 
   GameState,
@@ -11,12 +11,12 @@ import type {
   Position,
   Scores,
   GameId
-} from '@ctor-game/shared/src/types/core.js';
+} from '@ctor-game/shared/types/base/types.js';
 
-import { cn } from '@/lib/utils';
-import { GameCell } from '@/components/GameCell';
-import { logger } from '@/utils/logger';
-import { adaptScores } from '@/utils/adapters';
+import { cn } from '@/lib/utils.js';
+import { GameCell } from '@/components/GameCell.js';
+import { logger } from '@/utils/logger.js';
+import { adaptScores } from '@/utils/adapters.js';
 
 export const Game: React.FC = () => {
   const {

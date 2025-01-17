@@ -3,7 +3,7 @@ import type {
     PlayerNumber, 
     MoveType, 
     Timestamp 
-} from '@ctor-game/shared/src/types/core.js';
+} from '@ctor-game/shared/types/base/types.js';
 
 /**
  * Animation types derived from game move types

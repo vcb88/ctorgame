@@ -1,12 +1,12 @@
 import React from 'react';
-import { cn } from '@/lib/utils';
-import { BOARD_SIZE } from '@ctor-game/shared/src/config/constants.js';
+import { cn } from '@/lib/utils.js';
+import { BOARD_SIZE } from '@ctor-game/shared/config/constants.js';
 import type { 
     CellValue,
     Position,
     PlayerNumber 
-} from '@ctor-game/shared/src/types/core.js';
-import type { CellAnimationState } from '@/types/animations';
+} from '@ctor-game/shared/types/base/types.js';
+import type { CellAnimationState } from '@/types/animations.js';
 
 type GameCellProps = {
   position: Position;
