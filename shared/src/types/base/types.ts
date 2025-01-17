@@ -52,6 +52,8 @@ export type GameHistory = {
     metadata: GameMetadata;
     moves: GameMove[];
     details: GameDetails;
+    states?: GameState[];      // Optional array of game states for replay
+    timestamps?: Timestamp[];  // Optional timestamps for state transitions
 };
 
 // Game status types
@@ -463,13 +465,6 @@ export type GameHistoryEntry = {
     players: string[];
     winner?: string;
     totalMoves: number;
-};
-
-// Game history types
-export type GameHistory = {
-    moves: GameMove[];
-    states: GameState[];
-    timestamps: Timestamp[];
 };
 
 export type Collection<T> = Array<T>;
