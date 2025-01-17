@@ -166,7 +166,7 @@ export class ErrorHandlingService {
             'Unexpected error',
             { 
                 ...logContext, 
-                error: error instanceof Error ? error : new Error('Unknown error')
+                error: error instanceof Error ? { ...error, stack: error.stack || 'No stack available' } : new Error('Unknown error')
             }
         );
     }

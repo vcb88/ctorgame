@@ -15,14 +15,12 @@ const DEFAULT_TTL_CONFIG: TTLConfig = {
     active: {
         gameState: 14400,   // 4 hours
         playerSession: 14400,// 4 hours
-        gameRoom: 14400,    // 4 hours
-        events: 86400       // Keep events for 24 hours
+        gameRoom: 14400    // 4 hours
     },
     finished: {
         gameState: 900,     // 15 minutes
         playerSession: 900,  // 15 minutes
-        gameRoom: 900,      // 15 minutes
-        events: 86400       // Keep events for 24 hours
+        gameRoom: 900      // 15 minutes
     }
 };
 

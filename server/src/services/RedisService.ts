@@ -100,8 +100,8 @@ export class RedisService {
 
         const redisState: RedisGameState = JSON.parse(state);
         // Исключаем служебные поля при возврате
-        const { lastUpdate, version, ...gameState } = redisState;
-        return gameState;
+        const { version, ...gameState } = redisState;
+        return gameState; // lastUpdate is required by GameState type, so we keep it
     }
 
     /**
