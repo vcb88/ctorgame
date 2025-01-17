@@ -443,6 +443,7 @@ export class GameServer {
             });
             
             socket.emit('error', {
+                name: 'NetworkError',
                 code: 'INTERNAL_ERROR' as WebSocketErrorCode,
                 message: 'Internal server error',
                 category: 'network',
