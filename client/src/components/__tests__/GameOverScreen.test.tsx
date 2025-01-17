@@ -1,6 +1,6 @@
 import { render, screen, fireEvent } from '@testing-library/react';
 import { GameOverScreen } from '../GameOverScreen';
-import { PlayerNumber } from '@ctor-game/shared/src/types/core';
+import { PlayerNumber } from '@ctor-game/shared/types/core.js';
 
 describe('GameOverScreen', () => {
   const mockOnReturnToMenu = vi.fn();

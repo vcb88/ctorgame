@@ -1,7 +1,7 @@
 import React from 'react';
 import { render, fireEvent } from '@testing-library/react';
 import { GameCell } from '../GameCell';
-import type { Position, PlayerNumber } from '@ctor-game/shared/src/types/core.js';
+import type { Position, PlayerNumber } from '@ctor-game/shared/types/core.js';
 
 describe('GameCell', () => {
   const defaultPosition: Position = [0, 0];

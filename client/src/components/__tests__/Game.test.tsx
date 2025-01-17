@@ -2,7 +2,7 @@ import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { Game } from '../Game';
 import { useMultiplayerGame } from '@/hooks/useMultiplayerGame';
-import type { PlayerNumber } from '@ctor-game/shared/src/types/core.js';
+import type { PlayerNumber } from '@ctor-game/shared/types/core.js';
 
 // Mock the hook
 vi.mock('@/hooks/useMultiplayerGame', () => ({
