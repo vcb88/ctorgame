@@ -3,7 +3,7 @@ import type {
     WebSocketErrorCode,
     ErrorResponse,
     ReconnectionData
-} from '@ctor-game/shared/src/types/core.js';
+} from '@ctor-game/shared/types/core.js';
 
 export type {
     ConnectionState,
