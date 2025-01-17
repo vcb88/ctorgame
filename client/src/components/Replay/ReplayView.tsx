@@ -7,7 +7,7 @@ import type {
     Scores,
     GameId,
     GameMove 
-} from '@ctor-game/shared/src/types/core.js';
+} from '@ctor-game/shared/types/core.js';
 import { useReplay } from '../../hooks/useReplay';
 import { useGameHistory } from '../../hooks/useGameHistory';
 import { ReplayControls } from './ReplayControls';

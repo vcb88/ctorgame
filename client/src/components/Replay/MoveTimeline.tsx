@@ -5,7 +5,7 @@ import type {
     MoveType, 
     Timestamp, 
     GameMove 
-} from '@ctor-game/shared/src/types/core.js';
+} from '@ctor-game/shared/types/core.js';
 import { ScrollArea } from '../ui/scroll-area';
 
 type HistoryEntry = {

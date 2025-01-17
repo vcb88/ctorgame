@@ -5,7 +5,7 @@ import type {
     PlayerNumber, 
     GamePhase, 
     GameError 
-} from '@ctor-game/shared/src/types/core.js';
+} from '@ctor-game/shared/types/core.js';
 import { useGame } from '@/hooks/useGame';
 import { NeonBillboard } from '@/components/display/NeonBillboard';
 import { NeonGridBackground } from '@/components/backgrounds/NeonGridBackground';

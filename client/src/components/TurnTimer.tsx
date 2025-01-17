@@ -1,6 +1,6 @@
 import React from 'react';
 import { cn } from '@/lib/utils';
-import type { Timestamp } from '@ctor-game/shared/src/types/core.js';
+import type { Timestamp } from '@ctor-game/shared/types/core.js';
 
 // Custom CSS properties type
 type TimerStyle = {
