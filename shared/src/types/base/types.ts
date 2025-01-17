@@ -316,6 +316,7 @@ export type BaseError = {
 
 export type ErrorWithStack = BaseError & {
     stack: string;  // Making stack required
+    name: string;   // Required by Error interface
 };
 
 export type GameError = BaseError & {
