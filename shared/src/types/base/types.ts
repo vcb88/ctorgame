@@ -385,6 +385,12 @@ export type TTLConfig = {
     finished: Omit<TTLConfigBase, 'events'>;
 };
 
+export interface TTLStrategy {
+    getTTL(key: keyof TTLConfigBase, status: GameStatus): number;
+    updateGameTTLs(gameId: string, status: GameStatus): Promise<void>;
+    extendGameTTLs(gameId: string): Promise<void>;
+}
+
 // Utility types
 export type WithMetadata<T> = T & {
     metadata?: Record<string, unknown>;

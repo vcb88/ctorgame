@@ -49,6 +49,7 @@ export type {
     StoredState,
     TTLConfig,
     TTLConfigBase,
+    TTLStrategy,
     
     // Game metadata types
     GameMetadata,

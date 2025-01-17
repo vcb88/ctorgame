@@ -1,4 +1,4 @@
-import type { TTLConfig, TTLStrategy, GameStatus } from '@ctor-game/shared/types/redis';
+import type { TTLConfig, TTLStrategy, GameStatus } from '@ctor-game/shared/types/core.js';
 import { redisClient, REDIS_KEYS } from '../config/redis.js';
 import { logger } from '../utils/logger.js';
 
