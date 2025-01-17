@@ -164,7 +164,10 @@ export class ErrorHandlingService {
 
         logger.error(
             'Unexpected error',
-            { ...logContext, error }
+            { 
+                ...logContext, 
+                error: error instanceof Error ? error : new Error('Unknown error')
+            }
         );
     }
 }

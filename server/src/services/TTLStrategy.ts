@@ -5,7 +5,7 @@ import { logger } from '../utils/logger.js';
 /**
  * Default TTL values in seconds
  */
-const DEFAULT_TTL_CONFIG = {
+const DEFAULT_TTL_CONFIG: TTLConfig = {
     base: {
         gameState: 3600,    // 1 hour
         playerSession: 7200, // 2 hours
@@ -15,14 +15,16 @@ const DEFAULT_TTL_CONFIG = {
     active: {
         gameState: 14400,   // 4 hours
         playerSession: 14400,// 4 hours
-        gameRoom: 14400     // 4 hours
+        gameRoom: 14400,    // 4 hours
+        events: 86400       // Keep events for 24 hours
     },
     finished: {
         gameState: 900,     // 15 minutes
         playerSession: 900,  // 15 minutes
-        gameRoom: 900       // 15 minutes
+        gameRoom: 900,      // 15 minutes
+        events: 86400       // Keep events for 24 hours
     }
-} as const;
+};
 
 export class RedisTTLStrategy implements TTLStrategy {
     private config: TTLConfig;
@@ -78,7 +80,7 @@ export class RedisTTLStrategy implements TTLStrategy {
             logger.error('Failed to update TTLs', {
                 component: 'TTLStrategy',
                 context: { gameId, status },
-                error: error instanceof Error ? error.stack : error
+                error: error instanceof Error ? error : new Error('TTL update error')
             });
             throw error;
         }

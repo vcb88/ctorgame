@@ -50,7 +50,7 @@ export class EventService {
 
             return fullEvent;
         } catch (error) {
-            logger.error('Failed to store event', { error: error instanceof Error ? error.stack : error });
+            logger.error('Failed to store event', { error: error instanceof Error ? error : new Error('Event storage error') });
             throw new Error('Failed to store event');
         }
     }
