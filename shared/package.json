@@ -6,74 +6,10 @@
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "exports": {
-    "./types/game/*": {
-      "types": "./dist/types/game/*.d.ts",
-      "import": "./dist/types/game/*.js"
-    },
-    "./types/base/*": {
-      "types": "./dist/types/base/*.d.ts",
-      "import": "./dist/types/base/*.js"
-    },
-    "./types/storage/*": {
-      "types": "./dist/types/storage/*.d.ts",
-      "import": "./dist/types/storage/*.js"
-    },
-    "./types/network/*": {
-      "types": "./dist/types/network/*.d.ts",
-      "import": "./dist/types/network/*.js"
-    },
-    "./utils/*": {
-      "types": "./dist/utils/*.d.ts",
-      "import": "./dist/utils/*.js"
-    },
-    "./validation/*": {
-      "types": "./dist/validation/*.d.ts",
-      "import": "./dist/validation/*.js"
-    },
-    "./types/game": {
-      "types": "./dist/types/game/index.d.ts",
-      "import": "./dist/types/game/index.js",
-      "default": "./dist/types/game/index.js"
-    },
-    "./types/game/*": {
-      "types": "./dist/types/game/*.d.ts",
-      "import": "./dist/types/game/*.js",
-      "default": "./dist/types/game/*.js"
-    },
-    "./types/network": {
-      "types": "./dist/types/network/index.d.ts",
-      "import": "./dist/types/network/index.js",
-      "default": "./dist/types/network/index.js"
-    },
-    "./types/storage": {
-      "types": "./dist/types/storage/index.d.ts",
-      "import": "./dist/types/storage/index.js",
-      "default": "./dist/types/storage/index.js"
-    },
-    "./types/replay": {
-      "types": "./dist/types/replay/index.d.ts",
-      "import": "./dist/types/replay/index.js",
-      "default": "./dist/types/replay/index.js"
-    },
-    "./types/replay/*": {
-      "types": "./dist/types/replay/*.d.ts",
-      "import": "./dist/types/replay/*.js",
-      "default": "./dist/types/replay/*.js"
-    },
-    "./types/redis": {
-      "types": "./dist/types/redis/index.d.ts",
-      "import": "./dist/types/redis/index.js",
-      "default": "./dist/types/redis/index.js"
-    },
-    "./validation/*": {
-      "types": "./dist/validation/*.d.ts",
-      "import": "./dist/validation/*.js",
-      "default": "./dist/validation/*.js"
-    },
-    "./utils": {
-      "types": "./dist/utils/index.d.ts",
-      "import": "./dist/utils/index.js",
-      "default": "./dist/utils/index.js"
+    "./types": {
+      "types": "./dist/types/base/types.d.ts",
+      "import": "./dist/types/base/types.js",
+      "default": "./dist/types/base/types.js"
     },
     "./utils/*": {
       "types": "./dist/utils/*.d.ts",
