@@ -85,12 +85,12 @@ export class GameServer {
         });
 
         // Initialize required services with defaults if not provided
-        const redis = options.redisService || redisService;
-        const storage = options.storageService || new GameStorageService(process.env.MONGODB_URL, redis, process.env.STORAGE_PATH);
+        const redis = (options.redisService || redisService) as RedisService;
+        const storage = options.storageService || new GameStorageService(process.env.MONGODB_URL as string, redis, process.env.STORAGE_PATH as string);
         this.eventService = options.eventService || new EventService(redis);
         this.gameService = options.gameService || new GameService(
-            storage,
-            this.eventService,
+            storage as GameStorageService,
+            this.eventService as EventService,
             redis
         );
 
@@ -120,7 +120,7 @@ export class GameServer {
                 ...args: Parameters<ServerToClientEvents[Ev]>
             ) {
                 logger.websocket.message('out', ev, args[0], socket.id);
-                return originalEmit.apply(this, [ev, ...args]);
+                return (originalEmit as any).apply(this, [ev, args[0]]);
             } as typeof socket.emit;
 
             // Wrap room emit for logging
@@ -134,7 +134,7 @@ export class GameServer {
                     ...args: Parameters<ServerToClientEvents[Ev]>
                 ) {
                     logger.websocket.message('out', ev, args[0], `room:${room}`);
-                    return originalRoomEmit.apply(this, [ev, ...args]);
+                    return (originalRoomEmit as any).apply(this, [ev, args[0]]);
                 } as typeof result.emit;
                 return result;
             };

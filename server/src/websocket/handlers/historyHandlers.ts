@@ -10,7 +10,12 @@ export const createHistoryHandlers = (storageService: GameStorageService): Recor
   async getGameHistory(socket, gameId) {
     try {
       const history = await storageService.getGameHistory(gameId);
-      socket.emit('game_state', history);
+      // Extract current state from history
+      const currentState = history.details?.currentState;
+      if (!currentState) {
+        throw new Error('Current state not found in game history');
+      }
+      socket.emit('game_state', currentState);
     } catch (error) {
       const errorWithStack: ErrorWithStack = error instanceof Error ? {
         name: error.name || 'Error',

@@ -26,6 +26,7 @@ import {
     InvalidStateError,
     ServerError
 } from '../errors/GameError.js';
+import { GameStorageService } from '../services/GameStorageService.js';
 import { ErrorHandlingService } from '../services/ErrorHandlingService.js';
 
 // Define socket types using imported interfaces
@@ -94,7 +95,11 @@ export class GameServer {
             throw new Error('RedisService is required but not provided');
         }
 
-        this.gameService = new GameService(options.storageService, options.eventService, options.redisService);
+        this.gameService = new GameService(
+            options.storageService as unknown as GameStorageService, 
+            options.eventService as unknown as EventService, 
+            options.redisService as unknown as RedisService
+        );
         this.eventService = options.eventService;
         this.errorHandlingService = ErrorHandlingService.getInstance();
 
