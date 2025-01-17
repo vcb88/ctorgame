@@ -7,7 +7,7 @@ import type {
     PlayerNumber, 
     Player,
     GameStatus
-} from '@ctor-game/shared/dist/types/game/types.js';
+} from '@ctor-game/shared/types/game/types.js';
 
 // Mock Redis client
 jest.mock('../../config/redis', () => ({
