@@ -10,7 +10,7 @@ import type {
     GameMeta,
     GameHistory,
     GameHistorySummary
-} from '@ctor-game/shared/types/core';
+} from '@ctor-game/shared/types/core.js';
 
 import { GameLogicService } from './GameLogicService.js';
 import { GameStorageService } from './GameStorageService.js';
