@@ -12,16 +12,12 @@ import type {
     Position,
     GameId,
     CellValue,
-    GameError
-} from '@ctor-game/shared/src/types/core.js';
-import type { 
+    GameError,
     WebSocketEvent, 
     ServerToClientEvents,
-    ClientToServerEvents
-} from '@ctor-game/shared/src/types/network/websocket.js';
-import type { 
+    ClientToServerEvents,
     NetworkError
-} from '@ctor-game/shared/src/types/network/errors.js';
+} from '@ctor-game/shared/src/types/core.js';
 
 type ConnectionState = 'connected' | 'connecting' | 'reconnecting' | 'disconnected' | 'error';
 
