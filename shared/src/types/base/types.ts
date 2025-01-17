@@ -371,6 +371,20 @@ export type RedisGameEvent = {
     ttl?: number;
 };
 
+// TTL Configuration types
+export type TTLConfigBase = {
+    gameState: number;
+    playerSession: number;
+    gameRoom: number;
+    events?: number;
+};
+
+export type TTLConfig = {
+    base: TTLConfigBase;
+    active: Omit<TTLConfigBase, 'events'>;
+    finished: Omit<TTLConfigBase, 'events'>;
+};
+
 // Utility types
 export type WithMetadata<T> = T & {
     metadata?: Record<string, unknown>;

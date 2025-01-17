@@ -47,6 +47,8 @@ export type {
     // Storage types
     StorageConfig,
     StoredState,
+    TTLConfig,
+    TTLConfigBase,
     
     // Game metadata types
     GameMetadata,
