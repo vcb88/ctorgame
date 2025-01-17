@@ -5,28 +5,25 @@
 import { ErrorWithStack } from '@ctor-game/shared/types/core.js';
 
 export function createErrorWithStack(error: unknown): ErrorWithStack {
-    const defaultError = new Error('Unknown error');
+    const defaultMessage = 'Unknown error';
+    const defaultStack = new Error().stack || 'No stack trace available';
     
     if (error instanceof Error) {
-        const errorWithStack = Object.create(error);
-        const extendedError = Object.assign(errorWithStack, {
+        return {
             code: error.name,
-            name: error.name,
             message: error.message,
-            stack: error.stack || defaultError.stack || 'No stack trace available',
+            stack: error.stack || defaultStack,
             cause: error.cause,
             category: 'system' as const,
             severity: 'error' as const
-        });
-        return extendedError;
+        };
     }
     
-    const extendedError = Object.assign(defaultError, {
+    return {
         code: 'UNKNOWN_ERROR',
-        name: 'Error',
-        message: String(error),
+        message: String(error) || defaultMessage,
+        stack: defaultStack,
         category: 'system' as const,
         severity: 'error' as const
-    });
-    return extendedError;
+    };
 }
