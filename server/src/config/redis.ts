@@ -1,8 +1,8 @@
 import Redis from 'ioredis';
 import * as dotenv from 'dotenv';
-import type { TTLConfig } from '@ctor-game/shared/src/types/core.js';
+import type { TTLConfig } from '@ctor-game/shared/types/core.js';
 import { logger } from '../utils/logger.js';
-import { ErrorWithStack, toErrorWithStack } from '@ctor-game/shared/src/utils/errors.js';
+import { ErrorWithStack, createGameError } from '@ctor-game/shared/utils/errors.js';
 
 dotenv.config();
 
@@ -59,7 +59,7 @@ export const connectRedis = async (): Promise<void> => {
     } catch (error) {
         logger.error('Redis connection error', {
             component: 'Redis',
-            error: toErrorWithStack(error)
+            error: createGameError('REDIS_CONNECTION_ERROR', 'Failed to connect to Redis', error)
         });
         throw error;
     }
@@ -150,7 +150,7 @@ export const REDIS_EVENTS = {
 redisClient.on('error', (error) => {
     logger.error('Redis client error', {
         component: 'Redis',
-        error: error as ErrorWithStack
+        error: createGameError('REDIS_CLIENT_ERROR', 'Redis client encountered an error', error)
     });
 });
 
