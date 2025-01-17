@@ -9,20 +9,24 @@ export function createErrorWithStack(error: unknown): ErrorWithStack {
     
     if (error instanceof Error) {
         const errorWithStack = Object.create(error);
-        return Object.assign(errorWithStack, {
+        const extendedError = Object.assign(errorWithStack, {
             code: error.name,
+            name: error.name,
             message: error.message,
             stack: error.stack || defaultError.stack || 'No stack trace available',
             cause: error.cause,
-            category: 'system',
-            severity: 'error'
+            category: 'system' as const,
+            severity: 'error' as const
         });
+        return extendedError;
     }
     
-    return Object.assign(defaultError, {
+    const extendedError = Object.assign(defaultError, {
         code: 'UNKNOWN_ERROR',
+        name: 'Error',
         message: String(error),
-        category: 'system',
-        severity: 'error'
+        category: 'system' as const,
+        severity: 'error' as const
     });
+    return extendedError;
 }
