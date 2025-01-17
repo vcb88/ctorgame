@@ -4,9 +4,9 @@
 
 import type { 
     ReplayState,
-    GameHistoryEntry
-} from '../../types/network/replay.js';
-import { ValidationError } from '../../types/network/errors.js';
+    GameHistoryEntry,
+    ValidationError
+} from '../../types/base/types.js';
 
 /**
  * Validates replay state object

@@ -1,4 +1,4 @@
-import type { GameMove } from '../types/base/types';
+import type { GameMove } from '../types/base/types.js';
 
 export const validateGameHistoryEntry = (history: GameHistory): boolean => {
     // Basic structure validation

@@ -166,8 +166,45 @@ export type GameState = {
 };
 
 // Error handling types
-export type ErrorCategory = 'network' | 'game' | 'validation' | 'system';
-export type ErrorSeverity = 'info' | 'warning' | 'error' | 'critical';
+export type ErrorCategory = 
+    | 'system'
+    | 'business'
+    | 'validation'
+    | 'security'
+    | 'game'
+    | 'network'
+    | 'storage';
+
+export type ErrorSeverity = 
+    | 'debug'
+    | 'info'
+    | 'warning'
+    | 'error'
+    | 'critical';
+
+export type CommonStatus = 
+    // Basic statuses
+    | 'active'
+    | 'inactive'
+    | 'pending'
+    | 'completed'
+    | 'failed'
+    // Process statuses
+    | 'initializing'
+    | 'processing'
+    | 'validating'
+    | 'saving'
+    // Special statuses
+    | 'unknown'
+    | 'deprecated'
+    | 'maintenance';
+
+export type ResultStatus = 
+    | 'success'
+    | 'failure'
+    | 'partial'
+    | 'pending'
+    | 'cancelled';
 
 // Base error types
 export type BaseError = {
@@ -337,6 +374,43 @@ export type RedisGameEvent = {
 // Utility types
 export type WithMetadata<T> = T & {
     metadata?: Record<string, unknown>;
+};
+
+// Replay types
+export type ReplayEvent = {
+  type: 'replay_start' | 'replay_step' | 'replay_complete' | 'replay_error';
+  gameId: UUID;
+  timestamp: number;
+  data?: {
+    move?: GameMove;
+    state?: GameState;
+    error?: string;
+  };
+};
+
+// Replay system types
+export type ReplayState = {
+    currentMoveIndex: number;
+    totalMoves: number;
+    isPlaying: boolean;
+    playbackSpeed: number;
+    gameCode: string;
+};
+
+export type GameHistoryEntry = {
+    gameCode: string;
+    startTime: string;
+    endTime?: string;
+    players: string[];
+    winner?: string;
+    totalMoves: number;
+};
+
+// Game history types
+export type GameHistory = {
+    moves: GameMove[];
+    states: GameState[];
+    timestamps: Timestamp[];
 };
 
 export type Collection<T> = Array<T>;

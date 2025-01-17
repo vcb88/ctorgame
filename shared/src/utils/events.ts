@@ -1,4 +1,4 @@
-import type { GameEvent, WebSocketEvent } from '../types/base/types';
+import type { GameEvent, WebSocketEvent } from '../types/base/types.js';
 
 /**
  * Create a game event
