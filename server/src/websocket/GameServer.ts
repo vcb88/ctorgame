@@ -13,7 +13,12 @@ import type {
     ClientToServerEvents,
     GameEvent,
     NetworkError,
-    WebSocketErrorCode
+    WebSocketErrorCode,
+    WebSocketServerConfig,
+    WebSocketServerOptions,
+    GameStorageBase,
+    GameEventService,
+    RedisServiceType
 } from '@ctor-game/shared/types/core.js';
 import { validateEvent } from '@ctor-game/shared/utils/events.js';
 
@@ -34,18 +39,13 @@ import { GameStorageService } from '../services/GameStorageService.js';
 import { logger } from '../utils/logger.js';
 import { createGameError } from '@ctor-game/shared/utils/errors.js';
 
-const DEFAULT_CONFIG = {
+const DEFAULT_CONFIG: WebSocketServerConfig = {
     cors: {
         origin: "*",
         methods: ["GET", "POST"]
     },
     path: '/socket.io/',
-    transports: ['websocket'],
-    serveClient: false,
-    pingTimeout: 10000,
-    pingInterval: 5000,
-    upgradeTimeout: 10000,
-    maxHttpBufferSize: 1e6,
+    transports: ['websocket'] as any, // Type assertion needed for Socket.IO type compatibility
 };
 
 const PLAYER_RECONNECT_TIMEOUT = 5 * 60 * 1000; // 5 minutes
@@ -58,10 +58,7 @@ export class GameServer {
 
     public static getInstance(
         httpServer: HttpServer,
-        options: {
-            gameService?: GameService;
-            eventService?: EventService;
-        } = {}
+        options: WebSocketServerOptions = {}
     ): GameServer {
         if (!GameServer.instance) {
             logger.info("Creating new GameServer instance", { component: 'GameServer' });
@@ -74,20 +71,24 @@ export class GameServer {
 
     private constructor(
         httpServer: HttpServer,
-        options: {
-            gameService?: GameService;
-            eventService?: EventService;
-        }
+        options: WebSocketServerOptions
     ) {
         if ((global as any).io) {
             logger.info("Cleaning up previous Socket.IO instance", { component: 'GameServer' });
             (global as any).io.close();
         }
 
-        this.io = new Server(httpServer, DEFAULT_CONFIG);
-        const mongoService = new GameStorageService();
-        this.eventService = options.eventService || new EventService(redisService);
-        this.gameService = options.gameService || new GameService(mongoService, this.eventService, redisService);
+        const config = { ...DEFAULT_CONFIG, ...options.config };
+        this.io = new Server(httpServer, {
+            ...config,
+            transports: ['websocket'] as any // Type assertion needed for Socket.IO type compatibility
+        });
+
+        // Initialize services
+        const storage = options.storageService || new GameStorageService();
+        const redis = options.redisService || redisService;
+        this.eventService = options.eventService || new EventService(redis);
+        this.gameService = options.gameService || new GameService(storage, this.eventService, redis);
 
         (global as any).io = this.io;
         this.setupEventHandlers();
@@ -103,39 +104,34 @@ export class GameServer {
 
         this.io.on('connection', (socket: Socket<ClientToServerEvents, ServerToClientEvents>) => {
             // Log all incoming messages
-            socket.onAny((eventName, ...args) => {
+            socket.onAny((eventName: string, ...args: any[]) => {
                 logger.websocket.message('in', eventName, args[0], socket.id);
             });
 
             // Wrap emit for logging
             const originalEmit = socket.emit;
-            const wrappedEmit = function<Ev extends WebSocketEvent>(
+            socket.emit = function<Ev extends keyof ServerToClientEvents>(
                 this: typeof socket,
                 ev: Ev,
-                ...args: Parameters<typeof socket.emit<Ev>>
-            ): ReturnType<typeof socket.emit<Ev>> {
-                if (args[0]) {
-                    logger.websocket.message('out', ev, args[0] as GameEvent, socket.id);
-                }
+                ...args: Parameters<ServerToClientEvents[Ev]>
+            ) {
+                logger.websocket.message('out', ev, args[0], socket.id);
                 return originalEmit.apply(this, [ev, ...args]);
-            };
-            socket.emit = wrappedEmit;
+            } as typeof socket.emit;
 
             // Wrap room emit for logging
             const originalTo = this.io.to;
             this.io.to = (room: string) => {
                 const result = originalTo.call(this.io, room);
                 const originalRoomEmit = result.emit;
-                result.emit = function<Ev extends WebSocketEvent>(
+                result.emit = function<Ev extends keyof ServerToClientEvents>(
                     this: typeof result,
                     ev: Ev,
-                    ...args: Parameters<typeof result.emit<Ev>>
-                ): ReturnType<typeof result.emit<Ev>> {
-                    if (args[0]) {
-                        logger.websocket.message('out', ev, args[0] as GameEvent, `room:${room}`);
-                    }
+                    ...args: Parameters<ServerToClientEvents[Ev]>
+                ) {
+                    logger.websocket.message('out', ev, args[0], `room:${room}`);
                     return originalRoomEmit.apply(this, [ev, ...args]);
-                };
+                } as typeof result.emit;
                 return result;
             };
 
@@ -170,56 +166,53 @@ export class GameServer {
                     });
 
                     socket.emit('game_created', {
-                        gameId,
+                        ...event,
                         code: game.code,
-                        eventId: event.id,
-                        status: event.data.status,
-                        timestamp: Date.now(),
-                        type: 'game_created'
+                        status: event.data?.status || 'waiting'
                     });
 
                 } catch (err) {
-                    const error = err as Error;
+                    const error = this.createNetworkError(err);
                     logger.error('Error creating game', {
                         component: 'GameServer',
                         context: { playerId: socket.id },
-                        error: createGameError('WEBSOCKET_ERROR', error.message, error)
+                        error
                     });
-                    socket.emit('error', {
-                        code: 'INTERNAL_ERROR' as WebSocketErrorCode,
-                        message: 'Failed to create game',
-                        details: { error: error.message }
-                    });
+                    socket.emit('error', error);
                 }
             });
 
-            socket.on('join_game', async ({ gameId, code }: { gameId?: string; code?: string }) => {
+            socket.on('join_game', async (data: { gameId?: string; code?: string }) => {
                 try {
-                    if (!gameId && !code) {
+                    if (!data.gameId && !data.code) {
                         throw new Error('Either gameId or code must be provided');
                     }
 
                     // Find game by code if provided
-                    let targetGameId = gameId;
-                    if (code) {
-                        const game = await this.gameService.findGame(code);
+                    let targetGameId = data.gameId;
+                    if (data.code) {
+                        const game = await this.gameService.findGame(data.code);
                         if (!game) {
                             throw new Error('Game not found');
                         }
                         targetGameId = game.gameId;
                     }
 
-                    const game = await this.gameService.joinGame(targetGameId!, socket.id);
-                    await socket.join(targetGameId!);
+                    if (!targetGameId) {
+                        throw new Error('Game ID is required');
+                    }
+
+                    const game = await this.gameService.joinGame(targetGameId, socket.id);
+                    await socket.join(targetGameId);
 
                     // Get state after join
-                    const state = await redisService.getGameState(targetGameId!);
+                    const state = await redisService.getGameState(targetGameId);
                     if (!state) {
                         throw new Error('Game state not found');
                     }
 
                     const connectEvent = await this.eventService.createPlayerConnectedEvent(
-                        targetGameId!,
+                        targetGameId,
                         socket.id,
                         2 as PlayerNumber
                     );
@@ -229,48 +222,211 @@ export class GameServer {
                     }
 
                     socket.emit('game_joined', {
-                        gameId: targetGameId,
-                        eventId: connectEvent.id,
-                        status: game.status,
-                        timestamp: Date.now(),
-                        type: 'game_joined'
+                        ...connectEvent,
+                        status: game.status
                     });
 
                     // If game is now ready to start
-                    if (game.players.first && game.players.second) {
-                        const startEvent = await this.eventService.createGameStartedEvent(targetGameId!, state);
+                    if (game.players.length === 2) {
+                        const startEvent = await this.eventService.createGameStartedEvent(targetGameId, state);
                         if (!validateEvent(startEvent)) {
                             throw new Error('Invalid game started event');
                         }
 
-                        this.io.to(targetGameId!).emit('game_started', {
-                            gameId: targetGameId,
-                            eventId: startEvent.id,
+                        this.io.to(targetGameId).emit('game_started', {
+                            ...startEvent,
                             gameState: state,
-                            currentPlayer: state.currentPlayer,
-                            timestamp: Date.now(),
-                            type: 'game_started'
+                            currentPlayer: state.currentPlayer
                         });
                     }
 
                 } catch (err) {
-                    const error = err as Error;
+                    const error = this.createNetworkError(err);
                     logger.error('Error joining game', {
                         component: 'GameServer',
                         context: { 
                             playerId: socket.id,
-                            gameId,
-                            code 
+                            data
                         },
-                        error: createGameError('WEBSOCKET_ERROR', error.message, error)
+                        error
                     });
-                    socket.emit('error', {
-                        code: 'INTERNAL_ERROR' as WebSocketErrorCode,
-                        message: 'Failed to join game',
-                        details: { error: error.message }
+                    socket.emit('error', error);
+                }
+            });
+
+            socket.on('make_move', async (data: { gameId: string; move: GameMove }) => {
+                try {
+                    if (!data.gameId) {
+                        throw new Error('Game ID is required');
+                    }
+
+                    const session = await redisService.getPlayerSession(socket.id);
+                    if (!session) {
+                        throw new Error('Player session not found');
+                    }
+
+                    const state = await this.gameService.makeMove(data.gameId, session.playerNumber, data.move);
+                    
+                    const moveEvent = await this.eventService.createGameMoveEvent(
+                        data.gameId,
+                        socket.id,
+                        data.move,
+                        state
+                    );
+
+                    if (!validateEvent(moveEvent)) {
+                        throw new Error('Invalid game move event');
+                    }
+
+                    this.io.to(data.gameId).emit('game_state_updated', state);
+
+                    if (state.status === 'finished' && state.winner) {
+                        const endEvent = await this.eventService.createGameEndedEvent(
+                            data.gameId,
+                            state.winner,
+                            state
+                        );
+
+                        if (!validateEvent(endEvent)) {
+                            throw new Error('Invalid game ended event');
+                        }
+
+                        this.io.to(data.gameId).emit('game_ended', {
+                            ...endEvent,
+                            winner: state.winner.toString(),
+                            finalState: state
+                        });
+                    }
+
+                } catch (err) {
+                    const error = this.createNetworkError(err);
+                    logger.error('Error making move', {
+                        component: 'GameServer',
+                        context: { 
+                            playerId: socket.id,
+                            data
+                        },
+                        error
+                    });
+                    socket.emit('error', error);
+                }
+            });
+
+            socket.on('end_turn', async (data: { gameId: string }) => {
+                try {
+                    if (!data.gameId) {
+                        throw new Error('Game ID is required');
+                    }
+
+                    const session = await redisService.getPlayerSession(socket.id);
+                    if (!session) {
+                        throw new Error('Player session not found');
+                    }
+
+                    const state = await redisService.getGameState(data.gameId);
+                    if (!state) {
+                        throw new Error('Game state not found');
+                    }
+
+                    const endTurnMove: GameMove = {
+                        type: 'skip',
+                        position: [0, 0], // default position for skip move
+                        player: session.playerNumber,
+                        timestamp: Date.now()
+                    };
+
+                    const updatedState = await this.gameService.makeMove(data.gameId, session.playerNumber, endTurnMove);
+                    
+                    this.io.to(data.gameId).emit('turn_ended', updatedState.currentPlayer);
+
+                } catch (err) {
+                    const error = this.createNetworkError(err);
+                    logger.error('Error ending turn', {
+                        component: 'GameServer',
+                        context: { 
+                            playerId: socket.id,
+                            data
+                        },
+                        error
+                    });
+                    socket.emit('error', error);
+                }
+            });
+
+            socket.on('disconnect', async () => {
+                try {
+                    const session = await redisService.getPlayerSession(socket.id);
+                    if (!session) return;
+
+                    const disconnectEvent = await this.eventService.createPlayerDisconnectedEvent(
+                        session.gameId,
+                        socket.id,
+                        session.playerNumber
+                    );
+
+                    if (!validateEvent(disconnectEvent)) {
+                        logger.warn('Invalid player disconnected event', {
+                            component: 'GameServer',
+                            context: { socketId: socket.id }
+                        });
+                    }
+
+                    this.io.to(session.gameId).emit('player_disconnected', session.playerNumber);
+
+                    // Start reconnection timeout
+                    setTimeout(async () => {
+                        const state = await redisService.getGameState(session.gameId);
+                        if (!state || state.status === 'finished') return;
+
+                        // Check if player is still disconnected
+                        const currentSession = await redisService.getPlayerSession(socket.id);
+                        if (currentSession) return;
+
+                        const expireEvent = await this.eventService.createGameExpiredEvent(session.gameId);
+                        
+                        if (!validateEvent(expireEvent)) {
+                            logger.warn('Invalid game expired event', {
+                                component: 'GameServer',
+                                context: { gameId: session.gameId }
+                            });
+                        }
+
+                        this.io.to(session.gameId).emit('game_expired', session.gameId);
+
+                        await this.gameService.expireGame(session.gameId);
+                    }, PLAYER_RECONNECT_TIMEOUT);
+
+                } catch (err) {
+                    logger.error('Error handling disconnect', {
+                        component: 'GameServer',
+                        context: { socketId: socket.id },
+                        error: this.createNetworkError(err)
                     });
                 }
             });
         });
+    }
+
+    private createNetworkError(error: unknown): NetworkError {
+        const errorWithStack = error instanceof Error ? {
+            name: error.name,
+            message: error.message,
+            stack: error.stack || 'No stack trace available',
+            cause: error.cause
+        } : {
+            name: 'UnknownError',
+            message: 'An unknown error occurred',
+            stack: 'No stack trace available'
+        };
+
+        return {
+            code: 'INTERNAL_ERROR',
+            message: errorWithStack.message,
+            category: 'network',
+            severity: 'error',
+            stack: errorWithStack.stack,
+            cause: errorWithStack.cause,
+            timestamp: Date.now()
+        };
     }
 }
