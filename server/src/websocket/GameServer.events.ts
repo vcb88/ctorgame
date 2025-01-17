@@ -294,6 +294,10 @@ export class GameServer {
                 }
 
                 this.io.to(gameId).emit('game_over', {
+                    type: 'game_over',
+                    id: endEvent.id,
+                    gameId: gameId,
+                    timestamp: Date.now(),
                     winner,
                     finalState: updatedState
                 });
