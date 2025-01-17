@@ -1,4 +1,4 @@
-import type { PlayerNumber, Scores } from '@ctor-game/shared/types/game/types';
+import type { PlayerNumber, Scores } from '@ctor-game/shared/dist/types/game/types.js';
 
 /**
  * Returns the opponent's player number

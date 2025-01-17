@@ -71,7 +71,7 @@ export class GameService {
         try {
             // Generate game code (from old version)
             let code: string;
-            let exists: GameMeta | null;
+            let exists: GameMetadata | null;
             do {
                 code = Math.floor(Math.random() * 10000).toString().padStart(4, '0');
                 exists = await this.storageService.findGameByCode(code);
