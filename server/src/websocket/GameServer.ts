@@ -11,10 +11,12 @@ import type {
     WebSocketEvent,
     ServerToClientEvents,
     ClientToServerEvents,
-    WebSocketErrorCode,
     GameEvent,
     NetworkError
-} from '@ctor-game/shared/types/core.js';
+} from '@ctor-game/shared/dist/types/core.js';
+import type {
+    WebSocketErrorCode
+} from '@ctor-game/shared/dist/types/network/types.js';
 import { validateEvent } from '@ctor-game/shared/utils/events.js';
 
 // Constants
@@ -28,7 +30,8 @@ const GameStatusValues = {
 import { GameService } from '../services/GameService.js';
 import { GameLogicService } from '../services/GameLogicService.js';
 import { EventService } from '../services/EventService.js';
-import { redisService } from '../services/RedisService.js';
+import { RedisService } from '../services/RedisService.js';
+const redisService = new RedisService();
 import { GameStorageService } from '../services/GameStorageService.js';
 import { logger } from '../utils/logger.js';
 import { createGameError } from '@ctor-game/shared/utils/errors.js';

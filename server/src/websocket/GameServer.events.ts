@@ -2,22 +2,31 @@ import { Server as HttpServer } from 'http';
 import { Server as SocketIOServer, Socket } from 'socket.io';
 import type {
     WebSocketEvent,
-    WebSocketErrorCode,
     ServerToClientEvents,
     ClientToServerEvents,
-    InterServerEvents,
-    SocketData,
-    WebSocketServerConfig,
-    WebSocketServerOptions,
     GameState,
     GameMove,
     PlayerNumber,
     GameStatus,
     Position,
     NetworkError
-} from '@ctor-game/shared/types/core.js';
+} from '@ctor-game/shared/dist/types/core.js';
+import type {
+    WebSocketErrorCode,
+    InterServerEvents,
+    SocketData,
+    WebSocketServerConfig,
+    WebSocketServerOptions
+} from '@ctor-game/shared/dist/types/network/types.js';
 import { validateEvent } from '@ctor-game/shared/utils/events.js';
-import { GameError, GameNotFoundError, NotYourTurnError, GameEndedError } from '../errors/GameError.js';
+import { 
+    GameError, 
+    GameNotFoundError, 
+    NotYourTurnError, 
+    GameEndedError,
+    InvalidStateError,
+    ServerError
+} from '../errors/GameError.js';
 import { ErrorHandlingService } from '../services/ErrorHandlingService.js';
 
 // Define socket types using imported interfaces
@@ -25,7 +34,8 @@ type GameSocket = Socket<ClientToServerEvents, ServerToClientEvents, InterServer
 type GameServerType = SocketIOServer<ClientToServerEvents, ServerToClientEvents, InterServerEvents, SocketData>;
 
 // Services
-import { redisService } from '../services/RedisService.js';
+import { RedisService } from '../services/RedisService.js';
+const redisService = new RedisService();
 import { GameService } from '../services/GameService.js';
 import { GameLogicService } from '../services/GameLogicService.js';
 import { EventService } from '../services/EventService.js';
@@ -99,9 +109,9 @@ export class GameServer {
         });
 
         socket.on('create_game', () => this.handleCreateGame(socket));
-        socket.on('join_game', (data) => this.handleJoinGame(socket, data));
-        socket.on('make_move', (data) => this.handleMakeMove(socket, data));
-        socket.on('end_turn', (data) => this.handleEndTurn(socket, data));
+        socket.on('join_game', (data: { gameId?: string; code?: string }) => this.handleJoinGame(socket, data));
+        socket.on('make_move', (data: { gameId: string; move: GameMove }) => this.handleMakeMove(socket, data));
+        socket.on('end_turn', (data: { gameId: string }) => this.handleEndTurn(socket, data));
         socket.on('disconnect', () => this.handleDisconnect(socket));
     }
 
@@ -113,7 +123,7 @@ export class GameServer {
 
             const event = await this.eventService.createGameCreatedEvent(gameId, 'waiting');
             if (!validateEvent(event)) {
-                throw new GameError('server_error', 'Invalid game created event');
+                throw new ServerError('Invalid game created event');
             }
 
             socket.emit('game_created', {
@@ -136,7 +146,7 @@ export class GameServer {
     ): Promise<void> {
         try {
             if (!gameId && !code) {
-                throw new GameError('invalid_game_id', 'Either gameId or code must be provided');
+                throw new GameNotFoundError('Either gameId or code must be provided');
             }
 
             // Find game by code if provided
@@ -166,7 +176,7 @@ export class GameServer {
             );
 
             if (!validateEvent(connectEvent)) {
-                throw new Error('Invalid player connected event');
+                throw new ServerError('Invalid player connected event');
             }
 
             socket.emit('game_joined', {
@@ -181,7 +191,7 @@ export class GameServer {
             if (game.players[0] && game.players[1]) {
                 const startEvent = await this.eventService.createGameStartedEvent(targetGameId!, state);
                 if (!validateEvent(startEvent)) {
-                    throw new Error('Invalid game started event');
+                    throw new ServerError('Invalid game started event');
                 }
 
                 this.io.to(targetGameId!).emit('game_started', {
@@ -215,7 +225,7 @@ export class GameServer {
 
             const session = await redisService.getPlayerSession(socket.id);
             if (!session) {
-                throw new GameError('invalid_state', 'Player not found in game');
+                throw new InvalidStateError('Player not found in game');
             }
 
             if (session.playerNumber !== state.currentPlayer) {
@@ -234,7 +244,7 @@ export class GameServer {
             );
 
             if (!validateEvent(moveEvent)) {
-                throw new Error('Invalid game move event');
+                throw new ServerError('Invalid game move event');
             }
 
             this.io.to(gameId).emit('game_state_updated', {
@@ -255,13 +265,13 @@ export class GameServer {
                 );
 
                 if (!validateEvent(endEvent)) {
-                    throw new Error('Invalid game ended event');
+                    throw new ServerError('Invalid game ended event');
                 }
 
                 this.io.to(gameId).emit('game_over', {
                     eventId: endEvent.id,
-                    gameState: updatedState,
                     winner,
+                    gameState: updatedState,
                     finalScores: updatedState.scores,
                     timestamp: Date.now(),
                     type: 'game_over'
@@ -282,7 +292,7 @@ export class GameServer {
 
             const session = await redisService.getPlayerSession(socket.id);
             if (!session) {
-                throw new GameError('invalid_state', 'Player not found in game');
+                throw new InvalidStateError('Player not found in game');
             }
 
             if (session.playerNumber !== state.currentPlayer) {
@@ -290,7 +300,13 @@ export class GameServer {
             }
 
             // Create end turn move
-            const endTurnMove: GameMove = { type: 'skip' };
+            const endTurnMove: GameMove = {
+                type: 'skip',
+                position: [0, 0], // default position for skip move
+                player: session.playerNumber,
+                timestamp: Date.now()
+            };
+
             const updatedState = await this.gameService.makeMove(gameId, session.playerNumber, endTurnMove);
 
             const moveEvent = await this.eventService.createGameMoveEvent(
@@ -301,7 +317,7 @@ export class GameServer {
             );
 
             if (!validateEvent(moveEvent)) {
-                throw new Error('Invalid game move event');
+                throw new ServerError('Invalid game move event');
             }
 
             this.io.to(gameId).emit('turn_ended', {
@@ -334,7 +350,6 @@ export class GameServer {
             }
 
             this.io.to(session.gameId).emit('player_disconnected', {
-                eventId: disconnectEvent.id,
                 playerId: socket.id,
                 playerNumber: session.playerNumber,
                 timestamp: Date.now(),
@@ -360,7 +375,6 @@ export class GameServer {
                 }
 
                 this.io.to(session.gameId).emit('game_expired', {
-                    eventId: expireEvent.id,
                     gameId: session.gameId,
                     timestamp: Date.now(),
                     type: 'game_expired'
@@ -400,14 +414,14 @@ export class GameServer {
 
                 if (!validateEvent(errorEvent)) {
                     this.errorHandlingService.logError(
-                        new GameError('server_error', 'Invalid error event'),
+                        new ServerError('Invalid error event'),
                         { socketId: socket.id, gameId: session.gameId }
                     );
                 }
 
                 socket.emit('error', {
-                    eventId: errorEvent.id,
-                    ...errorResponse
+                    ...errorResponse,
+                    timestamp: Date.now()
                 });
             } else {
                 socket.emit('error', errorResponse);
@@ -422,7 +436,10 @@ export class GameServer {
             
             socket.emit('error', {
                 code: 'INTERNAL_ERROR' as WebSocketErrorCode,
-                message: 'Internal server error'
+                message: 'Internal server error',
+                category: 'system',
+                severity: 'error',
+                timestamp: Date.now()
             });
         }
     }
