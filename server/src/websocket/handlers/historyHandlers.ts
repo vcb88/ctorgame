@@ -1,7 +1,7 @@
 import { Socket } from 'socket.io';
 import type { ClientToServerEvents, ServerToClientEvents, UUID } from '@ctor-game/shared/types/core.js';
 import { GameStorageService } from '../../services/GameStorageService.js';
-import { createNetworkError } from '../../services/ErrorHandlingService.js';
+import { ErrorHandlingService } from '../../services/ErrorHandlingService.js';
 import { logger } from '../../utils/logger.js';
 
 type Handler = (socket: Socket<ClientToServerEvents, ServerToClientEvents>, gameId: UUID) => Promise<void>;
@@ -17,7 +17,7 @@ export const createHistoryHandlers = (storageService: GameStorageService): Recor
         error,
         context: { gameId }
       });
-      socket.emit('error', createNetworkError(
+      socket.emit('error', ErrorHandlingService.createNetworkError(
         'STORAGE_ERROR',
         'Failed to get game history',
         'error',
