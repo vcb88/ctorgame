@@ -3,40 +3,12 @@ import type { NetworkError, ErrorCode, ErrorSeverity, ErrorCategory } from '@cto
 import { isNetworkError } from '@ctor-game/shared/utils/errors.js';
 import { GameError } from '../errors/GameError.js';
 
-const convertGameErrorToNetworkError = (error: GameError): NetworkError => ({
-    code: error.code,
-    message: error.message,
-    category: 'network',
-    severity: error.severity,
-    details: error.details,
-    stack: error.stack,
-    cause: undefined,  // NetworkError doesn't include cause
-    timestamp: Date.now()
-});
-
-/**
-     * Creates a NetworkError with the given parameters
-     */
-    public static createNetworkError = (
-    code: ErrorCode,
-    message: string,
-    severity: ErrorSeverity = 'error',
-    details?: Record<string, unknown>
-): NetworkError => ({
-    code,
-    message,
-    category: 'network',
-    severity,
-    details,
-    stack: new Error().stack || 'No stack trace available',
-    timestamp: Date.now()
-});
-
 /**
  * Service for centralized error handling and monitoring
  */
 export class ErrorHandlingService {
     private static instance: ErrorHandlingService;
+
     private constructor() {
         // Using the global logger instance
     }
@@ -46,6 +18,41 @@ export class ErrorHandlingService {
             ErrorHandlingService.instance = new ErrorHandlingService();
         }
         return ErrorHandlingService.instance;
+    }
+
+    private static convertGameErrorToNetworkError(error: GameError): NetworkError {
+        return {
+            code: error.code,
+            message: error.message,
+            category: 'network',
+            severity: error.severity,
+            details: error.details,
+            stack: error.stack,
+            name: 'NetworkError',
+            cause: undefined,  // NetworkError doesn't include cause
+            timestamp: Date.now()
+        };
+    }
+
+    /**
+     * Creates a NetworkError with the given parameters
+     */
+    public static createNetworkError(
+        code: ErrorCode,
+        message: string,
+        severity: ErrorSeverity = 'error',
+        details?: Record<string, unknown>
+    ): NetworkError {
+        return {
+            code,
+            message,
+            category: 'network',
+            severity,
+            details,
+            stack: new Error().stack || 'No stack trace available',
+            name: 'NetworkError',
+            timestamp: Date.now()
+        };
     }
 
     /**
@@ -59,7 +66,7 @@ export class ErrorHandlingService {
         }
 
         if (error instanceof GameError) {
-            const networkError = convertGameErrorToNetworkError(error);
+            const networkError = ErrorHandlingService.convertGameErrorToNetworkError(error);
             this.logError(networkError);
             return networkError;
         }
