@@ -1,6 +1,6 @@
-import type { GameMove, GameStatus, Scores, GameMetadata, GameDetails, GameHistory } from '@ctor-game/shared/src/types/core.js';
-import { validateGameHistoryEntry } from '@ctor-game/shared/src/utils/validation.js';
-import { ValidationError } from '@ctor-game/shared/src/types/core.js';
+import type { GameMove, GameStatus, Scores, GameMetadata, GameDetails, GameHistory } from '@ctor-game/shared/types/core.js';
+import { validateGameHistoryEntry } from '@ctor-game/shared/utils/validation.js';
+import { ValidationError } from '@ctor-game/shared/types/core.js';
 import { mkdirSync, existsSync, readFileSync, writeFileSync } from 'fs';
 import { join } from 'path';
 import { MongoClient, Collection } from 'mongodb';
@@ -209,7 +209,7 @@ export class GameStorageService {
             });
             if (!game) {
                 throw new GameStorageError(`Game not found with ID/code: ${gameIdOrCode}`);
-            } else if (game.status !== GameStatus.WAITING) {
+            } else if (game.status !== 'waiting') {
                 throw new GameStorageError('Game already started');
             } else if (game.expiresAt <= now.toISOString()) {
                 throw new GameStorageError('Game expired');
@@ -327,7 +327,7 @@ export class GameStorageService {
      * @returns complete game history
      * @throws GameStorageError if game not found or history file is corrupted
      */
-    async getGameHistory(gameId: string): Promise<IGameHistory> {
+    async getGameHistory(gameId: string): Promise<GameHistory> {
         // Get metadata from MongoDB
         const game = await this.gamesCollection.findOne({ gameId });
         if (!game) {

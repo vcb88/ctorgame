@@ -17,7 +17,7 @@ import { GameStorageService } from './GameStorageService.js';
 import { EventService } from './EventService.js';
 import { RedisService } from './RedisService.js';
 import { logger } from '../utils/logger.js';
-import { toErrorWithStack } from '@ctor-game/shared/src/utils/errors.js';
+import { createGameError } from '@ctor-game/shared/utils/errors.js';
 
 export class GameServiceError extends Error {
     constructor(message: string) {
@@ -87,7 +87,7 @@ export class GameService {
             await this.redisService.setGameState(gameId, initialState);
             
             // Create game event
-            await this.eventService.createGameCreatedEvent(gameId, GameStatus.WAITING);
+            await this.eventService.createGameCreatedEvent(gameId, 'waiting');
 
             logger.info('game_created', {
                 component: 'GameService',
@@ -101,7 +101,7 @@ export class GameService {
         } catch (error) {
             logger.error('Failed to create game', {
                 component: 'GameService',
-                error: toErrorWithStack(error),
+                error: createGameError('GAME_SERVICE_ERROR', error instanceof Error ? error.message : 'Unknown error', error),
                 gameId,
                 playerId,
                 duration: Date.now() - startTime
@@ -149,7 +149,7 @@ export class GameService {
         } catch (error) {
             logger.error('Failed to join game', {
                 component: 'GameService',
-                error: toErrorWithStack(error),
+                error: createGameError('GAME_SERVICE_ERROR', error instanceof Error ? error.message : 'Unknown error', error),
                 gameId,
                 playerId,
                 duration: Date.now() - startTime
@@ -203,7 +203,7 @@ export class GameService {
         } catch (error) {
             logger.error('Failed to make move', {
                 component: 'GameService',
-                error: toErrorWithStack(error),
+                error: createGameError('GAME_SERVICE_ERROR', error instanceof Error ? error.message : 'Unknown error', error),
                 gameId,
                 playerNumber,
                 move,
@@ -243,7 +243,7 @@ export class GameService {
         } catch (error) {
             logger.error('Failed to finish game', {
                 component: 'GameService',
-                error: toErrorWithStack(error),
+                error: createGameError('GAME_SERVICE_ERROR', error instanceof Error ? error.message : 'Unknown error', error),
                 gameId,
                 winner,
                 scores,
@@ -309,7 +309,7 @@ export class GameService {
         } catch (error) {
             logger.error('Failed to expire game', {
                 component: 'GameService',
-                error: toErrorWithStack(error),
+                error: createGameError('GAME_SERVICE_ERROR', error instanceof Error ? error.message : 'Unknown error', error),
                 gameId,
                 duration: Date.now() - startTime
             });
