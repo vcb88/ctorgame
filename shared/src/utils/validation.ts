@@ -1,4 +1,4 @@
-import type { GameHistory, GameMove } from '../types/core.js';
+import type { GameMove } from '../types/base/types';
 
 export const validateGameHistoryEntry = (history: GameHistory): boolean => {
     // Basic structure validation
@@ -13,7 +13,7 @@ export const validateGameMove = (move: unknown): move is GameMove => {
     return (
         typeof m.type === 'string' &&
         (m.type === 'place' || m.type === 'replace' || m.type === 'skip') &&
-        (m.pos === undefined || (Array.isArray(m.pos) && m.pos.length === 2 && typeof m.pos[0] === 'number' && typeof m.pos[1] === 'number'))
+        (m.position === undefined || (Array.isArray(m.position) && m.position.length === 2 && typeof m.position[0] === 'number' && typeof m.position[1] === 'number'))
     );
 };
 

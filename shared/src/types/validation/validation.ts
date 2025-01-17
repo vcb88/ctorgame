@@ -1,4 +1,4 @@
-import type { GameState, BoardSize, PlayerNumber, UUID } from '../core.js';
+import type { GameState, Size, PlayerNumber, UUID } from '../base/types';
 
 export interface ValidationEvent {
   type: 'validation_start' | 'validation_complete' | 'validation_error';
@@ -6,7 +6,7 @@ export interface ValidationEvent {
   timestamp: number;
   data?: {
     state?: GameState;
-    size?: BoardSize;
+    size?: Size;
     player?: PlayerNumber;
     errors?: string[];
   };

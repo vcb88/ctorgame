@@ -1,6 +1,4 @@
-import type { PlayerNumber, GameStatus, GameState, Size, Scores as GameScores } from '../types/core.js';
-
-type UUID = string;
+import type { PlayerNumber, GameStatus, GameState, Size, Scores as GameScores, UUID } from '../types/base/types';
 
 export type GameOutcome = 'win' | 'loss' | 'draw';
 
@@ -30,14 +28,36 @@ export function createScores(player1: number, player2: number): GameScores {
  * Create initial game state
  */
 export function createInitialState(size: Size): GameState {
+    const board = {
+        width: size[0],
+        height: size[1],
+        cells: Array(size[1]).fill(null).map(() => Array(size[0]).fill(null))
+    };
+
     return {
         id: crypto.randomUUID(),
-        board: Array(size[1]).fill(null).map(() => Array(size[0]).fill(null)),
+        board,
         size,
         currentPlayer: 1,
         scores: createScores(0, 0),
         status: 'active',
-        timestamp: Date.now()
+        timestamp: Date.now(),
+        phase: 'play',
+        players: [],
+        startTime: Date.now(),
+        lastUpdate: Date.now(),
+        lastMoveTimestamp: Date.now(),
+        settings: {
+            boardSize: size,
+            maxPlayers: 2
+        },
+        currentTurn: {
+            player: 1,
+            startTime: Date.now(),
+            moves: [],
+            placeOperations: 0,
+            replaceOperations: 0
+        }
     };
 }
 

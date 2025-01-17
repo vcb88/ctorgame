@@ -19,6 +19,13 @@ export type ConnectionStatus = 'connected' | 'disconnected' | 'error';
 export type MoveType = 'place' | 'replace' | 'skip';
 export type OperationType = MoveType;
 
+// Action types
+export type GameAction = {
+    type: 'move' | 'validation' | 'state_update' | 'error';
+    payload?: unknown;
+    timestamp: Timestamp;
+};
+
 // Move types hierarchy
 export type Move = {
     type: MoveType;
@@ -269,7 +276,7 @@ export type GameMetadata = {
     startTime: string;
     lastActivityAt: string;
     expiresAt: string;
-    players: Players;
+    players: Player[];
     boardSize: Size;
     totalTurns: number;
     endTime?: string;
