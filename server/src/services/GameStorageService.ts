@@ -1,10 +1,11 @@
-import type { GameMove, GameStatus, Scores, GameMetadata, GameDetails, GameHistory } from '@ctor-game/shared/types/core.js';
+import type { GameMove, GameStatus, Scores, GameMetadata, GameDetails, GameHistory, PlayerNumber } from '@ctor-game/shared/types/game';
 import { validateGameHistoryEntry } from '@ctor-game/shared/utils/validation.js';
-import { ValidationError } from '@ctor-game/shared/types/core.js';
+import { ValidationError } from '@ctor-game/shared/types/game';
 import { mkdirSync, existsSync, readFileSync, writeFileSync } from 'fs';
 import { join } from 'path';
 import { MongoClient, Collection } from 'mongodb';
 import Redis from 'ioredis';
+import { RedisService } from './RedisService.js';
 
 export class GameStorageError extends Error {
     constructor(message: string) {
@@ -20,7 +21,7 @@ export class GameStorageService {
 
     constructor(
         private readonly mongoUrl: string = process.env.MONGODB_URL || 'mongodb://localhost:27017',
-        _redisClient?: Redis,
+        private readonly redis: RedisService,
         storagePath?: string
     ) {
         this.storagePath = storagePath || process.env.STORAGE_PATH || 'storage/games';
@@ -263,7 +264,7 @@ export class GameStorageService {
 
     async finishGame(
         gameId: string,
-        winner: number,
+        winner: PlayerNumber,
         scores: Scores
     ): Promise<void> {
         const now = new Date();
@@ -356,7 +357,13 @@ export class GameStorageService {
             const storedDetails = gameData.metadata || {};
 
             // Create proper GameDetails structure
+            const gameState = await this.redis.getGameState(gameId);
+            if (!gameState) {
+                throw new GameStorageError('Game state not found');
+            }
+
             const details: GameDetails = {
+                currentState: gameState,
                 moves: moves,
                 timing: {
                     moveTimes: (storedDetails.moveTimes as number[]) || [],

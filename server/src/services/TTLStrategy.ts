@@ -1,4 +1,4 @@
-import type { TTLConfig, TTLStrategy, GameStatus } from '@ctor-game/shared/src/types/core.js';
+import type { TTLConfig, TTLStrategy, GameStatus } from '@ctor-game/shared/types/redis';
 import { redisClient, REDIS_KEYS } from '../config/redis.js';
 import { logger } from '../utils/logger.js';
 
@@ -78,7 +78,7 @@ export class RedisTTLStrategy implements TTLStrategy {
             logger.error('Failed to update TTLs', {
                 component: 'TTLStrategy',
                 context: { gameId, status },
-                error
+                error: error instanceof Error ? error.stack : error
             });
             throw error;
         }

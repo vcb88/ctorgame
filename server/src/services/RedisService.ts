@@ -5,15 +5,16 @@ import type {
     Player,
     GameStatus,
     Position
-} from '@ctor-game/shared/types/core';
+} from '@ctor-game/shared/types/game';
 
-// Redis specific types
 import type {
     RedisGameState,
     RedisPlayerSession,
+    RedisConnectionInfo,
+    RedisSessionActivity,
     RedisGameRoom,
     RedisGameEvent
-} from '@ctor-game/shared/types/storage/redis';
+} from '@ctor-game/shared/types/redis';
 
 import { redisClient, REDIS_KEYS, REDIS_EVENTS, withLock, ttlConfig } from '../config/redis.js';
 import { GameLogicService } from './GameLogicService.js';
@@ -66,6 +67,7 @@ export class RedisService {
     async delete(key: string): Promise<void> {
         await redisClient.del(key);
     }
+
     /**
      * Сохраняет состояние игры
      */
@@ -146,9 +148,20 @@ export class RedisService {
         playerNumber: PlayerNumber
     ): Promise<void> {
         const session: RedisPlayerSession = {
+            id: socketId,
             gameId,
+            playerId: socketId,
             playerNumber,
-            lastActivity: Date.now()
+            connection: {
+                ip: '',
+                lastActivity: Date.now(),
+                connectTime: Date.now()
+            },
+            activity: {
+                idleTime: 0,
+                moveCount: 0,
+                chatCount: 0
+            }
         };
 
         await redisClient.setex(
@@ -172,7 +185,7 @@ export class RedisService {
     async updatePlayerActivity(socketId: string): Promise<void> {
         const session = await this.getPlayerSession(socketId);
         if (session) {
-            session.lastActivity = Date.now();
+            session.connection.lastActivity = Date.now();
             await this.setPlayerSession(
                 socketId,
                 session.gameId,
@@ -204,10 +217,10 @@ export class RedisService {
     /**
      * Сохраняет информацию об игровой комнате
      */
-    async setGameRoom(gameId: string, players: Player[]): Promise<void> {
+    async setGameRoom(gameId: string, players: RedisPlayerSession[]): Promise<void> {
         const room: RedisGameRoom = {
             gameId,
-            players: players.map(p => ({ id: p.id, number: p.num })),
+            players,
             status: players.length === 2 ? 'active' : 'waiting',
             lastUpdate: Date.now()
         };
@@ -230,7 +243,7 @@ export class RedisService {
     /**
      * Добавляет игрока в комнату
      */
-    async addPlayerToRoom(gameId: string, player: Player): Promise<void> {
+    async addPlayerToRoom(gameId: string, player: RedisPlayerSession): Promise<void> {
         await withLock(gameId, async () => {
             const room = await this.getGameRoom(gameId);
             if (!room) {
@@ -238,8 +251,8 @@ export class RedisService {
                 await this.setGameRoom(gameId, [player]);
             } else if (room.players.length < 2) {
                 // Создаем новый массив игроков
-                const updatedPlayers = [...room.players, { id: player.id, number: player.playerNumber }];
-                await this.setGameRoom(gameId, updatedPlayers.map(p => ({ id: p.id, playerNumber: p.number })));
+                const updatedPlayers = [...room.players, player];
+                await this.setGameRoom(gameId, updatedPlayers);
             } else {
                 throw new Error('Room is full');
             }
@@ -253,13 +266,13 @@ export class RedisService {
         await withLock(gameId, async () => {
             const room = await this.getGameRoom(gameId);
             if (room) {
-                const updatedPlayers = room.players.filter((p: { id: string }) => p.id !== socketId);
+                const updatedPlayers = room.players.filter(p => p.id !== socketId);
                 if (updatedPlayers.length === 0) {
                     // Если комната пустая, удаляем её
                     await redisClient.del(REDIS_KEYS.GAME_ROOM(gameId));
                 } else {
                     // Обновляем комнату с новым списком игроков
-                    await this.setGameRoom(gameId, updatedPlayers.map((p: { id: string; number: number }) => ({ id: p.id, playerNumber: p.number })));
+                    await this.setGameRoom(gameId, updatedPlayers);
                 }
             }
         });
@@ -346,7 +359,7 @@ export class RedisService {
     /**
      * Создает новую игру
      */
-    async createGame(gameId: string, player: Player, initialState: GameState): Promise<void> {
+    async createGame(gameId: string, player: RedisPlayerSession, initialState: GameState): Promise<void> {
         await Promise.all([
             this.setGameState(gameId, initialState),
             this.setGameRoom(gameId, [player]),
@@ -357,7 +370,7 @@ export class RedisService {
     /**
      * Присоединяет игрока к существующей игре
      */
-    async joinGame(gameId: string, player: Player): Promise<void> {
+    async joinGame(gameId: string, player: RedisPlayerSession): Promise<void> {
         await this.addPlayerToRoom(gameId, player);
     }
 
@@ -393,10 +406,7 @@ export class RedisService {
             .del(REDIS_KEYS.GAME_STATE(gameId))
             .del(REDIS_KEYS.GAME_ROOM(gameId))
             .del(REDIS_KEYS.GAME_EVENTS(gameId))
-            .hdel(REDIS_KEYS.GAME_STATS, [gameId])
+            .del(REDIS_KEYS.GAME_STATS, gameId)
             .exec();
     }
 }
-
-// Экспортируем синглтон
-export const redisService = new RedisService();

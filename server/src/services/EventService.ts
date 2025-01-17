@@ -3,7 +3,7 @@
  */
 
 import { RedisService } from './RedisService.js';
-import type { GameEvent, EventType, GameState, GameMove, PlayerNumber, NetworkError } from '@ctor-game/shared/types/core.js';
+import type { GameEvent, EventType, GameState, GameMove, PlayerNumber, NetworkError } from '@ctor-game/shared/types/game';
 import { validateEvent } from '@ctor-game/shared/utils/events.js';
 import { generateId } from '../utils/id.js';
 import { logger } from '../utils/logger.js';
@@ -50,7 +50,7 @@ export class EventService {
 
             return fullEvent;
         } catch (error) {
-            logger.error('Failed to store event', { error });
+            logger.error('Failed to store event', { error: error instanceof Error ? error.stack : error });
             throw new Error('Failed to store event');
         }
     }
