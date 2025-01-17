@@ -282,6 +282,9 @@ export class RedisService {
      * Добавляет событие в историю игры
      */
     async addGameEvent(event: RedisGameEvent): Promise<void> {
+        if (!event.gameId) {
+            throw new Error('GameId is required for game events');
+        }
         const key = REDIS_KEYS.GAME_EVENTS(event.gameId);
         await redisClient
             .multi()

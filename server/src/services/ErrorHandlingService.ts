@@ -25,6 +25,7 @@ const createNetworkError = (
     category: 'network',
     severity,
     details,
+    stack: new Error().stack || 'No stack trace available',
     timestamp: Date.now()
 });
 
@@ -166,7 +167,7 @@ export class ErrorHandlingService {
             'Unexpected error',
             { 
                 ...logContext, 
-                error: error instanceof Error ? { ...error, stack: error.stack || 'No stack available' } : new Error('Unknown error')
+                error: error instanceof Error ? { ...error, stack: error.stack || 'No stack available' } : { stack: 'No stack available', message: 'Unknown error' }
             }
         );
     }

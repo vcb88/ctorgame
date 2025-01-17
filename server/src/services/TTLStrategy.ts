@@ -48,7 +48,7 @@ export class RedisTTLStrategy implements TTLStrategy {
 
     getTTL(key: keyof typeof DEFAULT_TTL_CONFIG['base'], status: GameStatus): number {
         const config = this.getConfigForStatus(status);
-        return config[key] ?? this.config.base[key];
+        return config[key] || this.config.base[key] || DEFAULT_TTL_CONFIG.base[key];
     }
 
     async updateGameTTLs(gameId: string, status: GameStatus): Promise<void> {

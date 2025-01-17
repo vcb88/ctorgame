@@ -76,7 +76,10 @@ export class GameServer {
         const config = { ...DEFAULT_CONFIG, ...options.config };
         this.reconnectTimeout = options.reconnectTimeout ?? DEFAULT_RECONNECT_TIMEOUT;
 
-        this.io = new SocketIOServer(httpServer, config);
+        this.io = new SocketIOServer(httpServer, {
+            ...config,
+            transports: ['websocket'] as any // Type assertion for compatibility
+        });
         this.gameService = new GameService(options.storageService, options.eventService, options.redisService);
         this.eventService = options.eventService || new EventService(redisService);
         this.errorHandlingService = ErrorHandlingService.getInstance();
@@ -106,10 +109,24 @@ export class GameServer {
             }
         });
 
-        socket.on('create_game', () => this.handleCreateGame(socket));
-        socket.on('join_game', (data: { gameId?: string; code?: string }) => this.handleJoinGame(socket, data));
-        socket.on('make_move', (data: { gameId: string; move: GameMove }) => this.handleMakeMove(socket, data));
-        socket.on('end_turn', (data: { gameId: string }) => this.handleEndTurn(socket, data));
+        socket.on('create_game', async () => await this.handleCreateGame(socket));
+        socket.on('join_game', async (gameId: string) => await this.handleJoinGame(socket, { gameId }));
+        socket.on('make_move', async (move: GameMove) => {
+            const gameId = socket.data.gameId;
+            if (!gameId) {
+                await this.handleError(socket, new Error('No game ID found'));
+                return;
+            }
+            await this.handleMakeMove(socket, { gameId, move });
+        });
+        socket.on('end_turn', async () => {
+            const gameId = socket.data.gameId;
+            if (!gameId) {
+                await this.handleError(socket, new Error('No game ID found'));
+                return;
+            }
+            await this.handleEndTurn(socket, { gameId });
+        });
         socket.on('disconnect', () => this.handleDisconnect(socket));
     }
 
