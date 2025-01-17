@@ -1,5 +1,5 @@
 import { GameSocket } from './socket.js';
-import { StateStorage } from './StateStorage.js';
+import { StateStorageImpl as StateStorage } from './StateStorage.js';
 import { ActionQueue } from './ActionQueue.js';
 import type { 
     GameState, 

@@ -1,10 +1,16 @@
 import { io, Socket } from 'socket.io-client';
-import type {
-    ServerToClientEvents,
-    ClientToServerEvents,
-    SocketData,
-    NetworkError
-} from '@ctor-game/shared/types/base/types.js';
+import { NetworkError } from '../types/network.js';
+
+type ServerToClientEvents = {
+    connect: () => void;
+    disconnect: (reason: string) => void;
+    error: (error: NetworkError) => void;
+    connect_error: (error: NetworkError) => void;
+}
+
+type ClientToServerEvents = {
+    // Add client-to-server events here
+}
 
 interface ImportMetaEnv {
   VITE_WS_URL: string;
