@@ -2,7 +2,7 @@
  * Simplified move types and validation
  */
 
-import type { BoardPosition } from './board.js';
+import type { Position } from '../core.js';
 import type { GameError } from './errors.js';
 
 /** Move types */

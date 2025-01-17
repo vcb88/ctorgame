@@ -1,11 +1,5 @@
 import type { Player, PlayerNumber, Timestamp, GameState } from './core.js';
 
-export type Player = {
-    id: string;
-    num: PlayerNumber;
-    connected: boolean;
-};
-
 export type GameRoom = {
     gameId: string;
     players: Player[];

@@ -2,7 +2,7 @@
  * Simplified game event types
  */
 
-import type { GameState, GameMove, PlayerNumber } from '../primitives.js';
+import type { GameState, GameMove, PlayerNumber } from '../core.js';
 import type { GameError } from '../core.js';
 
 /** Basic event metadata */

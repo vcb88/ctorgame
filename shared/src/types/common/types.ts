@@ -90,5 +90,5 @@ export type BoardCell = {
 
 /** Type guards */
 export const isValidPosition = (pos: Position, size: Size): boolean => {
-    return pos.x >= 0 && pos.x < size.width && pos.y >= 0 && pos.y < size.height;
+    return pos[0] >= 0 && pos[0] < size[0] && pos[1] >= 0 && pos[1] < size[1];
 };

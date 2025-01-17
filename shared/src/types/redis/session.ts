@@ -2,7 +2,7 @@
  * Redis session types
  */
 import type { RedisBase } from './state.js';
-import type { PlayerNumber } from '../game/types.js';
+import type { PlayerNumber } from '../core.js';
 import type { UUID, Timestamp } from '../core/primitives.js';
 
 /** Connection information */
