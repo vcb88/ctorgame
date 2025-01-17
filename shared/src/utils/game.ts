@@ -84,7 +84,7 @@ export const isValidGameState = (state: unknown): state is GameState => {
  * Score calculation
  */
 export function calculateScores(board: ReadonlyArray<ReadonlyArray<PlayerNumber | null>>): GameScores {
-    const scores = [0, 0];
+    const scores: GameScores = [0, 0];
     for (const row of board) {
         for (const cell of row) {
             if (cell === 1) scores[0]++;

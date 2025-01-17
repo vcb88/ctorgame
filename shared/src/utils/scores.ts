@@ -22,7 +22,7 @@ export function createScores(player1Score: number, player2Score: number): GameSc
  * Update scores for a specific player
  */
 export function updateScores(scores: GameScores, currentPlayer: PlayerNumber, points: number): GameScores {
-    const updatedScores = [...scores];
+    const updatedScores: GameScores = [scores[0], scores[1]];
     if (currentPlayer === 1) {
         updatedScores[0] = points;
     } else if (currentPlayer === 2) {
@@ -52,12 +52,8 @@ export function getWinnerFromScores(scores: GameScores): PlayerNumber | null {
  * Type guard for scores object
  */
 export function isValidScores(value: unknown): value is GameScores {
-    if (!value || typeof value !== 'object') return false;
-    const scores = value as Record<string, unknown>;
-    return (
-        typeof scores.player1 === 'number' &&
-        typeof scores.player2 === 'number'
-    );
+    if (!Array.isArray(value) || value.length !== 2) return false;
+    return typeof value[0] === 'number' && typeof value[1] === 'number';
 }
 
 /**
