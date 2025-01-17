@@ -136,6 +136,16 @@ export class GameStorageService {
     async disconnect(): Promise<void> {
         await this.mongoClient?.close();
     }
+    
+    /**
+     * Get all saved games
+     * @returns array of game summaries
+     */
+    async getSavedGames(): Promise<GameMetadata[]> {
+        return await this.gamesCollection.find({
+            status: { $in: ['finished', 'expired'] }
+        }).toArray();
+    }
 
     async createGame(playerId: string, gameId: string): Promise<GameMetadata> {
         // Check active games limit

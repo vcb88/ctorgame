@@ -5,7 +5,7 @@ import type {
     Player,
     GameStatus,
     Position
-} from '@ctor-game/shared/src/types/core.js';
+} from '@ctor-game/shared/types/core';
 
 // Redis specific types
 import type {
@@ -13,7 +13,7 @@ import type {
     RedisPlayerSession,
     RedisGameRoom,
     RedisGameEvent
-} from '@ctor-game/shared/src/types/storage/redis.js';
+} from '@ctor-game/shared/types/storage/redis';
 
 import { redisClient, REDIS_KEYS, REDIS_EVENTS, withLock, ttlConfig } from '../config/redis.js';
 import { GameLogicService } from './GameLogicService.js';

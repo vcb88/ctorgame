@@ -10,7 +10,7 @@ import type {
     GameMeta,
     GameHistory,
     GameHistorySummary
-} from '@ctor-game/shared/src/types/core.js';
+} from '@ctor-game/shared/types/core';
 
 import { GameLogicService } from './GameLogicService.js';
 import { GameStorageService } from './GameStorageService.js';
@@ -134,7 +134,7 @@ export class GameService {
             await this.eventService.createPlayerConnectedEvent(gameId, playerId, 2 as PlayerNumber);
 
             // If game is now full, create game started event
-            if (game.players[0] && game.players[1]) {
+            if (game.players.first && game.players.second) {
                 await this.eventService.createGameStartedEvent(gameId, state);
             }
 

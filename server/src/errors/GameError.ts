@@ -1,4 +1,4 @@
-import type { GameError as GameErrorType, ErrorCode, ErrorCategory, ErrorSeverity } from '@ctor-game/shared/types/core.js';
+import type { GameError as GameErrorType, ErrorCode, ErrorCategory, ErrorSeverity } from '@ctor-game/shared/types/core';
 
 // Error categories
 const ErrorCategories = {
