@@ -98,24 +98,19 @@ export type ErrorCode =
     | 'INTERNAL_ERROR';
 
 export type WebSocketEvent = 
-    | 'connect'
-    | 'disconnect'
     | 'error'
-    | 'create_game'
-    | 'join_game'
-    | 'make_move'
     | 'game_state'
     | 'game_error'
     | 'game_created'
     | 'game_started'
     | 'game_joined'
-    | 'game_move'
+    | 'game_over'
+    | 'game_state_updated'
     | 'game_ended'
     | 'game_expired'
-    | 'player_connected'
-    | 'player_disconnected'
     | 'turn_ended'
-    | 'game_state_updated';
+    | 'player_connected'
+    | 'player_disconnected';
 
 // Game entities
 export type Player = {
@@ -254,24 +249,49 @@ export type SocketData = {
     playerNumber?: PlayerNumber;
 };
 
-export interface WebSocketServerConfig {
+import type { ServerOptions } from 'socket.io';
+
+export interface WebSocketServerConfig extends Partial<ServerOptions> {
     cors: {
         origin: string;
         methods: string[];
     };
     path: string;
-    transports: string[];
-    pingTimeout: number;
-    pingInterval: number;
-    maxHttpBufferSize: number;
 }
 
 export interface WebSocketServerOptions {
     config?: Partial<WebSocketServerConfig>;
     reconnectTimeout?: number;
-    storageService?: any;
-    eventService?: any;
-    redisService?: any;
+    storageService?: GameStorageBase;
+    eventService?: GameEventService;
+    redisService?: RedisServiceType;
+}
+
+export interface GameStorageBase {
+    createGame(playerId: string, gameId: string): Promise<GameState>;
+    joinGame(gameId: string, playerId: string): Promise<GameState>;
+    makeMove(gameId: string, playerNumber: PlayerNumber, move: GameMove): Promise<GameState>;
+}
+
+export interface GameEventService {
+    createGameCreatedEvent(gameId: string, status: GameStatus): Promise<GameEvent>;
+    createGameStartedEvent(gameId: string, state: GameState): Promise<GameEvent>;
+    createGameEndedEvent(gameId: string, winner: PlayerNumber | null, finalState: GameState): Promise<GameEvent>;
+    createGameExpiredEvent(gameId: string): Promise<GameEvent>;
+    createPlayerConnectedEvent(gameId: string, playerId: string, playerNumber: PlayerNumber): Promise<GameEvent>;
+    createPlayerDisconnectedEvent(gameId: string, playerId: string, playerNumber: PlayerNumber): Promise<GameEvent>;
+    createGameMoveEvent(gameId: string, playerId: string, move: GameMove, state: GameState): Promise<GameEvent>;
+    createErrorEvent(gameId: string, error: NetworkError, playerId?: string): Promise<GameEvent>;
+}
+
+export interface RedisServiceType {
+    connect(): Promise<void>;
+    disconnect(): Promise<void>;
+    getGameState(gameId: string): Promise<GameState | null>;
+    setGameState(gameId: string, state: GameState): Promise<void>;
+    getPlayerSession(socketId: string): Promise<RedisPlayerSession | null>;
+    setPlayerSession(socketId: string, gameId: string, playerNumber: PlayerNumber): Promise<void>;
+    removePlayerSession(socketId: string): Promise<void>;
 }
 
 // Base error types
@@ -326,36 +346,56 @@ export type ValidationResult = {
 export type GameEvent = {
     type: WebSocketEvent;
     id: string;
-    gameId?: UUID;
+    gameId: string;
     playerId?: string;
-    player?: PlayerNumber;
-    data?: unknown;
+    playerNumber?: PlayerNumber;
     timestamp: Timestamp;
+    data?: {
+        status?: GameStatus;
+        state?: GameState;
+        move?: GameMove;
+        error?: NetworkError;
+        winner?: string;
+        finalState?: GameState;
+        currentPlayer?: PlayerNumber;
+    };
 };
 
 export type ServerToClientEvents = {
     'game_state': (state: GameState) => void;
     'game_error': (error: GameError) => void;
-    'game_created': (event: { gameId: UUID; code: string; eventId: string; status: GameStatus; timestamp: number; type: 'game_created' }) => void;
-    'game_joined': (event: { gameId: UUID; eventId: string; status: GameStatus; timestamp: number; type: 'game_joined' }) => void;
-    'game_started': (event: { gameId: UUID; eventId: string; gameState: GameState; currentPlayer: PlayerNumber; timestamp: number; type: 'game_started' }) => void;
-    'player_joined': (player: Player) => void;
-    'player_left': (player: Player) => void;
-    'game_over': (winner: PlayerNumber) => void;
+    'game_created': (event: GameEvent & { 
+        code: string;
+        status: GameStatus;
+    }) => void;
+    'game_joined': (event: GameEvent & {
+        status: GameStatus;
+    }) => void;
+    'game_started': (event: GameEvent & {
+        gameState: GameState;
+        currentPlayer: PlayerNumber;
+    }) => void;
+    'game_over': (event: GameEvent & {
+        winner: string;
+        finalState: GameState;
+    }) => void;
     'error': (error: NetworkError) => void;
     'game_state_updated': (state: GameState) => void;
-    'game_move': (move: GameMove) => void;
-    'game_ended': (event: { gameId: UUID; eventId: string; winner: PlayerNumber; finalScores: Scores; timestamp: number }) => void;
-    'game_expired': (gameId: UUID) => void;
+    'game_ended': (event: GameEvent & {
+        winner: string;
+        finalState: GameState;
+    }) => void;
+    'game_expired': (gameId: string) => void;
     'turn_ended': (currentPlayer: PlayerNumber) => void;
-    'player_connected': (player: Player) => void;
-    'player_disconnected': (player: Player) => void;
+    'player_connected': (playerNumber: PlayerNumber) => void;
+    'player_disconnected': (playerNumber: PlayerNumber) => void;
 };
 
 export type ClientToServerEvents = {
-    'create_game': (config: { size: Size }) => void;
-    'join_game': (gameId: UUID) => void;
-    'make_move': (move: GameMove) => void;
+    'create_game': () => void;
+    'join_game': (data: { gameId?: string; code?: string }) => void;
+    'make_move': (data: { gameId: string; move: GameMove }) => void;
+    'end_turn': (data: { gameId: string }) => void;
     'leave_game': () => void;
 };
 
