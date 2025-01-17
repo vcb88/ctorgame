@@ -51,6 +51,7 @@ export class GameLogicService {
     };
 
     // Create initial state
+    const timestamp = Date.now();
     return {
       id: crypto.randomUUID(),
       size: [BOARD_SIZE, BOARD_SIZE],
@@ -58,7 +59,23 @@ export class GameLogicService {
       scores,
       currentPlayer: 1 as PlayerNumber,
       status: 'active' as GameStatus,
-      timestamp: Date.now()
+      settings: {
+        boardSize: [BOARD_SIZE, BOARD_SIZE],
+        maxPlayers: 2
+      },
+      phase: 'setup' as const,
+      players: [],
+      currentTurn: {
+        player: 1 as PlayerNumber,
+        startTime: timestamp,
+        moves: [],
+        placeOperations: 0,
+        replaceOperations: 0
+      },
+      startTime: timestamp,
+      lastUpdate: timestamp,
+      lastMoveTimestamp: timestamp,
+      timestamp
     };
   }
 
@@ -240,7 +257,9 @@ export class GameLogicService {
           if (candidate.isValid) {
             availableReplaces.push({
               type: 'replace',
-              position: position
+              position: position,
+              player: playerNumber,
+              timestamp: Date.now()
             });
           }
         }
