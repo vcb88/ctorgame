@@ -8,12 +8,12 @@ import type {
     GameId,
     GameMove 
 } from '@ctor-game/shared/types/core.js';
-import { useReplay } from '../../hooks/useReplay';
-import { useGameHistory } from '../../hooks/useGameHistory';
+import { useReplay } from '../*../hooks/useReplay.js';
+import { useGameHistory } from '../*../hooks/useGameHistory.js';
 import { ReplayControls } from './ReplayControls';
 import { MoveTimeline } from './MoveTimeline';
-import { GameBoard } from '../GameBoard';
-import { Alert } from '../ui/alert';
+import { GameBoard } from '../*GameBoard.js';
+import { Alert } from '../*ui/alert.js';
 
 type ReplayViewProps = {
     gameCode: GameId;  // Using GameId type instead of string

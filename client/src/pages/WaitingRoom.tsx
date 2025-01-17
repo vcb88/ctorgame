@@ -5,7 +5,7 @@ import type { PlayerNumber, GamePhase } from '@ctor-game/shared/types/core.js';
 import { useMultiplayerGame } from '@/hooks/useMultiplayerGame';
 import { NeonBillboard } from '@/components/display/NeonBillboard';
 import { NeonGridBackground } from '@/components/backgrounds/NeonGridBackground';
-import { logger } from '@/utils/logger';
+import { logger } from '@/utils/logger.js';
 
 const VERSION = '13.5.89';
 const PROTOCOL = 'TCP/QUANTUM';

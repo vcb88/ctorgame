@@ -26,6 +26,7 @@ export interface BaseError {
     message: string;
     details: Record<string, unknown>;
     category: string;
+    retryable?: boolean;
 }
 
 export type ClientError = BaseError & {

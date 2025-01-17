@@ -1,5 +1,5 @@
 import React from 'react';
-import { cn } from '@/lib/utils';
+import { cn } from '@/lib/utils.js';
 import type { PlayerNumber, Scores } from '@ctor-game/shared/types/core.js';
 
 interface GameOverScreenProps {

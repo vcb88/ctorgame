@@ -1,7 +1,7 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Button } from '@/components/ui/button';
-import { logger } from '@/utils/logger';
+import { Button } from '@/components/ui/button.js';
+import { logger } from '@/utils/logger.js';
 
 interface DisconnectionOverlayProps {
   onReconnect?: () => void;

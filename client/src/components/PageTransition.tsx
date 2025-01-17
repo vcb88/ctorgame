@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useLocation } from 'react-router-dom';
-import { cn } from '@/lib/utils';
+import { cn } from '@/lib/utils.js';
 
 interface PageTransitionProps {
   children: React.ReactNode;

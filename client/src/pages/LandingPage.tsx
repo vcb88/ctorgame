@@ -1,8 +1,8 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { CyberTorusBackground } from '@/components/backgrounds/CyberTorusBackground';
-import { logger } from '@/utils/logger';
-import { CyberButton } from '@/components/ui/cyber-button';
+import { logger } from '@/utils/logger.js';
+import { CyberButton } from '@/components/ui/cyber-button.js';
 
 export const LandingPage: React.FC = () => {
   const navigate = useNavigate();

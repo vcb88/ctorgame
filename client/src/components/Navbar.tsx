@@ -1,8 +1,8 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { logger } from '@/utils/logger';
-import { cn } from '@/lib/utils';
-import { CyberButton } from '@/components/ui/cyber-button';
+import { logger } from '@/utils/logger.js';
+import { cn } from '@/lib/utils.js';
+import { CyberButton } from '@/components/ui/cyber-button.js';
 
 export const Navbar: React.FC = () => {
   const location = useLocation();

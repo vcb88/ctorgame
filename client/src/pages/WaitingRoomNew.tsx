@@ -9,7 +9,7 @@ import type {
 import { useGame } from '@/hooks/useGame';
 import { NeonBillboard } from '@/components/display/NeonBillboard';
 import { NeonGridBackground } from '@/components/backgrounds/NeonGridBackground';
-import { logger } from '@/utils/logger';
+import { logger } from '@/utils/logger.js';
 import { GameStateManager } from '@/services/GameStateManager';
 
 // Constants

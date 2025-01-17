@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { cn } from '@/lib/utils';
+import { cn } from '@/lib/utils.js';
 import type { 
     PlayerNumber, 
     TurnState, 
@@ -8,7 +8,7 @@ import type {
     Position 
 } from '@ctor-game/shared/types/core.js';
 import { GameActionType } from '@/types/actions';
-import { logger } from '@/utils/logger';
+import { logger } from '@/utils/logger.js';
 
 type GameControlsProps = {
   currentTurn: TurnState;

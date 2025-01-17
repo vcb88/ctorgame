@@ -1,16 +1,21 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { GameCell } from './GameCell.js';
-import type { 
-    Board,
+import type {
     CellValue,
     Position,
-    GameError,
     MoveType,
     PlayerNumber
 } from '@ctor-game/shared/types/core.js';
-import type { GameActionType } from '../types/actions.js';
-import { logger } from '../utils/logger.js';
-import type { CellAnimationState, AnimationType } from '../types/animations.js';
+import type { Board } from '@/types/board.js';
+import type { GameError } from '@/types/errors.js';
+import type { GameActionType } from '@/types/actions.js';
+import { logger } from '@/utils/logger.js';
+import type { CellAnimationState, AnimationType } from '@/types/animations.js';
+
+// Define enum value
+export enum AnimationTypeEnum {
+    CAPTURE = 'capture'
+}
 
 type GameBoardProps = {
     board: Board;
@@ -89,7 +94,7 @@ export function GameBoard({
   // Log animation states for captured cells
   useEffect(() => {
     const capturedCellKeys = Object.keys(animationStates).filter(
-      key => animationStates[key]?.type === AnimationType.CAPTURE
+      key => animationStates[key]?.type === AnimationTypeEnum.CAPTURE
     );
     if (capturedCellKeys.length > 0) {
       logger.animation('capture', {
@@ -224,7 +229,7 @@ export function GameBoard({
       return;
     }
 
-    if (loading && operationInProgress === GameActionType.MAKE_MOVE) {
+    if (loading && operationInProgress === 'MAKE_MOVE') {
       logger.operation('MAKE_MOVE', 'error', {
         reason: 'Operation already in progress',
         position,

@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { DeepSpaceBackground } from '@/components/backgrounds/DeepSpaceBackground';
 import { useMultiplayerGame } from '@/hooks/useMultiplayerGame';
-import { logger } from '@/utils/logger';
+import { logger } from '@/utils/logger.js';
 
 export const JoinGame: React.FC = () => {
   const navigate = useNavigate();
