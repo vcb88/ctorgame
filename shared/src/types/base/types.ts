@@ -314,7 +314,7 @@ export type BaseError = {
     timestamp?: number;
 };
 
-export type ErrorWithStack = BaseError & {
+export type ErrorWithStack = BaseError & Error & {
     stack: string;  // Making stack required
 };
 
