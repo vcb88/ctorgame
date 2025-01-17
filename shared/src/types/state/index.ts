@@ -13,7 +13,7 @@ export * from './manager.js';
 // Legacy types
 import type { Board, BoardCell } from './board.js';
 import type { Move, GameMove, TurnState } from './moves.js';
-import type { GameState, GameScores, GameSettings } from './game.js';
+import type { GameState, GameSettings } from './game.js';
 import type { StoredState, StateStorage } from './storage.js';
 import type { StateManager, ManagerState } from './manager.js';
 
@@ -25,7 +25,7 @@ export type {
     GameMove as IGameMove,
     TurnState as ITurnState,
     GameState as GameState,
-    GameScores as IGameScores,
+    // GameScores removed as it's replaced by Scores from primitives
     GameSettings as IGameSettings,
     StoredState as IStoredState,
     StateStorage as IStateStorage,

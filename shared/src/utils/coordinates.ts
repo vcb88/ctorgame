@@ -21,20 +21,20 @@ function normalizeCoordinate(value: number, size: number): number {
  * Normalizes position for toroidal board
  */
 export function normalizePosition(pos: Position, size: Size): Position {
-    return {
-        x: normalizeCoordinate(pos.x, size.width),
-        y: normalizeCoordinate(pos.y, size.height)
-    };
+    return [
+        normalizeCoordinate(pos[0], size[0]),
+        normalizeCoordinate(pos[1], size[1])
+    ];
 }
 
 /**
  * Gets all adjacent positions considering board's toroidal nature
  */
 export function getAdjacentPositions(pos: Position, size: Size): ReadonlyArray<Position> {
-    return DIRECTIONS.map(([dy, dx]) => ({
-        x: normalizeCoordinate(pos.x + dx, size.width),
-        y: normalizeCoordinate(pos.y + dy, size.height)
-    }));
+    return DIRECTIONS.map(([dy, dx]) => [
+        normalizeCoordinate(pos[0] + dx, size[0]),
+        normalizeCoordinate(pos[1] + dy, size[1])
+    ]);
 }
 
 /**
@@ -47,7 +47,7 @@ export function getBoardCell<T>(
     x: number,
     y: number
 ): T | null {
-    if (y < 0 || y >= size.height || x < 0 || x >= size.width) {
+    if (y < 0 || y >= size[1] || x < 0 || x >= size[0]) {
         throw new Error(`Invalid coordinates: x=${x}, y=${y}`);
     }
     return board[y][x];
@@ -64,7 +64,7 @@ export function setBoardCell<T>(
     y: number,
     value: T
 ): void {
-    if (y < 0 || y >= size.height || x < 0 || x >= size.width) {
+    if (y < 0 || y >= size[1] || x < 0 || x >= size[0]) {
         throw new Error(`Invalid coordinates: x=${x}, y=${y}`);
     }
     board[y][x] = value;
@@ -74,15 +74,15 @@ export function setBoardCell<T>(
  * Creates a new board with given dimensions
  */
 export function createBoard<T>(size: Size, defaultValue: T | null = null): T[][] {
-    return Array(size.height).fill(null)
-        .map(() => Array(size.width).fill(defaultValue));
+    return Array(size[1]).fill(null)
+        .map(() => Array(size[0]).fill(defaultValue));
 }
 
 /**
  * Checks if position is within board bounds
  */
 export function isValidPosition(pos: Position, size: Size): boolean {
-    return pos.x >= 0 && pos.x < size.width && pos.y >= 0 && pos.y < size.height;
+    return pos[0] >= 0 && pos[0] < size[0] && pos[1] >= 0 && pos[1] < size[1];
 }
 
 /**
@@ -96,11 +96,8 @@ export function cloneBoard<T>(board: ReadonlyArray<ReadonlyArray<T>>): T[][] {
  * Position conversion utilities
  */
 export const positionToRowCol = (pos: Position): { row: number; col: number } => ({
-    row: pos.y,
-    col: pos.x
+    row: pos[1],
+    col: pos[0]
 });
 
-export const rowColToPosition = (row: number, col: number): Position => ({
-    x: col,
-    y: row
-});
+export const rowColToPosition = (row: number, col: number): Position => [col, row];

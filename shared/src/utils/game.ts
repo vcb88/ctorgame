@@ -23,7 +23,7 @@ export function getOpponent(player: PlayerNumber): PlayerNumber {
  * Score utilities
  */
 export function createScores(player1: number, player2: number): GameScores {
-    return { player1, player2 };
+    return [player1, player2];
 }
 
 /**
@@ -32,11 +32,11 @@ export function createScores(player1: number, player2: number): GameScores {
 export function createInitialState(size: Size): GameState {
     return {
         id: crypto.randomUUID(),
-        board: Array(size.height).fill(null).map(() => Array(size.width).fill(null)),
+        board: Array(size[1]).fill(null).map(() => Array(size[0]).fill(null)),
         size,
         currentPlayer: 1,
         scores: createScores(0, 0),
-        status: 'playing',
+        status: 'active',
         timestamp: Date.now()
     };
 }
@@ -65,7 +65,7 @@ export const isValidUUID = (id: unknown): id is UUID =>
 export const isValidGameState = (state: unknown): state is GameState => {
     if (!state || typeof state !== 'object') return false;
     
-    const s = state as Partial<IGameState>;
+    const s = state as Partial<GameState>;
     return !!(
         isValidUUID(s.id) &&
         Array.isArray(s.board) &&

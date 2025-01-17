@@ -1,5 +1,4 @@
-import { MoveType, Position, ValidationResult } from './core.js';
-import type { Player } from './basic-types.js';
+import type { MoveType, Position, ValidationResult, Player } from './core.js';
 
 // Basic move type
 export type Move = {

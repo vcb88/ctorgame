@@ -8,31 +8,25 @@ import type { PlayerNumber, Scores as GameScores } from '../types/core.js';
  * Create empty scores object
  */
 export function createEmptyScores(): GameScores {
-    return {
-        player1: 0,
-        player2: 0
-    };
+    return [0, 0];
 }
 
 /**
  * Create scores with initial values
  */
 export function createScores(player1Score: number, player2Score: number): GameScores {
-    return {
-        player1: player1Score,
-        player2: player2Score
-    };
+    return [player1Score, player2Score];
 }
 
 /**
  * Update scores for a specific player
  */
 export function updateScores(scores: GameScores, currentPlayer: PlayerNumber, points: number): GameScores {
-    const updatedScores = { ...scores };
+    const updatedScores = [...scores];
     if (currentPlayer === 1) {
-        updatedScores.player1 = points;
+        updatedScores[0] = points;
     } else if (currentPlayer === 2) {
-        updatedScores.player2 = points;
+        updatedScores[1] = points;
     }
     return updatedScores;
 }
@@ -41,7 +35,7 @@ export function updateScores(scores: GameScores, currentPlayer: PlayerNumber, po
  * Get total score (sum of both players)
  */
 export function getTotalScore(scores: GameScores): number {
-    return scores.player1 + scores.player2;
+    return scores[0] + scores[1];
 }
 
 /**
@@ -49,8 +43,8 @@ export function getTotalScore(scores: GameScores): number {
  * Returns null for a draw
  */
 export function getWinnerFromScores(scores: GameScores): PlayerNumber | null {
-    if (scores.player1 > scores.player2) return 1;
-    if (scores.player2 > scores.player1) return 2;
+    if (scores[0] > scores[1]) return 1;
+    if (scores[1] > scores[0]) return 2;
     return null;
 }
 
@@ -70,12 +64,12 @@ export function isValidScores(value: unknown): value is GameScores {
  * Get score for specific player
  */
 export function getPlayerScore(scores: GameScores, player: PlayerNumber): number {
-    return player === 1 ? scores.player1 : scores.player2;
+    return player === 1 ? scores[0] : scores[1];
 }
 
 /**
  * Compare scores to determine if they are equal
  */
 export function areScoresEqual(a: GameScores, b: GameScores): boolean {
-    return a.player1 === b.player1 && a.player2 === b.player2;
+    return a[0] === b[0] && a[1] === b[1];
 }

@@ -52,6 +52,6 @@ export type {
     RedisEventStatus as IRedisEventStatus,
     RedisConfig as IRedisConfig,
     RedisCacheConfig as ICacheConfig,
-    RedisTTLConfig as ITTLConfig,
+    // RedisTTLConfig re-exported directly above
     RedisTTLStrategy as ITTLStrategy
 };

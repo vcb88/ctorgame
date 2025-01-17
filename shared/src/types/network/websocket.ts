@@ -7,10 +7,10 @@ import type {
     Position,
     Timestamp,
     UUID,
-    PlayerNumber
-} from '../primitives.js';
-import type { GameState } from '../core/state.js';
-import type { GameMove } from '../core/moves.js';
+    PlayerNumber,
+    GameState,
+    GameMove
+} from '../core.js';
 import type { NetworkError } from './errors.js';
 
 // Basic WebSocket events
