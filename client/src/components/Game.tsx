@@ -5,9 +5,7 @@ import type {
   GameState,
   GameStatus,
   MoveType,
-  GameMove
-} from '@ctor-game/shared/src/types/core.js';
-import type {
+  GameMove,
   PlayerNumber,
   CellValue,
   Position,
