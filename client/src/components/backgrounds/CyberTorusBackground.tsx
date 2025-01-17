@@ -12,6 +12,7 @@ export const CyberTorusBackground: React.FC = () => {
 
     // Set canvas size to window size
     const resize = () => {
+      if (!canvas) return;
       canvas.width = window.innerWidth;
       canvas.height = window.innerHeight;
     };
@@ -33,16 +34,16 @@ export const CyberTorusBackground: React.FC = () => {
     const glowColor = '#0ff8';
     const dimColor = '#0ff2';
 
-    function drawTorus(time: number) {
+    function drawTorus() {
+      if (!ctx || !canvas) return;
+
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       
       // Center point
       const centerX = canvas.width / 2;
       const centerY = canvas.height / 2;
 
-      // Rotation angles
-      const rotationX = rotation;
-      const rotationY = rotation * 0.5;
+      // Rotation angle
       const rotationZ = rotation * 0.3;
 
       // Draw grid segments
@@ -105,7 +106,7 @@ export const CyberTorusBackground: React.FC = () => {
 
       // Animate rotation
       rotation += 0.002;
-      requestAnimationFrame(() => drawTorus(time + 16));
+      requestAnimationFrame(drawTorus);
     }
 
     // Start animation
