@@ -5,7 +5,7 @@ import type {
     CellValue,
     Position,
     PlayerNumber 
-} from '@ctor-game/shared/types/base/types.js';
+} from '@ctor-game/shared/types/core.js';
 import type { CellAnimationState } from '@/types/animations.js';
 
 type GameCellProps = {

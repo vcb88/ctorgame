@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { GameCell } from './GameCell';
+import { GameCell } from './GameCell.js';
 import type { 
     Board,
     CellValue,
@@ -7,10 +7,10 @@ import type {
     GameError,
     MoveType,
     PlayerNumber
-} from '@ctor-game/shared/src/types/core.js';
-import type { GameActionType } from '../types/actions';
-import { logger } from '../utils/logger';
-import type { CellAnimationState } from '../types/animations';
+} from '@ctor-game/shared/types/core.js';
+import type { GameActionType } from '../types/actions.js';
+import { logger } from '../utils/logger.js';
+import type { CellAnimationState, AnimationType } from '../types/animations.js';
 
 type GameBoardProps = {
     board: Board;
@@ -266,7 +266,7 @@ export function GameBoard({
   return (
     <div className="grid grid-cols-10 gap-1 bg-gray-200 p-2">
       {board.map((row, rowIndex) =>
-        row.map((colIndex, cell) => {
+        row.map((cell, colIndex) => {
           const position: Position = [colIndex, rowIndex];
           const { isHighlighted, isLastMove } = getCellHighlightState(rowIndex, colIndex);
           const isValidMoveCell = isValidMove ? isValidMove(rowIndex, colIndex) : (!disabled && cell === null);
