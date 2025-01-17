@@ -1,5 +1,5 @@
 import { logger } from '../utils/logger.js';
-import type { NetworkError, ErrorCode, ErrorSeverity, ErrorCategory } from '@ctor-game/shared/types/game';
+import type { NetworkError, ErrorCode, ErrorSeverity, ErrorCategory } from '@ctor-game/shared/types/core.js';
 import { isNetworkError } from '@ctor-game/shared/utils/errors.js';
 import { GameError } from '../errors/GameError.js';
 
