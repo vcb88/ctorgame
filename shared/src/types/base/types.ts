@@ -352,22 +352,16 @@ export type GameManagerBase = {
 };
 
 // Redis specific types
-export type RedisGameState = {
-    gameId: UUID;
-    boardState: string;
-    currentPlayer: PlayerNumber;
-    scores: Scores;
-    status: GameStatus;
-    timestamp: number;
+export type RedisGameState = GameState & {
+    lastUpdate: number;
+    version: number;
     ttl?: number;
+    boardState?: string;  // Optional for backwards compatibility
 };
 
-export type RedisGameEvent = {
-    eventId: UUID;
-    type: string;
-    gameId: UUID;
-    data: Record<string, unknown>;
-    timestamp: number;
+export type RedisGameEvent = GameEvent & {
+    eventId?: UUID;  // Optional for backwards compatibility
+    data?: Record<string, unknown>;  // Optional for backwards compatibility
     ttl?: number;
 };
 
@@ -464,12 +458,4 @@ export type RedisGameRoom = {
     lastUpdate: number;
 };
 
-export type RedisGameState = GameState & {
-    lastUpdate: number;
-    version: number;
-    ttl?: number;
-};
-
-export type RedisGameEvent = GameEvent & {
-    ttl?: number;
-};
+//

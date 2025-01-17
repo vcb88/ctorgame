@@ -19,10 +19,19 @@ The Redis Service is responsible for managing game state, player sessions, game 
 
 ```typescript
 // Game State
-interface IRedisGameState extends IGameState {
-    lastUpdate: number;
-    version: number;
-}
+export type RedisGameState = GameState & {
+    lastUpdate: number;    // Last update timestamp
+    version: number;       // State version for optimistic locking
+    ttl?: number;         // Time-to-live in seconds
+    boardState?: string;  // Optional serialized board state
+};
+
+// Game Event
+export type RedisGameEvent = GameEvent & {
+    eventId?: UUID;                          // Optional event identifier
+    data?: Record<string, unknown>;          // Optional event data
+    ttl?: number;                            // Time-to-live in seconds
+};
 
 // Player Session
 interface IRedisPlayerSession {
@@ -41,16 +50,6 @@ interface IRedisGameRoom {
         number: PlayerNumber;
     }>;
     lastUpdate: number;
-}
-
-// Game Event
-interface IRedisGameEvent {
-    id: UUID;
-    gameId: UUID;
-    type: string;
-    timestamp: number;
-    playerNumber: PlayerNumber;
-    data: Record<string, unknown>;
 }
 ```
 
@@ -153,9 +152,11 @@ private async withLock<T>(key: string, fn: () => Promise<T>): Promise<T> {
 Game states include version tracking:
 
 ```typescript
-interface IRedisGameState extends IGameState {
-    version: number;
-}
+export type RedisGameState = GameState & {
+    version: number;       // For optimistic locking
+    lastUpdate: number;    // Last update timestamp
+    ttl?: number;         // Time-to-live in seconds
+};
 ```
 
 ## Configuration
