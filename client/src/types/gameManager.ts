@@ -4,7 +4,7 @@ import type {
     GameMove,
     GameError,
     GameId
-} from '@ctor-game/shared/src/types/core.js';
+} from '@ctor-game/shared/types/core.js';
 
 /**
  * Game manager state type

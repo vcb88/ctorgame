@@ -5,13 +5,13 @@ import type {
   GameStatus,
   GameOperationType,
   OperationType
-} from '@ctor-game/shared/src/types/game/types.js';
+} from '@ctor-game/shared/types/game/types.js';
 import type {
   PlayerNumber,
   CellValue,
   Position,
   GameError
-} from '@ctor-game/shared/src/types/core.js';
+} from '@ctor-game/shared/types/core.js';
 import { cn } from '@/lib/utils';
 import { GameCell } from '@/components/GameCell';
 import { logger } from '@/utils/logger';

@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
-import { GameStateManager } from '../services/GameStateManager';
+import { GameStateManager } from '../services/GameStateManager.js';
 import { ExtendedGameManagerState } from '../types/gameManager';
 
 export interface UseGameReturn {

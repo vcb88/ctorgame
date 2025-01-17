@@ -4,7 +4,7 @@ import type {
     ClientToServerEvents,
     SocketData,
     NetworkError
-} from '@ctor-game/shared/src/types/base/types';
+} from '@ctor-game/shared/types/base/types.js';
 
 interface ImportMetaEnv {
   VITE_WS_URL: string;
