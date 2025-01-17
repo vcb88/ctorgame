@@ -85,10 +85,10 @@ export class GameServer {
         });
 
         // Initialize services with type assertions for MVP
-        const storage = (options.storageService || new GameStorageService()) as GameStorageService;
         const redis = (options.redisService || redisService) as RedisService;
+        const storage = (options.storageService || new GameStorageService(process.env.MONGODB_URL, redis)) as GameStorageService;
         this.eventService = (options.eventService || new EventService(redis)) as unknown as GameEventService;
-        this.gameService = options.gameService || new GameService(storage, this.eventService, redis);
+        this.gameService = options.gameService || new GameService(storage, this.eventService as unknown as EventService, redis);
 
         (global as any).io = this.io;
         this.setupEventHandlers();
