@@ -15,7 +15,8 @@ export function createErrorWithStack(error: unknown): ErrorWithStack {
             stack: error.stack || defaultStack,
             cause: error.cause,
             category: 'system' as const,
-            severity: 'error' as const
+            severity: 'error' as const,
+            name: error.name || 'SystemError'
         };
     }
     
@@ -24,6 +25,7 @@ export function createErrorWithStack(error: unknown): ErrorWithStack {
         message: String(error) || defaultMessage,
         stack: defaultStack,
         category: 'system' as const,
-        severity: 'error' as const
+        severity: 'error' as const,
+        name: 'SystemError'
     };
 }

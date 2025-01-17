@@ -426,7 +426,8 @@ export class GameServer {
             severity: 'error',
             stack: errorWithStack.stack,
             cause: errorWithStack.cause,
-            timestamp: Date.now()
+            timestamp: Date.now(),
+            name: errorWithStack.name
         };
     }
 }
