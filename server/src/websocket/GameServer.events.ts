@@ -37,6 +37,7 @@ const redisService = new RedisService();
 import { GameService } from '../services/GameService.js';
 import { GameLogicService } from '../services/GameLogicService.js';
 import { EventService } from '../services/EventService.js';
+import type { GameEventService } from '@ctor-game/shared/types/base/types.js';
 import { logger } from '../utils/logger.js';
 
 const DEFAULT_CONFIG: WebSocketServerConfig = {
@@ -57,7 +58,7 @@ export class GameServer {
     private static instance: GameServer | null = null;
     private io: GameServerType;
     private gameService: GameService;
-    private eventService: EventService;
+    private eventService: GameEventService;
     private errorHandlingService: ErrorHandlingService;
     private reconnectTimeout: number;
 
@@ -81,7 +82,7 @@ export class GameServer {
             transports: ['websocket'] as any // Type assertion for compatibility
         });
         this.gameService = new GameService(options.storageService, options.eventService, options.redisService);
-        this.eventService = options.eventService || new EventService(redisService);
+        this.eventService = options.eventService || new EventService(redisService) as unknown as GameEventService;
         this.errorHandlingService = ErrorHandlingService.getInstance();
 
         (global as any).io = this.io;
