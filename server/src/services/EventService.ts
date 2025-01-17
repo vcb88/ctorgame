@@ -173,7 +173,7 @@ export class EventService {
             type: 'error',
             gameId,
             playerId,
-            data: error,
+            data: { error },
         });
     }
 
