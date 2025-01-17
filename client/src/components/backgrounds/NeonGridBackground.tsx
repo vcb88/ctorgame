@@ -10,10 +10,14 @@ export const NeonGridBackground: React.FC = () => {
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
+    // After null checks, we can assert these are non-null
+    const safeCanvas = canvas as HTMLCanvasElement;
+    const safeCtx = ctx as CanvasRenderingContext2D;
+
     // Set canvas size to window size
     const resize = () => {
-      canvas.width = window.innerWidth;
-      canvas.height = window.innerHeight;
+      safeCanvas.width = window.innerWidth;
+      safeCanvas.height = window.innerHeight;
     };
     resize();
     window.addEventListener('resize', resize);
@@ -60,8 +64,8 @@ export const NeonGridBackground: React.FC = () => {
     }
 
     const raindrops: RainDrop[] = Array(100).fill(null).map(() => ({
-      x: Math.random() * canvas.width,
-      y: Math.random() * canvas.height,
+      x: Math.random() * safeCanvas.width,
+      y: Math.random() * safeCanvas.height,
       speed: Math.random() * 2 + 1,
       char: String.fromCharCode(0x30A0 + Math.random() * 96),
       opacity: Math.random()
@@ -70,34 +74,34 @@ export const NeonGridBackground: React.FC = () => {
     function project(x: number, y: number, z: number) {
       const scale = perspective / (z + perspective);
       return {
-        x: canvas.width/2 + x * scale,
-        y: canvas.height/2 + y * scale,
+        x: safeCanvas.width/2 + x * scale,
+        y: safeCanvas.height/2 + y * scale,
         scale: scale
       };
     }
 
     function drawGrid(time: number) {
-      ctx.strokeStyle = '#1a1a1a';
-      ctx.lineWidth = 1;
+      safeCtx.strokeStyle = '#1a1a1a';
+      safeCtx.lineWidth = 1;
 
       // Vertical lines
       for (let x = -1000; x < 1000; x += gridSize) {
         const start = project(x, 0, 0);
         const end = project(x, 0, 2000);
-        ctx.beginPath();
-        ctx.moveTo(start.x, start.y);
-        ctx.lineTo(end.x, end.y);
-        ctx.stroke();
+        safeCtx.beginPath();
+        safeCtx.moveTo(start.x, start.y);
+        safeCtx.lineTo(end.x, end.y);
+        safeCtx.stroke();
       }
 
       // Horizontal lines with z-depth
       for (let z = 0; z < 2000; z += gridSize) {
         const start = project(-1000, 0, z);
         const end = project(1000, 0, z);
-        ctx.beginPath();
-        ctx.moveTo(start.x, start.y);
-        ctx.lineTo(end.x, end.y);
-        ctx.stroke();
+        safeCtx.beginPath();
+        safeCtx.moveTo(start.x, start.y);
+        safeCtx.lineTo(end.x, end.y);
+        safeCtx.stroke();
       }
     }
 
@@ -107,30 +111,30 @@ export const NeonGridBackground: React.FC = () => {
         
         if (sign.glowing) {
           const glowIntensity = Math.sin(time * 0.001) * 0.5 + 0.5;
-          ctx.shadowColor = sign.color;
-          ctx.shadowBlur = 20 * glowIntensity;
+          safeCtx.shadowColor = sign.color;
+          safeCtx.shadowBlur = 20 * glowIntensity;
         }
 
-        ctx.font = Math.floor(30 * projected.scale * sign.scale) + 'px "Noto Sans JP"';
-        ctx.fillStyle = sign.color;
-        ctx.textAlign = 'center';
-        ctx.fillText(sign.text, projected.x, projected.y);
+        safeCtx.font = Math.floor(30 * projected.scale * sign.scale) + 'px "Noto Sans JP"';
+        safeCtx.fillStyle = sign.color;
+        safeCtx.textAlign = 'center';
+        safeCtx.fillText(sign.text, projected.x, projected.y);
         
-        ctx.shadowBlur = 0;
+        safeCtx.shadowBlur = 0;
       });
     }
 
     function drawDigitalRain() {
-      ctx.font = '14px monospace';
+      safeCtx.font = '14px monospace';
       
       raindrops.forEach(drop => {
-        ctx.fillStyle = 'rgba(0, 255, 255, ' + drop.opacity + ')';
-        ctx.fillText(drop.char, drop.x, drop.y);
+        safeCtx.fillStyle = 'rgba(0, 255, 255, ' + drop.opacity + ')';
+        safeCtx.fillText(drop.char, drop.x, drop.y);
         
         drop.y += drop.speed;
-        if (drop.y > canvas.height) {
+        if (drop.y > safeCanvas.height) {
           drop.y = 0;
-          drop.x = Math.random() * canvas.width;
+          drop.x = Math.random() * safeCanvas.width;
           drop.char = String.fromCharCode(0x30A0 + Math.random() * 96);
         }
       });
@@ -147,22 +151,22 @@ export const NeonGridBackground: React.FC = () => {
 
     function draw(time: number) {
       // Clear canvas with slight fade for trail effect
-      ctx.fillStyle = 'rgba(0, 0, 0, 0.1)';
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      safeCtx.fillStyle = 'rgba(0, 0, 0, 0.1)';
+      safeCtx.fillRect(0, 0, safeCanvas.width, safeCanvas.height);
 
       // Save context for glitch effect
-      ctx.save();
-      ctx.translate(glitchOffset, 0);
+      safeCtx.save();
+      safeCtx.translate(glitchOffset, 0);
 
       // Update camera position
       cameraY = Math.sin(time * 0.0005) * 50;
 
       // Draw background elements
-      ctx.save();
-      ctx.translate(0, cameraY);
+      safeCtx.save();
+      safeCtx.translate(0, cameraY);
       drawGrid(time);
       drawNeonSigns(time);
-      ctx.restore();
+      safeCtx.restore();
 
       // Draw foreground elements
       drawDigitalRain();
@@ -171,12 +175,12 @@ export const NeonGridBackground: React.FC = () => {
       createGlitchEffect();
 
       // Restore context
-      ctx.restore();
+      safeCtx.restore();
 
       // Add scanline effect
-      for (let i = 0; i < canvas.height; i += 2) {
-        ctx.fillStyle = 'rgba(0, 0, 0, 0.1)';
-        ctx.fillRect(0, i, canvas.width, 1);
+      for (let i = 0; i < safeCanvas.height; i += 2) {
+        safeCtx.fillStyle = 'rgba(0, 0, 0, 0.1)';
+        safeCtx.fillRect(0, i, safeCanvas.width, 1);
       }
 
       requestAnimationFrame(draw);
