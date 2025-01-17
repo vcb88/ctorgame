@@ -3,8 +3,8 @@
  */
 
 import type { 
-    IReplayState,
-    IGameHistoryEntry
+    ReplayState as IReplayState,
+    GameHistoryEntry as IGameHistoryEntry
 } from '../../types/network/replay.js';
 import { ValidationError } from '../../types/network/errors.js';
 

@@ -11,7 +11,7 @@ export type MoveType = 'place' | 'replace';
 /** Unified move structure */
 export interface GameMove {
     type: MoveType;
-    position: BoardPosition;
+    position: Position;
     player: 1 | 2;
     timestamp: number;
     turnNumber: number;
@@ -21,7 +21,7 @@ export interface GameMove {
 export interface MoveResult {
     valid: boolean;
     error?: GameError;
-    affectedCells?: BoardPosition[];
+    affectedCells?: Position[];
 }
 
 /** Current turn state */

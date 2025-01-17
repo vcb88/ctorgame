@@ -1,6 +1,7 @@
-import type { PlayerNumber, GameStatus } from '../types/game/types.js';
-import type { IGameState, IGameScores as IScores } from '../types/game/types.js';
-import type { ISize } from '../types/geometry/types.js';
+import type { PlayerNumber, GameStatus } from '../types/core/primitives.js';
+import type { GameState as IGameState } from '../types/core/state.js';
+import type { GameScores as IScores } from '../types/state.js';
+import type { Size as ISize } from '../types/base/primitives.js';
 
 type UUID = string;
 

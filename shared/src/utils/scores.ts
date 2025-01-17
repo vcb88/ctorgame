@@ -2,8 +2,8 @@
  * Score management utilities
  */
 
-import type { PlayerNumber } from '../types/game/types.js';
-import type { IGameScores } from '../types/game/types.js';
+import type { PlayerNumber } from '../types/core/primitives.js';
+import type { GameScores as IGameScores } from '../types/state.js';
 
 /**
  * Create empty scores object

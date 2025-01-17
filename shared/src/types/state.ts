@@ -1,4 +1,4 @@
-import type { PlayerNumber, GameMove, GameError } from './core.js';
+import type { PlayerNumber, GameMove, GameError, GameState } from './core.js';
 
 /** Board types */
 export type BoardBase = {

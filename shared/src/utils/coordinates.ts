@@ -1,4 +1,4 @@
-import type { IPosition, ISize } from '../types/geometry/types.js';
+import type { Position as IPosition, Size as ISize } from '../types/base/primitives.js';
 
 /**
  * Direction vectors for adjacent cells.

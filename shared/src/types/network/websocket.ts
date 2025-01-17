@@ -3,14 +3,14 @@
  */
 
 import type {
-    GameState,
-    GameMove,
-    PlayerNumber,
     GameStatus,
     Position,
     Timestamp,
-    UUID
+    UUID,
+    PlayerNumber
 } from '../primitives.js';
+import type { GameState } from '../core/state.js';
+import type { GameMove } from '../core/moves.js';
 import type { NetworkError } from './errors.js';
 
 // Basic WebSocket events

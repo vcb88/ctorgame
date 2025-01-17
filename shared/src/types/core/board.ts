@@ -4,6 +4,8 @@
 
 import { CellValue, Size, Position } from '../base/primitives.js';
 
+export type { Position as BoardPosition, CellValue };
+
 /** Game board as 2D array */
 export type Board = CellValue[][];
 
