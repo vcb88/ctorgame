@@ -33,7 +33,9 @@ export type Player = {
 };
 
 export type GameState = {
+    id: UUID;
     board: CellValue[][];
+    size: Size;
     scores: Scores;
     currentPlayer: PlayerNumber;
     status: GameStatus;

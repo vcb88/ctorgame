@@ -3,14 +3,9 @@
  */
 
 import { RedisKeyEnum } from './enums.js';
+import { RedisTTLConfig } from './ttl.js';
 
-/** Redis cache TTL configuration */
-export interface RedisTTLConfig {
-    gameState: number;
-    playerSession: number;
-    gameRoom: number;
-    events: number;
-}
+// TTL configuration moved to ttl.ts
 
 /** Redis key prefix configuration */
 export interface RedisPrefixConfig {
@@ -87,10 +82,12 @@ export function isRedisCacheConfig(value: unknown): value is RedisCacheConfig {
     return (
         config.ttl &&
         typeof config.ttl === 'object' &&
-        typeof config.ttl.gameState === 'number' &&
-        typeof config.ttl.playerSession === 'number' &&
-        typeof config.ttl.gameRoom === 'number' &&
-        typeof config.ttl.events === 'number'
+        config.ttl.base &&
+        typeof config.ttl.base === 'object' &&
+        typeof config.ttl.base[RedisKeyEnum.GAME_STATE] === 'number' &&
+        typeof config.ttl.base[RedisKeyEnum.PLAYER_SESSION] === 'number' &&
+        typeof config.ttl.base[RedisKeyEnum.GAME_ROOM] === 'number' &&
+        typeof config.ttl.base[RedisKeyEnum.EVENT] === 'number'
     );
 }
 
