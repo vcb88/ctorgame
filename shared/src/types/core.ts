@@ -54,4 +54,4 @@ export type {
     // Utility types
     WithMetadata,
     Collection
-} from './base/types';
+} from './base/types.js';

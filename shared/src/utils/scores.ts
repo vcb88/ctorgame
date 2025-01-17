@@ -2,7 +2,7 @@
  * Score management utilities
  */
 
-import type { PlayerNumber, Scores as GameScores } from '../types/core.js';
+import type { PlayerNumber, Scores as GameScores } from '../types/base/types.js';
 
 /**
  * Create empty scores object

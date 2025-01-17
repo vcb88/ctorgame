@@ -2,7 +2,7 @@
  * Basic validation functions for primitive types
  */
 
-import type { Position, Size } from '../types/core.js';
+import type { Position, Size } from '../types/base/types.js';
 
 type ValidatedPosition = {
     position: Position;

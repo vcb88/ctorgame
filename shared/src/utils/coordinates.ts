@@ -1,4 +1,4 @@
-import type { Position, Size } from '../types/core.js';
+import type { Position, Size } from '../types/base/types.js';
 
 /**
  * Direction vectors for adjacent cells.

@@ -1,4 +1,4 @@
-import type { NetworkError } from '../types/core.js';
+import type { NetworkError } from '../types/base/types.js';
 
 export type ErrorWithStack = Error & {
     stack: string;

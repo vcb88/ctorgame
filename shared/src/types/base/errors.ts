@@ -2,7 +2,7 @@
  * Base error types and utilities
  */
 
-import { ErrorCategory, ErrorSeverity } from './types';
+import { ErrorCategory, ErrorSeverity } from './types.js';
 
 /** Base error codes */
 export enum BaseErrorEnum {

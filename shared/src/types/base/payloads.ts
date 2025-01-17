@@ -2,7 +2,7 @@
  * Base payload types for events and messages
  */
 
-import type { UUID, Timestamp, Version, Position, Size } from './types';
+import type { UUID, Timestamp, Version, Position, Size } from './types.js';
 
 /** Base payload interface */
 export interface BasePayload {
