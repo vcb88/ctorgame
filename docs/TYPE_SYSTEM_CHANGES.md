@@ -1,5 +1,30 @@
 # Изменения в системе типов
 
+## Последние изменения
+
+### Обработка ошибок
+
+```typescript
+// Было
+export type NetworkError = BaseError & {
+    category: 'network';
+    code: ErrorCode;
+    severity: ErrorSeverity;
+};
+
+// Стало
+export type NetworkError = ErrorWithStack & {
+    category: 'network';
+    code: ErrorCode;
+    severity: ErrorSeverity;
+};
+```
+
+Это изменение обеспечивает:
+- Унификацию обработки сетевых ошибок с другими типами ошибок
+- Улучшенную отладку благодаря доступности stack trace
+- Консистентность с общей стратегией обработки ошибок в приложении
+
 ## Основные принципы
 
 1. Простота
