@@ -6,4 +6,5 @@ export * from './EventService.js';
 export * from './TTLStrategy.js';
 
 // Create service instances
+import { RedisService } from './RedisService.js';
 export const redisService = new RedisService();

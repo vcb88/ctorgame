@@ -119,13 +119,12 @@ export class GameServer {
             }
             await this.handleMakeMove(socket, { gameId, move });
         });
-        socket.on('end_turn', async () => {
-            const gameId = socket.data.gameId;
-            if (!gameId) {
-                await this.handleError(socket, new Error('No game ID found'));
+        socket.on('end_turn', async (data: { gameId: string }) => {
+            if (!data || !data.gameId) {
+                await this.handleError(socket, new Error('No game ID provided'));
                 return;
             }
-            await this.handleEndTurn(socket, { gameId });
+            await this.handleEndTurn(socket, { gameId: data.gameId });
         });
         socket.on('disconnect', () => this.handleDisconnect(socket));
     }
@@ -262,13 +261,7 @@ export class GameServer {
                 throw new ServerError('Invalid game move event');
             }
 
-            this.io.to(gameId).emit('game_state_updated', {
-                eventId: moveEvent.id,
-                gameState: updatedState,
-                currentPlayer: updatedState.currentPlayer,
-                timestamp: Date.now(),
-                type: 'game_state_updated'
-            });
+            this.io.to(gameId).emit('game_state_updated', updatedState);
 
             // Handle game over
             if (updatedState.status === 'finished') {
@@ -284,12 +277,8 @@ export class GameServer {
                 }
 
                 this.io.to(gameId).emit('game_over', {
-                    eventId: endEvent.id,
-                    winner,
-                    gameState: updatedState,
-                    finalScores: updatedState.scores,
-                    timestamp: Date.now(),
-                    type: 'game_over'
+                    winner: winner.toString(),
+                    finalState: updatedState
                 });
             }
 
@@ -335,11 +324,7 @@ export class GameServer {
                 throw new ServerError('Invalid game move event');
             }
 
-            this.io.to(gameId).emit('turn_ended', {
-                eventId: moveEvent.id,
-                gameState: updatedState,
-                nextPlayer: updatedState.currentPlayer
-            });
+            this.io.to(gameId).emit('turn_ended', updatedState.currentPlayer);
 
         } catch (error) {
             await this.handleError(socket, error as Error);
@@ -364,12 +349,7 @@ export class GameServer {
                 });
             }
 
-            this.io.to(session.gameId).emit('player_disconnected', {
-                playerId: socket.id,
-                playerNumber: session.playerNumber,
-                timestamp: Date.now(),
-                type: 'player_disconnected'
-            });
+            this.io.to(session.gameId).emit('player_disconnected', session.playerNumber);
 
             // Start reconnection timeout
             setTimeout(async () => {
@@ -389,11 +369,7 @@ export class GameServer {
                     });
                 }
 
-                this.io.to(session.gameId).emit('game_expired', {
-                    gameId: session.gameId,
-                    timestamp: Date.now(),
-                    type: 'game_expired'
-                });
+                this.io.to(session.gameId).emit('game_expired', session.gameId);
 
                 await this.gameService.expireGame(session.gameId);
             }, this.reconnectTimeout);
@@ -452,8 +428,9 @@ export class GameServer {
             socket.emit('error', {
                 code: 'INTERNAL_ERROR' as WebSocketErrorCode,
                 message: 'Internal server error',
-                category: 'system',
+                category: 'network',
                 severity: 'error',
+                stack: new Error().stack || 'No stack trace available',
                 timestamp: Date.now()
             });
         }

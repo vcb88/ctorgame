@@ -175,14 +175,14 @@ logger.info('Server configuration', {
 process.on('unhandledRejection', (error: Error) => {
   logger.error('Unhandled Promise Rejection', {
     component: 'Process',
-    error: toErrorWithStack(error)
+    error: toErrorWithStack(error instanceof Error ? error : new Error('Unknown rejection error'))
   });
 });
 
 process.on('uncaughtException', (error: Error) => {
   logger.error('Uncaught Exception', {
     component: 'Process',
-    error: toErrorWithStack(error)
+    error: toErrorWithStack(error instanceof Error ? error : new Error('Unknown exception error'))
   });
 });
 
@@ -190,7 +190,7 @@ process.on('uncaughtException', (error: Error) => {
 httpServer.on('error', (error: Error) => {
   logger.error('HTTP Server Error', {
     component: 'Server',
-    error: toErrorWithStack(error)
+    error: toErrorWithStack(error instanceof Error ? error : new Error('Unknown server error'))
   });
 });
 
@@ -250,7 +250,7 @@ try {
 } catch (error) {
   logger.error('Failed to start server', {
     component: 'Server',
-    error: toErrorWithStack(error)
+    error: toErrorWithStack(error instanceof Error ? error : new Error('Failed to start server error'))
   });
   process.exit(1);
 }
