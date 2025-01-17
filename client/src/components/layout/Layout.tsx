@@ -1,5 +1,5 @@
 import React, { useRef, useEffect } from 'react';
-import { Navbar } from './Navbar';
+import { Navbar } from './Navbar.js';
 
 interface LayoutProps {
     children: React.ReactNode;
