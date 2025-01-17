@@ -3,7 +3,7 @@ import { cn } from '@/lib/utils.js';
 import type { Timestamp } from '@ctor-game/shared/types/core.js';
 
 // Custom CSS properties type
-type TimerStyle = {
+type TimerStyle = React.CSSProperties & {
   '--timer-duration': string;
 };
 

@@ -127,8 +127,8 @@ export const IronCityBackground: React.FC = () => {
       
       for (let i = 0; i < particleCount; i++) {
         particles.push({
-          x: Math.random() * canvas.width,
-          y: Math.random() * canvas.height,
+          x: Math.random() * (canvas?.width || window.innerWidth),
+          y: Math.random() * (canvas?.height || window.innerHeight),
           size: Math.random() * 2,
           speedY: -Math.random() * 0.5 - 0.2,
           opacity: Math.random()

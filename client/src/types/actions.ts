@@ -1,6 +1,11 @@
 import type { GameMove, PlayerNumber } from '@ctor-game/shared/types/core.js';
 
-export type GameActionType = 'move' | 'endTurn' | 'undoMove';
+export enum GameActionType {
+    MOVE = 'move',
+    END_TURN = 'endTurn',
+    UNDO_MOVE = 'undoMove',
+    MAKE_MOVE = 'MAKE_MOVE'
+}
 
 export type GameAction = {
     type: GameActionType;
@@ -23,3 +28,16 @@ export type UndoMoveAction = GameAction & {
 };
 
 export type GameOperationAction = MoveAction | EndTurnAction | UndoMoveAction;
+
+export enum GameOperationType {
+    PLACE = 'PLACE',
+    CAPTURE = 'CAPTURE',
+    MOVE = 'MOVE'
+}
+
+export enum OperationType {
+    CONNECT = 'CONNECT',
+    DISCONNECT = 'DISCONNECT',
+    START = 'START',
+    END = 'END'
+}
