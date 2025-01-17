@@ -1,30 +1,28 @@
 import { Server as HttpServer } from 'http';
 import { Server as SocketIOServer, Socket } from 'socket.io';
 import type {
-    SocketEvent,
+    WebSocketEvent,
     WebSocketErrorCode,
     ServerToClientEvents,
     ClientToServerEvents,
     InterServerEvents,
     SocketData,
     WebSocketServerConfig,
-    WebSocketServerOptions
-} from '@ctor-game/shared/types/network/websocket';
-import { validateEvent } from '@ctor-game/shared/types/network/events';
+    WebSocketServerOptions,
+    GameState,
+    GameMove,
+    PlayerNumber,
+    GameStatus,
+    Position,
+    NetworkError
+} from '@ctor-game/shared/types/core.js';
+import { validateEvent } from '@ctor-game/shared/utils/events.js';
 import { GameError, GameNotFoundError, NotYourTurnError, GameEndedError } from '../errors/GameError.js';
 import { ErrorHandlingService } from '../services/ErrorHandlingService.js';
 
 // Define socket types using imported interfaces
 type GameSocket = Socket<ClientToServerEvents, ServerToClientEvents, InterServerEvents, SocketData>;
 type GameServerType = SocketIOServer<ClientToServerEvents, ServerToClientEvents, InterServerEvents, SocketData>;
-
-import type {
-    GameState,
-    GameMove,
-    PlayerNumber,
-    GameStatus,
-    Position
-} from '@ctor-game/shared/types/game/types';
 
 // Services
 import { redisService } from '../services/RedisService.js';
@@ -122,7 +120,9 @@ export class GameServer {
                 gameId,
                 eventId: event.id,
                 code: game.code,
-                status: event.data.status
+                status: event.data.status,
+                timestamp: Date.now(),
+                type: 'game_created'
             });
 
         } catch (error) {
@@ -172,7 +172,9 @@ export class GameServer {
             socket.emit('game_joined', {
                 gameId: targetGameId,
                 eventId: connectEvent.id,
-                status: game.status
+                status: game.status,
+                timestamp: Date.now(),
+                type: 'game_joined'
             });
 
             // If game is now ready to start
@@ -186,7 +188,9 @@ export class GameServer {
                     gameId: targetGameId,
                     eventId: startEvent.id,
                     gameState: state,
-                    currentPlayer: state.currentPlayer
+                    currentPlayer: state.currentPlayer,
+                    timestamp: Date.now(),
+                    type: 'game_started'
                 });
             }
 
@@ -236,7 +240,9 @@ export class GameServer {
             this.io.to(gameId).emit('game_state_updated', {
                 eventId: moveEvent.id,
                 gameState: updatedState,
-                currentPlayer: updatedState.currentPlayer
+                currentPlayer: updatedState.currentPlayer,
+                timestamp: Date.now(),
+                type: 'game_state_updated'
             });
 
             // Handle game over
@@ -255,7 +261,10 @@ export class GameServer {
                 this.io.to(gameId).emit('game_over', {
                     eventId: endEvent.id,
                     gameState: updatedState,
-                    winner
+                    winner,
+                    finalScores: updatedState.scores,
+                    timestamp: Date.now(),
+                    type: 'game_over'
                 });
             }
 
@@ -327,7 +336,9 @@ export class GameServer {
             this.io.to(session.gameId).emit('player_disconnected', {
                 eventId: disconnectEvent.id,
                 playerId: socket.id,
-                playerNumber: session.playerNumber
+                playerNumber: session.playerNumber,
+                timestamp: Date.now(),
+                type: 'player_disconnected'
             });
 
             // Start reconnection timeout
@@ -350,7 +361,9 @@ export class GameServer {
 
                 this.io.to(session.gameId).emit('game_expired', {
                     eventId: expireEvent.id,
-                    gameId: session.gameId
+                    gameId: session.gameId,
+                    timestamp: Date.now(),
+                    type: 'game_expired'
                 });
 
                 await this.gameService.expireGame(session.gameId);
@@ -408,7 +421,7 @@ export class GameServer {
             });
             
             socket.emit('error', {
-                code: WebSocketErrorCode.InternalError,
+                code: 'INTERNAL_ERROR' as WebSocketErrorCode,
                 message: 'Internal server error'
             });
         }
