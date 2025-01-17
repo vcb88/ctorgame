@@ -179,18 +179,22 @@ export class GameServer {
                 targetGameId = game.gameId;
             }
 
-            const game = await this.gameService.joinGame(targetGameId!, socket.id);
-            await socket.join(targetGameId!);
+            if (!targetGameId) {
+                throw new GameNotFoundError('Game ID not found');
+            }
+
+            const game = await this.gameService.joinGame(targetGameId, socket.id);
+            await socket.join(targetGameId);
 
             // Get state after join
-            const state = await redisService.getGameState(targetGameId!);
+            const state = await redisService.getGameState(targetGameId);
             if (!state) {
                 throw new Error('Game state not found');
             }
 
             // Emit player connected event
             const connectEvent = await this.eventService.createPlayerConnectedEvent(
-                targetGameId!,
+                targetGameId,
                 socket.id,
                 2 as PlayerNumber
             );
@@ -209,12 +213,12 @@ export class GameServer {
 
             // If game is now ready to start
             if (game.players[0] && game.players[1]) {
-                const startEvent = await this.eventService.createGameStartedEvent(targetGameId!, state);
+                const startEvent = await this.eventService.createGameStartedEvent(targetGameId, state);
                 if (!validateEvent(startEvent)) {
                     throw new ServerError('Invalid game started event');
                 }
 
-                this.io.to(targetGameId!).emit('game_started', {
+                this.io.to(targetGameId).emit('game_started', {
                     gameId: targetGameId,
                     eventId: startEvent.id,
                     gameState: state,
