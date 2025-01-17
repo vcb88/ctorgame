@@ -3,12 +3,12 @@ import { GameService } from '../../services/GameService.js';
 import type { 
     GameState,
     GameId 
-} from '@ctor-game/shared/src/types/core.js';
+} from '@ctor-game/shared/dist/types/core.js';
 import type { 
     ReplayState, 
     ReplayClientEvents, 
     ReplayServerEvents 
-} from '@ctor-game/shared/src/types/network/replay.js';
+} from '@ctor-game/shared/dist/types/network/replay.js';
 import { 
     validateReplayState,
     validateMoveIndex,
