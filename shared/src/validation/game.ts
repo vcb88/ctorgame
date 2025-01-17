@@ -1,4 +1,4 @@
-import type { ValidationResult, GameMove, GameState } from '../types/core.js';
+import type { ValidationResult, GameMove, GameState } from '../types/base/types.js';
 
 export type GameValidationResult = ValidationResult & {
     state?: GameState;
@@ -17,7 +17,8 @@ export const validateMove = (move: GameMove, state: GameState): GameValidationRe
     // Basic validation
     if (!move || !state) {
         return {
-            valid: false,
+            isValid: false,
+            errors: [],
             message: 'Invalid move or state',
             details: {
                 reason: 'INVALID_INPUT'
@@ -28,7 +29,8 @@ export const validateMove = (move: GameMove, state: GameState): GameValidationRe
     // Game must be active
     if (state.status !== 'active') {
         return {
-            valid: false,
+            isValid: false,
+            errors: [],
             message: 'Game is not active',
             state,
             move,
@@ -42,7 +44,8 @@ export const validateMove = (move: GameMove, state: GameState): GameValidationRe
     // Add more validation rules as needed...
 
     return {
-        valid: true,
+        isValid: true,
+        errors: [],
         state,
         move
     };
