@@ -120,7 +120,8 @@ export class RedisService {
             // Create game move from server move
             const move: GameMove = {
                 ...serverMove,
-                player: playerNumber
+                player: playerNumber,
+                timestamp: Date.now()
             };
 
             if (validateMove) {
@@ -263,7 +264,7 @@ export class RedisService {
         await withLock(gameId, async () => {
             const room = await this.getGameRoom(gameId);
             if (room) {
-                const updatedPlayers = room.players.filter(p => p.id !== socketId);
+                const updatedPlayers = room.players.filter((p: RedisPlayerSession) => p.id !== socketId);
                 if (updatedPlayers.length === 0) {
                     // Если комната пустая, удаляем её
                     await redisClient.del(REDIS_KEYS.GAME_ROOM(gameId));
