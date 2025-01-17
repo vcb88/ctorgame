@@ -12,6 +12,48 @@ export type CellValue = PlayerNumber | null;
 export type PlayerNumber = 1 | 2;
 export type Scores = [number, number];  // [player1Score, player2Score]
 
+// ID and reference types
+export type GameId = string;  // Unique identifier for a game
+
+// Game metadata types
+export type GameMeta = {
+    id: GameId;
+    code: string;
+    status: GameStatus;
+    startTime: Timestamp;
+    players: {
+        first?: string;
+        second?: string;
+    };
+};
+
+// Game history types
+export type GameHistorySummary = {
+    id: GameId;
+    code: string;
+    startTime: Timestamp;
+    endTime?: Timestamp;
+    players: string[];
+    winner?: PlayerNumber;
+    moves: number;
+};
+
+export type GameDetails = {
+    currentState: GameState;
+    moves: GameMove[];
+    timing: {
+        moveTimes: number[];
+        avgMoveTime: number;
+    };
+    territoryHistory: Array<{ player1: number; player2: number }>;
+};
+
+export type GameHistory = {
+    metadata: GameMetadata;
+    moves: GameMove[];
+    details: GameDetails;
+};
+
 // Game status types
 export type GameStatus = 'waiting' | 'active' | 'finished' | 'expired';
 export type GamePhase = 'setup' | 'play' | 'end';
@@ -116,12 +158,15 @@ export type TurnState = {
     replaceOperations: number;
 };
 
-export type GameMove = {
+export type GameMoveBase = {
     type: MoveType;
-    player: PlayerNumber;
     position: Position;
-    timestamp: Timestamp;
     replacements?: Position[];
+};
+
+export type GameMove = GameMoveBase & {
+    player: PlayerNumber;
+    timestamp: Timestamp;
     moveNumber?: number;
 };
 

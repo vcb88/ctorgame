@@ -10,6 +10,7 @@ const convertGameErrorToNetworkError = (error: GameError): NetworkError => ({
     severity: error.severity,
     details: error.details,
     stack: error.stack,
+    cause: undefined,  // NetworkError doesn't include cause
     timestamp: Date.now()
 });
 
@@ -154,7 +155,7 @@ export class ErrorHandlingService {
                 `[error] ${error.message}`,
                 { 
                     ...logContext,
-                    stack: error instanceof Error ? error.stack : undefined,
+                    stack: error?.stack,
                     cause: error instanceof Error ? error.cause : undefined
                 }
             );

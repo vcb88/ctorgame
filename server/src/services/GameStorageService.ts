@@ -1,6 +1,6 @@
-import type { GameMove, GameStatus, Scores, GameMetadata, GameDetails, GameHistory, PlayerNumber } from '@ctor-game/shared/types/game';
+import type { GameMove, GameStatus, Scores, GameMetadata, GameDetails, GameHistory, PlayerNumber } from '@ctor-game/shared/types/core.js';
 import { validateGameHistoryEntry } from '@ctor-game/shared/utils/validation.js';
-import { ValidationError } from '@ctor-game/shared/types/game';
+import type { ValidationError } from '@ctor-game/shared/types/core.js';
 import { mkdirSync, existsSync, readFileSync, writeFileSync } from 'fs';
 import { join } from 'path';
 import { MongoClient, Collection } from 'mongodb';

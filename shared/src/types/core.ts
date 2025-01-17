@@ -11,6 +11,9 @@ export type {
     CellValue,
     PlayerNumber,
     Scores,
+    GameId,
+    GameMeta,
+    GameHistorySummary,
 
     // Game status types
     GameStatus,
@@ -23,6 +26,7 @@ export type {
     Board,
     GameSettings,
     TurnState,
+    GameMoveBase,
     GameMove,
     GameState,
     GameAction,

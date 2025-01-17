@@ -33,13 +33,13 @@ const ErrorCodes = {
  * Base class for all game-related errors
  */
 export class GameError extends Error {
-    readonly code: string;
+    readonly code: ErrorCode;
     readonly category: ErrorCategory;
     readonly severity: ErrorSeverity;
     readonly details?: Record<string, unknown>;
 
     constructor(
-        code: string,
+        code: ErrorCode,
         message: string,
         options: {
             category?: ErrorCategory;
@@ -92,7 +92,7 @@ export class GameError extends Error {
         const message = error instanceof Error ? error.message : defaultMessage;
         const details = error instanceof Error ? { stack: error.stack } : { cause: error };
 
-        return new GameError('GAME_ERROR', message, {
+        return new GameError('GAME_ERROR' as ErrorCode, message, {
             severity: 'error',
             details
         });
@@ -230,7 +230,7 @@ export class StorageError extends GameError {
  */
 export class ServerError extends GameError {
     constructor(message: string, details?: Record<string, unknown>) {
-        super('SERVER_ERROR', message, {
+        super('SERVER_ERROR' as ErrorCode, message, {
             category: ErrorCategories.Storage,
             severity: ErrorSeverities.Error,
             details

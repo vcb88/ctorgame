@@ -5,7 +5,7 @@ import { logger } from '../utils/logger.js';
 /**
  * Default TTL values in seconds
  */
-const DEFAULT_TTL_CONFIG: TTLConfig = {
+const DEFAULT_TTL_CONFIG = {
     base: {
         gameState: 3600,    // 1 hour
         playerSession: 7200, // 2 hours
@@ -22,7 +22,7 @@ const DEFAULT_TTL_CONFIG: TTLConfig = {
         playerSession: 900,  // 15 minutes
         gameRoom: 900       // 15 minutes
     }
-};
+} as const;
 
 export class RedisTTLStrategy implements TTLStrategy {
     private config: TTLConfig;
@@ -35,9 +35,9 @@ export class RedisTTLStrategy implements TTLStrategy {
         };
     }
 
-    private getConfigForStatus(status: GameStatus): Partial<TTLConfig> {
+    private getConfigForStatus(status: GameStatus): typeof DEFAULT_TTL_CONFIG['base'] {
         switch (status) {
-            case 'playing':
+            case 'active':
                 return this.config.active;
             case 'finished':
                 return this.config.finished;
@@ -46,9 +46,9 @@ export class RedisTTLStrategy implements TTLStrategy {
         }
     }
 
-    getTTL(key: keyof TTLConfig['base'], status: GameStatus): number {
+    getTTL(key: keyof typeof DEFAULT_TTL_CONFIG['base'], status: GameStatus): number {
         const config = this.getConfigForStatus(status);
-        return (config[key] as number) || this.config.base[key];
+        return config[key] ?? this.config.base[key];
     }
 
     async updateGameTTLs(gameId: string, status: GameStatus): Promise<void> {
@@ -85,7 +85,7 @@ export class RedisTTLStrategy implements TTLStrategy {
     }
 
     async extendGameTTLs(gameId: string): Promise<void> {
-        await this.updateGameTTLs(gameId, 'playing');
+        await this.updateGameTTLs(gameId, 'active');
         
         logger.debug('Extended TTLs for active game', {
             component: 'TTLStrategy',

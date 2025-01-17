@@ -68,11 +68,13 @@ export class RedisService {
     /**
      * Сохраняет состояние игры
      */
-    async setGameState(gameId: string, state: GameState): Promise<void> {
+    async setGameState(gameId: string, state: GameState & { lastUpdate?: number }): Promise<void> {
+        const now = Date.now();
         const redisState: RedisGameState = {
             ...state,
-            lastUpdate: Date.now(),
-            version: Date.now() // Using timestamp as version for optimistic locking
+            lastUpdate: state.lastUpdate ?? now,
+            version: now, // Using timestamp as version for optimistic locking
+            timestamp: now
         };
 
         await withLock(gameId, async () => {
