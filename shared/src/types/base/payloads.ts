@@ -2,8 +2,7 @@
  * Base payload types for events and messages
  */
 
-import type { UUID, Timestamp, Version } from '../core/primitives.js';
-import type { Position, Size } from '../core/primitives.js';
+import type { UUID, Timestamp, Version, Position, Size } from './types';
 
 /** Base payload interface */
 export interface BasePayload {

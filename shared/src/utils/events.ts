@@ -1,4 +1,4 @@
-import type { GameEvent, WebSocketEvent, EventType } from '../types/core.js';
+import type { GameEvent, WebSocketEvent } from '../types/base/types';
 
 /**
  * Create a game event
@@ -13,7 +13,7 @@ export const createGameEvent = <T>(type: WebSocketEvent, data?: T): GameEvent =>
 /**
  * Check if the event is of a specific type
  */
-export const isEventType = <T extends EventType>(event: GameEvent, type: T): event is GameEvent & { type: T } => {
+export const isEventType = <T extends WebSocketEvent>(event: GameEvent, type: T): event is GameEvent & { type: T } => {
     return event.type === type;
 };
 

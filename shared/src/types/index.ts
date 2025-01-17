@@ -3,10 +3,5 @@
  * Re-exports all types in an organized way
  */
 
-// Core types
-export * from './core.js';
-
-// Feature-specific types
-export * from './validation/validation.js';
-export * from './replay/replay.js';
-export * from './errors.js';
+// Re-export all types from base/types.ts
+export * from './base/types';

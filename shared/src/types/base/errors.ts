@@ -2,7 +2,7 @@
  * Base error types and utilities
  */
 
-import { ErrorCategoryEnum, ErrorSeverityEnum } from '../common/enums.js';
+import { ErrorCategory, ErrorSeverity } from './types';
 
 /** Base error codes */
 export enum BaseErrorEnum {
@@ -42,8 +42,8 @@ export enum BaseErrorEnum {
 export interface BaseError {
     code: BaseErrorEnum;
     message: string;
-    category: ErrorCategoryEnum;
-    severity: ErrorSeverityEnum;
+    category: ErrorCategory;
+    severity: ErrorSeverity;
     timestamp: number;
     details?: Record<string, unknown>;
     stack?: string;
@@ -51,8 +51,8 @@ export interface BaseError {
 
 /** Error factory options */
 export interface ErrorOptions {
-    category?: ErrorCategoryEnum;
-    severity?: ErrorSeverityEnum;
+    category?: ErrorCategory;
+    severity?: ErrorSeverity;
     details?: Record<string, unknown>;
 }
 
@@ -65,8 +65,8 @@ export function createError(
     return {
         code,
         message,
-        category: options.category ?? ErrorCategoryEnum.SYSTEM,
-        severity: options.severity ?? ErrorSeverityEnum.ERROR,
+        category: options.category ?? 'system',
+        severity: options.severity ?? 'error',
         timestamp: Date.now(),
         details: options.details
     };
@@ -78,14 +78,14 @@ export const ERRORS = {
         createError(
             BaseErrorEnum.NOT_FOUND,
             `${resource} not found`,
-            { category: ErrorCategoryEnum.BUSINESS }
+            { category: 'business' }
         ),
     
     INVALID_INPUT: (field: string, reason: string) =>
         createError(
             BaseErrorEnum.INVALID_INPUT,
             `Invalid ${field}: ${reason}`,
-            { category: ErrorCategoryEnum.VALIDATION }
+            { category: 'validation' }
         ),
     
     OPERATION_FAILED: (operation: string, reason: string) =>
@@ -98,6 +98,6 @@ export const ERRORS = {
         createError(
             BaseErrorEnum.INTERNAL_ERROR,
             `Internal error: ${details}`,
-            { severity: ErrorSeverityEnum.CRITICAL }
+            { severity: 'critical' }
         )
 };
