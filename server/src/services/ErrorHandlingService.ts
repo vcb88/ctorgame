@@ -1,7 +1,17 @@
 import { logger } from '../utils/logger.js';
-import type { NetworkError, ErrorCode, ErrorSeverity, ErrorCategory } from '@ctor-game/shared/types/core.js';
+import type { NetworkError, ErrorCode, ErrorSeverity, ErrorCategory } from '@ctor-game/shared/types/core';
 import { isNetworkError } from '@ctor-game/shared/utils/errors.js';
 import { GameError } from '../errors/GameError.js';
+
+const convertGameErrorToNetworkError = (error: GameError): NetworkError => ({
+    code: error.code,
+    message: error.message,
+    category: 'network',
+    severity: error.severity,
+    details: error.details,
+    stack: error.stack,
+    timestamp: Date.now()
+});
 
 const createNetworkError = (
     code: ErrorCode,
@@ -144,8 +154,8 @@ export class ErrorHandlingService {
                 `[error] ${error.message}`,
                 { 
                     ...logContext,
-                    stack: error.stack,
-                    cause: error.cause
+                    stack: error instanceof Error ? error.stack : undefined,
+                    cause: error instanceof Error ? error.cause : undefined
                 }
             );
             return;

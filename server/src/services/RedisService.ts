@@ -253,13 +253,13 @@ export class RedisService {
         await withLock(gameId, async () => {
             const room = await this.getGameRoom(gameId);
             if (room) {
-                const updatedPlayers = room.players.filter(p => p.id !== socketId);
+                const updatedPlayers = room.players.filter((p: { id: string }) => p.id !== socketId);
                 if (updatedPlayers.length === 0) {
                     // Если комната пустая, удаляем её
                     await redisClient.del(REDIS_KEYS.GAME_ROOM(gameId));
                 } else {
                     // Обновляем комнату с новым списком игроков
-                    await this.setGameRoom(gameId, updatedPlayers.map(p => ({ id: p.id, playerNumber: p.number })));
+                    await this.setGameRoom(gameId, updatedPlayers.map((p: { id: string; number: number }) => ({ id: p.id, playerNumber: p.number })));
                 }
             }
         });
@@ -393,7 +393,7 @@ export class RedisService {
             .del(REDIS_KEYS.GAME_STATE(gameId))
             .del(REDIS_KEYS.GAME_ROOM(gameId))
             .del(REDIS_KEYS.GAME_EVENTS(gameId))
-            .hdel(REDIS_KEYS.GAME_STATS, gameId)
+            .hdel(REDIS_KEYS.GAME_STATS, [gameId])
             .exec();
     }
 }
