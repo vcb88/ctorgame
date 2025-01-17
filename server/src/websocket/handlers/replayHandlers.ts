@@ -76,8 +76,9 @@ export function registerReplayHandlers(
     // Начать воспроизведение
     socket.on('START_REPLAY', async ({ gameCode }: { gameCode: GameId }) => {
         try {
-            // Получаем количество ходов
-            const totalMoves = await gameService.getGameHistory(gameCode);
+            // Получаем историю игры
+            const history = await gameService.getGameHistory(gameCode);
+            const totalMoves = history.moves.length;
             
             // Создаем состояние воспроизведения
             const replayState: ReplayState = {
@@ -95,6 +96,9 @@ export function registerReplayHandlers(
             
             // Отправляем начальное состояние
             const initialState = await gameService.getGameStateAtMove(gameCode, 0);
+            if (!initialState) {
+                throw new Error('Failed to get initial game state');
+            }
             socket.emit('REPLAY_STATE_UPDATED', { 
                 state: initialState, 
                 moveIndex: 0,
@@ -145,6 +149,9 @@ export function registerReplayHandlers(
                 });
                 
                 const gameState = await gameService.getGameStateAtMove(gameCode, newState.currentMoveIndex);
+                if (!gameState) {
+                    throw new Error('Failed to get game state for next move');
+                }
                 socket.emit('REPLAY_STATE_UPDATED', { 
                     state: gameState, 
                     moveIndex: newState.currentMoveIndex,
@@ -168,6 +175,9 @@ export function registerReplayHandlers(
                 });
                 
                 const gameState = await gameService.getGameStateAtMove(gameCode, newState.currentMoveIndex);
+                if (!gameState) {
+                    throw new Error('Failed to get game state for previous move');
+                }
                 socket.emit('REPLAY_STATE_UPDATED', { 
                     state: gameState, 
                     moveIndex: newState.currentMoveIndex,
@@ -194,6 +204,9 @@ export function registerReplayHandlers(
             
             const newState = updateReplayState(gameCode, { currentMoveIndex: moveIndex });
             const gameState = await gameService.getGameStateAtMove(gameCode, newState.currentMoveIndex);
+            if (!gameState) {
+                throw new Error('Failed to get game state for the specified move');
+            }
             socket.emit('REPLAY_STATE_UPDATED', { 
                 state: gameState, 
                 moveIndex: newState.currentMoveIndex,
@@ -249,6 +262,9 @@ async function playNextMove(
         currentMoveIndex: state.currentMoveIndex + 1 
     });
     const gameState = await gameService.getGameStateAtMove(gameCode, newState.currentMoveIndex);
+    if (!gameState) {
+        throw new Error('Failed to get game state for automatic playback');
+    }
     
     // Отправляем обновление состояния
     socket.emit('REPLAY_STATE_UPDATED', {
