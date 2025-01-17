@@ -1,4 +1,4 @@
-import type { PlayerNumber, GameStatus, GameState, Size, Scores as GameScores, UUID } from '../types/base/types';
+import type { PlayerNumber, GameStatus, GameState, Size, Scores as GameScores, UUID } from '../types/base/types.js';
 
 export type GameOutcome = 'win' | 'loss' | 'draw';
 
