@@ -108,6 +108,7 @@ export type WebSocketEvent =
     | 'game_state_updated'
     | 'game_ended'
     | 'game_expired'
+    | 'game_move'
     | 'turn_ended'
     | 'player_connected'
     | 'player_disconnected';
