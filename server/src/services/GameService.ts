@@ -184,7 +184,7 @@ export class GameService {
             await this.storageService.recordMove(gameId, move);
 
             // Create move event
-            await this.eventService.createGameMoveEvent(gameId, playerNumber, move, newState);
+            await this.eventService.createGameMoveEvent(gameId, playerNumber.toString(), move, newState);
 
             // Check for game end
             if (newState.status === 'finished') {
@@ -228,7 +228,11 @@ export class GameService {
 
             // Create game ended event
             const state = await this.redisService.getGameState(gameId);
-            await this.eventService.createGameEndedEvent(gameId, winner, state);
+            if (state) {
+                await this.eventService.createGameEndedEvent(gameId, winner, state);
+            } else {
+                throw new GameServiceError('Game state not found');
+            }
 
             // Clean up Redis state (keep for a while for potential analysis)
             await this.redisService.expireGameState(gameId, 3600); // 1 hour
@@ -256,7 +260,16 @@ export class GameService {
 
     async getSavedGames(): Promise<GameHistorySummary[]> {
         await this.ensureInitialized();
-        return this.storageService.getSavedGames();
+        const games = await this.storageService.getSavedGames();
+        return games.map(game => ({
+            id: game.gameId,
+            code: game.code,
+            startTime: new Date(game.startTime).getTime(),
+            endTime: game.endTime ? new Date(game.endTime).getTime() : undefined,
+            players: game.players.map(p => p.id),
+            winner: game.winner,
+            moves: game.totalTurns
+        }));
     }
 
     async getGameHistory(gameId: GameId): Promise<GameHistory> {

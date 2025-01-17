@@ -54,8 +54,10 @@ export type {
     TTLConfigBase,
     TTLStrategy,
     
-    // Game metadata types
+    // Game metadata and history types
     GameMetadata,
+    GameHistory,
+    GameDetails,
     
     // Utility types
     WithMetadata,
