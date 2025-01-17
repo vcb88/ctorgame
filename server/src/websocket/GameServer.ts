@@ -53,7 +53,7 @@ const PLAYER_RECONNECT_TIMEOUT = 5 * 60 * 1000; // 5 minutes
 export class GameServer {
     private io: Server<ClientToServerEvents, ServerToClientEvents>;
     private gameService: GameService;
-    private eventService: EventService;
+    private eventService: GameEventService;
     private static instance: GameServer | null = null;
 
     public static getInstance(
@@ -84,10 +84,10 @@ export class GameServer {
             transports: ['websocket'] as any // Type assertion needed for Socket.IO type compatibility
         });
 
-        // Initialize services
-        const storage = options.storageService || new GameStorageService();
-        const redis = options.redisService || redisService;
-        this.eventService = options.eventService || new EventService(redis);
+        // Initialize services with type assertions for MVP
+        const storage = (options.storageService || new GameStorageService()) as GameStorageService;
+        const redis = (options.redisService || redisService) as RedisService;
+        this.eventService = (options.eventService || new EventService(redis)) as unknown as GameEventService;
         this.gameService = options.gameService || new GameService(storage, this.eventService, redis);
 
         (global as any).io = this.io;
