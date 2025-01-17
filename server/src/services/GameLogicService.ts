@@ -8,10 +8,10 @@ import type {
     Scores,
     GameState,
     GameMove,
-    CellValue
+    CellValue,
+    Board
 } from '@ctor-game/shared/types/core.js';
 
-type Board = ReadonlyArray<ReadonlyArray<CellValue>>;
 import { getAdjacentPositions } from '../utils/geometry.js';
 import { getOpponent } from '../utils/game.js';
 
@@ -37,12 +37,18 @@ export class GameLogicService {
    */
   static createInitialState(): GameState {
     // Create empty board
-    const board: CellValue[][] = Array(BOARD_SIZE)
+    const cells: CellValue[][] = Array(BOARD_SIZE)
       .fill(null)
       .map(() => Array(BOARD_SIZE).fill(null));
 
     // Set initial scores
     const scores: Scores = [0, 0];
+
+    const board: Board = {
+      width: BOARD_SIZE,
+      height: BOARD_SIZE,
+      cells
+    };
 
     // Create initial state
     return {
@@ -69,10 +75,10 @@ export class GameLogicService {
       return false;
     }
 
-    const { type, pos } = move;
-    if (!pos) return false;
+    const { type, position } = move;
+    if (!position) return false;
     
-    const [x, y] = pos;
+    const [x, y] = position;
 
     // Check basic conditions
     if (x < 0 || x >= BOARD_SIZE || y < 0 || y >= BOARD_SIZE) {
@@ -81,14 +87,14 @@ export class GameLogicService {
 
     if (type === 'place') {
       // For placement operation check if cell is empty
-      return state.board[y][x] === null;
+      return state.board.cells[y][x] === null;
     } else if (type === 'replace') {
       // For replacement operation check:
       // 1. If cell contains opponent's piece
       // 2. If there are enough player's pieces around
       return (
-        state.board[y][x] === getOpponent(playerNumber) &&
-        this.validateReplace(state.board, pos, playerNumber).isValid
+        state.board.cells[y][x] === getOpponent(playerNumber) &&
+        this.validateReplace(state.board, position, playerNumber).isValid
       );
     }
 
@@ -99,7 +105,7 @@ export class GameLogicService {
    * Проверяет возможность замены фишки
    */
   static validateReplace(
-    board: ReadonlyArray<ReadonlyArray<CellValue>>,
+    board: Board,
     position: Position,
     playerNumber: PlayerNumber
   ): ReplaceValidation {
@@ -108,7 +114,7 @@ export class GameLogicService {
     const playerPieces = adjacentPositions.filter(
       (pos: Position) => {
         const [x, y] = pos;
-        return board[y][x] === playerNumber;
+        return board.cells[y][x] === playerNumber;
       }
     );
     
@@ -147,13 +153,16 @@ export class GameLogicService {
     });
 
     let newBoard = state.board;
-    const { type, pos } = move;
-    if (!pos) return state;
-    const [x, y] = pos;
+    const { type, position } = move;
+    if (!position) return state;
+    const [x, y] = position;
 
     if (type === 'place') {
       // Размещаем фишку
-      newBoard = update2DArrayValue(state.board, x, y, playerNumber);
+      newBoard = {
+        ...state.board,
+        cells: update2DArrayValue(state.board.cells, x, y, playerNumber)
+      };
 
       // Автоматически выполняем все возможные замены
       let replacementsFound;
@@ -173,9 +182,12 @@ export class GameLogicService {
           });
           
           for (const replaceMove of availableReplaces) {
-            if (replaceMove.pos) {
-              const [replaceX, replaceY] = replaceMove.pos;
-              newBoard = update2DArrayValue(newBoard, replaceX, replaceY, playerNumber);
+            if (replaceMove.position) {
+              const [replaceX, replaceY] = replaceMove.position;
+              newBoard = {
+                ...newBoard,
+                cells: update2DArrayValue(newBoard.cells, replaceX, replaceY, playerNumber)
+              };
             }
           }
         }
@@ -222,13 +234,13 @@ export class GameLogicService {
     for (let y = 0; y < BOARD_SIZE; y++) {
       for (let x = 0; x < BOARD_SIZE; x++) {
         // Проверяем только фишки противника
-        if (state.board[y][x] === getOpponent(playerNumber)) {
+        if (state.board.cells[y][x] === getOpponent(playerNumber)) {
           const position: Position = [x, y];
           const candidate = this.validateReplace(state.board, position, playerNumber);
           if (candidate.isValid) {
             availableReplaces.push({
               type: 'replace',
-              pos: position
+              position: position
             });
           }
         }
@@ -241,19 +253,19 @@ export class GameLogicService {
   /**
    * Проверяет, закончилась ли игра
    */
-  private static checkGameOver(board: ReadonlyArray<ReadonlyArray<CellValue>>): boolean {
+  private static checkGameOver(board: Board): boolean {
     // Game ends when there are no empty cells
-    return board.every(row => row.every(cell => cell !== null));
+    return board.cells.every(row => row.every(cell => cell !== null));
   }
 
   /**
    * Вычисляет текущий счет игры
    */
-  private static calculateScores(board: ReadonlyArray<ReadonlyArray<CellValue>>): Scores {
+  private static calculateScores(board: Board): Scores {
     let player1Count = 0;
     let player2Count = 0;
 
-    for (const row of board) {
+    for (const row of board.cells) {
       for (const cell of row) {
         if (cell === 1) player1Count++;
         else if (cell === 2) player2Count++;
