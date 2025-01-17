@@ -8,9 +8,10 @@ import type {
     Scores,
     GameState,
     GameMove,
-    CellValue,
-    Board
-} from '@ctor-game/shared/src/types/core.js';
+    CellValue
+} from '@ctor-game/shared/types/core.js';
+
+type Board = ReadonlyArray<ReadonlyArray<CellValue>>;
 import { getAdjacentPositions } from '../utils/geometry.js';
 import { getOpponent } from '../utils/game.js';
 
@@ -48,7 +49,7 @@ export class GameLogicService {
       board: Object.freeze(board),
       scores,
       currentPlayer: 1 as PlayerNumber,
-      status: 'playing' as GameStatus,
+      status: 'active' as GameStatus,
       timestamp: Date.now()
     };
   }
@@ -62,7 +63,7 @@ export class GameLogicService {
    */
   static isValidMove(state: GameState, move: GameMove, playerNumber: PlayerNumber): boolean {
     // Нельзя делать ходы, если игра завершена
-    if (state.status === GameStatuses.FINISHED) {
+    if (state.status === 'finished') {
       return false;
     }
 
