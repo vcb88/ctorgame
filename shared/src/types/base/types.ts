@@ -366,6 +366,8 @@ export type GameEvent = {
         winner?: PlayerNumber | null;
         finalState?: GameState;
         currentPlayer?: PlayerNumber;
+        playerId?: string;
+        playerNum?: PlayerNumber;
     };
 };
 
