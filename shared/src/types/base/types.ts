@@ -326,7 +326,7 @@ export type GameError = BaseError & {
     retryCount?: number;
 };
 
-export type NetworkError = BaseError & {
+export type NetworkError = ErrorWithStack & {
     category: 'network';
     code: ErrorCode;
     severity: ErrorSeverity;
