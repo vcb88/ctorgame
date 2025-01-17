@@ -5,7 +5,7 @@ import type {
     PlayerNumber,
     MoveType,
     Timestamp
-} from '@ctor-game/shared/src/types/core.js';
+} from '@ctor-game/shared/types/core.js';
 
 type UseGameHistoryProps = {
     socket: Socket;
