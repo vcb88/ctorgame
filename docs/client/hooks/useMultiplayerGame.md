@@ -128,3 +128,13 @@ This hook is part of the MVP and currently:
 - ✅ Includes basic move validation
 - ✅ Manages connection and game state
 - ✅ Provides all necessary game actions
+
+## Recent Changes
+
+- ✅ Renamed from useMultiplayerGameNew to useMultiplayerGame
+- ✅ Improved type imports to include GameMove type
+- ✅ Improved error creation using createGameError utility
+- ✅ Simplified generic type in handleOperation
+- ✅ Updated logging component name
+- ✅ Added improved error handling with createGameError utility
+- ✅ Added more detailed operation logging for debugging

@@ -8,11 +8,13 @@ import type {
     ConnectionState,
     ErrorCode,
     ErrorSeverity,
-    NetworkError as GameError
+    GameError,
+    GameMove
 } from '@ctor-game/shared/src/types/core.js';
 import { GameStateManager } from '../services/GameStateManager';
 import { validateGameMove } from '@ctor-game/shared/src/utils/validation.js';
 import { logger } from '../utils/logger';
+import { createGameError } from '@ctor-game/shared/src/utils/errors.js';
 
 export interface UseMultiplayerGameReturn {
   // Game state
@@ -45,12 +47,12 @@ export interface UseMultiplayerGameReturn {
   canRecover: boolean;
 }
 
-export const useMultiplayerGameNew = (): UseMultiplayerGameReturn => {
+export const useMultiplayerGame = (): UseMultiplayerGameReturn => {
   const { state } = useGame();
   const [loading, setLoading] = useState(false);
   const [operationInProgress, setOperationInProgress] = useState<GameActionType | null>(null);
 
-  const handleOperation = async <T extends any>(
+  const handleOperation = async <T>(
     operation: () => Promise<T>,
     actionType: GameActionType
   ): Promise<T> => {
@@ -89,16 +91,16 @@ export const useMultiplayerGameNew = (): UseMultiplayerGameReturn => {
     // Базовая валидация перед отправкой
     if (!currentState.gameState || !validateGameMove(move, currentState.gameState.board.size)) {
       logger.debug('Invalid move attempted', {
-        component: 'useMultiplayerGameNew',
+        component: 'useMultiplayerGame',
         data: { move, boardSize: currentState.gameState?.board.size }
       });
 
-      throw {
+      throw createGameError({
         code: ErrorCode.INVALID_MOVE,
         message: 'Invalid move',
         severity: ErrorSeverity.MEDIUM,
         details: { move }
-      } as GameError;
+      });
     }
 
     await handleOperation(
