@@ -141,6 +141,11 @@ export class GameServer {
                 throw new ServerError('Invalid game created event');
             }
 
+            // Make sure we have valid event data
+            if (!event.data?.status) {
+                throw new ServerError('Invalid game created event: missing status');
+            }
+
             socket.emit('game_created', {
                 gameId,
                 eventId: event.id,
