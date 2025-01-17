@@ -9,15 +9,13 @@ import type {
     PlayerNumber,
     GameStatus,
     Position,
-    NetworkError
-} from '@ctor-game/shared/dist/types/core.js';
-import type {
+    NetworkError,
     WebSocketErrorCode,
     InterServerEvents,
     SocketData,
     WebSocketServerConfig,
     WebSocketServerOptions
-} from '@ctor-game/shared/dist/types/network/types.js';
+} from '@ctor-game/shared/types/core.js';
 import { validateEvent } from '@ctor-game/shared/utils/events.js';
 import { 
     GameError, 

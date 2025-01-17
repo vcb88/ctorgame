@@ -12,11 +12,9 @@ import type {
     ServerToClientEvents,
     ClientToServerEvents,
     GameEvent,
-    NetworkError
-} from '@ctor-game/shared/dist/types/core.js';
-import type {
+    NetworkError,
     WebSocketErrorCode
-} from '@ctor-game/shared/dist/types/network/types.js';
+} from '@ctor-game/shared/types/core.js';
 import { validateEvent } from '@ctor-game/shared/utils/events.js';
 
 // Constants

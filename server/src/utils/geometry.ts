@@ -1,4 +1,4 @@
-import type { Position } from '@ctor-game/shared/dist/types/core.js';
+import type { Position } from '@ctor-game/shared/types/core.js';
 import { BOARD_SIZE } from '../config/constants.js';
 
 /**
