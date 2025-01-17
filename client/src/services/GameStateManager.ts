@@ -6,11 +6,11 @@ import type {
     GameMove, 
     PlayerNumber, 
     GameError,
-    GameId,
+    UUID,
     Position,
-    CellValue
-} from '@ctor-game/shared/src/types/core.js';
-import type { NetworkError } from '@ctor-game/shared/src/types/network/errors.js';
+    CellValue,
+    NetworkError
+} from '@ctor-game/shared/src/types/base/types';
 
 /** Game manager state */
 type GameManagerState = {
@@ -20,7 +20,7 @@ type GameManagerState = {
     isConnected: boolean;
     isLoading: boolean;
     error: GameError | null;
-    gameId: GameId | null;  // Added to track current game
+    gameId: UUID | null;  // Added to track current game
     timestamp: number;      // Added for state updates tracking
 };
 
@@ -29,12 +29,12 @@ type GameManagerStateUpdate = Partial<GameManagerState>;
 
 /** Join game result */
 type JoinGameResult = {
-    gameId: GameId;  // Using GameId type instead of string
+    gameId: UUID;  // Using UUID type instead of string
     playerNumber: PlayerNumber;
 };
 
 /** Join game error */
 type JoinGameError = NetworkError & {
     operation: 'join';
-    gameId: GameId;  // Using GameId type instead of string
+    gameId: UUID;  // Using UUID type instead of string
 };

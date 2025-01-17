@@ -1,12 +1,10 @@
 import { io, Socket } from 'socket.io-client';
 import type {
-    WebSocketServerConfig,
     ServerToClientEvents,
     ClientToServerEvents,
-    InterServerEvents,
-    SocketData
-} from '@ctor-game/shared/src/types/network/websocket.js';
-import type { NetworkError } from '@ctor-game/shared/src/types/network/errors.js';
+    SocketData,
+    NetworkError
+} from '@ctor-game/shared/src/types/base/types';
 
 interface ImportMetaEnv {
   VITE_WS_URL: string;
@@ -25,7 +23,7 @@ declare global {
 type GameSocket = Socket<ServerToClientEvents, ClientToServerEvents>;
 let socket: GameSocket | null = null;
 
-export const socketConfig: Partial<WebSocketServerConfig> & {
+export const socketConfig: {
     autoConnect: boolean;
     reconnection: boolean;
     reconnectionAttempts: number;

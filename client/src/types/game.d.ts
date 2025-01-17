@@ -4,7 +4,7 @@ import type {
     PlayerNumber,
     GameMove,
     Timestamp
-} from '@ctor-game/shared/src/types/core.js';
+} from '@ctor-game/shared/src/types/base/types';
 
 // Client-specific game types
 export type TurnOperationsState = {
