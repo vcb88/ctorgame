@@ -41,7 +41,8 @@ export class ErrorHandlingService {
         code: ErrorCode,
         message: string,
         severity: ErrorSeverity = 'error',
-        details?: Record<string, unknown>
+        details?: Record<string, unknown>,
+        name: string = 'NetworkError'
     ): NetworkError {
         return {
             code,
@@ -50,7 +51,7 @@ export class ErrorHandlingService {
             severity,
             details,
             stack: new Error().stack || 'No stack trace available',
-            name: 'NetworkError',
+            name,
             timestamp: Date.now()
         };
     }
