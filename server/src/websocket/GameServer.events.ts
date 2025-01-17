@@ -81,8 +81,20 @@ export class GameServer {
             ...config,
             transports: ['websocket'] as any // Type assertion for compatibility
         });
+        if (!options.storageService) {
+            throw new Error('GameStorageService is required but not provided');
+        }
+
+        if (!options.eventService) {
+            throw new Error('EventService is required but not provided');
+        }
+
+        if (!options.redisService) {
+            throw new Error('RedisService is required but not provided');
+        }
+
         this.gameService = new GameService(options.storageService, options.eventService, options.redisService);
-        this.eventService = options.eventService || new EventService(redisService) as unknown as GameEventService;
+        this.eventService = options.eventService;
         this.errorHandlingService = ErrorHandlingService.getInstance();
 
         (global as any).io = this.io;
@@ -111,14 +123,9 @@ export class GameServer {
         });
 
         socket.on('create_game', async () => await this.handleCreateGame(socket));
-        socket.on('join_game', async (gameId: string) => await this.handleJoinGame(socket, { gameId }));
-        socket.on('make_move', async (move: GameMove) => {
-            const gameId = socket.data.gameId;
-            if (!gameId) {
-                await this.handleError(socket, new Error('No game ID found'));
-                return;
-            }
-            await this.handleMakeMove(socket, { gameId, move });
+        socket.on('join_game', async (data: { gameId?: string; code?: string }) => await this.handleJoinGame(socket, data));
+        socket.on('make_move', async (data: { gameId: string; move: GameMove }) => {
+            await this.handleMakeMove(socket, data);
         });
         socket.on('end_turn', async (data: { gameId: string }) => {
             if (!data || !data.gameId) {
