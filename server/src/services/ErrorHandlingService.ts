@@ -27,7 +27,7 @@ export class ErrorHandlingService {
             category: 'network',
             severity: error.severity,
             details: error.details,
-            stack: error.stack,
+            stack: error.stack || 'No stack trace available',
             name: 'NetworkError',
             cause: undefined,  // NetworkError doesn't include cause
             timestamp: Date.now()
