@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import type { PlayerNumber, GamePhase } from '@ctor-game/shared/src/types/core.js';
+import type { PlayerNumber, GamePhase } from '@ctor-game/shared/types/core.js';
 import { useMultiplayerGame } from '@/hooks/useMultiplayerGame';
 import { NeonBillboard } from '@/components/display/NeonBillboard';
 import { NeonGridBackground } from '@/components/backgrounds/NeonGridBackground';

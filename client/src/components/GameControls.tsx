@@ -6,7 +6,7 @@ import type {
     MoveType, 
     GameError,
     Position 
-} from '@ctor-game/shared/src/types/core.js';
+} from '@ctor-game/shared/types/core.js';
 import { GameActionType } from '@/types/actions';
 import { logger } from '@/utils/logger';
 

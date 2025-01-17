@@ -1,14 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import type { PlayerNumber } from '@ctor-game/shared/src/types/core.js';
-import type { IGameSummary } from '@ctor-game/shared/src/types/game.js';
+import type { PlayerNumber } from '@ctor-game/shared/types/core.js';
+import type { IGameSummary } from '@ctor-game/shared/types/game.js';
 import { 
     type IGameError, 
     isNetworkError,
     isDataError,
     isGameStateError,
     createGameError 
-} from '@ctor-game/shared/src/types/errors.js';
+} from '@ctor-game/shared/types/errors.js';
 import { getSocket } from '../services/socket';
 import { ReplayView } from '../components/Replay/ReplayView';
 import { CyberButton } from '@/components/ui/cyber-button';
