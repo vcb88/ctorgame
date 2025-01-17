@@ -17,9 +17,13 @@ export const CyberRulesBackground: React.FC = () => {
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
+    // After null checks, we can assert these are non-null
+    const safeCanvas = canvas as HTMLCanvasElement;
+    const safeCtx = ctx as CanvasRenderingContext2D;
+
     const setCanvasSize = () => {
-      canvas.width = window.innerWidth;
-      canvas.height = window.innerHeight;
+      safeCanvas.width = window.innerWidth;
+      safeCanvas.height = window.innerHeight;
     };
     setCanvasSize();
     window.addEventListener('resize', setCanvasSize);
@@ -49,8 +53,8 @@ export const CyberRulesBackground: React.FC = () => {
     for (let i = 0; i < 60; i++) {
       const layer = Math.floor(Math.random() * 3) + 1; // 1, 2, or 3
       particles.push({
-        x: Math.random() * canvas.width,
-        y: Math.random() * canvas.height,
+        x: Math.random() * safeCanvas.width,
+        y: Math.random() * safeCanvas.height,
         speed: (0.3 + Math.random() * 0.7) / layer, // Slower in back layers
         length: (30 + Math.random() * 80) / layer, // Shorter in back layers
         angle: Math.random() * Math.PI * 2,
@@ -63,8 +67,8 @@ export const CyberRulesBackground: React.FC = () => {
     // Animation loop
     let animationFrameId: number;
     const animate = () => {
-      ctx.fillStyle = 'rgba(0, 0, 0, 0.1)';
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      safeCtx.fillStyle = 'rgba(0, 0, 0, 0.1)';
+      safeCtx.fillRect(0, 0, safeCanvas.width, safeCanvas.height);
 
       // Draw particles by layer (back to front)
       [3, 2, 1].forEach(layer => {
@@ -76,21 +80,21 @@ export const CyberRulesBackground: React.FC = () => {
             particle.y += Math.sin(particle.angle) * particle.speed;
 
             // Wrap around screen
-            if (particle.x < 0) particle.x = canvas.width;
-            if (particle.x > canvas.width) particle.x = 0;
-            if (particle.y < 0) particle.y = canvas.height;
-            if (particle.y > canvas.height) particle.y = 0;
+            if (particle.x < 0) particle.x = safeCanvas.width;
+            if (particle.x > safeCanvas.width) particle.x = 0;
+            if (particle.y < 0) particle.y = safeCanvas.height;
+            if (particle.y > safeCanvas.height) particle.y = 0;
 
             // Draw energy line
-            ctx.beginPath();
-            ctx.moveTo(particle.x, particle.y);
-            ctx.lineTo(
+            safeCtx.beginPath();
+            safeCtx.moveTo(particle.x, particle.y);
+            safeCtx.lineTo(
               particle.x - Math.cos(particle.angle) * particle.length,
               particle.y - Math.sin(particle.angle) * particle.length
             );
-            ctx.strokeStyle = `${particle.color}${Math.floor(particle.alpha * 255).toString(16).padStart(2, '0')}`;
-            ctx.lineWidth = 2;
-            ctx.stroke();
+            safeCtx.strokeStyle = `${particle.color}${Math.floor(particle.alpha * 255).toString(16).padStart(2, '0')}`;
+            safeCtx.lineWidth = 2;
+            safeCtx.stroke();
           });
       });
 
@@ -113,9 +117,13 @@ export const CyberRulesBackground: React.FC = () => {
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
+    // After null checks, we can assert these are non-null
+    const safeCanvas = canvas as HTMLCanvasElement;
+    const safeCtx = ctx as CanvasRenderingContext2D;
+
     const setCanvasSize = () => {
-      canvas.width = window.innerWidth;
-      canvas.height = window.innerHeight;
+      safeCanvas.width = window.innerWidth;
+      safeCanvas.height = window.innerHeight;
     };
     setCanvasSize();
     window.addEventListener('resize', setCanvasSize);
@@ -130,8 +138,8 @@ export const CyberRulesBackground: React.FC = () => {
     // Animation loop for subtle grid movement
     let animationFrameId: number;
     const animate = () => {
-      ctx.fillStyle = 'rgba(0, 0, 0, 0.1)';
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      safeCtx.fillStyle = 'rgba(0, 0, 0, 0.1)';
+      safeCtx.fillRect(0, 0, safeCanvas.width, safeCanvas.height);
       
       // Moving grid effect
       offset = (offset + 0.1) % hexHeight;
@@ -147,30 +155,30 @@ export const CyberRulesBackground: React.FC = () => {
         const currentHexHeight = currentHexSize * 2;
         const currentSpacing = currentHexHeight * 0.75;
 
-        ctx.strokeStyle = layer.color;
-        ctx.lineWidth = 1;
-        ctx.globalAlpha = layer.alpha;
+        safeCtx.strokeStyle = layer.color;
+        safeCtx.lineWidth = 1;
+        safeCtx.globalAlpha = layer.alpha;
 
-        for (let row = -1; row < canvas.height / currentSpacing + 1; row++) {
-          for (let col = -1; col < canvas.width / currentHexWidth + 1; col++) {
+        for (let row = -1; row < safeCanvas.height / currentSpacing + 1; row++) {
+          for (let col = -1; col < safeCanvas.width / currentHexWidth + 1; col++) {
             const x = col * currentHexWidth + (row % 2) * (currentHexWidth / 2);
             const y = row * currentSpacing + offset;
 
-            ctx.beginPath();
+            safeCtx.beginPath();
             for (let i = 0; i < 6; i++) {
               const angle = (Math.PI / 3) * i;
               const hx = x + currentHexSize * Math.cos(angle);
               const hy = y + currentHexSize * Math.sin(angle);
-              if (i === 0) ctx.moveTo(hx, hy);
-              else ctx.lineTo(hx, hy);
+              if (i === 0) safeCtx.moveTo(hx, hy);
+              else safeCtx.lineTo(hx, hy);
             }
-            ctx.closePath();
-            ctx.stroke();
+            safeCtx.closePath();
+            safeCtx.stroke();
           }
         }
       });
 
-      ctx.globalAlpha = 1;
+      safeCtx.globalAlpha = 1;
       animationFrameId = requestAnimationFrame(animate);
     };
 
