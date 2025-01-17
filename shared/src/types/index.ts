@@ -3,11 +3,10 @@
  * Re-exports all types in an organized way
  */
 
-// Core and primitive types
-export * from './types.js';
+// Core types
+export * from './core.js';
 
-// Game specific types
-export * from './game.js';
-
-// Error handling types
+// Feature-specific types
+export * from './validation/validation.js';
+export * from './replay/replay.js';
 export * from './errors.js';
