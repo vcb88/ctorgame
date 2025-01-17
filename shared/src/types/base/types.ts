@@ -15,18 +15,6 @@ export type Scores = [number, number];  // [player1Score, player2Score]
 // ID and reference types
 export type GameId = string;  // Unique identifier for a game
 
-// Game metadata types
-export type GameMeta = {
-    id: GameId;
-    code: string;
-    status: GameStatus;
-    startTime: Timestamp;
-    players: {
-        first?: string;
-        second?: string;
-    };
-};
-
 // Game history types
 export type GameHistorySummary = {
     id: GameId;

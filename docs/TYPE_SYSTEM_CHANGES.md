@@ -88,31 +88,27 @@ type GameMoveEvent = EventMeta & {
 ### Метаданные игры
 
 ```typescript
-// Было
-interface GameMetadata {
-    gameId: string;
+// Единая структура метаданных игры
+type GameMetadata = {
+    gameId: UUID;
     code: string;
     status: GameStatus;
     startTime: string;
-    endTime?: string;
     lastActivityAt: string;
     expiresAt: string;
-    players: {
-        first?: string;
-        second?: string;
+    players: Player[];
+    boardSize: Size;
+    totalTurns: number;
+    endTime?: string;
+    winner?: PlayerNumber;
+    finalScore?: Scores;
+    duration?: number;
+    moves?: GameMove[];
+    timing?: {
+        moveTimes: number[];
+        avgMoveTime: number;
     };
-}
-
-// Стало
-type GameMeta = {
-    id: string;
-    code: string;
-    status: GameStatus;
-    players: [string?, string?];
-    created: number;
-    updated: number;
-    expires: number;
-    finished?: number;
+    territoryHistory?: Array<{ player1: number; player2: number }>;
 };
 ```
 

@@ -181,10 +181,12 @@ export class GameStorageService {
             startTime: now.toISOString(),
             lastActivityAt: now.toISOString(),
             expiresAt: new Date(now.getTime() + 30 * 60 * 1000).toISOString(),
-            players: {
-                first: playerId
-            },
-            boardSize: { width: 10, height: 10 },
+            players: [{
+                id: playerId,
+                number: 1,
+                connected: true
+            }],
+            boardSize: [10, 10],
             totalTurns: 0
         };
 
@@ -200,11 +202,17 @@ export class GameStorageService {
                 $or: [{ gameId: gameIdOrCode }, { code: gameIdOrCode }],
                 status: 'waiting',
                 expiresAt: { $gt: now.toISOString() },
-                'players.second': null
+                players: { $size: 1 }
             },
             {
+                $push: {
+                    players: {
+                        id: playerId,
+                        number: 2,
+                        connected: true
+                    }
+                },
                 $set: {
-                    'players.second': playerId,
                     status: 'active',
                     lastActivityAt: now.toISOString(),
                     expiresAt: new Date(now.getTime() + 30 * 60 * 1000).toISOString()

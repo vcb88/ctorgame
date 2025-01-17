@@ -7,9 +7,9 @@ import type {
     GameStatus,
     GameId,
     Position,
-    GameMeta,
     GameHistory,
-    GameHistorySummary
+    GameHistorySummary,
+    GameMetadata
 } from '@ctor-game/shared/types/core.js';
 
 import { GameLogicService } from './GameLogicService.js';
@@ -64,7 +64,7 @@ export class GameService {
         }
     }
 
-    async createGame(playerId: string, gameId: GameId): Promise<GameMeta> {
+    async createGame(playerId: string, gameId: GameId): Promise<GameMetadata> {
         const startTime = Date.now();
         await this.ensureInitialized();
 
@@ -111,12 +111,12 @@ export class GameService {
         }
     }
 
-    async findGame(gameIdOrCode: GameId): Promise<GameMeta | null> {
+    async findGame(gameIdOrCode: GameId): Promise<GameMetadata | null> {
         await this.ensureInitialized();
         return this.storageService.findGameByCode(gameIdOrCode);
     }
 
-    async joinGame(gameId: GameId, playerId: string): Promise<GameMeta> {
+    async joinGame(gameId: GameId, playerId: string): Promise<GameMetadata> {
         const startTime = Date.now();
         await this.ensureInitialized();
 
@@ -134,7 +134,7 @@ export class GameService {
             await this.eventService.createPlayerConnectedEvent(gameId, playerId, 2 as PlayerNumber);
 
             // If game is now full, create game started event
-            if (game.players.first && game.players.second) {
+            if (game.players.length === 2) {
                 await this.eventService.createGameStartedEvent(gameId, state);
             }
 

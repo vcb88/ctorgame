@@ -12,7 +12,6 @@ export type {
     PlayerNumber,
     Scores,
     GameId,
-    GameMeta,
     GameHistorySummary,
 
     // Game status types
