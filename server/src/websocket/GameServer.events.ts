@@ -396,10 +396,26 @@ export class GameServer {
             }, this.reconnectTimeout);
 
         } catch (error) {
+            const errorWithStack: ErrorWithStack = error instanceof Error ? {
+                name: error.name || 'Error',
+                message: error.message,
+                code: 'INTERNAL_ERROR',
+                category: 'network',
+                severity: 'error',
+                stack: error.stack || 'No stack trace available'
+            } : {
+                name: 'UnknownError',
+                message: String(error),
+                code: 'INTERNAL_ERROR',
+                category: 'network',
+                severity: 'error',
+                stack: 'No stack trace available'
+            };
+            
             logger.error('Error handling disconnect', {
                 component: 'GameServer',
                 context: { socketId: socket.id },
-                error
+                error: errorWithStack
             });
         }
     }
