@@ -6,13 +6,13 @@ import type {
     MoveType, 
     CellValue,
     GamePhase
-} from '@ctor-game/shared/src/types/core.js';
-import { useMultiplayerGame } from '@/hooks/useMultiplayerGame';
-import { GameCell } from '@/components/GameCell';
-import { TurnTimer } from '@/components/TurnTimer';
-import { DisconnectionOverlay } from '@/components/modals/DisconnectionOverlay';
-import { logger } from '@/utils/logger';
-import { GameOverScreen } from '@/components/GameOverScreen';
+} from '@ctor-game/shared/types/core.js';
+import { useMultiplayerGame } from '@/hooks/useMultiplayerGame.js';
+import { GameCell } from '@/components/GameCell.js';
+import { TurnTimer } from '@/components/TurnTimer.js';
+import { DisconnectionOverlay } from '@/components/modals/DisconnectionOverlay.js';
+import { logger } from '@/utils/logger.js';
+import { GameOverScreen } from '@/components/GameOverScreen.js';
 
 type ValidMovesMap = { [key: string]: boolean };
 type CapturedCellsMap = { [key: string]: boolean };
