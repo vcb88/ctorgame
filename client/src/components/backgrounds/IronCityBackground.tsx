@@ -27,14 +27,37 @@ export const IronCityBackground: React.FC = () => {
       highlight: '#ff4081'
     };
 
+    // Define types
+    interface Window {
+      x: number;
+      y: number;
+      lit: boolean;
+    }
+
+    interface NeonLine {
+      x1: number;
+      y1: number;
+      x2: number;
+      y2: number;
+      color: string;
+    }
+
+    interface Particle {
+      x: number;
+      y: number;
+      size: number;
+      speedY: number;
+      opacity: number;
+    }
+
     // Building properties
     interface Building {
       x: number;
       y: number;
       width: number;
       height: number;
-      windows: Array<{x: number, y: number, lit: boolean}>;
-      neonLines: Array<{x1: number, y1: number, x2: number, y2: number, color: string}>;
+      windows: Window[];
+      neonLines: NeonLine[];
     }
 
     // Generate random buildings
@@ -98,8 +121,8 @@ export const IronCityBackground: React.FC = () => {
     const fps = 30;
     let lastNeonFlicker = 0;
 
-    function addFloatingParticles() {
-      const particles = [];
+    function addFloatingParticles(): Particle[] {
+      const particles: Particle[] = [];
       const particleCount = 50;
       
       for (let i = 0; i < particleCount; i++) {
@@ -115,9 +138,10 @@ export const IronCityBackground: React.FC = () => {
       return particles;
     }
 
-    let particles = addFloatingParticles();
+    let particles: Particle[] = addFloatingParticles();
 
     function drawScene(time: number) {
+      if (!canvas || !ctx) return;
       ctx.fillStyle = colors.sky;
       ctx.fillRect(0, 0, canvas.width, canvas.height);
 
@@ -167,7 +191,7 @@ export const IronCityBackground: React.FC = () => {
           // Neon glow
           ctx.shadowColor = line.color;
           ctx.shadowBlur = 15;
-          ctx.strokeStyle = 'rgba(' + line.color + ', ' + flickerIntensity + ')';
+          ctx.strokeStyle = `rgba(255, 105, 180, ${flickerIntensity})`; // Convert hex to rgba for neon
           ctx.lineWidth = 1;
           ctx.stroke();
           ctx.shadowBlur = 0;

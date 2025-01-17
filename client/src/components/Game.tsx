@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, ReactNode } from 'react';
 import { useMultiplayerGame } from '@/hooks/useMultiplayerGame.js';
 // Game types
 import type { 
@@ -83,10 +83,10 @@ export const Game: React.FC = () => {
       return;
     }
 
-    if (gameState?.currentTurn.placeOperationsLeft <= 0) {
+    if (gameState?.currentTurn.placeOperations <= 0) {
       logger.debug('Cell click ignored - no operations left', {
         component: 'Game',
-        data: { position, operationsLeft: gameState?.currentTurn.placeOperationsLeft }
+        data: { position, operationsLeft: gameState?.currentTurn.placeOperations }
       });
       return;
     }
@@ -159,7 +159,7 @@ export const Game: React.FC = () => {
         Game ID: <span className="font-mono">{gameId}</span>
       </div>
       <div className="text-xl mb-4">
-        You are {playerNumber === 1 ? 'First' : 'Second'} Player
+        You are {Number(playerNumber) === 1 ? 'First' : 'Second'} Player
       </div>
       <div className="text-xl mb-8">
         {gameState.gameOver
@@ -175,15 +175,15 @@ export const Game: React.FC = () => {
           <div className="flex items-center gap-4">
             <div className="flex items-center gap-2">
               <div className="w-4 h-4 bg-blue-500"></div>
-              <span>First Player: {gameState.scores.player1}</span>
+              <span>First Player: {gameState.scores['player1']}</span>
             </div>
             <div className="flex items-center gap-2">
               <div className="w-4 h-4 bg-red-500"></div>
-              <span>Second Player: {gameState.scores.player2}</span>
+              <span>Second Player: {gameState.scores['player2']}</span>
             </div>
           </div>
           <div>
-            Operations left: {gameState.currentTurn.placeOperationsLeft}
+            Operations left: {gameState.currentTurn.placeOperations}
           </div>
         </div>
 
@@ -191,7 +191,7 @@ export const Game: React.FC = () => {
           {gameState.board.map((row: CellValue[], rowIndex: number) =>
             row.map((cell: CellValue, colIndex: number) => {
               const position: Position = [colIndex, rowIndex];  // [x, y] format
-              const isDisabled = !isMyTurn || cell !== 0 || gameState.gameOver || gameState.currentTurn.placeOperationsLeft <= 0;
+              const isDisabled = !isMyTurn || cell !== 0 || gameState.gameOver || gameState.currentTurn.placeOperations <= 0;
               return (
                 <GameCell
                   key={`${rowIndex}-${colIndex}`}
@@ -199,7 +199,7 @@ export const Game: React.FC = () => {
                   value={cell}
                   disabled={isDisabled}
                   onClick={() => handleCellClick(rowIndex, colIndex)}
-                  isValidMove={!isDisabled && cell === 0 && gameState.currentTurn.placeOperationsLeft > 0}
+                  isValidMove={!isDisabled && cell === 0 && gameState.currentTurn.placeOperations > 0}
                 />
               );
             })
@@ -227,7 +227,7 @@ export const Game: React.FC = () => {
                 )}></div>
                 {gameState.winner === 1 ? 'First' : 'Second'} Player
                 <div className="text-gray-600 ml-2">
-                  ({gameState.scores[`player${gameState.winner}`]} pieces)
+                  ({gameState.winner ? gameState.scores[`player${gameState.winner}`] : 0} pieces)
                 </div>
               </div>
             )}
