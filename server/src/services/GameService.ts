@@ -6,21 +6,18 @@ import type {
     Scores,
     GameStatus,
     GameId,
-    Position
-} from '@ctor-game/shared/src/types/core.js';
-
-import type {
+    Position,
     GameMeta,
     GameHistory,
     GameHistorySummary
-} from '@ctor-game/shared/src/types/storage.js';
+} from '@ctor-game/shared/src/types/core.js';
 
 import { GameLogicService } from './GameLogicService.js';
 import { GameStorageService } from './GameStorageService.js';
 import { EventService } from './EventService.js';
 import { RedisService } from './RedisService.js';
 import { logger } from '../utils/logger.js';
-import { toErrorWithStack } from '@ctor-game/shared/utils/errors';
+import { toErrorWithStack } from '@ctor-game/shared/src/utils/errors.js';
 
 export class GameServiceError extends Error {
     constructor(message: string) {

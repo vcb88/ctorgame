@@ -1,10 +1,7 @@
 import { logger } from '../utils/logger.js';
 import { GameError } from '../errors/GameError.js';
-import { 
-    NetworkError,
-    createError,
-    isNetworkError
-} from '@ctor-game/shared/types/network/errors.js';
+import type { NetworkError } from '@ctor-game/shared/src/types/core.js';
+import { createError, isNetworkError } from '@ctor-game/shared/src/utils/errors.js';
 import {
     ErrorCodeEnum,
     ErrorSeverityEnum,

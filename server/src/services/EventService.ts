@@ -3,10 +3,8 @@
  */
 
 import { RedisService } from './RedisService.js';
-import type { GameEvent, EventType } from '@ctor-game/shared/types/network/events';
-import { validateEvent } from '@ctor-game/shared/types/network/events';
-import type { GameState, GameMove, PlayerNumber } from '@ctor-game/shared/types/game/types';
-import type { NetworkError } from '@ctor-game/shared/types/network/errors';
+import type { GameEvent, EventType, GameState, GameMove, PlayerNumber, NetworkError } from '@ctor-game/shared/src/types/core.js';
+import { validateEvent } from '@ctor-game/shared/src/utils/events.js';
 import { generateId } from '../utils/id.js';
 import { logger } from '../utils/logger.js';
 

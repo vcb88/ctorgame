@@ -1,7 +1,6 @@
 import { describe, it, expect, beforeEach } from '@jest/globals';
 import { GameLogicService } from '../GameLogicService.new.js';
-import type { GameState, GameMove, PlayerNumber } from '@ctor-game/shared/types/game/types';
-import type { Position } from '@ctor-game/shared/types/base/primitives';
+import type { GameState, GameMove, PlayerNumber, Position } from '@ctor-game/shared/src/types/core.js';
 
 describe('GameLogicService', () => {
   let initialState: GameState;

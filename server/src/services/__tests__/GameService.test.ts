@@ -7,7 +7,7 @@ import type {
     Player,
     GameMove,
     GameStatus 
-} from '@ctor-game/shared/types/game/types';
+} from '@ctor-game/shared/src/types/core.js';
 
 // Mock MongoDB
 jest.mock('mongodb', () => {

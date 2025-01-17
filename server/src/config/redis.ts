@@ -1,8 +1,8 @@
 import Redis from 'ioredis';
 import * as dotenv from 'dotenv';
-import type { TTLConfig } from '@ctor-game/shared/types/redis';
+import type { TTLConfig } from '@ctor-game/shared/src/types/core.js';
 import { logger } from '../utils/logger.js';
-import { IErrorWithStack, toErrorWithStack } from '@ctor-game/shared/utils/errors';
+import { ErrorWithStack, toErrorWithStack } from '@ctor-game/shared/src/utils/errors.js';
 
 dotenv.config();
 
@@ -150,7 +150,7 @@ export const REDIS_EVENTS = {
 redisClient.on('error', (error) => {
     logger.error('Redis client error', {
         component: 'Redis',
-        error: error as IErrorWithStack
+        error: error as ErrorWithStack
     });
 });
 

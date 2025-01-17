@@ -1,19 +1,19 @@
 import type {
-    IGameState as GameState,
+    GameState,
     PlayerNumber,
-    IGameMove as GameMove,
-    IPlayer as Player,
+    GameMove,
+    Player,
     GameStatus,
-    IPosition as Position
-} from '@ctor-game/shared/types/game/types';
+    Position
+} from '@ctor-game/shared/src/types/core.js';
 
 // Redis specific types
 import type {
-    IRedisGameState as RedisGameState,
-    IRedisPlayerSession as RedisPlayerSession,
-    IRedisGameRoom as RedisGameRoom,
-    IRedisGameEvent as RedisGameEvent
-} from '@ctor-game/shared/types/redis';
+    RedisGameState,
+    RedisPlayerSession,
+    RedisGameRoom,
+    RedisGameEvent
+} from '@ctor-game/shared/src/types/storage/redis.js';
 
 import { redisClient, REDIS_KEYS, REDIS_EVENTS, withLock, ttlConfig } from '../config/redis.js';
 import { GameLogicService } from './GameLogicService.js';
