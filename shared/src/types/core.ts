@@ -76,5 +76,10 @@ export type {
     RedisPlayerSession,
     RedisGameRoom,
     RedisGameState,
-    RedisGameEvent
+    RedisGameEvent,
+
+    // Service interfaces
+    GameStorageBase,
+    GameEventService,
+    RedisServiceType
 } from './base/types.js';
