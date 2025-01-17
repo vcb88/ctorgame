@@ -1,16 +1,16 @@
 import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
-import { Layout } from './components/layout/Layout';
-import { PageTransition } from './components/PageTransition';
-import { Navbar } from './components/Navbar';
-import { LandingPage } from './pages/LandingPage';
-import { CreateGame } from './pages/CreateGame';
-import { JoinGame } from './pages/JoinGame';
-import { WaitingRoomNew as WaitingRoom } from './pages/WaitingRoomNew';
-import { GameBoard } from './pages/GameBoard';
-import { GameHistory } from './pages/GameHistory';
-import { GameRules } from './pages/GameRules';
-import { Settings } from './pages/Settings';
+import { Layout } from './components/layout/Layout.js';
+import { PageTransition } from './components/PageTransition.js';
+import { Navbar } from './components/Navbar.js';
+import { LandingPage } from './pages/LandingPage.js';
+import { CreateGame } from './pages/CreateGame.js';
+import { JoinGame } from './pages/JoinGame.js';
+import { WaitingRoomNew as WaitingRoom } from './pages/WaitingRoomNew.js';
+import { GameBoard } from './pages/GameBoard.js';
+import { GameHistory } from './pages/GameHistory.js';
+import { GameRules } from './pages/GameRules.js';
+import { Settings } from './pages/Settings.js';
 import './index.css';
 
 const App: React.FC = () => {

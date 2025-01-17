@@ -10,11 +10,11 @@ import type {
     ErrorSeverity,
     GameError,
     GameMove
-} from '@ctor-game/shared/src/types/core.js';
-import { GameStateManager } from '../services/GameStateManager';
-import { validateGameMove } from '@ctor-game/shared/src/utils/validation.js';
-import { logger } from '../utils/logger';
-import { createGameError } from '@ctor-game/shared/src/utils/errors.js';
+} from '@ctor-game/shared/types/core.js';
+import { GameStateManager } from '../services/GameStateManager.js';
+import { validateGameMove } from '@ctor-game/shared/utils/validation.js';
+import { logger } from '../utils/logger.js';
+import { createGameError } from '@ctor-game/shared/utils/errors.js';
 
 export interface UseMultiplayerGameReturn {
   // Game state

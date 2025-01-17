@@ -22,8 +22,14 @@ export default defineConfig({
   plugins: [react(), loggerPlugin()],
   resolve: {
     alias: {
-      '@': path.resolve(__dirname, './src')
-    }
+      '@': path.resolve(__dirname, './src'),
+      '@ctor-game/shared': path.resolve(__dirname, '../shared/src'),
+      '@ctor-game/shared/src': path.resolve(__dirname, '../shared/src'),
+      '@ctor-game/shared/utils': path.resolve(__dirname, '../shared/src/utils'),
+      '@ctor-game/shared/types': path.resolve(__dirname, '../shared/src/types'),
+      '@ctor-game/shared/config': path.resolve(__dirname, '../shared/src/config')
+    },
+    extensions: ['.mjs', '.js', '.ts', '.jsx', '.tsx', '.json']
   },
   server: {
     host: true, // Доступ извне контейнера
