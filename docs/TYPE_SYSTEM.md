@@ -1,4 +1,15 @@
-# Type System Documentation
+# Type System
+
+## Core Types
+
+### GameState
+The main game state type is defined in `shared/src/types/state/game.ts`. It contains all possible fields that might be needed to represent game state. Different parts of the application may use only the fields they need, without creating specialized subtypes.
+
+The single source of truth for GameState helps to:
+- Maintain consistency across the application
+- Avoid type duplications
+- Make changes to the state structure more manageable
+- Keep the type system simpler Documentation
 
 ## Overview
 

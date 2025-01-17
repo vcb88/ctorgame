@@ -11,17 +11,8 @@ export type Player = {
     connected: boolean;
 };
 
-export type GameState = {
-    id: UUID;
-    status: GameStatus;
-    board: Board;
-    currentPlayer: PlayerNumber;
-    players: Player[];
-    scores: Scores;
-    lastMoveTimestamp: Timestamp;
-    lastAction?: GameAction;
-    replacements?: Position[];
-};
+// GameState type moved to ../state/game.ts
+export type { GameState } from '../state/game.js';
 
 export type GameMove = {
     player: PlayerNumber;

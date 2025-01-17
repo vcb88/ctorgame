@@ -1,4 +1,5 @@
-import type { GameError as GameErrorType, ErrorCode, ErrorCategory, ErrorSeverity } from '@ctor-game/shared/types/game';
+import type { BaseError } from '@ctor-game/shared/types/base/errors';
+import { ErrorCategoryEnum, ErrorSeverityEnum } from '@ctor-game/shared/types/common/enums';
 
 // Error categories
 const ErrorCategories = {
@@ -33,17 +34,17 @@ const ErrorCodes = {
  * Base class for all game-related errors
  */
 export class GameError extends Error {
-    readonly code: ErrorCode;
-    readonly category: ErrorCategory;
-    readonly severity: ErrorSeverity;
+    readonly code: string;
+    readonly category: ErrorCategoryEnum;
+    readonly severity: ErrorSeverityEnum;
     readonly details?: Record<string, unknown>;
 
     constructor(
-        code: ErrorCode,
+        code: string,
         message: string,
         options: {
-            category?: ErrorCategory;
-            severity?: ErrorSeverity;
+            category?: ErrorCategoryEnum;
+            severity?: ErrorSeverityEnum;
             details?: Record<string, unknown>;
         } = {}
     ) {
@@ -58,7 +59,7 @@ export class GameError extends Error {
     /**
      * Converts error to a format suitable for network transmission
      */
-    toJSON(): GameErrorType {
+    toJSON(): BaseError {
         return {
             code: this.code,
             category: this.category,

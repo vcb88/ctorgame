@@ -2,8 +2,18 @@
  * Game state types
  */
 
-import type { UUID, Timestamp, Size, Version, ValidationResult, Scores } from '../base/primitives.js';
-import type { Player } from '../game/types.js';
+import type { 
+    UUID, 
+    Timestamp, 
+    Size, 
+    Version, 
+    ValidationResult, 
+    Scores,
+    GameStatus,
+    PlayerNumber,
+    Position
+} from '../base/primitives.js';
+import type { Player, GameAction } from '../game/types.js';
 import type { Board } from './board.js';
 import type { TurnState } from './moves.js';
 import { StatePhaseEnum } from './enums.js';
@@ -17,18 +27,34 @@ export type GameSettings = {
     maxMoves?: number;
 };
 
-/** Game state */
+/** Game state - comprehensive type containing all possible fields */
 export type GameState = {
+    // Core fields
     id: UUID;
     board: Board;
     players: Player[];
     scores: Scores;
-    currentTurn: TurnState;
+
+    // Game status
+    status: GameStatus;
     phase: StatePhaseEnum;
-    settings: GameSettings;
+    winner?: Player;
+
+    // Player turn management
+    currentPlayer: PlayerNumber;
+    currentTurn: TurnState;
+    
+    // Time tracking
     startTime: Timestamp;
     lastUpdate: Timestamp;
-    winner?: Player;
+    lastMoveTimestamp: Timestamp;
+    
+    // Game configuration
+    settings: GameSettings;
+    
+    // Action tracking
+    lastAction?: GameAction;
+    replacements?: Position[];
 };
 
 /** Game state snapshot */
