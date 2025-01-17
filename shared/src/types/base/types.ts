@@ -428,3 +428,42 @@ export type GameHistory = {
 };
 
 export type Collection<T> = Array<T>;
+
+// Redis specific types
+export type RedisConnectionInfo = {
+    ip: string;
+    lastActivity: number;
+    connectTime: number;
+};
+
+export type RedisSessionActivity = {
+    idleTime: number;
+    moveCount: number;
+    chatCount: number;
+};
+
+export type RedisPlayerSession = {
+    id: string;
+    gameId: string;
+    playerId: string;
+    playerNumber: PlayerNumber;
+    connection: RedisConnectionInfo;
+    activity: RedisSessionActivity;
+};
+
+export type RedisGameRoom = {
+    gameId: string;
+    players: RedisPlayerSession[];
+    status: GameStatus;
+    lastUpdate: number;
+};
+
+export type RedisGameState = GameState & {
+    lastUpdate: number;
+    version: number;
+    ttl?: number;
+};
+
+export type RedisGameEvent = GameEvent & {
+    ttl?: number;
+};

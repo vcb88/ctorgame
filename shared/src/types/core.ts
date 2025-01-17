@@ -55,5 +55,13 @@ export type {
     
     // Utility types
     WithMetadata,
-    Collection
+    Collection,
+
+    // Redis specific types
+    RedisConnectionInfo,
+    RedisSessionActivity,
+    RedisPlayerSession,
+    RedisGameRoom,
+    RedisGameState,
+    RedisGameEvent
 } from './base/types.js';

@@ -4,17 +4,14 @@ import type {
     GameMove,
     Player,
     GameStatus,
-    Position
-} from '@ctor-game/shared/types/game';
-
-import type {
+    Position,
     RedisGameState,
     RedisPlayerSession,
     RedisConnectionInfo,
     RedisSessionActivity,
     RedisGameRoom,
     RedisGameEvent
-} from '@ctor-game/shared/types/redis';
+} from '@ctor-game/shared/types/core.js';
 
 import { redisClient, REDIS_KEYS, REDIS_EVENTS, withLock, ttlConfig } from '../config/redis.js';
 import { GameLogicService } from './GameLogicService.js';
