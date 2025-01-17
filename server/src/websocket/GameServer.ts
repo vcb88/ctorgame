@@ -84,11 +84,15 @@ export class GameServer {
             transports: ['websocket'] as any // Type assertion needed for Socket.IO type compatibility
         });
 
-        // Initialize services with type assertions for MVP
-        const redis = (options.redisService || redisService) as RedisService;
-        const storage = (options.storageService || new GameStorageService(process.env.MONGODB_URL, redis)) as GameStorageService;
-        this.eventService = (options.eventService || new EventService(redis)) as unknown as GameEventService;
-        this.gameService = options.gameService || new GameService(storage, this.eventService as unknown as EventService, redis);
+        // Initialize required services with defaults if not provided
+        const redis = options.redisService || redisService;
+        const storage = options.storageService || new GameStorageService(process.env.MONGODB_URL, redis, process.env.STORAGE_PATH);
+        this.eventService = options.eventService || new EventService(redis);
+        this.gameService = options.gameService || new GameService(
+            storage,
+            this.eventService,
+            redis
+        );
 
         (global as any).io = this.io;
         this.setupEventHandlers();

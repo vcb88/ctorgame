@@ -273,6 +273,7 @@ export interface WebSocketServerOptions {
     storageService?: GameStorageBase;
     eventService?: GameEventService;
     redisService?: RedisServiceType;
+    gameService?: any; // 'any' for MVP, should be properly typed later
 }
 
 export interface GameStorageBase {
