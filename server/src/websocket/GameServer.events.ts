@@ -14,7 +14,8 @@ import type {
     InterServerEvents,
     SocketData,
     WebSocketServerConfig,
-    WebSocketServerOptions
+    WebSocketServerOptions,
+    ErrorWithStack
 } from '@ctor-game/shared/types/core.js';
 import { validateEvent } from '@ctor-game/shared/utils/events.js';
 import { 
