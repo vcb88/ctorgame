@@ -17,6 +17,21 @@ export type GameStatus = 'waiting' | 'active' | 'finished' | 'expired';
 export type GamePhase = 'setup' | 'play' | 'end';
 export type ConnectionStatus = 'connected' | 'disconnected' | 'error';
 export type MoveType = 'place' | 'replace' | 'skip';
+export type OperationType = MoveType;
+
+// Move types hierarchy
+export type Move = {
+    type: MoveType;
+    position?: Position;
+};
+
+export type ServerMove = Move & {
+    replacements?: Array<Position>;
+};
+
+export type ReplaceValidation = ValidationResult & {
+    replacements?: Array<Position>;
+};
 
 // Error handling types
 export type ErrorCode = 
@@ -74,7 +89,6 @@ export type Board = {
     width: number;
     height: number;
     cells: CellValue[][];
-    moveHistory: GameMove[];
 };
 
 export type GameSettings = {
@@ -268,6 +282,49 @@ export type GameMetadata = {
         avgMoveTime: number;
     };
     territoryHistory?: Array<{ player1: number; player2: number }>;
+};
+
+// Storage and state management types
+export type StateStorageBase = {
+    get: <T>(key: string) => Promise<T | null>;
+    set: <T>(key: string, value: T) => Promise<void>;
+    delete: (key: string) => Promise<void>;
+};
+
+export type StateStorage = StateStorageBase & {
+    clear: () => Promise<void>;
+    getKeys: () => Promise<string[]>;
+};
+
+export type GameScores = {
+    [key in PlayerNumber]: number;
+};
+
+export type GameManagerBase = {
+    currentState: GameState | null;
+    currentPlayer: PlayerNumber | null;
+    error: GameError | null;
+    connectionState: string;
+};
+
+// Redis specific types
+export type RedisGameState = {
+    gameId: UUID;
+    boardState: string;
+    currentPlayer: PlayerNumber;
+    scores: Scores;
+    status: GameStatus;
+    timestamp: number;
+    ttl?: number;
+};
+
+export type RedisGameEvent = {
+    eventId: UUID;
+    type: string;
+    gameId: UUID;
+    data: Record<string, unknown>;
+    timestamp: number;
+    ttl?: number;
 };
 
 // Utility types
