@@ -75,7 +75,7 @@ export const IronCityBackground: React.FC = () => {
         const y = canvas.height - height;
 
         // Generate windows
-        const windows = [];
+        const windows: Window[] = [];
         const windowSize = width * 0.1;
         const windowsPerRow = Math.floor(width / (windowSize * 1.5));
         const windowsPerCol = Math.floor(height / (windowSize * 1.5));
@@ -93,7 +93,7 @@ export const IronCityBackground: React.FC = () => {
         }
 
         // Generate neon lines
-        const neonLines = [];
+        const neonLines: NeonLine[] = [];
         const neonCount = Math.floor(Math.random() * 3) + 1;
         for (let n = 0; n < neonCount; n++) {
           const startX = x + Math.random() * width;

@@ -229,7 +229,7 @@ export function GameBoard({
       return;
     }
 
-    if (loading && operationInProgress === 'MAKE_MOVE') {
+    if (loading && operationInProgress === GameActionType.MAKE_MOVE) {
       logger.operation('MAKE_MOVE', 'error', {
         reason: 'Operation already in progress',
         position,

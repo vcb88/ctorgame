@@ -7,7 +7,7 @@ import type {
     GameError,
     Position 
 } from '@ctor-game/shared/types/core.js';
-import { GameActionType } from '@/types/actions';
+import type { GameActionType } from '@/types/actions.js';
 import { logger } from '@/utils/logger.js';
 
 type GameControlsProps = {
@@ -45,7 +45,7 @@ export const GameControls: React.FC<GameControlsProps> = ({
       canEndTurn,
       canUndoMove,
       moveCount: currentTurn.moves.length,
-      operationsLeft: currentTurn.placeOperationsLeft
+      operationsLeft: currentTurn.placeOperations
     });
   }, [loading, operationInProgress, error, currentPlayer, canEndTurn, canUndoMove, currentTurn]);
 
@@ -54,7 +54,7 @@ export const GameControls: React.FC<GameControlsProps> = ({
       if (!canEndTurn) {
         logger.validation('GameControls', 
           { valid: false, reason: 'Cannot end turn' },
-          { currentPlayer, moves: currentTurn.moves, operationsLeft: currentTurn.placeOperationsLeft }
+          { currentPlayer, moves: currentTurn.moves, operationsLeft: currentTurn.placeOperations }
         );
       }
       return;
@@ -63,7 +63,7 @@ export const GameControls: React.FC<GameControlsProps> = ({
     logger.operation('END_TURN', 'start', {
       currentPlayer,
       moves: currentTurn.moves,
-      operationsLeft: currentTurn.placeOperationsLeft
+      operationsLeft: currentTurn.placeOperations
     });
 
     try {
@@ -137,7 +137,7 @@ export const GameControls: React.FC<GameControlsProps> = ({
       <div className="flex justify-center items-center space-x-2">
         <div className="text-sm">Operations left:</div>
         <div className="flex space-x-1">
-          {Array.from({ length: currentTurn.placeOperationsLeft }).map((_, i) => (
+          {Array.from({ length: currentTurn.placeOperations }).map((_, i) => (
             <div
               key={i}
               className={cn(
