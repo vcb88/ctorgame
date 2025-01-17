@@ -35,6 +35,7 @@ export type {
     ErrorSeverity,
     ErrorCode,
     BaseError,
+    ErrorWithStack,
     GameError,
     NetworkError,
     ValidationError,
@@ -46,6 +47,12 @@ export type {
     ServerToClientEvents,
     ClientToServerEvents,
     SocketData,
+    WebSocketErrorCode,
+    InterServerEvents,
+    WebSocketServerConfig,
+    WebSocketServerOptions,
+    ReplayState,
+    ReplayEvent,
     
     // Storage types
     StorageConfig,

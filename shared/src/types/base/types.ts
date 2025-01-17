@@ -241,6 +241,39 @@ export type ResultStatus =
     | 'pending'
     | 'cancelled';
 
+export type WebSocketErrorCode = ErrorCode;
+
+export interface InterServerEvents {
+    ping: () => void;
+    pong: () => void;
+}
+
+export type SocketData = {
+    playerId?: UUID;
+    gameId?: UUID;
+    playerNumber?: PlayerNumber;
+};
+
+export interface WebSocketServerConfig {
+    cors: {
+        origin: string;
+        methods: string[];
+    };
+    path: string;
+    transports: string[];
+    pingTimeout: number;
+    pingInterval: number;
+    maxHttpBufferSize: number;
+}
+
+export interface WebSocketServerOptions {
+    config?: Partial<WebSocketServerConfig>;
+    reconnectTimeout?: number;
+    storageService?: any;
+    eventService?: any;
+    redisService?: any;
+}
+
 // Base error types
 export type BaseError = {
     code: string;
@@ -251,6 +284,10 @@ export type BaseError = {
     stack?: string;
     cause?: unknown;
     timestamp?: number;
+};
+
+export type ErrorWithStack = BaseError & {
+    stack: string;  // Making stack required
 };
 
 export type GameError = BaseError & {
@@ -322,10 +359,7 @@ export type ClientToServerEvents = {
     'leave_game': () => void;
 };
 
-export type SocketData = {
-    playerId?: UUID;
-    gameId?: UUID;
-};
+
 
 // Storage types
 export type StorageConfig = {
