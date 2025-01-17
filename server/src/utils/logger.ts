@@ -233,7 +233,7 @@ export const logger: Logger = {
     },
 
     error: (error: unknown, context: Record<string, unknown>) => {
-      const errorWithStack = error as IErrorWithStack;
+      const errorWithStack = error as ErrorWithStack;
       log('error', formatMessage('error', 'Storage error', {
         component: 'Storage',
         context: {
@@ -262,7 +262,7 @@ export const logger: Logger = {
     },
 
     error: (error: unknown, context: Record<string, unknown>) => {
-      const errorWithStack = error as IErrorWithStack;
+      const errorWithStack = error as ErrorWithStack;
       log('error', formatMessage('error', 'Network error', {
         component: 'Network',
         context: {
@@ -290,7 +290,7 @@ export const logger: Logger = {
     },
 
     error: (error: unknown, context: Record<string, unknown>) => {
-      const errorWithStack = error as IErrorWithStack;
+      const errorWithStack = error as ErrorWithStack;
       log('error', formatMessage('error', 'Database error', {
         component: 'Database',
         context: {
