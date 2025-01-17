@@ -14,7 +14,10 @@ const convertGameErrorToNetworkError = (error: GameError): NetworkError => ({
     timestamp: Date.now()
 });
 
-const createNetworkError = (
+/**
+     * Creates a NetworkError with the given parameters
+     */
+    public static createNetworkError = (
     code: ErrorCode,
     message: string,
     severity: ErrorSeverity = 'error',
@@ -63,7 +66,7 @@ export class ErrorHandlingService {
 
         // Convert Error objects
         if (error instanceof Error) {
-            const networkError = createNetworkError(
+            const networkError = ErrorHandlingService.createNetworkError(
                 'INTERNAL_ERROR',
                 error.message,
                 'error',
@@ -77,7 +80,7 @@ export class ErrorHandlingService {
         }
 
         // Handle unknown errors
-        const networkError = createNetworkError(
+        const networkError = ErrorHandlingService.createNetworkError(
             'INTERNAL_ERROR',
             'An unexpected error occurred',
             'critical',
