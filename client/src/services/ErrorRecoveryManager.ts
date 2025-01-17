@@ -5,8 +5,8 @@ import {
   NetworkError,
   ErrorRecoveryConfig,
   ErrorDetails
-} from '@ctor-game/shared/types/network';
-import { logger } from '@/utils/logger';
+} from '@ctor-game/shared/types/network/index.js';
+import { logger } from '@/utils/logger.js';
 
 /**
  * Default recovery configurations for different error types

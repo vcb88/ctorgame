@@ -2,7 +2,7 @@ import type {
     StorageConfig, 
     StoredState, 
     StateStorage 
-} from '@ctor-game/shared/src/types/storage/state.js';
+} from '@ctor-game/shared/types/storage/state.js';
 
 /**
  * Implementation of state storage using localStorage

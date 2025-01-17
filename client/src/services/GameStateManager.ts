@@ -1,6 +1,6 @@
-import { GameSocket } from './socket';
-import { StateStorage } from './StateStorage';
-import { ActionQueue } from './ActionQueue';
+import { GameSocket } from './socket.js';
+import { StateStorage } from './StateStorage.js';
+import { ActionQueue } from './ActionQueue.js';
 import type { 
     GameState, 
     GameMove, 
@@ -10,7 +10,7 @@ import type {
     Position,
     CellValue,
     NetworkError
-} from '@ctor-game/shared/src/types/base/types';
+} from '@ctor-game/shared/types/base/types.js';
 
 /** Game manager state */
 type GameManagerState = {
