@@ -363,7 +363,7 @@ export type GameEvent = {
         state?: GameState;
         move?: GameMove;
         error?: NetworkError;
-        winner?: string;
+        winner?: PlayerNumber | null;
         finalState?: GameState;
         currentPlayer?: PlayerNumber;
     };
@@ -384,13 +384,13 @@ export type ServerToClientEvents = {
         currentPlayer: PlayerNumber;
     }) => void;
     'game_over': (event: GameEvent & {
-        winner: string;
+        winner: PlayerNumber | null;
         finalState: GameState;
     }) => void;
     'error': (error: NetworkError) => void;
     'game_state_updated': (state: GameState) => void;
     'game_ended': (event: GameEvent & {
-        winner: string;
+        winner: PlayerNumber | null;
         finalState: GameState;
     }) => void;
     'game_expired': (gameId: string) => void;
