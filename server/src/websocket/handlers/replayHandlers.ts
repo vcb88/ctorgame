@@ -3,17 +3,52 @@ import { GameService } from '../../services/GameService.js';
 import type { 
     GameState,
     GameId 
-} from '@ctor-game/shared/types/core.js';
+} from '@ctor-game/shared/types/base/types.js';
+// Importing ReplayState from base types
 import type { 
-    ReplayState, 
-    ReplayClientEvents, 
-    ReplayServerEvents 
-} from '@ctor-game/shared/types/network/replay.js';
-import { 
-    validateReplayState,
-    validateMoveIndex,
-    validatePlaybackSpeed
-} from '@ctor-game/shared/utils/validation/replay';
+    ReplayState 
+} from '@ctor-game/shared/types/base/types.js';
+
+// Temporary type definitions until we move them to shared
+type ReplayClientEvents = {
+    'START_REPLAY': (data: { gameCode: string }) => void;
+    'PAUSE_REPLAY': (data: { gameCode: string }) => void;
+    'RESUME_REPLAY': (data: { gameCode: string }) => void;
+    'NEXT_MOVE': (data: { gameCode: string }) => void;
+    'PREV_MOVE': (data: { gameCode: string }) => void;
+    'GOTO_MOVE': (data: { gameCode: string, moveIndex: number }) => void;
+    'SET_PLAYBACK_SPEED': (data: { gameCode: string, speed: number }) => void;
+    'END_REPLAY': (data: { gameCode: string }) => void;
+};
+
+type ReplayServerEvents = {
+    'REPLAY_STATE_UPDATED': (data: { state: GameState, moveIndex: number, totalMoves: number }) => void;
+    'REPLAY_PAUSED': (data: { moveIndex: number }) => void;
+    'REPLAY_RESUMED': (data: { moveIndex: number }) => void;
+    'REPLAY_ERROR': (data: { message: string }) => void;
+    'REPLAY_COMPLETED': (data: { gameCode: string }) => void;
+    'REPLAY_ENDED': (data: { gameCode: string }) => void;
+    'PLAYBACK_SPEED_UPDATED': (data: { speed: number }) => void;
+};
+// Basic validation functions (temporarily defined here)
+function validateReplayState(state: ReplayState): void {
+    if (state.currentMoveIndex < 0 || state.currentMoveIndex > state.totalMoves) {
+        throw new Error('Invalid move index');
+    }
+    validatePlaybackSpeed(state.playbackSpeed);
+}
+
+function validateMoveIndex(index: number, totalMoves: number): void {
+    if (index < 0 || index > totalMoves) {
+        throw new Error('Invalid move index');
+    }
+}
+
+function validatePlaybackSpeed(speed: number): void {
+    if (speed <= 0 || speed > 5) {
+        throw new Error('Invalid playback speed. Must be between 0 and 5');
+    }
+}
 
 // Состояние replay для каждой игры
 const replayStates = new Map<GameId, ReplayState>();
