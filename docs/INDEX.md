@@ -118,16 +118,19 @@
 |----------|---------|--------------|
 | Architecture | Updated | 2025-01-11 |
 | Dependency Management | New | 2025-01-13 |
-| State Management Migration | New | 2025-01-11 |
+| State Management Migration | Complete | 2025-01-17 |
 | Testing Strategy | Complete | 2024-12-23 |
 | Component Testing | Complete | 2024-12-23 |
 | Testing Setup | Complete | 2024-12-23 |
 | API WebSocket | Updated | 2025-01-06 |
 | Game Mechanics | Complete | 2025-01-06 |
-| API REST | TODO | - |
-| Troubleshooting | TODO | - |
+| API REST | Postponed | - |
+| Troubleshooting | In Progress | 2025-01-17 |
 | Distributed State | Complete | 2025-01-06 |
-| Performance | TODO | - |
+| Performance | Postponed | - |
+| Type System | Complete | 2025-01-17 |
+| Error Handling | Updated | 2025-01-17 |
+| useMultiplayerGame Hook | Updated | 2025-01-17 |
 
 ## Contributing to Documentation
 
