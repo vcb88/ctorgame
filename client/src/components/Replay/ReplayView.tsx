@@ -5,9 +5,9 @@ import type {
     PlayerNumber, 
     GameState, 
     Scores,
-    GameId,
-    GameMove 
+    GameId
 } from '@ctor-game/shared/types/core.js';
+import type { HistoryEntry } from '../../hooks/useGameHistory.js';
 import { useReplay } from '../../hooks/useReplay.js';
 import { useGameHistory } from '../../hooks/useGameHistory.js';
 import { ReplayControls } from './ReplayControls.js';
@@ -87,7 +87,7 @@ export function ReplayView({ gameCode, socket, onClose }: ReplayViewProps) {
                         <GameBoard
                             board={gameState.board}
                             disabled={true} // Board is inactive in replay mode
-                            lastMove={moves[currentMove - 1]?.move.position}  // Using position property from GameMove
+                            lastMove={moves[currentMove - 1]?.move.pos}  // Using pos property from GameHistoryMove
                         />
                     )}
 
