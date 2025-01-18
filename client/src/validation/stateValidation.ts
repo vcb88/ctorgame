@@ -10,23 +10,22 @@ import type {
     Scores
 } from '@ctor-game/shared/types/core.js';
 
-const PLAYER_FIRST = 1 as PlayerNumber;
-const PLAYER_SECOND = 2 as PlayerNumber;
 import type { GameManagerState, GameManagerStateUpdate } from '../types/gameManager.js';
 import { logger } from '../utils/logger.js';
 
-// Game phases from enum
-import { GamePhase as GP } from '@ctor-game/shared/types/enums.js';
+const PLAYER_FIRST = 1 as PlayerNumber;
+const PLAYER_SECOND = 2 as PlayerNumber;
 
-const GAME_PHASES = {
-    INITIAL: GP.INITIAL,
-    CONNECTING: GP.CONNECTING,
-    WAITING: GP.WAITING,
-    PLAYING: GP.PLAYING,
-    GAME_OVER: GP.GAME_OVER,
-    ERROR: GP.ERROR,
-    FINISHED: GP.FINISHED
-} as const;
+// Game phases constants
+const PHASE_INITIAL = 'setup' as const;
+const PHASE_PLAY = 'play' as const;
+const PHASE_END = 'end' as const;
+
+const ALLOWED_TRANSITIONS: Record<GamePhase, GamePhase[]> = {
+    'setup': ['play'],
+    'play': ['end'],
+    'end': ['setup']
+};
 
 /**
  * Проверить корректность scores
@@ -43,7 +42,7 @@ function isValidScores(scores: unknown): scores is Scores {
  */
 function isValidGamePhase(phase: unknown): phase is GamePhase {
     return typeof phase === 'string' && 
-           Object.values(GP).includes(phase as GamePhase);
+           ['setup', 'play', 'end'].includes(phase as GamePhase);
 }
 
 /**
@@ -116,7 +115,8 @@ export function validateGameState(state: unknown): state is GameState {
 
   if (
     gameState.winner !== null && 
-    ![1, 2].includes(gameState.winner)
+    gameState.winner !== undefined &&
+    ![PLAYER_FIRST, PLAYER_SECOND].includes(gameState.winner)
   ) {
     throw createValidationError('Invalid winner value', 'INVALID_DATA', 'winner');
   }
@@ -148,7 +148,7 @@ export function validateExtendedGameManagerState(state: unknown): state is GameM
   }
 
   // Проверяем currentPlayer только если он определен и не null
-  if (extState.currentPlayer !== null && 
+  if (extState.currentPlayer !== null && extState.currentPlayer !== undefined &&
       ![PLAYER_FIRST, PLAYER_SECOND].includes(extState.currentPlayer)) {
     throw createValidationError('Invalid current player', 'INVALID_DATA', 'currentPlayer');
   }
@@ -169,17 +169,7 @@ export function validateStateTransition(
 ): boolean {
   // Проверяем изменение фазы
   if (update.phase) {
-    const allowedTransitions: Record<GamePhase, GamePhase[]> = {
-      [GAME_PHASES.INITIAL]: [GAME_PHASES.CONNECTING],
-      [GAME_PHASES.CONNECTING]: [GAME_PHASES.WAITING, GAME_PHASES.INITIAL, GAME_PHASES.PLAYING],  // Allow direct transition to PLAYING for second player
-      [GAME_PHASES.WAITING]: [GAME_PHASES.PLAYING, GAME_PHASES.INITIAL, GAME_PHASES.CONNECTING],
-      [GAME_PHASES.PLAYING]: [GAME_PHASES.GAME_OVER, GAME_PHASES.ERROR],
-      [GAME_PHASES.GAME_OVER]: [GAME_PHASES.INITIAL],
-      [GAME_PHASES.ERROR]: [GAME_PHASES.INITIAL],
-      [GAME_PHASES.FINISHED]: [GAME_PHASES.INITIAL] // Add missing FINISHED state
-    };
-
-    if (!allowedTransitions[currentState.phase].includes(update.phase)) {
+    if (!ALLOWED_TRANSITIONS[currentState.phase]?.includes(update.phase)) {
       throw createValidationError(
         `Invalid phase transition from ${currentState.phase} to ${update.phase}`,
         'INVALID_TRANSITION',
@@ -190,17 +180,17 @@ export function validateStateTransition(
 
   // Проверяем согласованность данных
   if (update.phase) {  // Проверяем только если phase определена
-    if (update.phase === GAME_PHASES.PLAYING && !update.gameState) {
+    if (update.phase === PHASE_PLAY && !update.gameState) {
       throw createValidationError(
-        'Game state must be provided when transitioning to PLAYING phase',
+        'Game state must be provided when transitioning to play phase',
         'INVALID_TRANSITION',
         'gameState'
       );
     }
 
-    if (update.phase === GAME_PHASES.GAME_OVER && !update.gameState?.gameOver) {
+    if (update.phase === PHASE_END && !update.gameState?.gameOver) {
       throw createValidationError(
-        'Game must be over when transitioning to GAME_OVER phase',
+        'Game must be over when transitioning to end phase',
         'INVALID_TRANSITION',
         'gameState'
       );
@@ -230,7 +220,7 @@ export function validateStateUpdate(update: unknown): update is GameManagerState
   }
 
   if ('currentPlayer' in stateUpdate && 
-      stateUpdate.currentPlayer !== null &&
+      stateUpdate.currentPlayer !== null && stateUpdate.currentPlayer !== undefined &&
       ![PLAYER_FIRST, PLAYER_SECOND].includes(stateUpdate.currentPlayer)) {
     throw createValidationError('Invalid current player in update', 'INVALID_DATA', 'currentPlayer');
   }
@@ -253,15 +243,13 @@ export function recoverFromValidationError(
 
   switch (error.code) {
     case 'INVALID_TRANSITION':
-      // Если это ошибка перехода во время подключения к игре, 
-      // пробуем восстановить состояние подключения
-      if (currentState.phase === GAME_PHASES.CONNECTING && error.field === 'phase') {
+      // Если это ошибка перехода во время игры, пробуем восстановить состояние
+      if (currentState.phase === PHASE_PLAY) {
         return {
           ...currentState,
-          phase: GAME_PHASES.CONNECTING,
           error: {
             code: 'VALIDATION_ERROR',
-            message: 'Failed to validate state during join operation',
+            message: 'Failed to validate state during play',
             category: 'game',
             severity: 'error'
           } as GameError
@@ -269,7 +257,7 @@ export function recoverFromValidationError(
       }
       // Для других случаев возвращаемся в исходное состояние
       return {
-        phase: GAME_PHASES.INITIAL,
+        phase: PHASE_INITIAL,
         gameState: null,
         currentPlayer: null,
         availableReplaces: [],
@@ -285,14 +273,13 @@ export function recoverFromValidationError(
 
     case 'INVALID_STATE':
     case 'INVALID_DATA':
-      // При ошибке данных во время подключения сохраняем состояние подключения
-      if (currentState.phase === GAME_PHASES.CONNECTING) {
+      // При ошибке данных во время игры пытаемся сохранить состояние
+      if (currentState.phase === PHASE_PLAY) {
         return {
           ...currentState,
-          phase: GAME_PHASES.CONNECTING,
           error: {
             code: 'VALIDATION_ERROR',
-            message: 'Maintaining connection state during data validation',
+            message: 'Maintaining game state during data validation',
             details: error.details,
             category: 'game',
             severity: 'error'
