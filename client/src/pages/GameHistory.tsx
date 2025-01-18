@@ -29,7 +29,7 @@ export function GameHistory() {
         const socket = getSocket();
         
         // Request saved games list
-        socket.emit('get_saved_games');
+        socket.emit('list_saved_games');
 
         const handleGames = (data: { games: GameSummary[] }) => {
             setGames(data.games);
@@ -51,11 +51,11 @@ export function GameHistory() {
             });
         };
 
-        socket.on('saved_games', handleGames);
+        socket.on('saved_games_list', handleGames);
         socket.on('error', handleError);
 
         return () => {
-            socket.off('saved_games', handleGames);
+            socket.off('saved_games_list', handleGames);
             socket.off('error', handleError);
         };
     }, []);
@@ -77,7 +77,7 @@ export function GameHistory() {
             
             // Request replay data through socket
             const socket = getSocket();
-            socket.emit('request_replay', { gameCode });
+            socket.emit('load_game_replay', { gameCode });
             
             // After successful request, show replay view
             setSelectedGame(gameCode);

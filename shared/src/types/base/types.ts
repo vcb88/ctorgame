@@ -411,8 +411,8 @@ export type ServerToClientEvents = {
     'turn_ended': (currentPlayer: PlayerNumber) => void;
     'player_connected': (playerNumber: PlayerNumber) => void;
     'player_disconnected': (playerNumber: PlayerNumber) => void;
-    'saved_games': (data: { games: GameHistorySummary[] }) => void;
-    'replay_data': (data: { gameCode: string; moves: GameMove[]; states: GameState[] }) => void;
+    'saved_games_list': (data: { games: GameHistorySummary[] }) => void;
+    'game_replay': (data: { gameCode: string; moves: GameMove[]; states: GameState[] }) => void;
 };
 
 export type ClientToServerEvents = {
@@ -421,8 +421,8 @@ export type ClientToServerEvents = {
     'make_move': (data: { gameId: string; move: GameMove }) => void;
     'end_turn': (data: { gameId: string }) => void;
     'leave_game': () => void;
-    'get_saved_games': () => void;
-    'request_replay': (data: { gameCode: string }) => void;
+    'list_saved_games': () => void;
+    'load_game_replay': (data: { gameCode: string }) => void;
 };
 
 
