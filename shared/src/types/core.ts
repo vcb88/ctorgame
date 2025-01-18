@@ -16,7 +16,7 @@ export type {
 
     // Game status types
     GameStatus,
-    GamePhase,
+    GameStage,
     ConnectionStatus,
     MoveType,
     
