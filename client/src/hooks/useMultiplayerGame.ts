@@ -1,16 +1,32 @@
 import { useCallback, useState } from 'react';
 import { useGame } from './useGame.js';
 import type { 
-    OperationType,
     Player,
     GameState,
-    GameActionType,
-    ConnectionState,
     ErrorCode,
     ErrorSeverity,
     GameError,
     GameMove
-} from '@ctor-game/shared/types/core.js';
+} from '@ctor-game/shared/types/base/types.js';
+import { 
+    OperationType,
+    ConnectionState 
+} from '@ctor-game/shared/types/enums.js';
+
+// Определяем тип для действий в игре
+export type GameActionType = 
+    | 'CREATE_GAME'
+    | 'JOIN_GAME'
+    | 'MAKE_MOVE'
+    | 'END_TURN';
+
+// Константы для действий в игре
+export const GameAction = {
+    CREATE_GAME: 'CREATE_GAME' as GameActionType,
+    JOIN_GAME: 'JOIN_GAME' as GameActionType,
+    MAKE_MOVE: 'MAKE_MOVE' as GameActionType,
+    END_TURN: 'END_TURN' as GameActionType
+} as const;
 import { GameStateManager } from '../services/GameStateManager.js';
 import { validateGameMove } from '@ctor-game/shared/utils/validation.js';
 import { logger } from '../utils/logger.js';
@@ -71,7 +87,7 @@ export const useMultiplayerGame = (): UseMultiplayerGameReturn => {
     const manager = GameStateManager.getInstance();
     await handleOperation(
       () => manager.createGame(),
-      GameActionType.CREATE_GAME
+      GameAction.CREATE_GAME
     );
   }, []);
 
@@ -79,7 +95,7 @@ export const useMultiplayerGame = (): UseMultiplayerGameReturn => {
     const manager = GameStateManager.getInstance();
     await handleOperation(
       () => manager.joinGame(gameId),
-      GameActionType.JOIN_GAME
+      GameAction.JOIN_GAME
     );
   }, []);
 
@@ -105,7 +121,7 @@ export const useMultiplayerGame = (): UseMultiplayerGameReturn => {
 
     await handleOperation(
       () => manager.makeMove(move),
-      GameActionType.MAKE_MOVE
+      GameAction.MAKE_MOVE
     );
   }, []);
 
@@ -113,7 +129,7 @@ export const useMultiplayerGame = (): UseMultiplayerGameReturn => {
     const manager = GameStateManager.getInstance();
     await handleOperation(
       () => manager.endTurn(),
-      GameActionType.END_TURN
+      GameAction.END_TURN
     );
   }, []);
 
