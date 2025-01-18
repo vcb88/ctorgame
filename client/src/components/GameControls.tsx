@@ -7,7 +7,7 @@ import type {
     GameError,
     Position 
 } from '@ctor-game/shared/types/core.js';
-import type { GameActionType } from '@/types/actions.js';
+import { GameActionType } from '@/types/actions.js';
 import { logger } from '@/utils/logger.js';
 
 type GameControlsProps = {
@@ -103,7 +103,7 @@ export const GameControls: React.FC<GameControlsProps> = ({
     return (
       <div className="flex flex-col items-center space-y-2 p-4 bg-red-50 rounded-lg">
         <div className="text-red-600">{error.message}</div>
-        {error.retryable && (
+        {error.severity !== 'critical' && (
           <button
             onClick={handleEndTurn}
             className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
