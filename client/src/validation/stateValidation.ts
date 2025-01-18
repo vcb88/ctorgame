@@ -15,6 +15,17 @@ const PLAYER_SECOND = 2 as PlayerNumber;
 import type { GameManagerState, GameManagerStateUpdate } from '../types/gameManager.js';
 import { logger } from '../utils/logger.js';
 
+// Game phases as constant values
+const GAME_PHASES = {
+    INITIAL: 'initial' as GamePhase,
+    CONNECTING: 'connecting' as GamePhase,
+    WAITING: 'waiting' as GamePhase,
+    PLAYING: 'playing' as GamePhase,
+    GAME_OVER: 'game_over' as GamePhase,
+    ERROR: 'error' as GamePhase,
+    FINISHED: 'finished' as GamePhase
+} as const;
+
 /**
  * Проверить корректность scores
  */
@@ -73,13 +84,13 @@ function createValidationError(
     code,
     field,
     details,
-    category: 'validation',
+    category: 'game',
     severity: 'error'
   } as StateValidationError;
 }
 
 /**
- * Проверить корректность объекта IGameState
+ * Проверить корректность объекта GameState
  */
 export function validateGameState(state: unknown): state is GameState {
   if (!state || typeof state !== 'object') {
@@ -153,13 +164,13 @@ export function validateStateTransition(
   // Проверяем изменение фазы
   if (update.phase) {
     const allowedTransitions: Record<GamePhase, GamePhase[]> = {
-      [GamePhase.INITIAL]: [GamePhase.CONNECTING],
-      [GamePhase.CONNECTING]: [GamePhase.WAITING, GamePhase.INITIAL, GamePhase.PLAYING],  // Allow direct transition to PLAYING for second player
-      [GamePhase.WAITING]: [GamePhase.PLAYING, GamePhase.INITIAL, GamePhase.CONNECTING],
-      [GamePhase.PLAYING]: [GamePhase.GAME_OVER, GamePhase.ERROR],
-      [GamePhase.GAME_OVER]: [GamePhase.INITIAL],
-      [GamePhase.ERROR]: [GamePhase.INITIAL],
-      [GamePhase.FINISHED]: [GamePhase.INITIAL] // Add missing FINISHED state
+      [GAME_PHASES.INITIAL]: [GAME_PHASES.CONNECTING],
+      [GAME_PHASES.CONNECTING]: [GAME_PHASES.WAITING, GAME_PHASES.INITIAL, GAME_PHASES.PLAYING],  // Allow direct transition to PLAYING for second player
+      [GAME_PHASES.WAITING]: [GAME_PHASES.PLAYING, GAME_PHASES.INITIAL, GAME_PHASES.CONNECTING],
+      [GAME_PHASES.PLAYING]: [GAME_PHASES.GAME_OVER, GAME_PHASES.ERROR],
+      [GAME_PHASES.GAME_OVER]: [GAME_PHASES.INITIAL],
+      [GAME_PHASES.ERROR]: [GAME_PHASES.INITIAL],
+      [GAME_PHASES.FINISHED]: [GAME_PHASES.INITIAL] // Add missing FINISHED state
     };
 
     if (!allowedTransitions[currentState.phase].includes(update.phase)) {
@@ -172,7 +183,7 @@ export function validateStateTransition(
   }
 
   // Проверяем согласованность данных
-  if (update.phase === GamePhase.PLAYING && !update.gameState) {
+  if (update.phase === GAME_PHASES.PLAYING && !update.gameState) {
     throw createValidationError(
       'Game state must be provided when transitioning to PLAYING phase',
       'INVALID_TRANSITION',
@@ -180,7 +191,7 @@ export function validateStateTransition(
     );
   }
 
-  if (update.phase === GamePhase.GAME_OVER && !update.gameState?.gameOver) {
+  if (update.phase === GAME_PHASES.GAME_OVER && !update.gameState?.gameOver) {
     throw createValidationError(
       'Game must be over when transitioning to GAME_OVER phase',
       'INVALID_TRANSITION',
@@ -236,27 +247,27 @@ export function recoverFromValidationError(
     case 'INVALID_TRANSITION':
       // Если это ошибка перехода во время подключения к игре, 
       // пробуем восстановить состояние подключения
-      if (currentState.phase === GamePhase.CONNECTING && error.field === 'phase') {
+      if (currentState.phase === GAME_PHASES.CONNECTING && error.field === 'phase') {
         return {
           ...currentState,
-          phase: GamePhase.CONNECTING,
+          phase: GAME_PHASES.CONNECTING,
           error: {
             code: 'VALIDATION_ERROR',
             message: 'Failed to validate state during join operation',
-            category: 'validation',
+            category: 'game',
             severity: 'error'
           } as GameError
         };
       }
       // Для других случаев возвращаемся в исходное состояние
       return {
-        phase: GamePhase.INITIAL,
+        phase: GAME_PHASES.INITIAL,
         gameId: null,
         playerNumber: null,
         error: {
           code: 'VALIDATION_ERROR',
           message: 'Game state was reset due to invalid transition',
-          category: 'validation',
+          category: 'game',
           severity: 'error'
         }
       };
@@ -264,15 +275,15 @@ export function recoverFromValidationError(
     case 'INVALID_STATE':
     case 'INVALID_DATA':
       // При ошибке данных во время подключения сохраняем состояние подключения
-      if (currentState.phase === GamePhase.CONNECTING) {
+      if (currentState.phase === GAME_PHASES.CONNECTING) {
         return {
           ...currentState,
-          phase: GamePhase.CONNECTING,
+          phase: GAME_PHASES.CONNECTING,
           error: {
             code: 'VALIDATION_ERROR',
             message: 'Maintaining connection state during data validation',
             details: error.details,
-            category: 'validation',
+            category: 'game',
             severity: 'error'
           } as GameError
         };
@@ -284,7 +295,7 @@ export function recoverFromValidationError(
           code: 'VALIDATION_ERROR',
           message: 'Game state was partially recovered',
           details: error.details,
-          category: 'validation',
+          category: 'game',
           severity: 'error'
         }
       };

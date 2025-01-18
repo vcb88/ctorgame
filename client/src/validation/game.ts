@@ -6,7 +6,7 @@ import type {
     PlayerNumber 
 } from '@ctor-game/shared/types/core.js';
 
-const PLAYER_NONE = 0;
+const CELL_EMPTY = null;
 const PLAYER_FIRST = 1 as PlayerNumber;
 const PLAYER_SECOND = 2 as PlayerNumber;
 
@@ -32,11 +32,12 @@ export function validateGameMove(move: GameMove, boardSize: Size): boolean {
 }
 
 export function validateGameState(state: GameState): boolean {
-  if (!state || !state.board || !state.board.cells || !state.board.size) {
+  if (!state || !state.board || !state.board.cells || typeof state.board.width !== 'number' || typeof state.board.height !== 'number') {
     return false;
   }
 
-  const [width, height] = state.board.size;
+  const width = state.board.width;
+  const height = state.board.height;
   const board = state.board.cells;
 
   return (
@@ -45,16 +46,17 @@ export function validateGameState(state: GameState): boolean {
     board.every(row => 
       Array.isArray(row) && 
       row.length === width &&
-      row.every(cell => cell === null || (typeof cell === 'number' && (cell === PLAYER_NONE || cell === PLAYER_FIRST || cell === PLAYER_SECOND)))
+      row.every(cell => cell === null || (typeof cell === 'number' && (cell === CELL_EMPTY || cell === PLAYER_FIRST || cell === PLAYER_SECOND)))
     ) &&
     typeof state.gameOver === 'boolean' &&
     (state.winner === null || state.winner === PLAYER_FIRST || state.winner === PLAYER_SECOND) &&
     state.currentTurn &&
-    typeof state.currentTurn.placeOperationsLeft === 'number' &&
+    typeof state.currentTurn.placeOperations === 'number' &&
     Array.isArray(state.currentTurn.moves) &&
-    typeof state.scores === 'object' &&
-    typeof state.scores[PLAYER_FIRST] === 'number' &&
-    typeof state.scores[PLAYER_SECOND] === 'number' &&
+    Array.isArray(state.scores) &&
+    state.scores.length === 2 &&
+    typeof state.scores[0] === 'number' &&
+    typeof state.scores[1] === 'number' &&
     typeof state.isFirstTurn === 'boolean'
   );
 }
