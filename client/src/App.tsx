@@ -6,7 +6,7 @@ import { Navbar } from './components/Navbar.js';
 import { LandingPage } from './pages/LandingPage.js';
 import { CreateGame } from './pages/CreateGame.js';
 import { JoinGame } from './pages/JoinGame.js';
-import { WaitingRoomNew as WaitingRoom } from './pages/WaitingRoomNew.js';
+import { WaitingRoom } from './pages/WaitingRoom.js';
 import { GameBoard } from './pages/GameBoard.js';
 import { GameHistory } from './pages/GameHistory.js';
 import { GameRules } from './pages/GameRules.js';
