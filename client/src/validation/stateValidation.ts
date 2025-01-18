@@ -1,14 +1,15 @@
 // Base types
-import type { GamePhase, Player } from '@ctor-game/shared/types/enums';
+import { Player } from '@ctor-game/shared/types/enums.js';
+import type { GamePhase } from '@ctor-game/shared/types/enums.js';
 // Game state types
-import type { IGameState } from '@ctor-game/shared/types/game/state';
-import type { GameMove } from '@ctor-game/shared/types/game/moves';
+import type { IGameState } from '@ctor-game/shared/types/game/state.js';
+import type { GameMove } from '@ctor-game/shared/types/game/moves.js';
 // Validation functions
-import { isValidGamePhase } from '@ctor-game/shared/validation/phase';
-import { isValidGameManagerState } from '@ctor-game/shared/validation/state';
-import { isValidScores } from '@ctor-game/shared/validation/scores';
-import { ExtendedGameManagerState, GameManagerStateUpdate } from '../types/gameManager';
-import { logger } from '@/utils/logger';
+import { isValidGamePhase } from '@ctor-game/shared/validation/phase.js';
+import { isValidGameManagerState } from '@ctor-game/shared/validation/state.js';
+import { isValidScores } from '@ctor-game/shared/validation/scores.js';
+import { ExtendedGameManagerState, GameManagerStateUpdate } from '../types/gameManager.js';
+import { logger } from '../utils/logger.js';
 
 /**
  * Тип ошибки валидации состояния
