@@ -12,9 +12,14 @@ export class StateStorageImpl implements StateStorage {
     private config: StorageConfig;
 
     constructor(config: StorageConfig) {
-        this.config = config;
+        // Ensure required config values
+        this.config = {
+            ...config,
+            prefix: config.prefix || 'app',
+            ttl: config.ttl || 3600000 // 1 hour default
+        };
         // Run cleanup on initialization
-        this.cleanupExpired();
+        this.cleanupExpired().catch(e => console.error('Cleanup failed:', e));
     }
 
     /**
@@ -70,11 +75,11 @@ export class StateStorageImpl implements StateStorage {
     /**
      * Remove expired states from storage
      */
-    public cleanupExpired(): void {
-        const keys = this.getKeys();
+    public async cleanupExpired(): Promise<void> {
+        const keys = await this.getKeys();
         const now = Date.now();
 
-        keys.forEach(fullKey => {
+        for (const fullKey of keys) {
             const item = localStorage.getItem(fullKey);
             if (!item) return;
 
@@ -87,7 +92,7 @@ export class StateStorageImpl implements StateStorage {
                 // Remove corrupt data
                 localStorage.removeItem(fullKey);
             }
-        });
+        }
     }
 
     /**
@@ -101,7 +106,7 @@ export class StateStorageImpl implements StateStorage {
     /**
      * Get all keys with optional prefix filter
      */
-    public getKeys(prefix?: string): string[] {
+    public async getKeys(prefix?: string): Promise<string[]> {
         const fullPrefix = prefix ? `${this.config.prefix}:${prefix}` : this.config.prefix;
         const keys: string[] = [];
 

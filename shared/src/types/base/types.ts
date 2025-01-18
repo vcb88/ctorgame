@@ -427,12 +427,14 @@ export type StorageConfig = {
     ttl?: number;
     version?: string;
     metadata?: Record<string, unknown>;
+    prefix?: string;  // Storage key prefix for namespacing
 };
 
 export type StoredState<T> = {
     data: T;
     timestamp: Timestamp;
     version: Version;
+    expiresAt?: number;  // Optional expiration timestamp
 };
 
 // Game metadata types
@@ -467,7 +469,7 @@ export type StateStorageBase = {
 
 export type StateStorage = StateStorageBase & {
     clear: () => Promise<void>;
-    getKeys: () => Promise<string[]>;
+    getKeys: (prefix?: string) => Promise<string[]>;
 };
 
 export type GameScores = {
