@@ -16,17 +16,7 @@ import { MoveTimeline } from './MoveTimeline.js';
 import { GameBoard } from '../GameBoard.js';
 import { Alert } from '../ui/alert.js';
 
-/** Converts history entry to format expected by MoveTimeline */
-const adaptHistoryMove = (entry: HistoryEntry): HistoryEntry => ({
-    ...entry,
-    move: {
-        type: entry.move.type,
-        position: entry.move.position,
-        player: entry.playerNumber,
-        timestamp: entry.timestamp,
-        moveNumber: entry.moveNumber
-    } as GameMove
-});
+
 
 type ReplayViewProps = {
     gameCode: GameId;  // Using GameId type instead of string
@@ -122,7 +112,7 @@ export function ReplayView({ gameCode, socket, onClose }: ReplayViewProps) {
 
                 {/* Move history */}
                 <MoveTimeline
-                    moves={moves.map(adaptHistoryMove)}
+                    moves={moves}
                     currentMove={currentMove}
                     onMoveSelect={goToMove}
                     formatMoveDescription={formatMoveDescription}

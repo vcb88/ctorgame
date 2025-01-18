@@ -12,10 +12,7 @@ type UseGameHistoryProps = {
     gameCode: string;
 };
 
-type GameHistoryMove = {
-    type: MoveType;
-    position: Position;
-};
+type GameHistoryMove = import('@ctor-game/shared/types/core.js').GameMoveBase;
 
 export type HistoryEntry = {
     moveNumber: number;
