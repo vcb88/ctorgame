@@ -105,7 +105,7 @@ export const GameBoard: React.FC = () => {
 
     useEffect(() => {
         if (error) {
-            logger.error('GameBoard error occurred', { data: error });
+            logger.error('GameBoard error occurred', { component: 'GameBoard', data: error });
         }
     }, [error]);
 

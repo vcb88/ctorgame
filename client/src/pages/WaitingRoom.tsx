@@ -52,7 +52,7 @@ export const WaitingRoom: React.FC = () => {
             setRetryCount(0);
         } catch (err) {
             const error = err as JoinGameErrorType;
-            logger.error('Failed to join game', { data: { error, retryAttempt } });
+            logger.error('Failed to join game', { component: 'WaitingRoom', data: { error, retryAttempt } });
             
             if (retryAttempt < MAX_JOIN_RETRIES && error.retryable !== false) {
                 setRetryCount(retryAttempt + 1);
@@ -103,7 +103,7 @@ export const WaitingRoom: React.FC = () => {
     // Handle global errors
     useEffect(() => {
         if (error) {
-            logger.error('WaitingRoom error', { data: { error } });
+            logger.error('WaitingRoom error', { component: 'WaitingRoom', data: { error } });
             
             const timer = setTimeout(() => {
                 navigate('/');

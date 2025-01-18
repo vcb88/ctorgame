@@ -57,7 +57,7 @@ export const GameNew: React.FC = () => {
       await createGame();
     } catch (err) {
       setLastError('Failed to create game. Please try again.');
-      logger.error('Create game failed', { data: err });
+      logger.error('Create game failed', { component: 'GameNew', data: err });
     }
   };
 
@@ -67,7 +67,7 @@ export const GameNew: React.FC = () => {
       await joinGame(joinGameId);
     } catch (err) {
       setLastError('Failed to join game. Please check the game ID and try again.');
-      logger.error('Join game failed', { data: err });
+      logger.error('Join game failed', { component: 'GameNew', data: err });
     }
   };
 
@@ -110,7 +110,7 @@ export const GameNew: React.FC = () => {
       logger.userAction('makeMove', { row, col, type: OperationType.PLACE });
       await makeMove(row, col, OperationType.PLACE);
     } catch (err) {
-      logger.error('Make move failed', { data: err });
+      logger.error('Make move failed', { component: 'GameNew', data: err });
     }
   };
 

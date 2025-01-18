@@ -46,6 +46,8 @@ interface ErrorRecoveryConfig {
 }
 import { logger } from '@/utils/logger.js';
 
+const COMPONENT_NAME = 'ErrorRecoveryManager';
+
 /**
  * Default recovery configurations for different error types
  */
@@ -113,6 +115,7 @@ export class ErrorRecoveryManager {
    */
   public async handleError(error: NetworkError): Promise<void> {
     logger.error('Handling error', {
+      component: COMPONENT_NAME,
       code: error.code,
       message: error.message,
       severity: error.severity,
@@ -135,6 +138,7 @@ export class ErrorRecoveryManager {
     // Skip recovery for low severity errors or non-recoverable errors
     if (normalizedError.severity === 'warning' || !normalizedError.retryable) {
       logger.debug('Skipping error recovery', {
+        component: COMPONENT_NAME,
         severity: normalizedError.severity,
         retryable: normalizedError.retryable
       });
@@ -142,7 +146,7 @@ export class ErrorRecoveryManager {
     }
 
     const strategy = this.getRecoveryStrategy(normalizedError);
-    logger.debug('Selected recovery strategy', { strategy, errorCode: normalizedError.code });
+    logger.debug('Selected recovery strategy', { component: COMPONENT_NAME, strategy, errorCode: normalizedError.code });
     
     switch (strategy) {
       case 'RETRY':
@@ -244,10 +248,10 @@ export class ErrorRecoveryManager {
    */
   public addErrorListener(listener: (error: NetworkError) => void): () => void {
     this.errorListeners.add(listener);
-    logger.debug('Error listener added');
+    logger.debug('Error listener added', { component: COMPONENT_NAME });
     return () => {
       this.errorListeners.delete(listener);
-      logger.debug('Error listener removed');
+      logger.debug('Error listener removed', { component: COMPONENT_NAME });
     };
   }
 
@@ -275,6 +279,7 @@ export class ErrorRecoveryManager {
         listener(error);
       } catch (listenerError) {
         logger.error('Error in listener', {
+          component: COMPONENT_NAME,
           errorCode: error.code,
           listenerError
         });
@@ -286,6 +291,7 @@ export class ErrorRecoveryManager {
     const config = this.recoveryConfigs[error.code];
     if (!this.shouldRetry(error)) {
       logger.debug('Maximum retry attempts exceeded', {
+        component: COMPONENT_NAME,
         errorCode: error.code,
         retryCount: error.retryCount
       });
@@ -306,6 +312,7 @@ export class ErrorRecoveryManager {
       : config.retryDelay || 1000;
 
     logger.debug('Attempting retry', {
+      component: COMPONENT_NAME,
       errorCode: error.code,
       retryCount,
       delay,
@@ -323,11 +330,13 @@ export class ErrorRecoveryManager {
           timestamp: Date.now()
         });
         logger.debug('Recovery action successful', {
+          component: COMPONENT_NAME,
           errorCode: error.code,
           retryCount
         });
       } catch (recoverError) {
         logger.error('Recovery action failed', {
+          component: COMPONENT_NAME,
           errorCode: error.code,
           retryCount,
           error: recoverError
@@ -341,6 +350,7 @@ export class ErrorRecoveryManager {
     // В MVP просто уведомляем о необходимости переподключения
     const timestamp = Date.now();
     logger.warn('Connection error occurred', {
+      component: COMPONENT_NAME,
       errorCode: error.code,
       message: error.message,
       details: error.details
@@ -363,6 +373,7 @@ export class ErrorRecoveryManager {
     // В MVP просто уведомляем о необходимости сброса
     const timestamp = Date.now();
     logger.warn('State error occurred', {
+      component: COMPONENT_NAME,
       errorCode: error.code,
       message: error.message,
       details: error.details
@@ -385,6 +396,7 @@ export class ErrorRecoveryManager {
     // В MVP просто показываем сообщение пользователю
     const timestamp = Date.now();
     logger.warn('User action required', {
+      component: COMPONENT_NAME,
       errorCode: error.code,
       message: error.message,
       details: error.details
