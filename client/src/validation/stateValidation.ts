@@ -1,14 +1,13 @@
 // Base types
-import { Player } from '@ctor-game/shared/types/enums.js';
-import type { GamePhase } from '@ctor-game/shared/types/enums.js';
+import { GamePhase, Player } from '@ctor-game/shared/types/enums.js';
 // Game state types
-import type { IGameState } from '@ctor-game/shared/types/game/state.js';
-import type { GameMove } from '@ctor-game/shared/types/game/moves.js';
+import type { IGameState } from '@ctor-game/shared/types/game.js';
+import type { GameMove } from '@ctor-game/shared/types/core.js';
 // Validation functions
-import { isValidGamePhase } from '@ctor-game/shared/validation/phase.js';
-import { isValidGameManagerState } from '@ctor-game/shared/validation/state.js';
-import { isValidScores } from '@ctor-game/shared/validation/scores.js';
-import { ExtendedGameManagerState, GameManagerStateUpdate } from '../types/gameManager.js';
+import { isValidGamePhase } from '@ctor-game/shared/validation/primitives.js';
+import { isValidGameManagerState } from '@ctor-game/shared/validation/game.js';
+import { isValidScores } from '@ctor-game/shared/utils/scores.js';
+import type { GameManagerState, GameManagerStateUpdate } from '../types/gameManager.js';
 import { logger } from '../utils/logger.js';
 
 /**
@@ -76,12 +75,12 @@ export function validateGameState(state: unknown): state is IGameState {
 /**
  * Проверить корректность ExtendedGameManagerState
  */
-export function validateExtendedGameManagerState(state: unknown): state is ExtendedGameManagerState {
+export function validateExtendedGameManagerState(state: unknown): state is GameManagerState {
   if (!isValidGameManagerState(state)) {
     throw createValidationError('Invalid game manager state', 'INVALID_STATE');
   }
 
-  const extState = state as Partial<ExtendedGameManagerState>;
+  const extState = state as Partial<GameManagerState>;
 
   // Дополнительные проверки для расширенных полей
   if (extState.gameState !== null && !validateGameState(extState.gameState)) {
@@ -105,18 +104,18 @@ export function validateExtendedGameManagerState(state: unknown): state is Exten
  * Проверить допустимость перехода между состояниями
  */
 export function validateStateTransition(
-  currentState: ExtendedGameManagerState,
+  currentState: GameManagerState,
   update: GameManagerStateUpdate
 ): boolean {
   // Проверяем изменение фазы
   if (update.phase) {
     const allowedTransitions: Record<GamePhase, GamePhase[]> = {
-      'INITIAL': ['CONNECTING'],
-      'CONNECTING': ['WAITING', 'INITIAL', 'PLAYING'],  // Allow direct transition to PLAYING for second player
-      'WAITING': ['PLAYING', 'INITIAL', 'CONNECTING'],
-      'PLAYING': ['GAME_OVER', 'ERROR'],
-      'GAME_OVER': ['INITIAL'],
-      'ERROR': ['INITIAL']
+      [GamePhase.INITIAL]: [GamePhase.CONNECTING],
+      [GamePhase.CONNECTING]: [GamePhase.WAITING, GamePhase.INITIAL, GamePhase.PLAYING],  // Allow direct transition to PLAYING for second player
+      [GamePhase.WAITING]: [GamePhase.PLAYING, GamePhase.INITIAL, GamePhase.CONNECTING],
+      [GamePhase.PLAYING]: [GamePhase.GAME_OVER, GamePhase.ERROR],
+      [GamePhase.GAME_OVER]: [GamePhase.INITIAL],
+      [GamePhase.ERROR]: [GamePhase.INITIAL]
     };
 
     if (!allowedTransitions[currentState.phase].includes(update.phase)) {
@@ -129,7 +128,7 @@ export function validateStateTransition(
   }
 
   // Проверяем согласованность данных
-  if (update.phase === 'PLAYING' && !update.gameState) {
+  if (update.phase === GamePhase.PLAYING && !update.gameState) {
     throw createValidationError(
       'Game state must be provided when transitioning to PLAYING phase',
       'INVALID_TRANSITION',
@@ -137,7 +136,7 @@ export function validateStateTransition(
     );
   }
 
-  if (update.phase === 'GAME_OVER' && !update.gameState?.gameOver) {
+  if (update.phase === GamePhase.GAME_OVER && !update.gameState?.gameOver) {
     throw createValidationError(
       'Game must be over when transitioning to GAME_OVER phase',
       'INVALID_TRANSITION',
@@ -156,7 +155,7 @@ export function validateStateUpdate(update: unknown): update is GameManagerState
     throw createValidationError('Invalid state update object', 'INVALID_DATA');
   }
 
-  const stateUpdate = update as Partial<ExtendedGameManagerState>;
+  const stateUpdate = update as Partial<GameManagerState>;
 
   // Проверяем все поля, которые присутствуют в обновлении
   if ('phase' in stateUpdate && !isValidGamePhase(stateUpdate.phase)) {
@@ -184,7 +183,7 @@ export function validateStateUpdate(update: unknown): update is GameManagerState
  * Попытаться восстановить состояние после ошибки валидации
  */
 export function recoverFromValidationError(
-  currentState: ExtendedGameManagerState,
+  currentState: GameManagerState,
   error: StateValidationError
 ): GameManagerStateUpdate {
   logger.error('Attempting to recover from validation error', { error });
@@ -193,23 +192,23 @@ export function recoverFromValidationError(
     case 'INVALID_TRANSITION':
       // Если это ошибка перехода во время подключения к игре, 
       // пробуем восстановить состояние подключения
-      if (currentState.phase === 'CONNECTING' && error.field === 'phase') {
+      if (currentState.phase === GamePhase.CONNECTING && error.field === 'phase') {
         return {
           ...currentState,
-          phase: 'CONNECTING',
+          phase: GamePhase.CONNECTING,
           error: {
-            code: 'STATE_RECOVERY',
-            message: 'Maintaining connection state during join operation'
+            code: 'STATE_VALIDATION_ERROR',
+            message: 'Failed to validate state during join operation'
           }
         };
       }
       // Для других случаев возвращаемся в исходное состояние
       return {
-        phase: 'INITIAL',
+        phase: GamePhase.INITIAL,
         gameId: null,
         playerNumber: null,
         error: {
-          code: 'STATE_RECOVERY',
+          code: 'STATE_TRANSITION_ERROR',
           message: 'Game state was reset due to invalid transition'
         }
       };
@@ -217,12 +216,12 @@ export function recoverFromValidationError(
     case 'INVALID_STATE':
     case 'INVALID_DATA':
       // При ошибке данных во время подключения сохраняем состояние подключения
-      if (currentState.phase === 'CONNECTING') {
+      if (currentState.phase === GamePhase.CONNECTING) {
         return {
           ...currentState,
-          phase: 'CONNECTING',
+          phase: GamePhase.CONNECTING,
           error: {
-            code: 'STATE_RECOVERY',
+            code: 'STATE_VALIDATION_ERROR',
             message: 'Maintaining connection state during data validation',
             details: error.details
           }
@@ -232,7 +231,7 @@ export function recoverFromValidationError(
       return {
         ...currentState,
         error: {
-          code: 'STATE_RECOVERY',
+          code: 'STATE_VALIDATION_ERROR',
           message: 'Game state was partially recovered',
           details: error.details
         }
