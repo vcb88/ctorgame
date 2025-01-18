@@ -1,7 +1,47 @@
-import type { GameAI as IGameAI, AIConfig, MoveEvaluation, PositionStrength } from '@ctor-game/shared/types/core/ai';
-import type { GameState } from '@ctor-game/shared/types/game';
-import type { Board } from '@ctor-game/shared/types/core/board';
-import type { Position } from '@ctor-game/shared/types/base/primitives';
+import type { GameState, Board, Position } from '@ctor-game/shared/types/core.js';
+
+interface AIConfig {
+    weights: {
+        territory: number;
+        replacement: number;
+        mobility: number;
+        pattern: number;
+        danger: number;
+        group: number;
+        block: number;
+    };
+    maxThinkTime: number;
+    maxDepth: number;
+    usePatternMatching: boolean;
+}
+
+interface PositionStrength {
+    pieces: number;
+    territory: number;
+    influence: number;
+    groupsStrength: number;
+    total: number;
+}
+
+interface MoveEvaluation {
+    position: Position;
+    score: number;
+    components: {
+        territory: number;
+        replacement: number;
+        mobility: number;
+        pattern: number;
+        danger: number;
+        group: number;
+        block: number;
+    };
+}
+
+interface IGameAI {
+    initialize(config: Partial<AIConfig>): void;
+    findBestMove(state: GameState): Promise<MoveEvaluation>;
+    evaluatePosition(board: Board, player: number): PositionStrength;
+}
 
 /**
  * Default AI configuration

@@ -1,8 +1,5 @@
 import { ErrorRecoveryManager } from './ErrorRecoveryManager.js';
-import type { GameAction } from '@ctor-game/shared/types/game/actions.js';
-import type { GameMove } from '@ctor-game/shared/types/game/types.js';
-import type { NetworkError } from '@ctor-game/shared/types/network/errors.js';
-import type { UUID } from '@ctor-game/shared/types/network/websocket.js';
+import type { GameAction, GameMove, NetworkError, UUID } from '@ctor-game/shared/types/core.js';
 
 /**
  * Game action types supported by the queue

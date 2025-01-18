@@ -1,11 +1,13 @@
-import { 
-  ErrorCode,
-  ErrorSeverity,
-  RecoveryStrategy,
-  NetworkError,
-  ErrorRecoveryConfig,
-  ErrorDetails
-} from '@ctor-game/shared/types/network/index.js';
+import type { ErrorCode, ErrorSeverity, NetworkError } from '@ctor-game/shared/types/core.js';
+
+type RecoveryStrategy = 'RETRY' | 'RECONNECT' | 'RESET' | 'USER_ACTION' | 'NOTIFY';
+
+interface ErrorRecoveryConfig {
+    maxRetries?: number;
+    retryDelay?: number;
+    useBackoff?: boolean;
+    recover?: (error: NetworkError) => Promise<void>;
+}
 import { logger } from '@/utils/logger.js';
 
 /**
