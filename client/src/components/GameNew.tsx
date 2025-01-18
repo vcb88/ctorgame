@@ -232,11 +232,11 @@ export const GameNew: React.FC = () => {
           <div className="flex items-center gap-4">
             <div className="flex items-center gap-2">
               <div className="w-4 h-4 bg-blue-500"></div>
-              <span>First Player: {gameState.scores.player1}</span>
+              <span>First Player: {gameState.scores[0]}</span>
             </div>
             <div className="flex items-center gap-2">
               <div className="w-4 h-4 bg-red-500"></div>
-              <span>Second Player: {gameState.scores.player2}</span>
+              <span>Second Player: {gameState.scores[1]}</span>
             </div>
           </div>
           <div>
@@ -292,7 +292,7 @@ export const GameNew: React.FC = () => {
                 )}></div>
                 {gameState.winner === 1 ? 'First' : 'Second'} Player
                 <div className="text-gray-600 ml-2">
-                  ({gameState.scores[`player${gameState.winner}`]} pieces)
+                  ({gameState.scores[gameState.winner - 1]} pieces)
                 </div>
               </div>
             )}
