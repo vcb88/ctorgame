@@ -1,10 +1,20 @@
-import type { ErrorCode, ErrorSeverity, NetworkError, BaseError } from '@ctor-game/shared/types/base/types.js';
+/**
+ * Error Recovery Manager
+ * 
+ * Handles network errors and provides recovery strategies:
+ * - Retry: Attempts to retry failed operations with optional backoff
+ * - Reconnect: Handles connection loss and reconnection
+ * - Reset: Handles game state reset when needed
+ * - User Action: Prompts user for action when needed
+ * 
+ * Uses NetworkError type from shared module which includes:
+ * - retryCount: number of retry attempts made
+ * - retryable: whether the error can be retried
+ * - timestamp: when the error occurred
+ * - details: additional error-specific information
+ */
 
-// Расширенный тип для NetworkError с дополнительными полями для восстановления
-type RecoverableNetworkError = NetworkError & {
-    retryable?: boolean;
-    retryCount?: number;
-};
+import type { ErrorCode, ErrorSeverity, NetworkError, BaseError } from '@ctor-game/shared/types/base/types.js';
 
 // Тип для опций логирования
 interface LogOptions {
@@ -31,7 +41,7 @@ interface ErrorRecoveryConfig {
     maxRetries?: number;
     retryDelay?: number;
     useBackoff?: boolean;
-    recover?: (error: RecoverableNetworkError) => Promise<void>;
+    recover?: (error: NetworkError) => Promise<void>;
 }
 import { logger } from '@/utils/logger.js';
 
@@ -76,7 +86,7 @@ const DEFAULT_RECOVERY_CONFIGS: Record<ErrorCode, ErrorRecoveryConfig> = {
 
 export class ErrorRecoveryManager {
   private static instance: ErrorRecoveryManager;
-  private errorListeners: Set<(error: RecoverableNetworkError) => void> = new Set();
+  private errorListeners: Set<(error: NetworkError) => void> = new Set();
   private recoveryConfigs: Record<ErrorCode, ErrorRecoveryConfig>;
   
   private constructor() {
@@ -93,7 +103,7 @@ export class ErrorRecoveryManager {
   /**
    * Handle an error and determine recovery strategy
    */
-  public async handleError(error: RecoverableNetworkError): Promise<void> {
+  public async handleError(error: NetworkError): Promise<void> {
     logger.error('Handling error', {
       code: error.code,
       message: error.message,
@@ -103,7 +113,7 @@ export class ErrorRecoveryManager {
 
     // Ensure error has correct attributes
     const timestamp = Date.now();
-    const normalizedError: RecoverableNetworkError = {
+    const normalizedError: NetworkError = {
       ...error,
       timestamp: error.timestamp || timestamp,
       retryable: error.retryable ?? this.isErrorRecoverable(error),
@@ -115,7 +125,7 @@ export class ErrorRecoveryManager {
     this.notifyListeners(normalizedError);
 
     // Skip recovery for low severity errors or non-recoverable errors
-    if (normalizedError.severity === 'low' || !normalizedError.retryable) {
+    if (normalizedError.severity === 'warning' || !normalizedError.retryable) {
       logger.debug('Skipping error recovery', {
         severity: normalizedError.severity,
         retryable: normalizedError.retryable
@@ -153,7 +163,7 @@ export class ErrorRecoveryManager {
   /**
    * Check if error is recoverable based on its code
    */
-  private isErrorRecoverable(error: RecoverableNetworkError): boolean {
+  private isErrorRecoverable(error: NetworkError): boolean {
     const nonRecoverableErrors = [
       'OPERATION_CANCELLED',
       'GAME_NOT_FOUND',
@@ -171,7 +181,7 @@ export class ErrorRecoveryManager {
   /**
    * Determine if error should be retried
    */
-  public shouldRetry(error: RecoverableNetworkError): boolean {
+  public shouldRetry(error: NetworkError): boolean {
     const config = this.recoveryConfigs[error.code];
     if (!config || !config.maxRetries) {
       logger.debug('Error not eligible for retry', {
@@ -196,7 +206,7 @@ export class ErrorRecoveryManager {
   /**
    * Get recovery strategy for error
    */
-  public getRecoveryStrategy(error: RecoverableNetworkError): RecoveryStrategy {
+  public getRecoveryStrategy(error: NetworkError): RecoveryStrategy {
     // Handle critical errors that need user action
     if (error.severity === 'critical') {
       return 'USER_ACTION';
@@ -227,7 +237,7 @@ export class ErrorRecoveryManager {
   /**
    * Add error listener
    */
-  public addErrorListener(listener: (error: RecoverableNetworkError) => void): () => void {
+  public addErrorListener(listener: (error: NetworkError) => void): () => void {
     this.errorListeners.add(listener);
     logger.debug('Error listener added');
     return () => {
@@ -277,7 +287,7 @@ export class ErrorRecoveryManager {
       this.notifyListeners({
         ...error,
         message: 'Maximum retry attempts exceeded',
-        severity: 'high',
+        severity: 'critical',
         retryable: false,
         timestamp: Date.now()
       });

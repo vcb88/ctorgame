@@ -332,6 +332,15 @@ export type NetworkError = ErrorWithStack & {
     category: 'network';
     code: ErrorCode;
     severity: ErrorSeverity;
+    retryCount?: number;      // Number of retry attempts made
+    retryable?: boolean;      // Whether the error can be retried
+    timestamp: number;        // When the error occurred
+    details?: {
+        reconnectAttempt?: number;    // Number of reconnection attempts
+        resetAttempt?: number;        // Number of reset attempts
+        requiresUserAction?: boolean;  // Whether user intervention is needed
+        [key: string]: unknown;       // Additional error-specific details
+    };
 };
 
 export type ValidationError = BaseError & {
