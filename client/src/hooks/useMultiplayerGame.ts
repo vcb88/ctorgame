@@ -100,11 +100,11 @@ export const useMultiplayerGame = (): UseMultiplayerGameReturn => {
 
   const makeMove = useCallback(async (x: number, y: number, type: OperationType = OperationType.PLACE) => {
     const manager = GameStateManager.getInstance();
-    const currentState = manager.getState();
+    const managerState = manager.getState();
     const move = { type, position: { x, y } };
 
     // Базовая валидация перед отправкой
-    if (!currentState.gameState || !validateGameMove(move)) {
+    if (!managerState.gameState || !validateGameMove(move)) {
       logger.debug('Invalid move attempted', {
         component: 'useMultiplayerGame',
         data: { move, boardSize: BOARD_SIZE }
@@ -132,24 +132,24 @@ export const useMultiplayerGame = (): UseMultiplayerGameReturn => {
     );
   }, []);
 
-  // Map state
+  // Map state from base hook
   const {
-    gameState,
+    gameState: baseGameState,
     currentPlayer: playerNumber,
     isConnected,
     error,
   } = state;
   
-  const gameId = gameState?.id;
+  const gameId = baseGameState?.id;
   const connectionState = isConnected ? 'connected' : 'disconnected';
 
-  // Get extended state from GameStateManager
-  const manager = GameStateManager.getInstance();
-  const extendedState = manager.getState();
-  const gameState = extendedState.gameState;
-  const currentPlayer = extendedState.currentPlayer;
+  // Get current game state from manager
+  const gameStateManager = GameStateManager.getInstance();
+  const managerFullState = gameStateManager.getState();
+  const currentGameState = managerFullState.gameState;
+  const currentPlayer = managerFullState.currentPlayer;
   const isMyTurn = playerNumber === currentPlayer;
-  const availableReplaces = extendedState.availableReplaces || [];
+  const availableReplaces = managerFullState.availableReplaces || [];
 
   const isRetryable = error && [
     'CONNECTION_ERROR',
@@ -164,10 +164,10 @@ export const useMultiplayerGame = (): UseMultiplayerGameReturn => {
 
   return {
     // Game state
-    gameId,
+    gameId: gameId ?? null,
     playerNumber,
-    gameState,
-    currentPlayer,
+    gameState: currentGameState,
+    currentPlayer: playerNumber,
     isMyTurn,
     availableReplaces,
     
