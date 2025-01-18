@@ -1,22 +1,27 @@
 // Base types
-import { GamePhase, Player } from '@ctor-game/shared/types/enums.js';
+import { GamePhase } from '@ctor-game/shared/types/enums.js';
 // Game state types
-import type { IGameState } from '@ctor-game/shared/types/game.js';
-import type { GameMove } from '@ctor-game/shared/types/core.js';
-// Validation functions
-import { isValidGamePhase } from '@ctor-game/shared/validation/primitives.js';
-import { isValidGameManagerState } from '@ctor-game/shared/validation/game.js';
-import { isValidScores } from '@ctor-game/shared/utils/scores.js';
+import type { 
+    GameState,
+    GameMove,
+    GameError,
+    BaseError,
+    ErrorCategory,
+    ErrorSeverity,
+    PlayerNumber
+} from '@ctor-game/shared/types/core.js';
 import type { GameManagerState, GameManagerStateUpdate } from '../types/gameManager.js';
 import { logger } from '../utils/logger.js';
 
 /**
  * Тип ошибки валидации состояния
  */
-export interface StateValidationError extends Error {
+export interface StateValidationError extends BaseError {
   code: 'INVALID_STATE' | 'INVALID_TRANSITION' | 'INVALID_DATA';
+  category: ErrorCategory;
+  severity: ErrorSeverity;
   field?: string;
-  details?: unknown;
+  details?: Record<string, unknown>;
 }
 
 /**
@@ -28,17 +33,20 @@ function createValidationError(
   field?: string,
   details?: unknown
 ): StateValidationError {
-  const error = new Error(message) as StateValidationError;
-  error.code = code;
-  error.field = field;
-  error.details = details;
-  return error;
+  return {
+    message,
+    code,
+    field,
+    details,
+    category: 'validation',
+    severity: 'error'
+  } as StateValidationError;
 }
 
 /**
  * Проверить корректность объекта IGameState
  */
-export function validateGameState(state: unknown): state is IGameState {
+export function validateGameState(state: unknown): state is GameState {
   if (!state || typeof state !== 'object') {
     throw createValidationError('Invalid game state object', 'INVALID_DATA');
   }
@@ -56,7 +64,7 @@ export function validateGameState(state: unknown): state is IGameState {
 
   if (
     gameState.winner !== null && 
-    ![Player.First, Player.Second].includes(gameState.winner)
+    ![1, 2].includes(gameState.winner)
   ) {
     throw createValidationError('Invalid winner value', 'INVALID_DATA', 'winner');
   }
@@ -115,7 +123,8 @@ export function validateStateTransition(
       [GamePhase.WAITING]: [GamePhase.PLAYING, GamePhase.INITIAL, GamePhase.CONNECTING],
       [GamePhase.PLAYING]: [GamePhase.GAME_OVER, GamePhase.ERROR],
       [GamePhase.GAME_OVER]: [GamePhase.INITIAL],
-      [GamePhase.ERROR]: [GamePhase.INITIAL]
+      [GamePhase.ERROR]: [GamePhase.INITIAL],
+      [GamePhase.FINISHED]: [GamePhase.INITIAL] // Add missing FINISHED state
     };
 
     if (!allowedTransitions[currentState.phase].includes(update.phase)) {
@@ -198,8 +207,10 @@ export function recoverFromValidationError(
           phase: GamePhase.CONNECTING,
           error: {
             code: 'VALIDATION_ERROR',
-            message: 'Failed to validate state during join operation'
-          }
+            message: 'Failed to validate state during join operation',
+            category: 'validation',
+            severity: 'error'
+          } as GameError
         };
       }
       // Для других случаев возвращаемся в исходное состояние
@@ -223,8 +234,10 @@ export function recoverFromValidationError(
           error: {
             code: 'VALIDATION_ERROR',
             message: 'Maintaining connection state during data validation',
-            details: error.details
-          }
+            details: error.details,
+            category: 'validation',
+            severity: 'error'
+          } as GameError
         };
       }
       // Для других случаев пытаемся сохранить валидное состояние

@@ -1,5 +1,5 @@
 import { io, Socket } from 'socket.io-client';
-import { NetworkError } from '../types/network.js';
+import type { NetworkError } from '@ctor-game/shared/types/core.js';
 
 type ServerToClientEvents = {
     connect: () => void;
@@ -29,14 +29,7 @@ declare global {
 type GameSocket = Socket<ServerToClientEvents, ClientToServerEvents>;
 let socket: GameSocket | null = null;
 
-export const socketConfig: {
-    autoConnect: boolean;
-    reconnection: boolean;
-    reconnectionAttempts: number;
-    reconnectionDelay: number;
-    reconnectionDelayMax: number;
-    forceNew: boolean;
-} = {
+export const socketConfig = {
     transports: ['websocket', 'polling'],
     autoConnect: true,
     reconnection: true,
