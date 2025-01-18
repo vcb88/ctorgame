@@ -82,10 +82,10 @@ export const GameNew: React.FC = () => {
       return;
     }
 
-    if (gameState?.board[row][col] !== null) {
+    if (gameState?.board.cells[row][col] !== null) {
       logger.debug('Cell click ignored - cell not empty', {
         component: 'GameNew',
-        data: { row, col, cellValue: gameState?.board[row][col] }
+        data: { row, col, cellValue: gameState?.board.cells[row][col] }
       });
       return;
     }
@@ -248,7 +248,7 @@ export const GameNew: React.FC = () => {
           "grid grid-cols-10 gap-1 bg-gray-200 p-2",
           loading && "opacity-50 pointer-events-none"
         )}>
-          {gameState.board.map((row: CellValue[], rowIndex: number) =>
+          {gameState.board.cells.map((row: CellValue[], rowIndex: number) =>
             row.map((cell: CellValue, colIndex: number) => {
               const position: Position = [colIndex, rowIndex];
               const isDisabled = 
