@@ -26,10 +26,15 @@ export class ErrorHandlingService {
             message: error.message,
             category: 'network',
             severity: error.severity,
-            details: error.details,
+            details: {
+                ...(error.details || {}),
+                originalCategory: error.category,
+                requiresUserAction: error.severity === 'critical'
+            },
             stack: error.stack || 'No stack trace available',
             name: 'NetworkError',
-            cause: undefined,  // NetworkError doesn't include cause
+            retryCount: error.retryCount,
+            retryable: error.recoverable,
             timestamp: Date.now()
         };
     }
@@ -42,17 +47,27 @@ export class ErrorHandlingService {
         message: string,
         severity: ErrorSeverity = 'error',
         details?: Record<string, unknown>,
-        name: string = 'NetworkError'
+        name: string = 'NetworkError',
+        options: {
+            retryable?: boolean;
+            retryCount?: number;
+        } = {}
     ): NetworkError {
+        const { retryable = true, retryCount = 0 } = options;
         return {
             code,
             message,
             category: 'network',
             severity,
-            details,
+            details: {
+                ...details,
+                requiresUserAction: severity === 'critical'
+            },
             stack: new Error().stack || 'No stack trace available',
             name,
-            timestamp: Date.now()
+            timestamp: Date.now(),
+            retryable,
+            retryCount
         };
     }
 
@@ -106,10 +121,12 @@ export class ErrorHandlingService {
         options: {
             maxRetries?: number;
             retryDelay?: number;
+            useBackoff?: boolean;
         } = {}
     ): Promise<T> {
         const maxRetries = options.maxRetries ?? 3;
         const retryDelay = options.retryDelay ?? 1000;
+        const useBackoff = options.useBackoff ?? true;
         let lastError: unknown = null;
 
         for (let attempt = 0; attempt <= maxRetries; attempt++) {
@@ -118,9 +135,35 @@ export class ErrorHandlingService {
             } catch (error) {
                 lastError = error;
                 
-                // Don't retry if it's already a NetworkError
+                // Handle NetworkError specifically
                 if (isNetworkError(error)) {
-                    throw error;
+                    // Update retryCount and check if we should continue retrying
+                    const networkError = {
+                        ...error,
+                        retryCount: (error.retryCount || 0) + 1,
+                        timestamp: Date.now()
+                    };
+
+                    // Stop if max retries reached or error is not retryable
+                    if (!error.retryable || networkError.retryCount >= maxRetries) {
+                        networkError.retryable = false;
+                        throw networkError;
+                    }
+
+                    // Log retry attempt
+                    logger.debug('Retrying operation after error', {
+                        attempt,
+                        maxRetries,
+                        errorCode: error.code,
+                        retryCount: networkError.retryCount
+                    });
+
+                    const delay = useBackoff
+                        ? retryDelay * Math.pow(2, attempt)
+                        : retryDelay;
+
+                    await new Promise(resolve => setTimeout(resolve, delay));
+                    continue;
                 }
 
                 // Last attempt failed
@@ -129,7 +172,10 @@ export class ErrorHandlingService {
                 }
 
                 // Wait before retry
-                await new Promise(resolve => setTimeout(resolve, retryDelay * (attempt + 1)));
+                const delay = useBackoff
+                    ? retryDelay * Math.pow(2, attempt)
+                    : retryDelay;
+                await new Promise(resolve => setTimeout(resolve, delay));
             }
         }
 

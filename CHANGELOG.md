@@ -14,6 +14,23 @@ All notable changes to this project will be documented in this file.
 ## [Unreleased]
 
 ### Added
+- Enhanced NetworkError type with retry capabilities:
+  - Added retryCount and retryable fields
+  - Improved error details structure
+  - Better support for error recovery scenarios
+  - Unified error handling between client and server
+- Improved ErrorRecoveryManager:
+  - Better retry logic with backoff support
+  - Enhanced error context preservation
+  - Unified error severity levels
+  - Improved error recovery strategies
+
+### Changed
+- Updated ErrorRecoveryManager to use enhanced NetworkError type
+- Improved server-side error handling with retry support
+- Unified error severity levels across the application
+
+### Fixed
 - Enhanced error handling and connection management:
   - Detailed error types and connection states
   - Reconnection mechanism with retries
