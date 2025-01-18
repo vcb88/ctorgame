@@ -53,6 +53,7 @@ export type {
     WebSocketServerOptions,
     ReplayState,
     ReplayEvent,
+    PlaybackSpeed,
     
     // Storage types
     StorageConfig,

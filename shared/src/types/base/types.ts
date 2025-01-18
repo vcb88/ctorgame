@@ -523,6 +523,8 @@ export type WithMetadata<T> = T & {
 };
 
 // Replay types
+export type PlaybackSpeed = 0.25 | 0.5 | 1 | 2 | 4;
+
 export type ReplayEvent = {
   type: 'replay_start' | 'replay_step' | 'replay_complete' | 'replay_error';
   gameId: UUID;
@@ -539,7 +541,7 @@ export type ReplayState = {
     currentMoveIndex: number;
     totalMoves: number;
     isPlaying: boolean;
-    playbackSpeed: number;
+    playbackSpeed: PlaybackSpeed;
     gameCode: string;
 };
 
