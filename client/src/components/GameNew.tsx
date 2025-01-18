@@ -214,7 +214,7 @@ export const GameNew: React.FC = () => {
         Game ID: <span className="font-mono">{gameId}</span>
       </div>
       <div className="text-xl mb-4">
-        You are {playerNumber === 1 ? 'First' : 'Second'} Player
+        You are {Number(playerNumber) === 1 ? 'First' : 'Second'} Player
       </div>
       <div className="text-xl mb-8">
         {gameState.gameOver
@@ -288,11 +288,13 @@ export const GameNew: React.FC = () => {
                 Winner: 
                 <div className={cn(
                   "w-6 h-6 rounded-full",
-                  gameState.winner === 1 ? "bg-blue-500" : "bg-red-500"
+                  gameState.winner !== undefined && gameState.winner === 1 ? "bg-blue-500" : "bg-red-500"
                 )}></div>
-                {gameState.winner === 1 ? 'First' : 'Second'} Player
+                {gameState.winner !== undefined && (gameState.winner === 1 ? 'First' : 'Second')} Player
                 <div className="text-gray-600 ml-2">
-                  ({gameState.scores[gameState.winner - 1]} pieces)
+                  {gameState.winner !== undefined && gameState.winner !== null && (
+                    `(${gameState.scores[gameState.winner - 1]} pieces)`
+                  )}
                 </div>
               </div>
             )}
