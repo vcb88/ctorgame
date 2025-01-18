@@ -4,8 +4,8 @@ import type { NetworkError } from '@ctor-game/shared/types/core.js';
 type ServerToClientEvents = {
     connect: () => void;
     disconnect: (reason: string) => void;
-    error: (error: Error & NetworkError) => void;
-    connect_error: (error: Error & NetworkError) => void;
+    error: (error: NetworkError) => void;
+    connect_error: (error: NetworkError) => void;
 }
 
 type ClientToServerEvents = {
@@ -55,7 +55,8 @@ export function createSocket(config = socketConfig): GameSocket {
       console.log('[Socket] Connected, id:', socket?.id);
     });
 
-    socket.on('connect_error', (error: Error & NetworkError) => {
+    socket.on('connect_error', (err: Error) => {
+      const error = err as NetworkError;
       console.error('[Socket] Connection error:', {
         code: error.code,
         message: error.message,
@@ -68,7 +69,8 @@ export function createSocket(config = socketConfig): GameSocket {
       console.log('[Socket] Disconnected:', reason);
     });
 
-    socket.on('error', (error: Error & NetworkError) => {
+    socket.on('error', (err: Error) => {
+      const error = err as NetworkError;
       console.error('[Socket] Error:', {
         code: error.code,
         message: error.message,

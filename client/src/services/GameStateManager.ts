@@ -368,4 +368,29 @@ export class GameStateManager {
             this.updateState({ isLoading: false });
         }
     }
+
+    /**
+     * Disconnect from the game and reset state
+     * 
+     * MVP Implementation:
+     * - Disconnects socket
+     * - Resets game state to initial values
+     */
+    public disconnect(): void {
+        logger.debug('Disconnecting from game', {
+            component: 'GameStateManager',
+            timestamp: Date.now()
+        });
+
+        this.socket.disconnect();
+        this.updateState({
+            gameState: null,
+            currentPlayer: null,
+            phase: GameSessionState.INITIAL,
+            availableReplaces: [],
+            isConnected: false,
+            isLoading: false,
+            error: null
+        });
+    }
 }

@@ -37,7 +37,7 @@ export const WaitingRoom: React.FC = () => {
 
     // Get game state from GameStateManager
     const { state } = useGame();
-    const { playerNumber, gameState, error } = state;
+    const { currentPlayer: playerNumber, gameState, error } = state;
 
     // Retry logic for joining game
     const joinWithRetry = async (gameId: string, retryAttempt: number = 0) => {
@@ -102,15 +102,20 @@ export const WaitingRoom: React.FC = () => {
 
     // Handle global errors
     useEffect(() => {
+        let timer: NodeJS.Timeout | undefined;
+        
         if (error) {
             logger.error('WaitingRoom error', { component: 'WaitingRoom', data: { error } });
-            
-            const timer = setTimeout(() => {
+            timer = setTimeout(() => {
                 navigate('/');
             }, ERROR_DISPLAY_DURATION);
-            
-            return () => clearTimeout(timer);
         }
+        
+        return () => {
+            if (timer) {
+                clearTimeout(timer);
+            }
+        };
     }, [error]);
 
     // Progress animation

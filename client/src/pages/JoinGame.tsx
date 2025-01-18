@@ -22,13 +22,15 @@ export const JoinGame: React.FC = () => {
     setIsAnimating(true);
     logger.userAction('joinGameAttempt', { gameCode });
     
-    const success = await joinGame(gameCode);
-    if (success) {
+    try {
+      await joinGame(gameCode);
+      // Если мы дошли до этой точки, значит операция успешна
       // Добавляем задержку для анимации
       setTimeout(() => {
         navigate(`/waiting/${gameCode}`);
       }, 1000);
-    } else {
+    } catch {
+      // В случае ошибки останавливаем анимацию
       setIsAnimating(false);
     }
   };

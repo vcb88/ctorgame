@@ -13,7 +13,7 @@ export type QueuedGameAction =
 
 interface QueuedAction<T = unknown> {
     readonly action: QueuedGameAction;
-    readonly resolve: (value: T) => void;
+    readonly resolve: (value: unknown) => void;
     readonly reject: (error: NetworkError) => void;
     readonly timestamp: number;
 }
@@ -47,7 +47,7 @@ export class ActionQueue {
             // Add action to queue
             this.queue.push({
                 action,
-                resolve,
+                resolve: resolve as (value: unknown) => void,
                 reject,
                 timestamp
             });
@@ -116,7 +116,7 @@ export class ActionQueue {
             }
 
             // Process action (in MVP we just resolve immediately)
-            resolve(action);
+            resolve(action as unknown);
 
             // Remove processed action
             this.queue.shift();
