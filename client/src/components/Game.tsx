@@ -11,9 +11,9 @@ import type {
   PlayerNumber,
   Position,
   Scores,
-  GameId,
-  OperationType
+  GameId
 } from '@ctor-game/shared/types/base/types.js';
+import { OperationType } from '@ctor-game/shared/types/enums.js';
 
 import { cn } from '@/lib/utils.js';
 import { GameCell } from '@/components/GameCell.js';
