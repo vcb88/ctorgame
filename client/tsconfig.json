@@ -23,6 +23,9 @@
     "noImplicitAny": false,
     "paths": {
       "@/*": ["./src/*"],
+      "@/components/*": ["./src/components/*"],
+      "@/hooks/*": ["./src/hooks/*"],
+      "@/services/*": ["./src/services/*"],
       "@ctor-game/shared": ["../shared/src"],
       "@ctor-game/shared/*": ["../shared/src/*"]
     }
