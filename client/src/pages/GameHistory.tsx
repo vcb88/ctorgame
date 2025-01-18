@@ -1,8 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import type { PlayerNumber } from '@ctor-game/shared/types/core.js';
-import type { GameSummary, Timestamp } from '@/types/game-summary.js';
-import type { GameError, NetworkError } from '@ctor-game/shared/types/base/types.js';
+import type { 
+    PlayerNumber, 
+    GameHistorySummary, 
+    GameError, 
+    NetworkError,
+    Timestamp 
+} from '@ctor-game/shared/types/base/types.js';
 import { 
     isGameStateError,
     createGameStateError 
@@ -20,7 +24,7 @@ const ARCHIVE_VERSION = 'v1.0.1';
 const COMPONENT_NAME = 'GameHistory';
 
 export function GameHistory() {
-    const [games, setGames] = useState<GameSummary[]>([]);
+    const [games, setGames] = useState<GameHistorySummary[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<GameError | NetworkError | null>(null);
     const [selectedGame, setSelectedGame] = useState<string | null>(null);
@@ -33,7 +37,7 @@ export function GameHistory() {
         // Request saved games list
         socket.emit('list_saved_games');
 
-        const handleGames = (data: { games: GameSummary[] }) => {
+        const handleGames = (data: { games: GameHistorySummary[] }) => {
             setGames(data.games);
             setLoading(false);
         };
@@ -72,43 +76,43 @@ export function GameHistory() {
     /**
      * Start loading replay for specific game
      */
-    const handleReplayRequest = async (gameCode: string) => {
+    const handleReplayRequest = async (game: GameHistorySummary) => {
         try {
             // Add game to loading state
-            setLoadingReplays(prev => new Set(prev).add(gameCode));
+            setLoadingReplays(prev => new Set(prev).add(game.code));
             
             // Request replay data through socket
             const socket = getSocket() as Socket<ServerToClientEvents, ClientToServerEvents>;
-            socket.emit('load_game_replay', { gameCode });
+            socket.emit('load_game_replay', { gameCode: game.code });
             
             // After successful request, show replay view
-            setSelectedGame(gameCode);
+            setSelectedGame(game.code);
         } catch (err) {
             // Handle error
             logger.error('Failed to load replay', {
                 component: COMPONENT_NAME,
                 error: err,
-                context: { gameCode }
+                context: { gameCode: game.code }
             });
 
             setError(createGameStateError(
                 'GAME_NOT_FOUND',
                 'Failed to load game replay',
-                { gameId: gameCode }
+                { gameId: game.code }
             ));
         } finally {
             // Remove game from loading state
             setLoadingReplays(prev => {
                 const next = new Set(prev);
-                next.delete(gameCode);
+                next.delete(game.code);
                 return next;
             });
         }
     };
 
-    const formatGameStatus = (game: GameSummary): string => {
-        if (!game.completedAt) return 'IN PROGRESS';
-        return game.winner !== null
+    const formatGameStatus = (game: GameHistorySummary): string => {
+        if (!game.endTime) return 'IN PROGRESS';
+        return game.winner !== undefined
             ? `VICTORY ACHIEVED - PLAYER ${formatPlayerNumber(game.winner)}`
             : "STALEMATE DETECTED";
     };
@@ -212,7 +216,7 @@ export function GameHistory() {
                     ) : (
                         games.map((game) => (
                             <div
-                                key={game.gameCode}
+                                key={game.code}
                                 className={cn(
                                     "relative p-6 rounded-lg border transition-all duration-300",
                                     "bg-black/30 backdrop-blur-sm border-cyan-900/30",
@@ -222,12 +226,18 @@ export function GameHistory() {
                                 <div className="flex justify-between items-center">
                                     <div className="space-y-2">
                                         <h3 className="text-xl font-mono text-cyan-400">
-                                            INSTANCE://{game.gameCode}
+                                            INSTANCE://{game.code}
                                         </h3>
                                         <p className="text-sm text-cyan-600 font-mono">
-                                            TIMESTAMP: {formatDate(game.createdAt)}
+                                            TIMESTAMP: {formatDate(game.startTime)}
                                         </p>
-                                        {game.completedAt && (
+                                        <p className="text-sm text-cyan-600 font-mono">
+                                            MOVES: {game.moves}
+                                        </p>
+                                        <p className="text-sm text-cyan-600 font-mono">
+                                            PLAYERS: {game.players.join(', ')}
+                                        </p>
+                                        {game.endTime && (
                                             <p className="text-sm font-mono">
                                                 <span className="text-pink-500">STATUS: </span>
                                                 {formatGameStatus(game)}
@@ -235,12 +245,12 @@ export function GameHistory() {
                                         )}
                                     </div>
                                     <CyberButton
-                                        onClick={() => handleReplayRequest(game.gameCode)}
+                                        onClick={() => handleReplayRequest(game)}
                                         variant="secondary"
                                         glowing
-                                        disabled={loadingReplays.has(game.gameCode)}
+                                        disabled={loadingReplays.has(game.code)}
                                     >
-                                        {loadingReplays.has(game.gameCode) ? (
+                                        {loadingReplays.has(game.code) ? (
                                             <span className="inline-flex items-center">
                                                 <span className="w-4 h-4 mr-2 border-t-2 border-r-2 border-cyan-400 rounded-full animate-spin" />
                                                 LOADING...
