@@ -98,10 +98,10 @@ export const GameNew: React.FC = () => {
       return;
     }
 
-    if (gameState?.currentTurn.placeOperationsLeft <= 0) {
+    if (gameState?.currentTurn.placeOperations <= 0) {
       logger.debug('Cell click ignored - no operations left', {
         component: 'GameNew',
-        data: { row, col, operationsLeft: gameState?.currentTurn.placeOperationsLeft }
+        data: { row, col, operationsLeft: gameState?.currentTurn.placeOperations }
       });
       return;
     }
@@ -240,7 +240,7 @@ export const GameNew: React.FC = () => {
             </div>
           </div>
           <div>
-            Operations left: {gameState.currentTurn.placeOperationsLeft}
+            Operations left: {gameState.currentTurn.placeOperations}
           </div>
         </div>
 
@@ -255,7 +255,7 @@ export const GameNew: React.FC = () => {
                 !isMyTurn || 
                 cell !== null || 
                 gameState.gameOver || 
-                gameState.currentTurn.placeOperationsLeft <= 0 ||
+                gameState.currentTurn.placeOperations <= 0 ||
                 loading;
               return (
                 <GameCell
@@ -264,7 +264,7 @@ export const GameNew: React.FC = () => {
                   value={cell}
                   disabled={isDisabled}
                   onClick={() => handleCellClick(rowIndex, colIndex)}
-                  isValidMove={!isDisabled && cell === null && gameState.currentTurn.placeOperationsLeft > 0}
+                  isValidMove={!isDisabled && cell === null && gameState.currentTurn.placeOperations > 0}
                 />
               );
             })
