@@ -2,7 +2,7 @@ import React, { useState, useEffect, ReactNode } from 'react';
 import { useMultiplayerGame } from '@/hooks/useMultiplayerGame.js';
 // Game types
 import type { CellValue } from '@ctor-game/shared/types/core.js';
-import { BOARD_SIZE } from '@ctor-game/shared/dist/config/constants.js';
+import { BOARD_SIZE } from '@ctor-game/shared/config/constants.js';
 import type { 
   GameState,
   GameStatus,

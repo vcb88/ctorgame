@@ -3,17 +3,15 @@ import { useMultiplayerGame } from '@/hooks/useMultiplayerGame.js';
 import type { 
   GameState,
   GameStatus,
-} from '@ctor-game/shared/dist/types/base/types.js';
-import { 
-  OperationType 
-} from '@ctor-game/shared/dist/types/enums.js';
-import { GameActionType as GameOperationType } from '@/types/actions.js';
-import type {
   PlayerNumber,
   CellValue,
   Position,
   GameError
-} from '@ctor-game/shared/types/core.js';
+} from '@ctor-game/shared/types/base/types.js';
+import { 
+  OperationType 
+} from '@ctor-game/shared/types/enums.js';
+import { GameActionType as GameOperationType } from '@/types/actions.js';
 import { cn } from '@/lib/utils.js';
 import { GameCell } from '@/components/GameCell.js';
 import { logger } from '@/utils/logger.js';
