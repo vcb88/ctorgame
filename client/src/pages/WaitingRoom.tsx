@@ -3,7 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import type { 
     PlayerNumber, 
-    GamePhase, 
+    GameStage, 
     GameError 
 } from '@ctor-game/shared/types/core.js';
 import { useGame } from '@/hooks/useGame.js';

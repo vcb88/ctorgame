@@ -9,6 +9,7 @@ import type {
     GameStage,
     Scores
 } from '@ctor-game/shared/types/core.js';
+import { GameSessionState } from '@ctor-game/shared/types/enums.js';
 
 import type { GameManagerState, GameManagerStateUpdate } from '../types/gameManager.js';
 import { logger } from '../utils/logger.js';
@@ -17,10 +18,10 @@ const PLAYER_FIRST = 1 as PlayerNumber;
 const PLAYER_SECOND = 2 as PlayerNumber;
 
 // Game phases constants
-const ALLOWED_TRANSITIONS: Record<GameStage, GameStage[]> = {
-    setup: ['play'],
-    play: ['end'],
-    end: ['setup']
+const ALLOWED_TRANSITIONS: Record<GameSessionState, GameSessionState[]> = {
+    [GameSessionState.INITIAL]: [GameSessionState.PLAYING],
+    [GameSessionState.PLAYING]: [GameSessionState.GAME_OVER],
+    [GameSessionState.GAME_OVER]: [GameSessionState.INITIAL]
 };
 
 /**
@@ -36,9 +37,9 @@ function isValidScores(scores: unknown): scores is Scores {
 /**
  * Проверить корректность фазы игры
  */
-function isValidGameStage(phase: unknown): phase is GameStage {
+function isValidGameState(phase: unknown): phase is GameSessionState {
     return typeof phase === 'string' && 
-           ['setup', 'play', 'end'].includes(phase as GameStage);
+           Object.values(GameSessionState).includes(phase as GameSessionState);
 }
 
 /**
@@ -176,7 +177,7 @@ export function validateStateTransition(
 
   // Проверяем согласованность данных
   if (update.phase) {  // Проверяем только если phase определена
-    if (update.phase === ('play' as GameStage) && !update.gameState) {
+    if (update.phase === GameSessionState.PLAYING && !update.gameState) {
       throw createValidationError(
         'Game state must be provided when transitioning to play phase',
         'INVALID_TRANSITION',
@@ -184,7 +185,7 @@ export function validateStateTransition(
       );
     }
 
-    if (update.phase === ('end' as GameStage) && !update.gameState?.gameOver) {
+    if (update.phase === GameSessionState.GAME_OVER && !update.gameState?.gameOver) {
       throw createValidationError(
         'Game must be over when transitioning to end phase',
         'INVALID_TRANSITION',
