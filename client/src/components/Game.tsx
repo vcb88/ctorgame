@@ -67,7 +67,7 @@ export const Game: React.FC = () => {
       return;
     }
 
-    if (gameState?.board[row][col] !== 0) {  // Using CellValue (0 = empty)
+    if (gameState?.board[row][col] !== CellValue.EMPTY) {
       logger.debug('Cell click ignored - cell not empty', {
         component: 'Game',
         data: { position, cellValue: gameState?.board[row][col] }
@@ -92,13 +92,13 @@ export const Game: React.FC = () => {
     }
 
     logger.userAction('makeMove', { position, type: 'place' as MoveType });
-    makeMove(position);  // Using position in [x, y] format
+    makeMove(position[0], position[1], 'place' as MoveType);  // Using x, y, type for move
   };
 
   if (error) {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen">
-        <div className="text-red-500 text-xl mb-4">{error}</div>
+        <div className="text-red-500 text-xl mb-4">{error.message}</div>
         <button
           className="bg-blue-500 text-white px-4 py-2 rounded"
           onClick={() => window.location.reload()}
@@ -188,10 +188,10 @@ export const Game: React.FC = () => {
         </div>
 
         <div className="grid grid-cols-10 gap-1 bg-gray-200 p-2">
-          {gameState.board.map((row: CellValue[], rowIndex: number) =>
-            row.map((cell: CellValue, colIndex: number) => {
+          {Array.from(gameState.board).map((row: CellValue[], rowIndex: number) =>
+            Array.from(row).map((cell: CellValue, colIndex: number) => {
               const position: Position = [colIndex, rowIndex];  // [x, y] format
-              const isDisabled = !isMyTurn || cell !== 0 || gameState.gameOver || gameState.currentTurn.placeOperations <= 0;
+              const isDisabled = !isMyTurn || cell !== CellValue.EMPTY || gameState.gameOver || gameState.currentTurn.placeOperations <= 0;
               return (
                 <GameCell
                   key={`${rowIndex}-${colIndex}`}
