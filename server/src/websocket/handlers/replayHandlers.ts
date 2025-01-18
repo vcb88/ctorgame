@@ -2,7 +2,8 @@ import { Socket } from 'socket.io';
 import { GameService } from '../../services/GameService.js';
 import type { 
     GameState,
-    GameId 
+    GameId,
+    PlaybackSpeed 
 } from '@ctor-game/shared/types/base/types.js';
 // Importing ReplayState from base types
 import type { 
@@ -17,7 +18,7 @@ type ReplayClientEvents = {
     'NEXT_MOVE': (data: { gameCode: string }) => void;
     'PREV_MOVE': (data: { gameCode: string }) => void;
     'GOTO_MOVE': (data: { gameCode: string, moveIndex: number }) => void;
-    'SET_PLAYBACK_SPEED': (data: { gameCode: string, speed: number }) => void;
+    'SET_PLAYBACK_SPEED': (data: { gameCode: string, speed: PlaybackSpeed }) => void;
     'END_REPLAY': (data: { gameCode: string }) => void;
 };
 
@@ -28,7 +29,7 @@ type ReplayServerEvents = {
     'REPLAY_ERROR': (data: { message: string }) => void;
     'REPLAY_COMPLETED': (data: { gameCode: string }) => void;
     'REPLAY_ENDED': (data: { gameCode: string }) => void;
-    'PLAYBACK_SPEED_UPDATED': (data: { speed: number }) => void;
+    'PLAYBACK_SPEED_UPDATED': (data: { speed: PlaybackSpeed }) => void;
 };
 // Basic validation functions (temporarily defined here)
 function validateReplayState(state: ReplayState): void {
@@ -45,8 +46,9 @@ function validateMoveIndex(index: number, totalMoves: number): void {
 }
 
 function validatePlaybackSpeed(speed: number): void {
-    if (speed <= 0 || speed > 5) {
-        throw new Error('Invalid playback speed. Must be between 0 and 5');
+    const validSpeeds: PlaybackSpeed[] = [0.25, 0.5, 1, 2, 4];
+    if (!validSpeeds.includes(speed as PlaybackSpeed)) {
+        throw new Error('Invalid playback speed. Valid values are: 0.25, 0.5, 1, 2, 4');
     }
 }
 
@@ -220,7 +222,7 @@ export function registerReplayHandlers(
     });
 
     // Изменить скорость воспроизведения
-    socket.on('SET_PLAYBACK_SPEED', ({ gameCode, speed }: { gameCode: GameId, speed: number }) => {
+    socket.on('SET_PLAYBACK_SPEED', ({ gameCode, speed }: { gameCode: GameId, speed: PlaybackSpeed }) => {
         try {
             const state = replayStates.get(gameCode);
             if (!state) {
