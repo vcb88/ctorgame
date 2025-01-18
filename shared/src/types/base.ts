@@ -1,4 +1,4 @@
-import { GamePhase, MoveType, GameError as CoreGameError } from './core.js';
+import { GameStage, MoveType, GameError as CoreGameError } from './core.js';
 
 // Game outcomes
 export type GameOutcome = 'WIN' | 'LOSS' | 'DRAW' | 'FORFEIT' | 'TIMEOUT';
