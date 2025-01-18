@@ -110,12 +110,11 @@ export const useMultiplayerGame = (): UseMultiplayerGameReturn => {
         data: { move, boardSize: BOARD_SIZE }
       });
 
-      throw createGameError({
-        code: 'INVALID_MOVE',
-        message: 'Invalid move',
-        severity: 'error',
-        details: { move }
-      });
+      throw createGameError(
+        'INVALID_MOVE',
+        'Invalid move',
+        { move }
+      );
     }
 
     await handleOperation(
@@ -141,7 +140,7 @@ export const useMultiplayerGame = (): UseMultiplayerGameReturn => {
   } = state;
   
   const gameId = baseGameState?.id;
-  const connectionState = isConnected ? 'connected' : 'disconnected';
+  const connectionState = isConnected ? ConnectionState.CONNECTED : ConnectionState.DISCONNECTED;
 
   // Get current game state from manager
   const gameStateManager = GameStateManager.getInstance();
@@ -165,9 +164,9 @@ export const useMultiplayerGame = (): UseMultiplayerGameReturn => {
   return {
     // Game state
     gameId: gameId ?? null,
-    playerNumber,
+    playerNumber: playerNumber as Player | null,
     gameState: currentGameState,
-    currentPlayer: playerNumber,
+    currentPlayer: currentPlayer as Player,
     isMyTurn,
     availableReplaces,
     
@@ -186,10 +185,10 @@ export const useMultiplayerGame = (): UseMultiplayerGameReturn => {
     endTurn,
     
     // Computed
-    isConnected: connectionState === 'connected',
-    isConnecting: connectionState === 'connecting',
-    isError: connectionState === 'error',
-    canRetry: isRetryable,
-    canRecover: isRecoverable
+    isConnected: connectionState === ConnectionState.CONNECTED,
+    isConnecting: connectionState === ConnectionState.CONNECTING,
+    isError: connectionState === ConnectionState.ERROR,
+    canRetry: isRetryable || false,
+    canRecover: isRecoverable || false
   };
 };
