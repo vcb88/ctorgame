@@ -1,16 +1,16 @@
 import { useState, useEffect, useMemo } from 'react';
 import { GameStateManager } from '../services/GameStateManager.js';
-import { ExtendedGameManagerState } from '../types/gameManager.js';
+import { GameManagerState } from '../types/gameManager.js';
 
 export interface UseGameReturn {
-  state: ExtendedGameManagerState;
+  state: GameManagerState;
   createGame: () => void;
   joinGame: (gameId: string) => void;
 }
 
 export function useGame(): UseGameReturn {
   const manager = useMemo(() => GameStateManager.getInstance(), []);
-  const [state, setState] = useState<ExtendedGameManagerState>(manager.getState());
+  const [state, setState] = useState<GameManagerState>(manager.getState());
 
   useEffect(() => {
     const unsubscribe = manager.subscribe(setState);
