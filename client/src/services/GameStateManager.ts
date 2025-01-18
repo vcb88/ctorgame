@@ -10,7 +10,8 @@ import type {
     UUID,
     Position,
     CellValue,
-    NetworkError
+    NetworkError,
+    GamePhase
 } from '@ctor-game/shared/types/base/types.js';
 
 import { 
