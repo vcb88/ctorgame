@@ -10,6 +10,7 @@ import {
 } from '@ctor-game/shared/types/core.js';
 import type { GameState } from '@/types/game-state.js';
 import { useMultiplayerGame } from '@/hooks/useMultiplayerGame.js';
+import { OperationType } from '@ctor-game/shared/types/enums.js';
 import { GameCell } from '@/components/GameCell.js';
 import { TurnTimer } from '@/components/TurnTimer.js';
 import { DisconnectionOverlay } from '@/components/modals/DisconnectionOverlay.js';
@@ -145,8 +146,8 @@ export const GameBoard: React.FC = () => {
             return;
         }
 
-        logger.userAction('makeMove', { row, col, type: 'place' });
-        makeMove(row, col, 'place');
+        logger.userAction('makeMove', { row, col, type: OperationType.PLACE });
+        makeMove(row, col, OperationType.PLACE);
     }, [isMyTurn, gameState, makeMove]);
 
     if (error) {
