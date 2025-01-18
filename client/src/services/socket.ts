@@ -4,25 +4,19 @@ import type { NetworkError } from '@ctor-game/shared/types/core.js';
 type ServerToClientEvents = {
     connect: () => void;
     disconnect: (reason: string) => void;
-    error: (error: NetworkError) => void;
-    connect_error: (error: NetworkError) => void;
+    error: (error: Error & NetworkError) => void;
+    connect_error: (error: Error & NetworkError) => void;
 }
 
 type ClientToServerEvents = {
     // Add client-to-server events here
 }
 
-interface ImportMetaEnv {
-  VITE_WS_URL: string;
-}
+/// <reference types="vite/client" />
 
-interface ImportMeta {
-  readonly env: ImportMetaEnv;
-}
-
-declare global {
+declare module 'vite/client' {
   interface ImportMetaEnv {
-    VITE_WS_URL: string;
+    readonly VITE_WS_URL: string;
   }
 }
 
@@ -63,7 +57,7 @@ export function createSocket(config = socketConfig): GameSocket {
       console.log('[Socket] Connected, id:', socket?.id);
     });
 
-    socket.on('connect_error', (error: NetworkError) => {
+    socket.on('connect_error', (error: Error & NetworkError) => {
       console.error('[Socket] Connection error:', {
         code: error.code,
         message: error.message,
@@ -76,7 +70,7 @@ export function createSocket(config = socketConfig): GameSocket {
       console.log('[Socket] Disconnected:', reason);
     });
 
-    socket.on('error', (error: NetworkError) => {
+    socket.on('error', (error: Error & NetworkError) => {
       console.error('[Socket] Error:', {
         code: error.code,
         message: error.message,
