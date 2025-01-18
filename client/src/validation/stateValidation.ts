@@ -17,14 +17,10 @@ const PLAYER_FIRST = 1 as PlayerNumber;
 const PLAYER_SECOND = 2 as PlayerNumber;
 
 // Game phases constants
-const PHASE_INITIAL = 'setup' as const;
-const PHASE_PLAY = 'play' as const;
-const PHASE_END = 'end' as const;
-
 const ALLOWED_TRANSITIONS: Record<GamePhase, GamePhase[]> = {
-    'setup': ['play'],
-    'play': ['end'],
-    'end': ['setup']
+    setup: ['play'],
+    play: ['end'],
+    end: ['setup']
 };
 
 /**
@@ -180,7 +176,7 @@ export function validateStateTransition(
 
   // Проверяем согласованность данных
   if (update.phase) {  // Проверяем только если phase определена
-    if (update.phase === PHASE_PLAY && !update.gameState) {
+    if (update.phase === 'play' && !update.gameState) {
       throw createValidationError(
         'Game state must be provided when transitioning to play phase',
         'INVALID_TRANSITION',
@@ -188,7 +184,7 @@ export function validateStateTransition(
       );
     }
 
-    if (update.phase === PHASE_END && !update.gameState?.gameOver) {
+    if (update.phase === 'end' && !update.gameState?.gameOver) {
       throw createValidationError(
         'Game must be over when transitioning to end phase',
         'INVALID_TRANSITION',
@@ -244,7 +240,7 @@ export function recoverFromValidationError(
   switch (error.code) {
     case 'INVALID_TRANSITION':
       // Если это ошибка перехода во время игры, пробуем восстановить состояние
-      if (currentState.phase === PHASE_PLAY) {
+      if (currentState.phase === 'play') {
         return {
           ...currentState,
           error: {
@@ -257,7 +253,7 @@ export function recoverFromValidationError(
       }
       // Для других случаев возвращаемся в исходное состояние
       return {
-        phase: PHASE_INITIAL,
+        phase: 'setup' as const,
         gameState: null,
         currentPlayer: null,
         availableReplaces: [],
@@ -274,7 +270,7 @@ export function recoverFromValidationError(
     case 'INVALID_STATE':
     case 'INVALID_DATA':
       // При ошибке данных во время игры пытаемся сохранить состояние
-      if (currentState.phase === PHASE_PLAY) {
+      if (currentState.phase === 'play') {
         return {
           ...currentState,
           error: {

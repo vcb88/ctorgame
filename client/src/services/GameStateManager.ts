@@ -69,7 +69,7 @@ export class GameStateManager {
         this.state = {
             gameState: null,
             currentPlayer: null,
-            phase: 'setup' as const,
+            phase: 'setup' satisfies GamePhase,
             availableReplaces: [],
             isConnected: false,
             isLoading: false,
