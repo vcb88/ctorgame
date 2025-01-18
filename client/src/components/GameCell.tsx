@@ -18,6 +18,8 @@ type GameCellProps = {
   isLastMove?: boolean;
   currentPlayer?: PlayerNumber;
   animationState?: CellAnimationState;
+  captured?: boolean;
+  previousValue?: CellValue;
 };
 
 export const GameCell: React.FC<GameCellProps> = ({
@@ -29,11 +31,13 @@ export const GameCell: React.FC<GameCellProps> = ({
   isHighlighted = false,
   isLastMove = false,
   currentPlayer,
-  animationState
+  animationState,
+  captured = false,
+  previousValue
 }) => {
   const isAnimating = animationState?.isAnimating;
   const animationType = animationState?.type;
-  const previousValue = animationState?.data?.previousValue;
+  const animationPreviousValue = animationState?.data?.previousValue;
   return (
     <div
       onClick={onClick}
