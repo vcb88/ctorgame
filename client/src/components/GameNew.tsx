@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { useMultiplayerGameNew } from '@/hooks/useMultiplayerGameNew.v2';
+import { useMultiplayerGame } from '@/hooks/useMultiplayerGame.js';
 import type { 
-  IGameState,
+  GameState,
   GameStatus,
-  GameOperationType,
-  OperationType
-} from '@ctor-game/shared/types/game/types.js';
+} from '@ctor-game/shared/dist/types/base/types.js';
+import { 
+  OperationType 
+} from '@ctor-game/shared/dist/types/enums.js';
+import { GameActionType as GameOperationType } from '@/types/actions.js';
 import type {
   PlayerNumber,
   CellValue,
@@ -30,7 +32,7 @@ export const GameNew: React.FC = () => {
     makeMove,
     canRetry,
     canRecover
-  } = useMultiplayerGameNew();
+  } = useMultiplayerGame();
 
   // Log state changes
   useEffect(() => {
@@ -57,7 +59,7 @@ export const GameNew: React.FC = () => {
       await createGame();
     } catch (err) {
       setLastError('Failed to create game. Please try again.');
-      logger.error('Create game failed', { error: err });
+      logger.error('Create game failed', { data: err });
     }
   };
 
@@ -67,7 +69,7 @@ export const GameNew: React.FC = () => {
       await joinGame(joinGameId);
     } catch (err) {
       setLastError('Failed to join game. Please check the game ID and try again.');
-      logger.error('Join game failed', { error: err });
+      logger.error('Join game failed', { data: err });
     }
   };
 
@@ -110,7 +112,7 @@ export const GameNew: React.FC = () => {
       logger.userAction('makeMove', { row, col, type: OperationType.PLACE });
       await makeMove(row, col, OperationType.PLACE);
     } catch (err) {
-      logger.error('Make move failed', { error: err });
+      logger.error('Make move failed', { data: err });
     }
   };
 

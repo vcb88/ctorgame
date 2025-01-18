@@ -4,7 +4,9 @@ export enum GameActionType {
     MOVE = 'move',
     END_TURN = 'endTurn',
     UNDO_MOVE = 'undoMove',
-    MAKE_MOVE = 'MAKE_MOVE'
+    MAKE_MOVE = 'MAKE_MOVE',
+    CREATE_GAME = 'CREATE_GAME',
+    JOIN_GAME = 'JOIN_GAME'
 }
 
 export type GameAction = {

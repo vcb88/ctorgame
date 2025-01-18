@@ -2,7 +2,7 @@ import React, { useState, useEffect, ReactNode } from 'react';
 import { useMultiplayerGame } from '@/hooks/useMultiplayerGame.js';
 // Game types
 import type { CellValue } from '@ctor-game/shared/types/core.js';
-import { BOARD_SIZE } from '@ctor-game/shared/constants.js';
+import { BOARD_SIZE } from '@ctor-game/shared/dist/config/constants.js';
 import type { 
   GameState,
   GameStatus,
@@ -201,7 +201,7 @@ export const Game: React.FC = () => {
                   value={cell}
                   disabled={isDisabled}
                   onClick={() => handleCellClick(rowIndex, colIndex)}
-                  isValidMove={!isDisabled && cell === CellValue.EMPTY && gameState.currentTurn.placeOperations > 0}
+                  isValidMove={!isDisabled && cell === 0 && gameState.currentTurn.placeOperations > 0}
                 />
               );
             })

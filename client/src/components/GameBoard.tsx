@@ -110,7 +110,7 @@ export function GameBoard({
     const capturedPositions: Position[] = [];
     const placedPositions: Position[] = [];
     
-    board.forEach((row, rowIndex) => {
+    board.cells.forEach((row, rowIndex) => {
       row.forEach((cell, colIndex) => {
         const prevValue = previousBoardRef.current[rowIndex]?.[colIndex];
         
@@ -150,7 +150,7 @@ export function GameBoard({
             startTime: now,
             data: {
               previousValue: previousBoardRef.current[y]?.[x],
-              newValue: board[y][x]
+              newValue: board.cells[y][x]
             }
           };
         });
@@ -162,7 +162,7 @@ export function GameBoard({
             type: 'place',
             startTime: now,
             data: {
-              newValue: board[y][x]
+              newValue: board.cells[y][x]
             }
           };
         });
@@ -186,7 +186,7 @@ export function GameBoard({
     }
 
     // Update previous board reference
-    previousBoardRef.current = board;
+    previousBoardRef.current = board.cells;
   }, [board, clearAnimations, scheduleAnimationCleanup]);
 
   const handleCellClick = useCallback((rowIndex: number, colIndex: number) => {
@@ -214,10 +214,10 @@ export function GameBoard({
     }
 
     // Check if the move is valid
-    const moveValid = isValidMove ? isValidMove(rowIndex, colIndex) : (!disabled && board[rowIndex][colIndex] === null);
+    const moveValid = isValidMove ? isValidMove(rowIndex, colIndex) : (!disabled && board.cells[rowIndex][colIndex] === null);
     const validationReason = !moveValid ? 
       (disabled ? 'Board is disabled' : 
-       board[rowIndex][colIndex] !== null ? 'Cell is not empty' : 
+       board.cells[rowIndex][colIndex] !== null ? 'Cell is not empty' : 
        'Move validation failed') : undefined;
 
     logger.validation('GameBoard', 
@@ -270,7 +270,7 @@ export function GameBoard({
 
   return (
     <div className="grid grid-cols-10 gap-1 bg-gray-200 p-2">
-      {board.map((row, rowIndex) =>
+      {board.cells.map((row, rowIndex) =>
         row.map((cell, colIndex) => {
           const position: Position = [colIndex, rowIndex];
           const { isHighlighted, isLastMove } = getCellHighlightState(rowIndex, colIndex);
