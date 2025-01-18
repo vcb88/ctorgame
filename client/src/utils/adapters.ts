@@ -8,5 +8,5 @@ type GameScores = {
  * Converts GameScores interface to Scores tuple
  */
 export const adaptScores = (scores: GameScores): Scores => {
-    return [scores.player1, scores.player2];
+    return [scores[1], scores[2]];  // Using numeric indices matching PlayerNumber type
 };
