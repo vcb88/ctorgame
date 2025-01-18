@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { BOARD_SIZE } from '@ctor-game/shared/constants.js';
+const BOARD_SIZE = 10; // temporary constant until we fix the import
 import { 
     type Position, 
     type PlayerNumber, 
@@ -71,7 +71,9 @@ export const GameBoard: React.FC = () => {
         }
         
         setCapturedCells(captures);
-        setPreviousBoard(gameState.board as CellValue[][]);
+        const newBoard = Array.from({length: BOARD_SIZE}, (_, row) => 
+            Array.from({length: BOARD_SIZE}, (_, col) => gameState.board[row][col]));
+        setPreviousBoard(newBoard);
     }, [gameState?.board]);
 
     useEffect(() => {
@@ -103,7 +105,7 @@ export const GameBoard: React.FC = () => {
 
     useEffect(() => {
         if (error) {
-            logger.error('GameBoard error', { error });
+            logger.error('GameBoard error occurred', { data: error });
         }
     }, [error]);
 
@@ -144,7 +146,7 @@ export const GameBoard: React.FC = () => {
         }
 
         logger.userAction('makeMove', { row, col, type: 'place' });
-        makeMove(pos, 'place');
+        makeMove(row, col, 'place');
     }, [isMyTurn, gameState, makeMove]);
 
     if (error) {
@@ -169,7 +171,7 @@ export const GameBoard: React.FC = () => {
         );
     }
 
-    const formatPlayerSymbol = (num: PlayerNumber) => num === 1 ? 'X' : 'O';
+    const formatPlayerSymbol = (num: PlayerNumber | null | undefined) => !num ? '?' : (num === 1 ? 'X' : 'O');
 
     return (
         <div className="flex flex-col items-center justify-center min-h-screen p-4 bg-black text-cyan-400">
@@ -217,20 +219,22 @@ export const GameBoard: React.FC = () => {
                             className="mr-4"
                         />
                         <div className="grid grid-cols-10 gap-1 bg-black/90 p-2 rounded border border-cyan-500/30 shadow-[0_0_30px_rgba(6,182,212,0.2)] flex-1">
-                            {Array.from({length: BOARD_SIZE}, (_, rowIndex) =>
-                                Array.from({length: BOARD_SIZE}, (_, colIndex) => {
+                            {Array.from({ length: BOARD_SIZE }, (_, rowIndex) =>
+                                Array.from({ length: BOARD_SIZE }, (_, colIndex) => {
                                     const cell = gameState.board[rowIndex][colIndex];
-                                    return <GameCell
-                                        key={`${rowIndex}-${colIndex}`}
-                                        value={cell}
-                                        position={[rowIndex, colIndex] as Position}
-                                        disabled={!isMyTurn || cell !== null || gameState.phase === 'end' || gameState.currentTurn.placeOperations <= 0}
-                                        onClick={() => handleCellClick(rowIndex, colIndex)}
-                                        isValidMove={validMoves[`${rowIndex}-${colIndex}`]}
-                                        isBeingCaptured={capturedCells[`${rowIndex}-${colIndex}`]}
-                                        previousValue={previousBoard[rowIndex]?.[colIndex]}
-                                    />
-                                ))
+                                    return (
+                                        <GameCell
+                                            key={`${rowIndex}-${colIndex}`}
+                                            value={cell}
+                                            position={[rowIndex, colIndex] as Position}
+                                            disabled={!isMyTurn || cell !== null || gameState.phase === 'end' || gameState.currentTurn.placeOperations <= 0}
+                                            onClick={() => handleCellClick(rowIndex, colIndex)}
+                                            isValidMove={validMoves[`${rowIndex}-${colIndex}`]}
+                                            captured={capturedCells[`${rowIndex}-${colIndex}`]}
+                                            previousValue={previousBoard[rowIndex]?.[colIndex]}
+                                        />
+                                    );
+                                })
                             )}
                         </div>
                     </div>
