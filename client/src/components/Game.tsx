@@ -1,8 +1,8 @@
 import React, { useState, useEffect, ReactNode } from 'react';
 import { useMultiplayerGame } from '@/hooks/useMultiplayerGame.js';
 // Game types
-import { CellValue } from '@ctor-game/shared/enums/cell.js';
-import type { Board } from '@ctor-game/shared/types/board.js';
+import type { CellValue } from '@ctor-game/shared/types/core.js';
+import { BOARD_SIZE } from '@ctor-game/shared/constants.js';
 import type { 
   GameState,
   GameStatus,
@@ -68,7 +68,7 @@ export const Game: React.FC = () => {
       return;
     }
 
-    if (gameState?.board[row][col] !== CellValue.EMPTY) {
+    if (gameState?.board[row][col] !== 0) {
       logger.debug('Cell click ignored - cell not empty', {
         component: 'Game',
         data: { position, cellValue: gameState?.board[row][col] }
@@ -189,11 +189,11 @@ export const Game: React.FC = () => {
         </div>
 
         <div className="grid grid-cols-10 gap-1 bg-gray-200 p-2">
-          {Array.from({length: gameState.board.size}, (_, rowIndex) =>
-            Array.from({length: gameState.board.size}, (_, colIndex) => {
+          {Array.from({length: BOARD_SIZE}, (_, rowIndex) =>
+            Array.from({length: BOARD_SIZE}, (_, colIndex) => {
               const cell = gameState.board[rowIndex][colIndex];
               const position: Position = [colIndex, rowIndex];  // [x, y] format
-              const isDisabled = !isMyTurn || cell !== CellValue.EMPTY || gameState.gameOver || gameState.currentTurn.placeOperations <= 0;
+              const isDisabled = !isMyTurn || cell !== 0 || gameState.gameOver || gameState.currentTurn.placeOperations <= 0;
               return (
                 <GameCell
                   key={`${rowIndex}-${colIndex}`}
