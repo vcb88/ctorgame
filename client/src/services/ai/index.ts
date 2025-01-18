@@ -89,8 +89,8 @@ export class GameAI implements IGameAI {
         let bestMove: MoveEvaluation | null = null;
 
         // Evaluate all possible moves
-        for (let x = 0; x < state.board.size.width; x++) {
-            for (let y = 0; y < state.board.size.height; y++) {
+        for (let x = 0; x < state.board.width; x++) {
+            for (let y = 0; y < state.board.height; y++) {
                 // Check timeout
                 if (this.config.maxThinkTime && Date.now() - startTime > this.config.maxThinkTime) {
                     break;
@@ -122,13 +122,13 @@ export class GameAI implements IGameAI {
         let groupsStrength = 0;
 
         // Count pieces and evaluate basic metrics
-        for (let x = 0; x < board.size.width; x++) {
-            for (let y = 0; y < board.size.height; y++) {
+        for (let x = 0; x < board.width; x++) {
+            for (let y = 0; y < board.height; y++) {
                 if (board.cells[x][y] === player) {
                     pieces++;
                     // Add territory control
                     this.forEachNeighbor(board, x, y, 2, (nx, ny) => {
-                        if (board.cells[nx][ny] === 0) {
+                        if (board.cells[nx][ny] === null) {
                             territory++;
                         }
                     });
@@ -148,7 +148,7 @@ export class GameAI implements IGameAI {
         }
 
         // Normalize values
-        const maxTerritory = board.size.width * board.size.height;
+        const maxTerritory = board.width * board.height;
         const normalizedTerritory = (territory / maxTerritory) * 100;
         const normalizedGroupsStrength = (groupsStrength / pieces) * 100;
 
@@ -206,8 +206,8 @@ export class GameAI implements IGameAI {
                 if (dx === 0 && dy === 0) continue;
                 const distance = Math.abs(dx) + Math.abs(dy);
                 if (distance <= radius) {
-                    const nx = ((x + dx + board.size.width) % board.size.width);
-                    const ny = ((y + dy + board.size.height) % board.size.height);
+                    const nx = ((x + dx + board.width) % board.width);
+                    const ny = ((y + dy + board.height) % board.height);
                     callback(nx, ny, distance);
                 }
             }
@@ -227,15 +227,15 @@ export class GameAI implements IGameAI {
         let block = 0;
 
         // Count territory control
-        this.forEachNeighbor(state.board, position.x, position.y, 2, (nx, ny) => {
-            if (state.board.cells[nx][ny] === 0) {
+        this.forEachNeighbor(state.board, position[0], position[1], 2, (nx, ny) => {
+            if (state.board.cells[nx][ny] === null) {
                 territory++;
             }
         });
 
         // Evaluate replacement potential
         let ownCount = 0;
-        this.forEachNeighbor(state.board, position.x, position.y, 1, (nx, ny) => {
+        this.forEachNeighbor(state.board, position[0], position[1], 1, (nx, ny) => {
             if (state.board.cells[nx][ny] === state.currentPlayer) {
                 ownCount++;
                 if (ownCount >= 4) replacement += 10;
