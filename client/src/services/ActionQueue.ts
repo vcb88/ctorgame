@@ -109,7 +109,7 @@ export class ActionQueue {
                 throw {
                     code: 'OPERATION_FAILED',
                     message: 'Conflicting operation in progress',
-                    severity: 'MEDIUM',
+                    severity: 'error',
                     details: { action },
                     timestamp
                 } as NetworkError;
@@ -125,7 +125,7 @@ export class ActionQueue {
             const clientError: NetworkError = {
                 code: 'OPERATION_FAILED',
                 message: error instanceof Error ? error.message : 'Operation failed',
-                severity: 'MEDIUM',
+                severity: 'error',
                 details: { error, action },
                 timestamp
             };
@@ -152,9 +152,9 @@ export class ActionQueue {
         const timestamp = Date.now();
         this.queue.forEach(({ reject }) => {
             reject({
-                code: 'OPERATION_CANCELLED',
+                code: 'OPERATION_TIMEOUT',
                 message: 'Operation cancelled - queue cleared',
-                severity: 'LOW',
+                severity: 'warning',
                 timestamp
             });
         });
