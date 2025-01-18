@@ -15,15 +15,17 @@ const PLAYER_SECOND = 2 as PlayerNumber;
 import type { GameManagerState, GameManagerStateUpdate } from '../types/gameManager.js';
 import { logger } from '../utils/logger.js';
 
-// Game phases as constant values
+// Game phases from enum
+import { GamePhase as GP } from '@ctor-game/shared/types/enums.js';
+
 const GAME_PHASES = {
-    INITIAL: 'initial' as GamePhase,
-    CONNECTING: 'connecting' as GamePhase,
-    WAITING: 'waiting' as GamePhase,
-    PLAYING: 'playing' as GamePhase,
-    GAME_OVER: 'game_over' as GamePhase,
-    ERROR: 'error' as GamePhase,
-    FINISHED: 'finished' as GamePhase
+    INITIAL: GP.INITIAL,
+    CONNECTING: GP.CONNECTING,
+    WAITING: GP.WAITING,
+    PLAYING: GP.PLAYING,
+    GAME_OVER: GP.GAME_OVER,
+    ERROR: GP.ERROR,
+    FINISHED: GP.FINISHED
 } as const;
 
 /**
@@ -41,7 +43,7 @@ function isValidScores(scores: unknown): scores is Scores {
  */
 function isValidGamePhase(phase: unknown): phase is GamePhase {
     return typeof phase === 'string' && 
-           ['setup', 'play', 'end'].includes(phase);
+           Object.values(GP).includes(phase as GamePhase);
 }
 
 /**
@@ -52,11 +54,15 @@ function isValidGameManagerState(state: unknown): state is GameManagerState {
     const s = state as Partial<GameManagerState>;
     
     return typeof s.phase === 'string' &&
-           (s.gameId === null || typeof s.gameId === 'string') &&
-           (s.playerNumber === null || (
-               typeof s.playerNumber === 'number' && 
-               [PLAYER_FIRST, PLAYER_SECOND].includes(s.playerNumber)
-           ));
+           (s.gameState === null || typeof s.gameState === 'object') &&
+           (s.currentPlayer === null || (
+               typeof s.currentPlayer === 'number' && 
+               [PLAYER_FIRST, PLAYER_SECOND].includes(s.currentPlayer)
+           )) &&
+           typeof s.isConnected === 'boolean' &&
+           typeof s.isLoading === 'boolean' &&
+           Array.isArray(s.availableReplaces) &&
+           (s.error === null || typeof s.error === 'object');
 }
 
 /**
@@ -183,20 +189,22 @@ export function validateStateTransition(
   }
 
   // Проверяем согласованность данных
-  if (update.phase === GAME_PHASES.PLAYING && !update.gameState) {
-    throw createValidationError(
-      'Game state must be provided when transitioning to PLAYING phase',
-      'INVALID_TRANSITION',
-      'gameState'
-    );
-  }
+  if (update.phase) {  // Проверяем только если phase определена
+    if (update.phase === GAME_PHASES.PLAYING && !update.gameState) {
+      throw createValidationError(
+        'Game state must be provided when transitioning to PLAYING phase',
+        'INVALID_TRANSITION',
+        'gameState'
+      );
+    }
 
-  if (update.phase === GAME_PHASES.GAME_OVER && !update.gameState?.gameOver) {
-    throw createValidationError(
-      'Game must be over when transitioning to GAME_OVER phase',
-      'INVALID_TRANSITION',
-      'gameState'
-    );
+    if (update.phase === GAME_PHASES.GAME_OVER && !update.gameState?.gameOver) {
+      throw createValidationError(
+        'Game must be over when transitioning to GAME_OVER phase',
+        'INVALID_TRANSITION',
+        'gameState'
+      );
+    }
   }
 
   return true;
@@ -262,8 +270,11 @@ export function recoverFromValidationError(
       // Для других случаев возвращаемся в исходное состояние
       return {
         phase: GAME_PHASES.INITIAL,
-        gameId: null,
-        playerNumber: null,
+        gameState: null,
+        currentPlayer: null,
+        availableReplaces: [],
+        isConnected: false,
+        isLoading: false,
         error: {
           code: 'VALIDATION_ERROR',
           message: 'Game state was reset due to invalid transition',
