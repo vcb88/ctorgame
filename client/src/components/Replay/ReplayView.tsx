@@ -5,7 +5,8 @@ import type {
     PlayerNumber, 
     GameState, 
     Scores,
-    GameId
+    GameId,
+    GameMove
 } from '@ctor-game/shared/types/core.js';
 import type { HistoryEntry } from '../../hooks/useGameHistory.js';
 import { useReplay } from '../../hooks/useReplay.js';
@@ -15,15 +16,16 @@ import { MoveTimeline } from './MoveTimeline.js';
 import { GameBoard } from '../GameBoard.js';
 import { Alert } from '../ui/alert.js';
 
-/** Converts GameHistoryMove to GameMove by adding required properties */
+/** Converts history entry to format expected by MoveTimeline */
 const adaptHistoryMove = (entry: HistoryEntry): HistoryEntry => ({
     ...entry,
     move: {
-        ...entry.move,
+        type: entry.move.type,
+        position: entry.move.position,
         player: entry.playerNumber,
         timestamp: entry.timestamp,
         moveNumber: entry.moveNumber
-    }
+    } as GameMove
 });
 
 type ReplayViewProps = {
