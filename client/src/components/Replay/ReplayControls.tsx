@@ -9,8 +9,7 @@ import {
     Rewind,
     FastForward
 } from 'lucide-react';
-
-type PlaybackSpeed = 0.5 | 1 | 2;
+import type { PlaybackSpeed } from '@ctor-game/shared/types/base/types';
 
 type ReplayControlsProps = {
     isPlaying: boolean;

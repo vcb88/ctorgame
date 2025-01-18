@@ -4,20 +4,23 @@ import type {
     Position,
     PlayerNumber,
     MoveType,
-    Timestamp
-} from '@ctor-game/shared/types/core.js';
+    Timestamp,
+    GameMoveBase
+} from '@ctor-game/shared/types/base/types';
 
 type UseGameHistoryProps = {
     socket: Socket;
     gameCode: string;
 };
 
-type GameHistoryMove = import('@ctor-game/shared/types/core.js').GameMoveBase;
-
 export type HistoryEntry = {
     moveNumber: number;
     playerNumber: PlayerNumber;
-    move: GameHistoryMove;
+    move: GameMoveBase & {
+        player: PlayerNumber;
+        timestamp: number;
+        moveNumber?: number;
+    };
     timestamp: Timestamp;
 };
 

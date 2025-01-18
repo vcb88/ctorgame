@@ -6,8 +6,9 @@ import type {
     GameState, 
     Scores,
     GameId,
-    GameMove
-} from '@ctor-game/shared/types/core.js';
+    GameMove,
+    PlaybackSpeed
+} from '@ctor-game/shared/types/base/types';
 import type { HistoryEntry } from '../../hooks/useGameHistory.js';
 import { useReplay } from '../../hooks/useReplay.js';
 import { useGameHistory } from '../../hooks/useGameHistory.js';
