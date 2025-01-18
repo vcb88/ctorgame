@@ -415,6 +415,12 @@ export type ServerToClientEvents = {
     'game_replay': (data: { gameCode: string; moves: GameMove[]; states: GameState[] }) => void;
     'game_history': (data: { moves: GameMove[] }) => void;
     'game_move': (data: { move: GameMove; timestamp: number }) => void;
+    'replay_state_updated': (data: { state: GameState; moveIndex: number; totalMoves: number }) => void;
+    'replay_paused': () => void;
+    'replay_resumed': () => void;
+    'replay_completed': () => void;
+    'replay_error': (data: { message: string; code?: string }) => void;
+    'playback_speed_updated': (data: { speed: PlaybackSpeed }) => void;
 };
 
 export type ClientToServerEvents = {
@@ -426,6 +432,14 @@ export type ClientToServerEvents = {
     'list_saved_games': () => void;
     'load_game_replay': (data: { gameCode: string }) => void;
     'list_game_history': (data: { gameCode: string }) => void;
+    'start_replay': (data: { gameCode: string }) => void;
+    'pause_replay': (data: { gameCode: string }) => void;
+    'resume_replay': (data: { gameCode: string }) => void;
+    'next_move': (data: { gameCode: string }) => void;
+    'prev_move': (data: { gameCode: string }) => void;
+    'goto_move': (data: { gameCode: string; moveIndex: number }) => void;
+    'set_playback_speed': (data: { gameCode: string; speed: PlaybackSpeed }) => void;
+    'end_replay': (data: { gameCode: string }) => void;
 };
 
 
