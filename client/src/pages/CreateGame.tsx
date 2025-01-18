@@ -16,6 +16,8 @@ export const CreateGame: React.FC = () => {
       data: { gameId, connectionState }
     });
     
+    let interval: NodeJS.Timeout | null = null;
+
     if (!gameId && connectionState === 'CONNECTED') {
       logger.info('Initiating game creation', {
         component: 'CreateGame',
@@ -33,16 +35,20 @@ export const CreateGame: React.FC = () => {
       ];
       
       let currentStage = 0;
-      const interval = setInterval(() => {
+      interval = setInterval(() => {
         if (currentStage < stages.length) {
           setStatus(stages[currentStage]);
           setProgress((currentStage + 1) * (100 / stages.length));
           currentStage++;
         }
       }, 800);
-
-      return () => clearInterval(interval);
     }
+
+    return () => {
+      if (interval) {
+        clearInterval(interval);
+      }
+    };
   }, [gameId, connectionState, createGame]);
 
   useEffect(() => {
