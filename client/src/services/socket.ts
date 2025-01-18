@@ -14,10 +14,8 @@ type ClientToServerEvents = {
 
 /// <reference types="vite/client" />
 
-declare module 'vite/client' {
-  interface ImportMetaEnv {
+interface ImportMetaEnv {
     readonly VITE_WS_URL: string;
-  }
 }
 
 type GameSocket = Socket<ServerToClientEvents, ClientToServerEvents>;

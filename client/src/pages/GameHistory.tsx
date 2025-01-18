@@ -9,8 +9,8 @@ import {
     isGameStateError,
     createGameStateError 
 } from '@ctor-game/shared/types/errors.js';
-import { getSocket } from '../*services/socket.js';
-import { ReplayView } from '../*components/Replay/ReplayView.js';
+import { getSocket } from '@/services/socket';
+import { ReplayView } from '@/components/Replay/ReplayView';
 import { CyberButton } from '@/components/ui/cyber-button.js';
 import { NeonGridBackground } from '@/components/backgrounds/NeonGridBackground';
 import { cn } from '@/lib/utils.js';
