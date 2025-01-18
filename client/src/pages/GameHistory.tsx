@@ -2,13 +2,12 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import type { PlayerNumber } from '@ctor-game/shared/types/core.js';
 import type { GameSummary, Timestamp } from '@/types/game-summary.js';
+import type { GameError, NetworkError } from '@ctor-game/shared/types/base/types.js';
 import { 
-    type GameError, 
-    isNetworkError,
-    isDataError,
     isGameStateError,
     createGameStateError 
 } from '@ctor-game/shared/types/errors.js';
+import { logger } from '@/utils/logger.js';
 import { getSocket } from '@/services/socket';
 import { ReplayView } from '@/components/Replay/ReplayView';
 import { CyberButton } from '@/components/ui/cyber-button.js';
@@ -16,11 +15,12 @@ import { NeonGridBackground } from '@/components/backgrounds/NeonGridBackground'
 import { cn } from '@/lib/utils.js';
 
 const ARCHIVE_VERSION = 'v1.0.1';
+const COMPONENT_NAME = 'GameHistory';
 
 export function GameHistory() {
     const [games, setGames] = useState<GameSummary[]>([]);
     const [loading, setLoading] = useState(true);
-    const [error, setError] = useState<GameError | null>(null);
+    const [error, setError] = useState<GameError | NetworkError | null>(null);
     const [selectedGame, setSelectedGame] = useState<string | null>(null);
     const [loadingReplays, setLoadingReplays] = useState<Set<string>>(new Set());
     const navigate = useNavigate();
@@ -29,35 +29,34 @@ export function GameHistory() {
         const socket = getSocket();
         
         // Request saved games list
-        socket.emit('GET_SAVED_GAMES');
+        socket.emit('get_saved_games');
 
         const handleGames = (data: { games: GameSummary[] }) => {
             setGames(data.games);
             setLoading(false);
         };
 
-        const handleError = (error: GameError) => {
-            setError(error);
+        const handleError = (err: GameError | NetworkError) => {
+            setError(err);
             setLoading(false);
             
-            // Log different types of errors appropriately
-            if (isNetworkError(error)) {
-                console.error('Network error:', error.details?.statusCode, error.message);
-            } else if (isDataError(error)) {
-                console.error('Data error:', error.details?.field, error.message);
-            } else if (isGameStateError(error)) {
-                console.error('Game state error:', error.details?.gameId, error.message);
-            } else {
-                console.error('Unknown error:', error.message);
-            }
+            // Log error with appropriate context
+            logger.error('Game history error occurred', {
+                component: COMPONENT_NAME,
+                error: err,
+                context: { 
+                    category: err.category,
+                    code: err.code
+                }
+            });
         };
 
-        socket.on('SAVED_GAMES', handleGames);
-        socket.on('ERROR', handleError);
+        socket.on('saved_games', handleGames);
+        socket.on('error', handleError);
 
         return () => {
-            socket.off('SAVED_GAMES', handleGames);
-            socket.off('ERROR', handleError);
+            socket.off('saved_games', handleGames);
+            socket.off('error', handleError);
         };
     }, []);
 
@@ -78,14 +77,23 @@ export function GameHistory() {
             
             // Request replay data through socket
             const socket = getSocket();
-            socket.emit('REQUEST_REPLAY', { gameCode });
+            socket.emit('request_replay', { gameCode });
             
             // After successful request, show replay view
             setSelectedGame(gameCode);
         } catch (err) {
             // Handle error
-            const error = err instanceof Error ? err : new Error('Failed to load replay');
-            handleError(createGameError.gameState(error.message, { gameId: gameCode }));
+            logger.error('Failed to load replay', {
+                component: COMPONENT_NAME,
+                error: err,
+                context: { gameCode }
+            });
+
+            setError(createGameStateError(
+                'GAME_NOT_FOUND',
+                'Failed to load game replay',
+                { gameId: gameCode }
+            ));
         } finally {
             // Remove game from loading state
             setLoadingReplays(prev => {
