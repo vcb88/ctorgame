@@ -21,6 +21,9 @@ export class ErrorHandlingService {
     }
 
     private static convertGameErrorToNetworkError(error: GameError): NetworkError {
+        const errorJson = error.toJSON();
+        const isRecoverable = error.severity !== 'critical' && error.category === 'game';
+        
         return {
             code: error.code,
             message: error.message,
@@ -33,8 +36,8 @@ export class ErrorHandlingService {
             },
             stack: error.stack || 'No stack trace available',
             name: 'NetworkError',
-            retryCount: error.retryCount ?? 0,
-            retryable: error.recoverable ?? false,
+            retryCount: 0,  // Initial conversion starts with 0 retries
+            retryable: isRecoverable,  // Game errors are retryable unless critical
             timestamp: Date.now()
         };
     }
