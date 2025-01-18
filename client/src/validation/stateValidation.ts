@@ -197,7 +197,7 @@ export function recoverFromValidationError(
           ...currentState,
           phase: GamePhase.CONNECTING,
           error: {
-            code: 'STATE_VALIDATION_ERROR',
+            code: 'VALIDATION_ERROR',
             message: 'Failed to validate state during join operation'
           }
         };
@@ -208,7 +208,7 @@ export function recoverFromValidationError(
         gameId: null,
         playerNumber: null,
         error: {
-          code: 'STATE_TRANSITION_ERROR',
+          code: 'VALIDATION_ERROR',
           message: 'Game state was reset due to invalid transition'
         }
       };
@@ -221,7 +221,7 @@ export function recoverFromValidationError(
           ...currentState,
           phase: GamePhase.CONNECTING,
           error: {
-            code: 'STATE_VALIDATION_ERROR',
+            code: 'VALIDATION_ERROR',
             message: 'Maintaining connection state during data validation',
             details: error.details
           }
@@ -231,7 +231,7 @@ export function recoverFromValidationError(
       return {
         ...currentState,
         error: {
-          code: 'STATE_VALIDATION_ERROR',
+          code: 'VALIDATION_ERROR',
           message: 'Game state was partially recovered',
           details: error.details
         }
