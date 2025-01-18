@@ -43,8 +43,14 @@ export function useGameHistory({ socket, gameCode }: UseGameHistoryProps): UseGa
         socket.emit('list_game_history', { gameCode });
 
         // History handler
-        const handleHistory = (data: { moves: HistoryEntry[] }) => {
-            setMoves(data.moves);
+        const handleHistory = (data: { moves: GameMove[] }) => {
+            const historyEntries = data.moves.map((move, index) => ({
+                moveNumber: index + 1,
+                playerNumber: move.player,
+                move: move,
+                timestamp: move.timestamp
+            }));
+            setMoves(historyEntries);
             setLoading(false);
         };
 
