@@ -1,10 +1,12 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import type { 
-    Position, 
-    PlayerNumber, 
-    MoveType, 
-    CellValue
+import { BOARD_SIZE } from '@ctor-game/shared/constants.js';
+import { 
+    type Position, 
+    type PlayerNumber, 
+    type MoveType, 
+    type CellValue,
+    type GameError
 } from '@ctor-game/shared/types/core.js';
 import type { GameState } from '@/types/game-state.js';
 import { useMultiplayerGame } from '@/hooks/useMultiplayerGame.js';
@@ -43,13 +45,13 @@ export const GameBoard: React.FC = () => {
         }
 
         const moves: ValidMovesMap = {};
-        gameState.board.forEach((row, rowIndex) => {
-            row.forEach((cell, colIndex) => {
-                if (cell === null) {
+        for (let rowIndex = 0; rowIndex < BOARD_SIZE; rowIndex++) {
+            for (let colIndex = 0; colIndex < BOARD_SIZE; colIndex++) {
+                if (gameState.board[rowIndex][colIndex] === null) {
                     moves[`${rowIndex}-${colIndex}`] = true;
                 }
-            });
-        });
+            }
+        }
         setValidMoves(moves);
     }, [gameState?.board, isMyTurn]);
 
@@ -58,17 +60,18 @@ export const GameBoard: React.FC = () => {
         if (!gameState?.board) return;
 
         const captures: CapturedCellsMap = {};
-        gameState.board.forEach((row, rowIndex) => {
-            row.forEach((cell, colIndex) => {
+        for (let rowIndex = 0; rowIndex < BOARD_SIZE; rowIndex++) {
+            for (let colIndex = 0; colIndex < BOARD_SIZE; colIndex++) {
+                const cell = gameState.board[rowIndex][colIndex];
                 const prevValue = previousBoard[rowIndex]?.[colIndex];
                 if (prevValue !== undefined && prevValue !== null && cell !== prevValue) {
                     captures[`${rowIndex}-${colIndex}`] = true;
                 }
-            });
-        });
+            }
+        }
         
         setCapturedCells(captures);
-        setPreviousBoard(gameState.board);
+        setPreviousBoard(gameState.board as CellValue[][]);
     }, [gameState?.board]);
 
     useEffect(() => {
@@ -132,10 +135,10 @@ export const GameBoard: React.FC = () => {
             return;
         }
 
-        if (gameState.movesLeft <= 0) {
+        if (gameState.currentTurn.placeOperations <= 0) {
             logger.debug('Cell click ignored - no moves left', {
                 component: 'GameBoard',
-                data: { row, col, movesLeft: gameState.movesLeft }
+                data: { row, col, operationsLeft: gameState.currentTurn.placeOperations }
             });
             return;
         }
@@ -147,7 +150,7 @@ export const GameBoard: React.FC = () => {
     if (error) {
         return (
             <div className="flex flex-col items-center justify-center min-h-screen">
-                <div className="text-red-500 text-xl mb-4">{error}</div>
+                <div className="text-red-500 text-xl mb-4">{error.message}</div>
                 <button
                     className="bg-blue-500 text-white px-4 py-2 rounded"
                     onClick={() => navigate('/')}
@@ -203,7 +206,7 @@ export const GameBoard: React.FC = () => {
                             </div>
                         </div>
                         <div className="text-cyan-300">
-                            Moves left: {gameState.movesLeft}
+                            Operations left: {gameState.currentTurn.placeOperations}
                         </div>
                     </div>
 
@@ -214,13 +217,14 @@ export const GameBoard: React.FC = () => {
                             className="mr-4"
                         />
                         <div className="grid grid-cols-10 gap-1 bg-black/90 p-2 rounded border border-cyan-500/30 shadow-[0_0_30px_rgba(6,182,212,0.2)] flex-1">
-                            {gameState.board.map((row, rowIndex) =>
-                                row.map((cell, colIndex) => (
-                                    <GameCell
+                            {Array.from({length: BOARD_SIZE}, (_, rowIndex) =>
+                                Array.from({length: BOARD_SIZE}, (_, colIndex) => {
+                                    const cell = gameState.board[rowIndex][colIndex];
+                                    return <GameCell
                                         key={`${rowIndex}-${colIndex}`}
                                         value={cell}
-                                        pos={[rowIndex, colIndex] as Position}
-                                        disabled={!isMyTurn || cell !== null || gameState.phase === 'end' || gameState.movesLeft <= 0}
+                                        position={[rowIndex, colIndex] as Position}
+                                        disabled={!isMyTurn || cell !== null || gameState.phase === 'end' || gameState.currentTurn.placeOperations <= 0}
                                         onClick={() => handleCellClick(rowIndex, colIndex)}
                                         isValidMove={validMoves[`${rowIndex}-${colIndex}`]}
                                         isBeingCaptured={capturedCells[`${rowIndex}-${colIndex}`]}
