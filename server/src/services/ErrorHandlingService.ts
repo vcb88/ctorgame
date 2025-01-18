@@ -33,8 +33,8 @@ export class ErrorHandlingService {
             },
             stack: error.stack || 'No stack trace available',
             name: 'NetworkError',
-            retryCount: error.retryCount,
-            retryable: error.recoverable,
+            retryCount: error.retryCount ?? 0,
+            retryable: error.recoverable ?? false,
             timestamp: Date.now()
         };
     }
