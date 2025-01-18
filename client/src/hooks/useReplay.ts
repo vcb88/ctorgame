@@ -9,20 +9,20 @@ import type {
 
 // Event types
 export const ReplayEvent = {
-    START_REPLAY: 'START_REPLAY',
-    PAUSE_REPLAY: 'PAUSE_REPLAY',
-    RESUME_REPLAY: 'RESUME_REPLAY',
-    NEXT_MOVE: 'NEXT_MOVE',
-    PREV_MOVE: 'PREV_MOVE',
-    GOTO_MOVE: 'GOTO_MOVE',
-    SET_PLAYBACK_SPEED: 'SET_PLAYBACK_SPEED',
-    END_REPLAY: 'END_REPLAY',
-    REPLAY_STATE_UPDATED: 'REPLAY_STATE_UPDATED',
-    REPLAY_PAUSED: 'REPLAY_PAUSED',
-    REPLAY_RESUMED: 'REPLAY_RESUMED',
-    REPLAY_COMPLETED: 'REPLAY_COMPLETED',
-    REPLAY_ERROR: 'REPLAY_ERROR',
-    PLAYBACK_SPEED_UPDATED: 'PLAYBACK_SPEED_UPDATED'
+    START_REPLAY: 'start_replay',
+    PAUSE_REPLAY: 'pause_replay',
+    RESUME_REPLAY: 'resume_replay',
+    NEXT_MOVE: 'next_move',
+    PREV_MOVE: 'prev_move',
+    GOTO_MOVE: 'goto_move',
+    SET_PLAYBACK_SPEED: 'set_playback_speed',
+    END_REPLAY: 'end_replay',
+    REPLAY_STATE_UPDATED: 'replay_state_updated',
+    REPLAY_PAUSED: 'replay_paused',
+    REPLAY_RESUMED: 'replay_resumed',
+    REPLAY_COMPLETED: 'replay_completed',
+    REPLAY_ERROR: 'replay_error',
+    PLAYBACK_SPEED_UPDATED: 'playback_speed_updated'
 } as const;
 
 type UseReplayProps = {
