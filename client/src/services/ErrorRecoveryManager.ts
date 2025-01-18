@@ -1,4 +1,29 @@
-import type { ErrorCode, ErrorSeverity, NetworkError } from '@ctor-game/shared/types/core.js';
+import type { ErrorCode, ErrorSeverity, NetworkError, BaseError } from '@ctor-game/shared/types/base/types.js';
+
+// Расширенный тип для NetworkError с дополнительными полями для восстановления
+type RecoverableNetworkError = NetworkError & {
+    retryable?: boolean;
+    retryCount?: number;
+};
+
+// Тип для опций логирования
+interface LogOptions {
+    code?: string;
+    message?: string;
+    severity?: ErrorSeverity;
+    details?: Record<string, unknown>;
+    errorCode?: string;
+    error?: unknown;
+    strategy?: string;
+    listenerCount?: number;
+    retryCount?: number;
+    isRecoverable?: boolean;
+    hasConfig?: boolean;
+    maxRetries?: number;
+    shouldRetry?: boolean;
+    delay?: number;
+    useBackoff?: boolean;
+};
 
 type RecoveryStrategy = 'RETRY' | 'RECONNECT' | 'RESET' | 'USER_ACTION' | 'NOTIFY';
 
@@ -6,7 +31,7 @@ interface ErrorRecoveryConfig {
     maxRetries?: number;
     retryDelay?: number;
     useBackoff?: boolean;
-    recover?: (error: NetworkError) => Promise<void>;
+    recover?: (error: RecoverableNetworkError) => Promise<void>;
 }
 import { logger } from '@/utils/logger.js';
 
@@ -51,7 +76,7 @@ const DEFAULT_RECOVERY_CONFIGS: Record<ErrorCode, ErrorRecoveryConfig> = {
 
 export class ErrorRecoveryManager {
   private static instance: ErrorRecoveryManager;
-  private errorListeners: Set<(error: NetworkError) => void> = new Set();
+  private errorListeners: Set<(error: RecoverableNetworkError) => void> = new Set();
   private recoveryConfigs: Record<ErrorCode, ErrorRecoveryConfig>;
   
   private constructor() {
@@ -68,7 +93,7 @@ export class ErrorRecoveryManager {
   /**
    * Handle an error and determine recovery strategy
    */
-  public async handleError(error: NetworkError): Promise<void> {
+  public async handleError(error: RecoverableNetworkError): Promise<void> {
     logger.error('Handling error', {
       code: error.code,
       message: error.message,
@@ -78,7 +103,7 @@ export class ErrorRecoveryManager {
 
     // Ensure error has correct attributes
     const timestamp = Date.now();
-    const normalizedError: NetworkError = {
+    const normalizedError: RecoverableNetworkError = {
       ...error,
       timestamp: error.timestamp || timestamp,
       retryable: error.retryable ?? this.isErrorRecoverable(error),
@@ -90,7 +115,7 @@ export class ErrorRecoveryManager {
     this.notifyListeners(normalizedError);
 
     // Skip recovery for low severity errors or non-recoverable errors
-    if (normalizedError.severity === 'LOW' || !normalizedError.retryable) {
+    if (normalizedError.severity === 'low' || !normalizedError.retryable) {
       logger.debug('Skipping error recovery', {
         severity: normalizedError.severity,
         retryable: normalizedError.retryable
@@ -128,7 +153,7 @@ export class ErrorRecoveryManager {
   /**
    * Check if error is recoverable based on its code
    */
-  private isErrorRecoverable(error: NetworkError): boolean {
+  private isErrorRecoverable(error: RecoverableNetworkError): boolean {
     const nonRecoverableErrors = [
       'OPERATION_CANCELLED',
       'GAME_NOT_FOUND',
@@ -146,7 +171,7 @@ export class ErrorRecoveryManager {
   /**
    * Determine if error should be retried
    */
-  public shouldRetry(error: NetworkError): boolean {
+  public shouldRetry(error: RecoverableNetworkError): boolean {
     const config = this.recoveryConfigs[error.code];
     if (!config || !config.maxRetries) {
       logger.debug('Error not eligible for retry', {
@@ -171,9 +196,9 @@ export class ErrorRecoveryManager {
   /**
    * Get recovery strategy for error
    */
-  public getRecoveryStrategy(error: NetworkError): RecoveryStrategy {
+  public getRecoveryStrategy(error: RecoverableNetworkError): RecoveryStrategy {
     // Handle critical errors that need user action
-    if (error.severity === 'CRITICAL') {
+    if (error.severity === 'critical') {
       return 'USER_ACTION';
     }
 
@@ -202,7 +227,7 @@ export class ErrorRecoveryManager {
   /**
    * Add error listener
    */
-  public addErrorListener(listener: (error: NetworkError) => void): () => void {
+  public addErrorListener(listener: (error: RecoverableNetworkError) => void): () => void {
     this.errorListeners.add(listener);
     logger.debug('Error listener added');
     return () => {
@@ -225,7 +250,7 @@ export class ErrorRecoveryManager {
     };
   }
 
-  private notifyListeners(error: NetworkError): void {
+  private notifyListeners(error: RecoverableNetworkError): void {
     logger.debug('Notifying error listeners', {
       listenerCount: this.errorListeners.size,
       errorCode: error.code
@@ -252,7 +277,7 @@ export class ErrorRecoveryManager {
       this.notifyListeners({
         ...error,
         message: 'Maximum retry attempts exceeded',
-        severity: 'HIGH',
+        severity: 'high',
         retryable: false,
         timestamp: Date.now()
       });
@@ -308,7 +333,7 @@ export class ErrorRecoveryManager {
     this.notifyListeners({
       ...error,
       message: error.message || 'Connection lost. Please refresh the page to reconnect.',
-      severity: 'HIGH',
+      severity: 'high',
       retryable: true,
       timestamp,
       retryCount: error.retryCount || 0,
@@ -331,7 +356,7 @@ export class ErrorRecoveryManager {
     this.notifyListeners({
       ...error,
       message: error.message || 'Game state error. Please refresh the page to reset.',
-      severity: 'HIGH',
+      severity: 'high',
       retryable: true,
       timestamp,
       retryCount: error.retryCount || 0,
@@ -354,7 +379,7 @@ export class ErrorRecoveryManager {
     this.notifyListeners({
       ...error,
       message: error.message ? `${error.message} Please take appropriate action.` : 'Action required from user',
-      severity: 'CRITICAL',
+      severity: 'critical',
       retryable: false,
       timestamp,
       retryCount: error.retryCount || 0,
