@@ -6,6 +6,7 @@ import type {
     MoveType,
     Timestamp,
     GameMoveBase,
+    GameMove,
     ClientToServerEvents,
     ServerToClientEvents
 } from '@ctor-game/shared/types/base/types';
