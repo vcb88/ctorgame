@@ -81,6 +81,7 @@ export type ErrorCode =
     | 'REDIS_CONNECTION_ERROR'
     | 'REDIS_CLIENT_ERROR'
     | 'OPERATION_TIMEOUT'
+    | 'OPERATION_FAILED'    // General error code for failed operations
     | 'INVALID_EVENT'
     | 'INVALID_DATA'
     | 'SERVER_ERROR'

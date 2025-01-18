@@ -3,6 +3,7 @@ import { useGame } from './useGame.js';
 import type { 
     GameState,
     GameError,
+    NetworkError,
     GameMove,
     PlayerNumber
 } from '@ctor-game/shared/types/base/types.js';
@@ -42,7 +43,7 @@ export interface UseMultiplayerGameReturn {
 
   // Connection state
   connectionState: ConnectionState;
-  error: GameError | null;
+  error: GameError | NetworkError | null;
 
   // Operation state
   loading: boolean;

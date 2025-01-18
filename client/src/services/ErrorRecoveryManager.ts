@@ -51,47 +51,64 @@ const COMPONENT_NAME = 'ErrorRecoveryManager';
 /**
  * Default recovery configurations for different error types
  */
+// Общие конфигурации для переиспользования
+const CONNECTION_ERROR_CONFIG: ErrorRecoveryConfig = {
+  maxRetries: 3,
+  retryDelay: 1000,
+  useBackoff: true
+};
+
+const OPERATION_ERROR_CONFIG: ErrorRecoveryConfig = {
+  maxRetries: 2,
+  retryDelay: 1000
+};
+
+const NO_RETRY_CONFIG: ErrorRecoveryConfig = {
+  maxRetries: 0
+};
+
 const DEFAULT_RECOVERY_CONFIGS: Record<ErrorCode, ErrorRecoveryConfig> = {
-  'NETWORK_ERROR': {
-    maxRetries: 3,
-    retryDelay: 1000,
-    useBackoff: true
-  },
+  // Ошибки сети и соединения - повторные попытки с backoff
+  'NETWORK_ERROR': CONNECTION_ERROR_CONFIG,
+  'REDIS_CONNECTION_ERROR': CONNECTION_ERROR_CONFIG,
+  'WEBSOCKET_ERROR': CONNECTION_ERROR_CONFIG,
+
+  // Ошибки операций - простые повторные попытки
   'OPERATION_TIMEOUT': {
     maxRetries: 2,
     retryDelay: 2000,
     useBackoff: true
   },
-  'VALIDATION_ERROR': {
-    maxRetries: 0
-  },
+  'OPERATION_FAILED': OPERATION_ERROR_CONFIG,
+  'STORAGE_ERROR': OPERATION_ERROR_CONFIG,
+  'REDIS_CLIENT_ERROR': OPERATION_ERROR_CONFIG,
+  'SERVER_ERROR': OPERATION_ERROR_CONFIG,
+
+  // Ошибки валидации - без повторных попыток
+  'VALIDATION_ERROR': NO_RETRY_CONFIG,
+  'INVALID_EVENT': NO_RETRY_CONFIG,
+  'INVALID_DATA': NO_RETRY_CONFIG,
+  'INVALID_STATE': NO_RETRY_CONFIG,
+  'INVALID_GAME_ID': NO_RETRY_CONFIG,
+  'INVALID_MOVE': NO_RETRY_CONFIG,
+  'INVALID_POSITION': NO_RETRY_CONFIG,
+
+  // Ошибки состояния игры - без повторных попыток
   'GAME_ERROR': {
-    maxRetries: 1,
+    maxRetries: 1,  // Одна повторная попытка для некритичных игровых ошибок
     retryDelay: 1000
   },
-  'STORAGE_ERROR': {
-    maxRetries: 2,
+  'NOT_YOUR_TURN': NO_RETRY_CONFIG,
+  'GAME_ENDED': NO_RETRY_CONFIG,
+  'GAME_NOT_FOUND': NO_RETRY_CONFIG,
+  'GAME_FULL': NO_RETRY_CONFIG,
+  'GAME_EXPIRED': NO_RETRY_CONFIG,
+
+  // Системные ошибки
+  'INTERNAL_ERROR': {
+    maxRetries: 1,  // Одна попытка для внутренних ошибок
     retryDelay: 1000
-  },
-  'OPERATION_FAILED': {
-    maxRetries: 2,
-    retryDelay: 1000
-  },
-  'REDIS_CONNECTION_ERROR': {
-    maxRetries: 3,
-    retryDelay: 1000,
-    useBackoff: true
-  },
-  'REDIS_CLIENT_ERROR': {
-    maxRetries: 2,
-    retryDelay: 1000
-  },
-  'INVALID_EVENT': {},
-  'INVALID_DATA': {},
-  'INVALID_STATE': {},
-  'INTERNAL_ERROR': {},
-  'GAME_NOT_FOUND': {},
-  'REDIS_ERROR': {}
+  }
 };
 
 export class ErrorRecoveryManager {
@@ -197,6 +214,7 @@ export class ErrorRecoveryManager {
     const config = this.recoveryConfigs[error.code];
     if (!config || !config.maxRetries) {
       logger.debug('Error not eligible for retry', {
+        component: COMPONENT_NAME,
         errorCode: error.code,
         hasConfig: !!config,
         maxRetries: config?.maxRetries
@@ -207,6 +225,7 @@ export class ErrorRecoveryManager {
     const retryCount = error.retryCount || 0;
     const shouldRetry = retryCount < config.maxRetries;
     logger.debug('Checking retry eligibility', {
+      component: COMPONENT_NAME,
       errorCode: error.code,
       retryCount,
       maxRetries: config.maxRetries,
@@ -260,6 +279,7 @@ export class ErrorRecoveryManager {
    */
   public configureRecovery(code: ErrorCode, config: ErrorRecoveryConfig): void {
     logger.debug('Configuring error recovery', {
+      component: COMPONENT_NAME,
       errorCode: code,
       config
     });
@@ -271,6 +291,7 @@ export class ErrorRecoveryManager {
 
   private notifyListeners(error: NetworkError): void {
     logger.debug('Notifying error listeners', {
+      component: COMPONENT_NAME,
       listenerCount: this.errorListeners.size,
       errorCode: error.code
     });

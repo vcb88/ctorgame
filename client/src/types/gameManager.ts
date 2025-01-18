@@ -3,6 +3,7 @@ import type {
     GameState,
     GameMove,
     GameError,
+    NetworkError,
     GameId
 } from '@ctor-game/shared/types/core.js';
 
@@ -25,8 +26,8 @@ export type GameManagerState = {
     isConnected: boolean;
     /** Loading status */
     isLoading: boolean;
-    /** Error state */
-    error: GameError | null;
+    /** Error state - can be either game or network error */
+    error: GameError | NetworkError | null;
 };
 
 /**
@@ -50,7 +51,7 @@ export type JoinGameResult = {
 /**
  * Game join operation error
  */
-export type JoinGameError = GameError & {
+export type JoinGameError = (GameError | NetworkError) & {
     operation: 'join';
     gameId: GameId;
 };

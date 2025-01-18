@@ -11,7 +11,7 @@ interface LogOptions {
 
 const getTimestamp = () => new Date().toISOString();
 
-const formatMessage = (level: LogLevel, message: string, options: LogOptions = {}) => {
+const formatMessage = (level: LogLevel, message: string, options: LogOptions = { component: 'Unknown' }) => {
   const parts = [
     `[${getTimestamp()}]`,
     `[${level.toUpperCase()}]`
@@ -35,21 +35,21 @@ const formatMessage = (level: LogLevel, message: string, options: LogOptions = {
 };
 
 export const logger = {
-  debug: (message: string, options: LogOptions = {}) => {
+  debug: (message: string, options: LogOptions = { component: 'Unknown' }) => {
     if (DEBUG) {
       console.debug(formatMessage('debug', message, options));
     }
   },
 
-  info: (message: string, options: LogOptions = {}) => {
+  info: (message: string, options: LogOptions = { component: 'Unknown' }) => {
     console.info(formatMessage('info', message, options));
   },
 
-  warn: (message: string, options: LogOptions = {}) => {
+  warn: (message: string, options: LogOptions = { component: 'Unknown' }) => {
     console.warn(formatMessage('warn', message, options));
   },
 
-  error: (message: string, options: LogOptions = {}) => {
+  error: (message: string, options: LogOptions = { component: 'Unknown' }) => {
     const errorData = {
       ...options,
       data: {

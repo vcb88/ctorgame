@@ -6,7 +6,6 @@ import type {
     ErrorCategory,
     ErrorSeverity,
     PlayerNumber,
-    GameStage,
     Scores
 } from '@ctor-game/shared/types/core.js';
 import { GameSessionState } from '@ctor-game/shared/types/enums.js';
@@ -19,9 +18,13 @@ const PLAYER_SECOND = 2 as PlayerNumber;
 
 // Game phases constants
 const ALLOWED_TRANSITIONS: Record<GameSessionState, GameSessionState[]> = {
-    [GameSessionState.INITIAL]: [GameSessionState.PLAYING],
-    [GameSessionState.PLAYING]: [GameSessionState.GAME_OVER],
-    [GameSessionState.GAME_OVER]: [GameSessionState.INITIAL]
+    [GameSessionState.INITIAL]: [GameSessionState.CONNECTING],
+    [GameSessionState.CONNECTING]: [GameSessionState.WAITING, GameSessionState.ERROR],
+    [GameSessionState.WAITING]: [GameSessionState.PLAYING, GameSessionState.ERROR],
+    [GameSessionState.PLAYING]: [GameSessionState.GAME_OVER, GameSessionState.ERROR],
+    [GameSessionState.GAME_OVER]: [GameSessionState.FINISHED, GameSessionState.ERROR],
+    [GameSessionState.FINISHED]: [GameSessionState.INITIAL],
+    [GameSessionState.ERROR]: [GameSessionState.INITIAL]
 };
 
 /**
@@ -208,7 +211,7 @@ export function validateStateUpdate(update: unknown): update is GameManagerState
   const stateUpdate = update as Partial<GameManagerState>;
 
   // Проверяем все поля, которые присутствуют в обновлении
-  if ('phase' in stateUpdate && !isValidGameStage(stateUpdate.phase)) {
+  if ('phase' in stateUpdate && !isValidGameState(stateUpdate.phase)) {
     throw createValidationError('Invalid phase in update', 'INVALID_DATA', 'phase');
   }
 
@@ -236,12 +239,12 @@ export function recoverFromValidationError(
   currentState: GameManagerState,
   error: StateValidationError
 ): GameManagerStateUpdate {
-  logger.error('Attempting to recover from validation error', { error });
+  logger.error('Attempting to recover from validation error', { error, component: 'StateValidation' });
 
   switch (error.code) {
     case 'INVALID_TRANSITION':
       // Если это ошибка перехода во время игры, пробуем восстановить состояние
-      if (currentState.phase === ('play' as GameStage)) {
+      if (currentState.phase === GameSessionState.PLAYING) {
         return {
           ...currentState,
           error: {
@@ -254,7 +257,7 @@ export function recoverFromValidationError(
       }
       // Для других случаев возвращаемся в исходное состояние
       return {
-        phase: 'setup' as GameStage,
+        phase: GameSessionState.INITIAL,
         gameState: null,
         currentPlayer: null,
         availableReplaces: [],
@@ -271,7 +274,7 @@ export function recoverFromValidationError(
     case 'INVALID_STATE':
     case 'INVALID_DATA':
       // При ошибке данных во время игры пытаемся сохранить состояние
-      if (currentState.phase === ('play' as GameStage)) {
+      if (currentState.phase === GameSessionState.PLAYING) {
         return {
           ...currentState,
           error: {
