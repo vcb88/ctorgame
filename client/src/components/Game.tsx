@@ -1,13 +1,13 @@
 import React, { useState, useEffect, ReactNode } from 'react';
 import { useMultiplayerGame } from '@/hooks/useMultiplayerGame.js';
 // Game types
+import { CellValue } from '@ctor-game/shared/types/core.js';
 import type { 
   GameState,
   GameStatus,
   MoveType,
   GameMove,
   PlayerNumber,
-  CellValue,
   Position,
   Scores,
   GameId
@@ -83,7 +83,7 @@ export const Game: React.FC = () => {
       return;
     }
 
-    if (gameState?.currentTurn.placeOperations <= 0) {
+    if (!gameState?.currentTurn?.placeOperations || gameState.currentTurn.placeOperations <= 0) {
       logger.debug('Cell click ignored - no operations left', {
         component: 'Game',
         data: { position, operationsLeft: gameState?.currentTurn.placeOperations }
@@ -188,8 +188,8 @@ export const Game: React.FC = () => {
         </div>
 
         <div className="grid grid-cols-10 gap-1 bg-gray-200 p-2">
-          {Array.from(gameState.board).map((row: CellValue[], rowIndex: number) =>
-            Array.from(row).map((cell: CellValue, colIndex: number) => {
+          {gameState.board.map((row: CellValue[], rowIndex: number) =>
+            row.map((cell: CellValue, colIndex: number) => {
               const position: Position = [colIndex, rowIndex];  // [x, y] format
               const isDisabled = !isMyTurn || cell !== CellValue.EMPTY || gameState.gameOver || gameState.currentTurn.placeOperations <= 0;
               return (
@@ -199,7 +199,7 @@ export const Game: React.FC = () => {
                   value={cell}
                   disabled={isDisabled}
                   onClick={() => handleCellClick(rowIndex, colIndex)}
-                  isValidMove={!isDisabled && cell === 0 && gameState.currentTurn.placeOperations > 0}
+                  isValidMove={!isDisabled && cell === CellValue.EMPTY && gameState.currentTurn.placeOperations > 0}
                 />
               );
             })

@@ -1,13 +1,13 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { GameCell } from './GameCell.js';
-import {
+import type {
     CellValue,
     Position,
     MoveType,
     PlayerNumber
 } from '@ctor-game/shared/types/core.js';
 import type { Board } from '@/types/board.js';
-import type { GameError } from '@ctor-game/shared/types/core.js';
+import { GameError } from '@ctor-game/shared/types/core.js';
 import { GameActionType } from '@/types/actions.js';
 import { logger } from '@/utils/logger.js';
 import type { CellAnimationState, AnimationType } from '@/types/animations.js';
