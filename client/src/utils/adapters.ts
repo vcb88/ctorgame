@@ -1,4 +1,8 @@
-import { Scores, GameScores } from '@ctor-game/shared/types/core.js';
+import type { Scores, PlayerNumber } from '@ctor-game/shared/types/base/types.js';
+
+type GameScores = {
+    [key in PlayerNumber]: number;
+};
 
 /**
  * Converts GameScores interface to Scores tuple
