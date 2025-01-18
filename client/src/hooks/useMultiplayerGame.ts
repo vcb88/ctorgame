@@ -3,8 +3,6 @@ import { useGame } from './useGame.js';
 import type { 
     Player,
     GameState,
-    ErrorCode,
-    ErrorSeverity,
     GameError,
     GameMove
 } from '@ctor-game/shared/types/base/types.js';
@@ -31,6 +29,7 @@ import { GameStateManager } from '../services/GameStateManager.js';
 import { validateGameMove } from '@ctor-game/shared/utils/validation.js';
 import { logger } from '../utils/logger.js';
 import { createGameError } from '@ctor-game/shared/utils/errors.js';
+import { BOARD_SIZE } from '@ctor-game/shared/config/constants.js';
 
 export interface UseMultiplayerGameReturn {
   // Game state
@@ -105,16 +104,16 @@ export const useMultiplayerGame = (): UseMultiplayerGameReturn => {
     const move = { type, position: { x, y } };
 
     // Базовая валидация перед отправкой
-    if (!currentState.gameState || !validateGameMove(move, currentState.gameState.board.size)) {
+    if (!currentState.gameState || !validateGameMove(move)) {
       logger.debug('Invalid move attempted', {
         component: 'useMultiplayerGame',
-        data: { move, boardSize: currentState.gameState?.board.size }
+        data: { move, boardSize: BOARD_SIZE }
       });
 
       throw createGameError({
-        code: ErrorCode.INVALID_MOVE,
+        code: 'INVALID_MOVE',
         message: 'Invalid move',
-        severity: ErrorSeverity.MEDIUM,
+        severity: 'error',
         details: { move }
       });
     }
@@ -135,11 +134,14 @@ export const useMultiplayerGame = (): UseMultiplayerGameReturn => {
 
   // Map state
   const {
-    gameId,
-    playerNumber,
-    connectionState,
+    gameState,
+    currentPlayer: playerNumber,
+    isConnected,
     error,
   } = state;
+  
+  const gameId = gameState?.id;
+  const connectionState = isConnected ? 'connected' : 'disconnected';
 
   // Get extended state from GameStateManager
   const manager = GameStateManager.getInstance();
@@ -150,14 +152,14 @@ export const useMultiplayerGame = (): UseMultiplayerGameReturn => {
   const availableReplaces = extendedState.availableReplaces || [];
 
   const isRetryable = error && [
-    ErrorCode.CONNECTION_ERROR,
-    ErrorCode.CONNECTION_TIMEOUT,
-    ErrorCode.OPERATION_TIMEOUT
+    'CONNECTION_ERROR',
+    'CONNECTION_TIMEOUT',
+    'OPERATION_TIMEOUT'
   ].includes(error.code);
 
   const isRecoverable = error && [
-    ErrorCode.CONNECTION_LOST,
-    ErrorCode.STATE_VALIDATION_ERROR
+    'CONNECTION_LOST',
+    'STATE_VALIDATION_ERROR'
   ].includes(error.code);
 
   return {
