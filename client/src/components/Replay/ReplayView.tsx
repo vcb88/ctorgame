@@ -15,6 +15,17 @@ import { MoveTimeline } from './MoveTimeline.js';
 import { GameBoard } from '../GameBoard.js';
 import { Alert } from '../ui/alert.js';
 
+/** Converts GameHistoryMove to GameMove by adding required properties */
+const adaptHistoryMove = (entry: HistoryEntry): HistoryEntry => ({
+    ...entry,
+    move: {
+        ...entry.move,
+        player: entry.playerNumber,
+        timestamp: entry.timestamp,
+        moveNumber: entry.moveNumber
+    }
+});
+
 type ReplayViewProps = {
     gameCode: GameId;  // Using GameId type instead of string
     socket: Socket;
@@ -109,7 +120,7 @@ export function ReplayView({ gameCode, socket, onClose }: ReplayViewProps) {
 
                 {/* Move history */}
                 <MoveTimeline
-                    moves={moves}
+                    moves={moves.map(adaptHistoryMove)}
                     currentMove={currentMove}
                     onMoveSelect={goToMove}
                     formatMoveDescription={formatMoveDescription}
