@@ -87,7 +87,7 @@ export function ReplayView({ gameCode, socket, onClose }: ReplayViewProps) {
                         <GameBoard
                             board={gameState.board}
                             disabled={true} // Board is inactive in replay mode
-                            lastMove={moves[currentMove - 1]?.move.pos}  // Using pos property from GameHistoryMove
+                            lastMove={moves[currentMove - 1]?.move.position}
                         />
                     )}
 
