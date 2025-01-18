@@ -1,6 +1,3 @@
-// Base types
-import { GamePhase } from '@ctor-game/shared/types/enums.js';
-// Game state types
 import type { 
     GameState,
     GameMove,
@@ -8,10 +5,48 @@ import type {
     BaseError,
     ErrorCategory,
     ErrorSeverity,
-    PlayerNumber
+    PlayerNumber,
+    GamePhase,
+    Scores
 } from '@ctor-game/shared/types/core.js';
+
+const PLAYER_FIRST = 1 as PlayerNumber;
+const PLAYER_SECOND = 2 as PlayerNumber;
 import type { GameManagerState, GameManagerStateUpdate } from '../types/gameManager.js';
 import { logger } from '../utils/logger.js';
+
+/**
+ * Проверить корректность scores
+ */
+function isValidScores(scores: unknown): scores is Scores {
+    if (!scores || typeof scores !== 'object') return false;
+    const s = scores as Record<number, number>;
+    return typeof s[PLAYER_FIRST] === 'number' && 
+           typeof s[PLAYER_SECOND] === 'number';
+}
+
+/**
+ * Проверить корректность фазы игры
+ */
+function isValidGamePhase(phase: unknown): phase is GamePhase {
+    return typeof phase === 'string' && 
+           ['setup', 'play', 'end'].includes(phase);
+}
+
+/**
+ * Проверить базовое состояние GameManager
+ */
+function isValidGameManagerState(state: unknown): state is GameManagerState {
+    if (!state || typeof state !== 'object') return false;
+    const s = state as Partial<GameManagerState>;
+    
+    return typeof s.phase === 'string' &&
+           (s.gameId === null || typeof s.gameId === 'string') &&
+           (s.playerNumber === null || (
+               typeof s.playerNumber === 'number' && 
+               [PLAYER_FIRST, PLAYER_SECOND].includes(s.playerNumber)
+           ));
+}
 
 /**
  * Тип ошибки валидации состояния
@@ -51,7 +86,7 @@ export function validateGameState(state: unknown): state is GameState {
     throw createValidationError('Invalid game state object', 'INVALID_DATA');
   }
 
-  const gameState = state as Partial<IGameState>;
+  const gameState = state as Partial<GameState>;
 
   // Проверяем обязательные поля
   if (!gameState.board || typeof gameState.board !== 'object') {
@@ -97,7 +132,7 @@ export function validateExtendedGameManagerState(state: unknown): state is GameM
 
   // Проверяем currentPlayer только если он определен и не null
   if (extState.currentPlayer !== null && 
-      ![Player.First, Player.Second].includes(extState.currentPlayer)) {
+      ![PLAYER_FIRST, PLAYER_SECOND].includes(extState.currentPlayer)) {
     throw createValidationError('Invalid current player', 'INVALID_DATA', 'currentPlayer');
   }
 
@@ -177,7 +212,7 @@ export function validateStateUpdate(update: unknown): update is GameManagerState
 
   if ('currentPlayer' in stateUpdate && 
       stateUpdate.currentPlayer !== null &&
-      ![Player.First, Player.Second].includes(stateUpdate.currentPlayer)) {
+      ![PLAYER_FIRST, PLAYER_SECOND].includes(stateUpdate.currentPlayer)) {
     throw createValidationError('Invalid current player in update', 'INVALID_DATA', 'currentPlayer');
   }
 
@@ -220,7 +255,9 @@ export function recoverFromValidationError(
         playerNumber: null,
         error: {
           code: 'VALIDATION_ERROR',
-          message: 'Game state was reset due to invalid transition'
+          message: 'Game state was reset due to invalid transition',
+          category: 'validation',
+          severity: 'error'
         }
       };
 
@@ -246,7 +283,9 @@ export function recoverFromValidationError(
         error: {
           code: 'VALIDATION_ERROR',
           message: 'Game state was partially recovered',
-          details: error.details
+          details: error.details,
+          category: 'validation',
+          severity: 'error'
         }
       };
 
