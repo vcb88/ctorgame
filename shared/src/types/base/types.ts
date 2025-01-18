@@ -46,7 +46,7 @@ export type GameHistory = {
 
 // Game status types
 export type GameStatus = 'waiting' | 'active' | 'finished' | 'expired';
-export type GamePhase = 'setup' | 'play' | 'end';
+export type GameStage = 'setup' | 'play' | 'end';
 export type ConnectionStatus = 'connected' | 'disconnected' | 'error';
 export type MoveType = 'place' | 'replace' | 'skip';
 export type OperationType = MoveType;
@@ -167,7 +167,7 @@ export type GameState = {
 
     // Game status
     status: GameStatus;
-    phase: GamePhase;
+    phase: GameStage;
     winner?: PlayerNumber | null;
     gameOver?: boolean;
 

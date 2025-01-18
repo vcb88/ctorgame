@@ -1,5 +1,5 @@
 // All enums in one place to avoid circular dependencies
-export enum GamePhase {
+export enum GameSessionState {
     INITIAL = 'INITIAL',
     CONNECTING = 'CONNECTING',
     WAITING = 'WAITING',

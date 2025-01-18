@@ -10,9 +10,9 @@ import type {
     UUID,
     Position,
     CellValue,
-    NetworkError,
-    GamePhase
+    NetworkError
 } from '@ctor-game/shared/types/base/types.js';
+import { GameSessionState } from '@ctor-game/shared/types/enums.js';
 
 import { 
     GameManagerState, 
@@ -70,7 +70,7 @@ export class GameStateManager {
         this.state = {
             gameState: null,
             currentPlayer: null,
-            phase: 'setup' satisfies GamePhase,
+            phase: GameSessionState.INITIAL,
             availableReplaces: [],
             isConnected: false,
             isLoading: false,

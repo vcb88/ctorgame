@@ -10,7 +10,7 @@ import type {
  * Game manager state type
  * Contains all necessary information about current game state
  */
-import type { GamePhase } from '@ctor-game/shared/types/enums.js';
+import type { GameSessionState } from '@ctor-game/shared/types/enums.js';
 
 export type GameManagerState = {
     /** Current game state */
@@ -18,7 +18,7 @@ export type GameManagerState = {
     /** Current player */
     currentPlayer: PlayerNumber | null;
     /** Game phase */
-    phase: GamePhase;
+    phase: GameSessionState;
     /** Available replace moves for current turn */
     availableReplaces: GameMove[];
     /** Connection status */

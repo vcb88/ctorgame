@@ -6,7 +6,7 @@ import type {
     ErrorCategory,
     ErrorSeverity,
     PlayerNumber,
-    GamePhase,
+    GameStage,
     Scores
 } from '@ctor-game/shared/types/core.js';
 
@@ -17,7 +17,7 @@ const PLAYER_FIRST = 1 as PlayerNumber;
 const PLAYER_SECOND = 2 as PlayerNumber;
 
 // Game phases constants
-const ALLOWED_TRANSITIONS: Record<GamePhase, GamePhase[]> = {
+const ALLOWED_TRANSITIONS: Record<GameStage, GameStage[]> = {
     setup: ['play'],
     play: ['end'],
     end: ['setup']
@@ -36,9 +36,9 @@ function isValidScores(scores: unknown): scores is Scores {
 /**
  * Проверить корректность фазы игры
  */
-function isValidGamePhase(phase: unknown): phase is GamePhase {
+function isValidGameStage(phase: unknown): phase is GameStage {
     return typeof phase === 'string' && 
-           ['setup', 'play', 'end'].includes(phase as GamePhase);
+           ['setup', 'play', 'end'].includes(phase as GameStage);
 }
 
 /**
@@ -176,7 +176,7 @@ export function validateStateTransition(
 
   // Проверяем согласованность данных
   if (update.phase) {  // Проверяем только если phase определена
-    if (update.phase === ('play' as GamePhase) && !update.gameState) {
+    if (update.phase === ('play' as GameStage) && !update.gameState) {
       throw createValidationError(
         'Game state must be provided when transitioning to play phase',
         'INVALID_TRANSITION',
@@ -184,7 +184,7 @@ export function validateStateTransition(
       );
     }
 
-    if (update.phase === ('end' as GamePhase) && !update.gameState?.gameOver) {
+    if (update.phase === ('end' as GameStage) && !update.gameState?.gameOver) {
       throw createValidationError(
         'Game must be over when transitioning to end phase',
         'INVALID_TRANSITION',
@@ -207,7 +207,7 @@ export function validateStateUpdate(update: unknown): update is GameManagerState
   const stateUpdate = update as Partial<GameManagerState>;
 
   // Проверяем все поля, которые присутствуют в обновлении
-  if ('phase' in stateUpdate && !isValidGamePhase(stateUpdate.phase)) {
+  if ('phase' in stateUpdate && !isValidGameStage(stateUpdate.phase)) {
     throw createValidationError('Invalid phase in update', 'INVALID_DATA', 'phase');
   }
 
@@ -240,7 +240,7 @@ export function recoverFromValidationError(
   switch (error.code) {
     case 'INVALID_TRANSITION':
       // Если это ошибка перехода во время игры, пробуем восстановить состояние
-      if (currentState.phase === ('play' as GamePhase)) {
+      if (currentState.phase === ('play' as GameStage)) {
         return {
           ...currentState,
           error: {
@@ -253,7 +253,7 @@ export function recoverFromValidationError(
       }
       // Для других случаев возвращаемся в исходное состояние
       return {
-        phase: 'setup' as GamePhase,
+        phase: 'setup' as GameStage,
         gameState: null,
         currentPlayer: null,
         availableReplaces: [],
@@ -270,7 +270,7 @@ export function recoverFromValidationError(
     case 'INVALID_STATE':
     case 'INVALID_DATA':
       // При ошибке данных во время игры пытаемся сохранить состояние
-      if (currentState.phase === ('play' as GamePhase)) {
+      if (currentState.phase === ('play' as GameStage)) {
         return {
           ...currentState,
           error: {
