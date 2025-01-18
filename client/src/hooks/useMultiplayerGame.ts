@@ -1,5 +1,5 @@
 import { useCallback, useState } from 'react';
-import { useGame } from './useGame';
+import { useGame } from './useGame.js';
 import type { 
     OperationType,
     Player,

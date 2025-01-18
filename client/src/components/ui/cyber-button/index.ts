@@ -1,1 +1,1 @@
-export * from './CyberButton';
+export * from './CyberButton.js';
