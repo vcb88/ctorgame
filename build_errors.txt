@@ -1,0 +1,85 @@
+
+> build
+> pnpm -r build
+
+Scope: 3 of 4 workspace projects
+shared build$ tsc --build
+shared build: Done
+client build$ tsc && vite build
+server build$ tsc
+server build: Done
+client build: src/pages/CreateGame.tsx(13,13): error TS7030: Not all code paths return a value.
+client build: src/pages/GameBoard.tsx(149,28): error TS2345: Argument of type '"place"' is not assignable to parameter of type 'OperationType | undefined'.
+client build: src/pages/GameBoard.tsx(233,45): error TS2322: Type '{ key: string; value: any; position: Position; disabled: boolean; onClick: () => void; isValidMove: boolean; captured: boolean; previousValue: CellValue; }' is not assignable to type 'IntrinsicAttributes & GameCellProps'.
+client build:   Property 'captured' does not exist on type 'IntrinsicAttributes & GameCellProps'.
+client build: src/pages/GameHistory.tsx(6,10): error TS2459: Module '"@ctor-game/shared/types/errors.js"' declares 'GameError' locally, but it is not exported.
+client build: src/pages/GameHistory.tsx(7,5): error TS2305: Module '"@ctor-game/shared/types/errors.js"' has no exported member 'isNetworkError'.
+client build: src/pages/GameHistory.tsx(32,21): error TS2345: Argument of type '"GET_SAVED_GAMES"' is not assignable to parameter of type 'never'.
+client build: src/pages/GameHistory.tsx(47,61): error TS2339: Property 'field' does not exist on type '{ path?: string | undefined; value?: unknown; }'.
+client build: src/pages/GameHistory.tsx(55,19): error TS2345: Argument of type '"SAVED_GAMES"' is not assignable to parameter of type 'ReservedOrUserEventNames<SocketReservedEvents, ServerToClientEvents>'.
+client build: src/pages/GameHistory.tsx(56,19): error TS2345: Argument of type '"ERROR"' is not assignable to parameter of type 'ReservedOrUserEventNames<SocketReservedEvents, ServerToClientEvents>'.
+client build: src/pages/GameHistory.tsx(59,24): error TS2345: Argument of type '"SAVED_GAMES"' is not assignable to parameter of type 'ReservedOrUserEventNames<SocketReservedEvents, ServerToClientEvents> | undefined'.
+client build: src/pages/GameHistory.tsx(60,24): error TS2345: Argument of type '"ERROR"' is not assignable to parameter of type 'ReservedOrUserEventNames<SocketReservedEvents, ServerToClientEvents> | undefined'.
+client build: src/pages/GameHistory.tsx(81,25): error TS2345: Argument of type '"REQUEST_REPLAY"' is not assignable to parameter of type 'never'.
+client build: src/pages/GameHistory.tsx(88,13): error TS2304: Cannot find name 'handleError'.
+client build: src/pages/GameHistory.tsx(88,25): error TS2552: Cannot find name 'createGameError'. Did you mean 'createGameStateError'?
+client build: src/pages/JoinGame.tsx(26,9): error TS1345: An expression of type 'void' cannot be tested for truthiness.
+client build: src/pages/WaitingRoom.tsx(40,13): error TS2339: Property 'playerNumber' does not exist on type 'GameManagerState'.
+client build: src/pages/WaitingRoom.tsx(104,15): error TS7030: Not all code paths return a value.
+client build: src/pages/WaitingRoom.tsx(146,21): error TS2339: Property 'disconnect' does not exist on type 'GameStateManager'.
+client build: src/pages/WaitingRoom.tsx(158,17): error TS2339: Property 'disconnect' does not exist on type 'GameStateManager'.
+client build: src/services/ActionQueue.ts(50,17): error TS2322: Type '(value: T | PromiseLike<T>) => void' is not assignable to type '(value: unknown) => void'.
+client build:   Types of parameters 'value' and 'value' are incompatible.
+client build:     Type 'unknown' is not assignable to type 'T | PromiseLike<T>'.
+client build: src/services/ActionQueue.ts(111,21): error TS2345: Argument of type '"OPERATION_FAILED"' is not assignable to parameter of type 'ErrorCode'.
+client build: src/services/ActionQueue.ts(126,17): error TS2345: Argument of type '"OPERATION_FAILED"' is not assignable to parameter of type 'ErrorCode'.
+client build: src/services/ErrorRecoveryManager.ts(76,3): error TS2353: Object literal may only specify known properties, and ''OPERATION_FAILED'' does not exist in type 'Record<ErrorCode, ErrorRecoveryConfig>'.
+client build: src/services/ErrorRecoveryManager.ts(199,52): error TS2345: Argument of type '{ errorCode: "VALIDATION_ERROR" | "NETWORK_ERROR" | "GAME_ERROR" | "STORAGE_ERROR" | "REDIS_CONNECTION_ERROR" | "REDIS_CLIENT_ERROR" | "OPERATION_TIMEOUT" | "INVALID_EVENT" | ... 12 more ... | "INTERNAL_ERROR"; hasConfig: boolean; maxRetries: number | undefined; }' is not assignable to parameter of type 'LogOptions'.
+client build:   Property 'component' is missing in type '{ errorCode: "VALIDATION_ERROR" | "NETWORK_ERROR" | "GAME_ERROR" | "STORAGE_ERROR" | "REDIS_CONNECTION_ERROR" | "REDIS_CLIENT_ERROR" | "OPERATION_TIMEOUT" | "INVALID_EVENT" | ... 12 more ... | "INTERNAL_ERROR"; hasConfig: boolean; maxRetries: number | undefined; }' but required in type 'LogOptions'.
+client build: src/services/ErrorRecoveryManager.ts(209,48): error TS2345: Argument of type '{ errorCode: "VALIDATION_ERROR" | "NETWORK_ERROR" | "GAME_ERROR" | "STORAGE_ERROR" | "REDIS_CONNECTION_ERROR" | "REDIS_CLIENT_ERROR" | "OPERATION_TIMEOUT" | "INVALID_EVENT" | ... 12 more ... | "INTERNAL_ERROR"; retryCount: number; maxRetries: number; shouldRetry: boolean; }' is not assignable to parameter of type 'LogOptions'.
+client build:   Property 'component' is missing in type '{ errorCode: "VALIDATION_ERROR" | "NETWORK_ERROR" | "GAME_ERROR" | "STORAGE_ERROR" | "REDIS_CONNECTION_ERROR" | "REDIS_CLIENT_ERROR" | "OPERATION_TIMEOUT" | "INVALID_EVENT" | ... 12 more ... | "INTERNAL_ERROR"; retryCount: number; maxRetries: number; shouldRetry: boolean; }' but required in type 'LogOptions'.
+client build: src/services/ErrorRecoveryManager.ts(233,9): error TS2367: This comparison appears to be unintentional because the types '"VALIDATION_ERROR" | "GAME_ERROR" | "STORAGE_ERROR" | "REDIS_CLIENT_ERROR" | "OPERATION_TIMEOUT" | "INVALID_EVENT" | "INVALID_DATA" | "SERVER_ERROR" | "INVALID_GAME_ID" | ... 9 more ... | "INTERNAL_ERROR"' and '"OPERATION_FAILED"' have no overlap.
+client build: src/services/ErrorRecoveryManager.ts(262,48): error TS2345: Argument of type '{ errorCode: ErrorCode; config: ErrorRecoveryConfig; }' is not assignable to parameter of type 'LogOptions'.
+client build:   Property 'component' is missing in type '{ errorCode: ErrorCode; config: ErrorRecoveryConfig; }' but required in type 'LogOptions'.
+client build: src/services/ErrorRecoveryManager.ts(273,47): error TS2345: Argument of type '{ listenerCount: number; errorCode: "VALIDATION_ERROR" | "NETWORK_ERROR" | "GAME_ERROR" | "STORAGE_ERROR" | "REDIS_CONNECTION_ERROR" | "REDIS_CLIENT_ERROR" | "OPERATION_TIMEOUT" | ... 13 more ... | "INTERNAL_ERROR"; }' is not assignable to parameter of type 'LogOptions'.
+client build:   Property 'component' is missing in type '{ listenerCount: number; errorCode: "VALIDATION_ERROR" | "NETWORK_ERROR" | "GAME_ERROR" | "STORAGE_ERROR" | "REDIS_CONNECTION_ERROR" | "REDIS_CLIENT_ERROR" | "OPERATION_TIMEOUT" | ... 13 more ... | "INTERNAL_ERROR"; }' but required in type 'LogOptions'.
+client build: src/services/GameStateManager.ts(72,13): error TS2322: Type '"setup"' is not assignable to type 'GamePhase'.
+client build: src/services/GameStateManager.ts(156,28): error TS2322: Type 'NetworkError' is not assignable to type 'GameError | null | undefined'.
+client build:   Type 'NetworkError' is not assignable to type 'GameError'.
+client build:     Type 'NetworkError' is not assignable to type '{ category: "game"; code: ErrorCode; severity: ErrorSeverity; recoverable?: boolean | undefined; retryCount?: number | undefined; }'.
+client build:       Types of property 'category' are incompatible.
+client build:         Type '"network"' is not assignable to type '"game"'.
+client build: src/services/GameStateManager.ts(172,17): error TS2345: Argument of type '"OPERATION_FAILED"' is not assignable to parameter of type 'ErrorCode'.
+client build: src/services/GameStateManager.ts(220,17): error TS2345: Argument of type '"OPERATION_FAILED"' is not assignable to parameter of type 'ErrorCode'.
+client build: src/services/GameStateManager.ts(272,17): error TS2345: Argument of type '"OPERATION_FAILED"' is not assignable to parameter of type 'ErrorCode'.
+client build: src/services/GameStateManager.ts(329,17): error TS2345: Argument of type '"OPERATION_FAILED"' is not assignable to parameter of type 'ErrorCode'.
+client build: src/services/StateStorage.ts(11,14): error TS2420: Class 'StateStorageImpl' incorrectly implements interface 'StateStorage'.
+client build:   Type 'StateStorageImpl' is not assignable to type 'StateStorageBase'.
+client build:     Type 'StateStorageImpl' is missing the following properties from type 'StateStorageBase': get, set, delete
+client build: src/services/StateStorage.ts(30,13): error TS2322: Type 'string | undefined' is not assignable to type 'string'.
+client build:   Type 'undefined' is not assignable to type 'string'.
+client build: src/services/StateStorage.ts(33,37): error TS2532: Object is possibly 'undefined'.
+client build: src/services/StateStorage.ts(55,30): error TS18048: 'storedState.expiresAt' is possibly 'undefined'.
+client build: src/services/StateStorage.ts(88,27): error TS18048: 'storedState.expiresAt' is possibly 'undefined'.
+client build: src/services/StateStorage.ts(115,39): error TS2345: Argument of type 'string | undefined' is not assignable to parameter of type 'string'.
+client build:   Type 'undefined' is not assignable to type 'string'.
+client build: src/services/socket.ts(58,32): error TS2345: Argument of type '(error: Error & NetworkError) => void' is not assignable to parameter of type '(err: Error) => void'.
+client build:   Types of parameters 'error' and 'err' are incompatible.
+client build:     Type 'Error' is not assignable to type 'Error & BaseError & { stack: string; name: string; } & { category: "network"; code: ErrorCode; severity: ErrorSeverity; retryCount?: number | undefined; retryable?: boolean | undefined; timestamp: number; details?: { ...; } | undefined; }'.
+client build:       Type 'Error' is missing the following properties from type 'BaseError': code, category, severity
+client build: src/utils/logger.ts(14,58): error TS2741: Property 'component' is missing in type '{}' but required in type 'LogOptions'.
+client build: src/utils/logger.ts(38,28): error TS2741: Property 'component' is missing in type '{}' but required in type 'LogOptions'.
+client build: src/utils/logger.ts(44,27): error TS2741: Property 'component' is missing in type '{}' but required in type 'LogOptions'.
+client build: src/utils/logger.ts(48,27): error TS2741: Property 'component' is missing in type '{}' but required in type 'LogOptions'.
+client build: src/utils/logger.ts(52,28): error TS2741: Property 'component' is missing in type '{}' but required in type 'LogOptions'.
+client build: src/validation/stateValidation.ts(183,9): error TS2367: This comparison appears to be unintentional because the types 'GamePhase' and '"play"' have no overlap.
+client build: src/validation/stateValidation.ts(191,9): error TS2367: This comparison appears to be unintentional because the types 'GamePhase' and '"end"' have no overlap.
+client build: src/validation/stateValidation.ts(242,63): error TS2345: Argument of type '{ error: StateValidationError; }' is not assignable to parameter of type 'LogOptions'.
+client build:   Property 'component' is missing in type '{ error: StateValidationError; }' but required in type 'LogOptions'.
+client build: src/validation/stateValidation.ts(247,11): error TS2367: This comparison appears to be unintentional because the types 'GamePhase' and '"play"' have no overlap.
+client build: src/validation/stateValidation.ts(260,9): error TS2322: Type '"setup"' is not assignable to type 'GamePhase | undefined'.
+client build: src/validation/stateValidation.ts(277,11): error TS2367: This comparison appears to be unintentional because the types 'GamePhase' and '"play"' have no overlap.
+client build: Failed
+/tmp/ctorgame/client:
+ ERR_PNPM_RECURSIVE_RUN_FIRST_FAIL  @ctor-game/client@0.1.0 build: `tsc && vite build`
+Exit status 2

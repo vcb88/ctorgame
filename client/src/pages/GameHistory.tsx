@@ -8,11 +8,13 @@ import {
     createGameStateError 
 } from '@ctor-game/shared/types/errors.js';
 import { logger } from '@/utils/logger.js';
+import { Socket } from 'socket.io-client';
 import { getSocket } from '@/services/socket';
 import { ReplayView } from '@/components/Replay/ReplayView';
 import { CyberButton } from '@/components/ui/cyber-button.js';
 import { NeonGridBackground } from '@/components/backgrounds/NeonGridBackground';
 import { cn } from '@/lib/utils.js';
+import type { ClientToServerEvents, ServerToClientEvents } from '@ctor-game/shared/types/base/types.js';
 
 const ARCHIVE_VERSION = 'v1.0.1';
 const COMPONENT_NAME = 'GameHistory';
@@ -26,7 +28,7 @@ export function GameHistory() {
     const navigate = useNavigate();
 
     useEffect(() => {
-        const socket = getSocket();
+        const socket = getSocket() as Socket<ServerToClientEvents, ClientToServerEvents>;
         
         // Request saved games list
         socket.emit('list_saved_games');
@@ -76,7 +78,7 @@ export function GameHistory() {
             setLoadingReplays(prev => new Set(prev).add(gameCode));
             
             // Request replay data through socket
-            const socket = getSocket();
+            const socket = getSocket() as Socket<ServerToClientEvents, ClientToServerEvents>;
             socket.emit('load_game_replay', { gameCode });
             
             // After successful request, show replay view

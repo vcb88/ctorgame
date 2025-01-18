@@ -5,11 +5,13 @@ import type {
     PlayerNumber,
     MoveType,
     Timestamp,
-    GameMoveBase
+    GameMoveBase,
+    ClientToServerEvents,
+    ServerToClientEvents
 } from '@ctor-game/shared/types/base/types';
 
 type UseGameHistoryProps = {
-    socket: Socket;
+    socket: Socket<ServerToClientEvents, ClientToServerEvents>;
     gameCode: string;
 };
 
@@ -38,7 +40,7 @@ export function useGameHistory({ socket, gameCode }: UseGameHistoryProps): UseGa
 
     useEffect(() => {
         // Request move history on mount
-        socket.emit('GET_GAME_HISTORY', { gameCode });
+        socket.emit('list_game_history', { gameCode });
 
         // History handler
         const handleHistory = (data: { moves: HistoryEntry[] }) => {
@@ -47,26 +49,32 @@ export function useGameHistory({ socket, gameCode }: UseGameHistoryProps): UseGa
         };
 
         // Error handler
-        const handleError = (data: { message: string }) => {
-            setError(data.message);
+        const handleError = (err: { message: string }) => {
+            setError(err.message);
             setLoading(false);
         };
 
-        // New move handler (for live history updates)
-        const handleNewMove = (move: HistoryEntry) => {
-            setMoves(prevMoves => [...prevMoves, move]);
-        };
-
         // Subscribe to events
-        socket.on('GAME_HISTORY', handleHistory);
-        socket.on('ERROR', handleError);
-        socket.on('NEW_MOVE', handleNewMove);
+        socket.on('game_history', handleHistory);
+        socket.on('error', handleError);
+        socket.on('game_move', (data) => {
+            // Convert game move to history entry
+            if (data.move) {
+                const entry: HistoryEntry = {
+                    moveNumber: moves.length + 1,
+                    playerNumber: data.move.player,
+                    move: data.move,
+                    timestamp: data.timestamp
+                };
+                setMoves(prevMoves => [...prevMoves, entry]);
+            }
+        });
 
         // Cleanup subscriptions
         return () => {
-            socket.off('GAME_HISTORY', handleHistory);
-            socket.off('ERROR', handleError);
-            socket.off('NEW_MOVE', handleNewMove);
+            socket.off('game_history', handleHistory);
+            socket.off('error', handleError);
+            socket.off('game_move');
         };
     }, [socket, gameCode]);
 

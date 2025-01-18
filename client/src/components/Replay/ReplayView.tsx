@@ -7,7 +7,9 @@ import type {
     Scores,
     GameId,
     GameMove,
-    PlaybackSpeed
+    PlaybackSpeed,
+    ClientToServerEvents,
+    ServerToClientEvents
 } from '@ctor-game/shared/types/base/types';
 import type { HistoryEntry } from '../../hooks/useGameHistory.js';
 import { useReplay } from '../../hooks/useReplay.js';
@@ -21,7 +23,7 @@ import { Alert } from '../ui/alert.js';
 
 type ReplayViewProps = {
     gameCode: GameId;  // Using GameId type instead of string
-    socket: Socket;
+    socket: Socket<ServerToClientEvents, ClientToServerEvents>;
     onClose: () => void;
 };
 

@@ -1,6 +1,11 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Socket } from 'socket.io-client';
-import type { GameState, PlaybackSpeed } from '@ctor-game/shared/types/core.js';
+import type { 
+    GameState, 
+    PlaybackSpeed, 
+    ClientToServerEvents, 
+    ServerToClientEvents 
+} from '@ctor-game/shared/types/base/types.js';
 
 // Event types
 export const ReplayEvent = {
@@ -21,7 +26,7 @@ export const ReplayEvent = {
 } as const;
 
 type UseReplayProps = {
-    socket: Socket;
+    socket: Socket<ServerToClientEvents, ClientToServerEvents>;
     gameCode: string;
 };
 
