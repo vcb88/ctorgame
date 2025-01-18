@@ -11,7 +11,8 @@ import type {
   PlayerNumber,
   Position,
   Scores,
-  GameId
+  GameId,
+  OperationType
 } from '@ctor-game/shared/types/base/types.js';
 
 import { cn } from '@/lib/utils.js';
@@ -92,8 +93,8 @@ export const Game: React.FC = () => {
       return;
     }
 
-    logger.userAction('makeMove', { position, type: 'place' as MoveType });
-    makeMove(position[0], position[1], 'place' as MoveType);  // Using x, y, type for move
+    logger.userAction('makeMove', { position, type: OperationType.PLACE });
+    makeMove(position[0], position[1], OperationType.PLACE);  // Using x, y, type for move
   };
 
   if (error) {
