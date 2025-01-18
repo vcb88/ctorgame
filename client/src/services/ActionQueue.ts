@@ -1,5 +1,6 @@
 import { ErrorRecoveryManager } from './ErrorRecoveryManager.js';
 import type { GameAction, GameMove, NetworkError, UUID } from '@ctor-game/shared/types/core.js';
+import { createNetworkError } from '../utils/errors.js';
 
 /**
  * Game action types supported by the queue
@@ -106,13 +107,12 @@ export class ActionQueue {
         try {
             // Check if action can be processed
             if (!this.canProcessAction(action)) {
-                throw {
-                    code: 'OPERATION_FAILED',
-                    message: 'Conflicting operation in progress',
-                    severity: 'error',
-                    details: { action },
-                    timestamp
-                } as NetworkError;
+                throw createNetworkError(
+                    'OPERATION_FAILED',
+                    'Conflicting operation in progress',
+                    'error',
+                    { action }
+                );
             }
 
             // Process action (in MVP we just resolve immediately)
@@ -122,13 +122,12 @@ export class ActionQueue {
             this.queue.shift();
         } catch (error) {
             // Handle error
-            const clientError: NetworkError = {
-                code: 'OPERATION_FAILED',
-                message: error instanceof Error ? error.message : 'Operation failed',
-                severity: 'error',
-                details: { error, action },
-                timestamp
-            };
+            const clientError = createNetworkError(
+                'OPERATION_FAILED',
+                error instanceof Error ? error.message : 'Operation failed',
+                'error',
+                { error, action }
+            );
 
             this.errorManager.handleError(clientError);
             reject(clientError);
@@ -151,12 +150,11 @@ export class ActionQueue {
     public clear(): void {
         const timestamp = Date.now();
         this.queue.forEach(({ reject }) => {
-            reject({
-                code: 'OPERATION_TIMEOUT',
-                message: 'Operation cancelled - queue cleared',
-                severity: 'warning',
-                timestamp
-            });
+            reject(createNetworkError(
+                'OPERATION_TIMEOUT',
+                'Operation cancelled - queue cleared',
+                'warning'
+            ));
         });
         this.queue = [];
         this.processing = false;

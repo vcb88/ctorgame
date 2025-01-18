@@ -3,9 +3,10 @@ const DEBUG = true;
 type LogLevel = 'debug' | 'info' | 'warn' | 'error';
 
 interface LogOptions {
-  component?: string;
+  component: string;
   event?: string;
   data?: unknown;
+  [key: string]: unknown;
 }
 
 const getTimestamp = () => new Date().toISOString();

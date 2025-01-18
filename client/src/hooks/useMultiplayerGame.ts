@@ -1,10 +1,10 @@
 import { useCallback, useState } from 'react';
 import { useGame } from './useGame.js';
 import type { 
-    Player,
     GameState,
     GameError,
-    GameMove
+    GameMove,
+    PlayerNumber
 } from '@ctor-game/shared/types/base/types.js';
 import { 
     OperationType,
@@ -34,9 +34,9 @@ import { BOARD_SIZE } from '@ctor-game/shared/config/constants.js';
 export interface UseMultiplayerGameReturn {
   // Game state
   gameId: string | null;
-  playerNumber: Player | null;
+  playerNumber: PlayerNumber | null;
   gameState: GameState | null;
-  currentPlayer: Player;
+  currentPlayer: PlayerNumber | null;
   isMyTurn: boolean;
   availableReplaces: GameMove[];
 
@@ -140,7 +140,14 @@ export const useMultiplayerGame = (): UseMultiplayerGameReturn => {
   } = state;
   
   const gameId = baseGameState?.id;
-  const connectionState = isConnected ? ConnectionState.CONNECTED : ConnectionState.DISCONNECTED;
+  let connectionState = ConnectionState.DISCONNECTED;
+  if (isConnected) {
+    connectionState = ConnectionState.CONNECTED;
+  } else if (loading) {
+    connectionState = ConnectionState.CONNECTING;
+  } else if (error) {
+    connectionState = ConnectionState.ERROR;
+  }
 
   // Get current game state from manager
   const gameStateManager = GameStateManager.getInstance();
@@ -164,9 +171,9 @@ export const useMultiplayerGame = (): UseMultiplayerGameReturn => {
   return {
     // Game state
     gameId: gameId ?? null,
-    playerNumber: playerNumber as Player | null,
+    playerNumber,
     gameState: currentGameState,
-    currentPlayer: currentPlayer as Player,
+    currentPlayer,
     isMyTurn,
     availableReplaces,
     

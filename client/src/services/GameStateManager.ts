@@ -22,6 +22,7 @@ import {
 } from '../types/gameManager.js';
 
 import { logger } from '../utils/logger.js';
+import { createNetworkError } from '../utils/errors.js';
 
 /**
  * MVP implementation of GameStateManager
@@ -68,7 +69,7 @@ export class GameStateManager {
         this.state = {
             gameState: null,
             currentPlayer: null,
-            phase: 'setup',
+            phase: 'setup' as const,
             availableReplaces: [],
             isConnected: false,
             isLoading: false,
@@ -167,12 +168,11 @@ export class GameStateManager {
     public async createGame(): Promise<void> {
         // Validate current state
         if (this.state.gameState) {
-            this.handleError({
-                code: 'OPERATION_FAILED',
-                message: 'Game already in progress',
-                severity: 'error',
-                timestamp: Date.now()
-            });
+            this.handleError(createNetworkError(
+                'OPERATION_FAILED',
+                'Game already in progress',
+                'error'
+            ));
             return;
         }
 
@@ -206,23 +206,21 @@ export class GameStateManager {
     public async joinGame(gameId: string): Promise<void> {
         // Validate input
         if (!gameId) {
-            this.handleError({
-                code: 'INVALID_GAME_ID',
-                message: 'Game ID is required',
-                severity: 'error',
-                timestamp: Date.now()
-            });
+            this.handleError(createNetworkError(
+                'INVALID_GAME_ID',
+                'Game ID is required',
+                'error'
+            ));
             return;
         }
 
         // Validate current state
         if (this.state.gameState) {
-            this.handleError({
-                code: 'OPERATION_FAILED',
-                message: 'Already in a game',
-                severity: 'error',
-                timestamp: Date.now()
-            });
+            this.handleError(createNetworkError(
+                'OPERATION_FAILED',
+                'Already in a game',
+                'error'
+            ));
             return;
         }
 
@@ -258,40 +256,37 @@ export class GameStateManager {
     public async makeMove(move: GameMove): Promise<void> {
         // Validate input
         if (!move || !move.position || !move.type) {
-            this.handleError({
-                code: 'INVALID_MOVE',
-                message: 'Invalid move format',
-                severity: 'error',
-                timestamp: Date.now(),
-                details: { move }
-            });
+            this.handleError(createNetworkError(
+                'INVALID_MOVE',
+                'Invalid move format',
+                'error',
+                { move }
+            ));
             return;
         }
 
         // Validate game state
         const gameId = this.state.gameState?.id;
         if (!gameId) {
-            this.handleError({
-                code: 'OPERATION_FAILED',
-                message: 'No active game',
-                severity: 'error',
-                timestamp: Date.now()
-            });
+            this.handleError(createNetworkError(
+                'OPERATION_FAILED',
+                'No active game',
+                'error'
+            ));
             return;
         }
 
         // Validate turn
         if (this.state.gameState?.currentPlayer !== this.state.currentPlayer) {
-            this.handleError({
-                code: 'NOT_YOUR_TURN',
-                message: 'Not your turn',
-                severity: 'error',
-                timestamp: Date.now(),
-                details: {
+            this.handleError(createNetworkError(
+                'NOT_YOUR_TURN',
+                'Not your turn',
+                'error',
+                {
                     currentPlayer: this.state.gameState?.currentPlayer,
                     playerNumber: this.state.currentPlayer
                 }
-            });
+            ));
             return;
         }
 
@@ -330,27 +325,25 @@ export class GameStateManager {
         // Validate game state
         const gameId = this.state.gameState?.id;
         if (!gameId) {
-            this.handleError({
-                code: 'OPERATION_FAILED',
-                message: 'No active game',
-                severity: 'error',
-                timestamp: Date.now()
-            });
+            this.handleError(createNetworkError(
+                'OPERATION_FAILED',
+                'No active game',
+                'error'
+            ));
             return;
         }
 
         // Validate turn
         if (this.state.gameState?.currentPlayer !== this.state.currentPlayer) {
-            this.handleError({
-                code: 'NOT_YOUR_TURN',
-                message: 'Not your turn',
-                severity: 'error',
-                timestamp: Date.now(),
-                details: {
+            this.handleError(createNetworkError(
+                'NOT_YOUR_TURN',
+                'Not your turn',
+                'error',
+                {
                     currentPlayer: this.state.gameState?.currentPlayer,
                     playerNumber: this.state.currentPlayer
                 }
-            });
+            ));
             return;
         }
 

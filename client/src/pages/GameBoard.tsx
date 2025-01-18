@@ -181,7 +181,7 @@ export const GameBoard: React.FC = () => {
                         Game ID: <span className="text-cyan-300">{gameId}</span>
                     </div>
                     <div className="text-xl font-mono">
-                        You: Player {playerNumber && formatPlayerSymbol(playerNumber)}
+                        You: Player {formatPlayerSymbol(playerNumber)}
                     </div>
                 </div>
 
@@ -248,7 +248,7 @@ export const GameBoard: React.FC = () => {
 
                 {gameState.phase === 'end' && (
                     <GameOverScreen
-                        winner={gameState.winner}
+                        winner={gameState.winner ?? null}
                         scores={gameState.scores}
                         onReturnToMenu={() => navigate('/')}
                     />

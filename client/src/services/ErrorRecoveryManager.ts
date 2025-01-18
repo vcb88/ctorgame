@@ -15,24 +15,25 @@
  */
 
 import type { ErrorCode, ErrorSeverity, NetworkError, BaseError } from '@ctor-game/shared/types/base/types.js';
+import { createNetworkError } from '../utils/errors.js';
 
-// Тип для опций логирования
-interface LogOptions {
-    code?: string;
-    message?: string;
-    severity?: ErrorSeverity;
-    details?: Record<string, unknown>;
-    errorCode?: string;
+// Тип для расширенных опций логирования
+interface ExtendedLogOptions {
+    // Общие поля
+    component: string;
+    timestamp: number;
+    // Опциональные поля с информацией
+    currentState?: unknown;
+    update?: unknown;
     error?: unknown;
-    strategy?: string;
     listenerCount?: number;
     retryCount?: number;
-    isRecoverable?: boolean;
     hasConfig?: boolean;
     maxRetries?: number;
     shouldRetry?: boolean;
     delay?: number;
     useBackoff?: boolean;
+    state?: unknown;
 };
 
 type RecoveryStrategy = 'RETRY' | 'RECONNECT' | 'RESET' | 'USER_ACTION' | 'NOTIFY';
@@ -49,39 +50,46 @@ import { logger } from '@/utils/logger.js';
  * Default recovery configurations for different error types
  */
 const DEFAULT_RECOVERY_CONFIGS: Record<ErrorCode, ErrorRecoveryConfig> = {
-  'CONNECTION_ERROR': {
+  'NETWORK_ERROR': {
     maxRetries: 3,
     retryDelay: 1000,
     useBackoff: true
   },
-  'CONNECTION_TIMEOUT': {
+  'OPERATION_TIMEOUT': {
     maxRetries: 2,
     retryDelay: 2000,
     useBackoff: true
   },
-  'CONNECTION_LOST': {
-    maxRetries: 5,
-    retryDelay: 1000,
-    useBackoff: true
+  'VALIDATION_ERROR': {
+    maxRetries: 0
+  },
+  'GAME_ERROR': {
+    maxRetries: 1,
+    retryDelay: 1000
+  },
+  'STORAGE_ERROR': {
+    maxRetries: 2,
+    retryDelay: 1000
   },
   'OPERATION_FAILED': {
     maxRetries: 2,
     retryDelay: 1000
   },
-  'OPERATION_TIMEOUT': {
-    maxRetries: 1,
-    retryDelay: 2000
+  'REDIS_CONNECTION_ERROR': {
+    maxRetries: 3,
+    retryDelay: 1000,
+    useBackoff: true
   },
-  // Other errors default to no retries
-  'OPERATION_CANCELLED': {},
-  'INVALID_MOVE': {},
+  'REDIS_CLIENT_ERROR': {
+    maxRetries: 2,
+    retryDelay: 1000
+  },
+  'INVALID_EVENT': {},
+  'INVALID_DATA': {},
   'INVALID_STATE': {},
+  'INTERNAL_ERROR': {},
   'GAME_NOT_FOUND': {},
-  'GAME_FULL': {},
-  'STATE_VALIDATION_ERROR': {},
-  'STATE_TRANSITION_ERROR': {},
-  'STORAGE_ERROR': {},
-  'UNKNOWN_ERROR': {}
+  'REDIS_ERROR': {}
 };
 
 export class ErrorRecoveryManager {
@@ -165,15 +173,15 @@ export class ErrorRecoveryManager {
    */
   private isErrorRecoverable(error: NetworkError): boolean {
     const nonRecoverableErrors = [
-      'OPERATION_CANCELLED',
+      'VALIDATION_ERROR',
       'GAME_NOT_FOUND',
-      'GAME_FULL',
-      'INVALID_STATE'
+      'INVALID_STATE',
+      'INVALID_DATA'
     ];
     const isRecoverable = !nonRecoverableErrors.includes(error.code);
     logger.debug('Checking error recoverability', {
-      errorCode: error.code,
-      isRecoverable
+      component: 'ErrorRecoveryManager',
+      data: { errorCode: error.code, isRecoverable }
     });
     return isRecoverable;
   }
@@ -212,21 +220,18 @@ export class ErrorRecoveryManager {
       return 'USER_ACTION';
     }
 
-    // Handle connection errors
-    if (error.code.startsWith('CONNECTION_')) {
+    // Handle network and connection errors
+    if (error.code === 'NETWORK_ERROR' || error.code === 'REDIS_CONNECTION_ERROR') {
       return 'RECONNECT';
     }
 
     // Handle operation errors that can be retried
-    if (
-      error.code.startsWith('OPERATION_') && 
-      error.code !== 'OPERATION_CANCELLED'
-    ) {
+    if (error.code === 'OPERATION_FAILED' || error.code === 'OPERATION_TIMEOUT') {
       return 'RETRY';
     }
 
     // Handle state errors
-    if (error.code.startsWith('STATE_')) {
+    if (error.code === 'INVALID_STATE') {
       return 'RESET';
     }
 
@@ -260,7 +265,7 @@ export class ErrorRecoveryManager {
     };
   }
 
-  private notifyListeners(error: RecoverableNetworkError): void {
+  private notifyListeners(error: NetworkError): void {
     logger.debug('Notifying error listeners', {
       listenerCount: this.errorListeners.size,
       errorCode: error.code
@@ -284,13 +289,14 @@ export class ErrorRecoveryManager {
         errorCode: error.code,
         retryCount: error.retryCount
       });
-      this.notifyListeners({
-        ...error,
-        message: 'Maximum retry attempts exceeded',
-        severity: 'critical',
-        retryable: false,
-        timestamp: Date.now()
-      });
+      this.notifyListeners(createNetworkError(
+        error.code,
+        'Maximum retry attempts exceeded',
+        'critical',
+        error.details,
+        false,
+        error.retryCount
+      ));
       return;
     }
 
@@ -340,18 +346,17 @@ export class ErrorRecoveryManager {
       details: error.details
     });
 
-    this.notifyListeners({
-      ...error,
-      message: error.message || 'Connection lost. Please refresh the page to reconnect.',
-      severity: 'high',
-      retryable: true,
-      timestamp,
-      retryCount: error.retryCount || 0,
-      details: {
+    this.notifyListeners(createNetworkError(
+      error.code,
+      error.message || 'Connection lost. Please refresh the page to reconnect.',
+      'error',
+      {
         ...error.details,
         reconnectAttempt: (error.retryCount || 0) + 1
-      }
-    });
+      },
+      true,
+      error.retryCount
+    ));
   }
 
   private async handleReset(error: NetworkError): Promise<void> {
@@ -363,18 +368,17 @@ export class ErrorRecoveryManager {
       details: error.details
     });
 
-    this.notifyListeners({
-      ...error,
-      message: error.message || 'Game state error. Please refresh the page to reset.',
-      severity: 'high',
-      retryable: true,
-      timestamp,
-      retryCount: error.retryCount || 0,
-      details: {
+    this.notifyListeners(createNetworkError(
+      error.code,
+      error.message || 'Game state error. Please refresh the page to reset.',
+      'error',
+      {
         ...error.details,
         resetAttempt: (error.retryCount || 0) + 1
-      }
-    });
+      },
+      true,
+      error.retryCount
+    ));
   }
 
   private handleUserAction(error: NetworkError): void {
@@ -386,17 +390,16 @@ export class ErrorRecoveryManager {
       details: error.details
     });
 
-    this.notifyListeners({
-      ...error,
-      message: error.message ? `${error.message} Please take appropriate action.` : 'Action required from user',
-      severity: 'critical',
-      retryable: false,
-      timestamp,
-      retryCount: error.retryCount || 0,
-      details: {
+    this.notifyListeners(createNetworkError(
+      error.code,
+      error.message ? `${error.message} Please take appropriate action.` : 'Action required from user',
+      'critical',
+      {
         ...error.details,
         requiresUserAction: true
-      }
-    });
+      },
+      false,
+      error.retryCount
+    ));
   }
 }
